@@ -36,12 +36,30 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
     }
 
     [Fact]
+    public async Task Retail_business_errors_are_returned_as_problem_details()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "build-editor", ["Catalog.ManageProducts"]);
+        await using var factory = CreateFactory(database.ConnectionString);
+        using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(client, "build-editor");
+
+        using var response = await PostAsync(client, "/api/v1/admin/retail/assemblies", new { name = "", unitIds = Array.Empty<Guid>() });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemPayload>();
+        Assert.Equal(400, problem!.Status);
+        Assert.Equal("Assembly name is required.", problem.Title);
+    }
+
+    [Fact]
     public async Task Inventory_and_customer_permissions_mask_sensitive_fields_at_the_api()
     {
         var database = await fixture.CreateDatabaseAsync();
-        var retail = database.CreateRetailService();
+        var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
+        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
         [
             new ReceiptLine(productId, null, "Matrix GPU", "MATRIX-1", "New", "SERIAL-SECRET", 700m, 1, 8m, null,
                 1200m, "Secret Supplier", "Brand", "Model", "GPU", null, null, null, "Component", "Supplier",
@@ -220,4 +238,5 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
     }
 
     private sealed record CsrfPayload(string RequestToken);
+    private sealed record ProblemPayload(int Status, string Title);
 }

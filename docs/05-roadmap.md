@@ -14,11 +14,11 @@ Order matters: we restructure before adding features, so new features land in cl
 ## Phase 1 — Backend restructure (behavior unchanged)
 1. **Common building blocks**
    - [x] `AppException` base + one global ProblemDetails mapping; all 14 module exception types derive from it
-   - [ ] Remove the now-redundant endpoint try/catch blocks (done per area as each module is restructured)
+   - [ ] Remove the now-redundant endpoint try/catch blocks (done per area as each module is restructured; Retail ✅)
    - [ ] Soft delete + trash, audit interceptor (before/after), paging (built with the first feature that needs them: 2.10/2.11)
 2. [x] **Migration runner**: `--migrate` command; `DatabaseMigrator` is the single ordered context list (preview init reuses it; it previously skipped Retail and PcBuilder)
 3. **Endpoints**: single-module endpoint files move into their module during that module's split (4–5); cross-module orchestration endpoints stay in Host. Move `AdminAnalyticsService` to Financials.
-4. **Split `RetailService`** (characterization tests first) into: Inventory units · Assemblies · Sales (orders, reservation, payments, returns) · Partners · Financials (expenses, reports).
+4. [x] **Split `RetailService`** (characterization tests first) into: Inventory units · Assemblies · Sales (orders, reservation, payments, returns) · Partners · Financials (expenses, reports). Done inside the Retail module (`Domain/ Contracts/ Features/ Persistence/`), endpoints split per area in Host, Retail try/catch blocks removed; EF model unchanged.
 5. **Split `CatalogApplication`** (products · taxonomy · media · queries) and `ContentServices` (settings · articles · FAQ · videos · contact).
 6. Remove dead code/legacy paths found during the split.
 

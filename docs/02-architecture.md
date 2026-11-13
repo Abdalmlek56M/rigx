@@ -21,12 +21,12 @@ PostgreSQL 17       One database, one schema per module
 |---|---|---|
 | Identity | users, sessions, roles/permissions, email OTP, profile, addresses | exists — password login to be removed, Google to be added |
 | Catalog | products, variants, category tree, brands, specs, media | exists — `CatalogApplication.cs` too large, split planned |
-| Inventory | units (`RX-xxxx`), warehouses, stock states, hidden/visible | exists — units currently live in Retail; move here |
+| Inventory | units (`RX-xxxx`), warehouses, stock states, hidden/visible | exists — units currently live in `Retail/Features/Inventory`; move here |
 | Purchasing | suppliers/sellers, purchase drafts, receipts | exists |
-| Assemblies (new) | builds: components, swaps, warranty, allocation | logic in `RetailService` → extract |
-| Sales | orders, reservation, payments, POS, returns, blacklist, tracking | module is empty; logic in `RetailService` → extract |
-| Partners (new) | agreements, per-unit overrides, earnings, settlements | logic in `RetailService` → extract |
-| Financials | expenses, business reports | empty module; logic in `RetailService` → extract |
+| Assemblies (new) | builds: components, swaps, warranty, allocation | logic in `Retail/Features/Assemblies` → extract |
+| Sales | orders, reservation, payments, POS, returns, blacklist, tracking | module is empty; logic in `Retail/Features/Sales` → extract |
+| Partners (new) | agreements, per-unit overrides, earnings, settlements | logic in `Retail/Features/Partners` → extract |
+| Financials | expenses, business reports | empty module; logic in `Retail/Features/Financials` → extract |
 | Invoicing | online invoices, quote images/PDF | empty — to build |
 | Pricing (new) | offers, coupons, context pricing, customer tiers | offers partly in Catalog — consolidate |
 | PcBuilder | templates, slots, compatibility | exists |
@@ -34,6 +34,20 @@ PostgreSQL 17       One database, one schema per module
 | Messaging (new) | email outbox, subscriptions, campaigns, WhatsApp queue | to build |
 | Auditing | audit events (before/after), trash | exists (security events) — extend to full audit log |
 | System (new) | backups, export, data reset | to build |
+
+### Retail module today (step 1.4)
+Retail still owns one schema and one `RetailDbContext` for units, builds, orders, partners and expenses, so it was split **inside** the module rather than into the empty Sales/Financials modules (moving code there would mean sharing tables across modules). Layout:
+
+```
+Modules/Retail/
+  Domain/        entities per area, status constants, RetailException, AllocationMath (split/rounding rules)
+  Contracts/     request/view records per area (public API shapes)
+  Features/      Inventory · Assemblies · Sales (orders, status, payments, stock claim, returns) · Partners (agreements, allocations, ledger, earnings posting) · Financials (expenses, report)
+  Persistence/   RetailDbContext, RetailQueries (shared includes, order lock, rollback), Migrations
+  RetailModule.cs  DI: one scoped service per feature area
+```
+
+All files keep the `HardwareStore.Modules.Retail` namespace until each area moves to its own module. Retail HTTP handlers stay in Host (`Host/HardwareStore.Api/Retail/RetailEndpoints.*.cs`, one partial file per area): they need Identity's `RequirePermission`, and several orchestrate Catalog/Purchasing/Storefront (decision 11).
 
 ## 3. Inside a module (target)
 

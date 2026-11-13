@@ -206,8 +206,8 @@ public sealed class OwnerBootstrapDatabase(string connectionString)
     public RetailDbContext CreateRetailContext() =>
         new(new DbContextOptionsBuilder<RetailDbContext>().UseNpgsql(connectionString).Options);
 
-    public RetailService CreateRetailService() =>
-        new(new TestRetailContextFactory(connectionString), TimeProvider.System);
+    public RetailTestServices CreateRetailServices() =>
+        RetailTestServices.Create(new TestRetailContextFactory(connectionString), TimeProvider.System);
 
     public WishlistService CreateWishlistService() =>
         new(new TestStorefrontContextFactory(connectionString), TimeProvider.System);
