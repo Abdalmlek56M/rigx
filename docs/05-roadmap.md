@@ -8,7 +8,7 @@ Order matters: we restructure before adding features, so new features land in cl
 - [x] Remove zip snapshots, `.backups`, `archive`, old review screenshots, old frontend, preview scripts
 - [x] New docs (`docs/01–06`), old reports removed
 - [x] Backend builds (0 errors)
-- [ ] Baseline: run the full backend test suite once and record the result
+- [x] Baseline: full backend suite **194/194 passed** (3 min, real PostgreSQL) — 13 Nov 2026
 - [ ] Private GitHub repository + push (owner creates the repo)
 
 ## Phase 1 — Backend restructure (behavior unchanged)
