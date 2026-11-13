@@ -38,6 +38,7 @@ public static class CatalogModuleRegistration
         services.AddScoped<ProductManagementService>();
         services.AddScoped<ProductImageService>();
         services.AddScoped<TaxonomyService>();
+        services.AddScoped<CategorySpecService>();
         services.AddScoped<TaxonomyImageService>();
         services.AddScoped<CatalogMediaMaintenanceService>();
         services.AddScoped<ContentMediaService>();

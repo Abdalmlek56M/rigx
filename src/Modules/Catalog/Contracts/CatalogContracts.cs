@@ -8,7 +8,13 @@ public sealed record CategoryInput(
     string? IconStorageKey,
     int SortOrder,
     bool IsActive,
-    int? RowVersion);
+    int? RowVersion,
+    string? Code = null,
+    bool ShowInMenu = true,
+    bool ShowInBuilder = false);
+
+/// <summary>Replaces a category's own spec definitions; children inherit them.</summary>
+public sealed record CategorySpecsInput(IReadOnlyList<SpecDefinition>? Specs, int? RowVersion);
 
 public sealed record BrandInput(
     string? Name,
@@ -63,6 +69,10 @@ public sealed record CategoryView(
     bool IsActive,
     bool IsEffectivelyActive,
     int RowVersion,
+    string? Code,
+    bool ShowInMenu,
+    bool ShowInBuilder,
+    IReadOnlyList<SpecDefinition> Specs,
     IReadOnlyList<CategoryView> Children);
 
 public sealed record BrandView(

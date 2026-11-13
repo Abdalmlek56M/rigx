@@ -14,6 +14,7 @@ public static class CatalogEndpoints
     {
         var publicCatalog = endpoints.MapGroup("/api/v1/catalog").AllowAnonymous();
         publicCatalog.MapGet("/categories", GetPublicCategoriesAsync);
+        publicCatalog.MapGet("/categories/{id:guid}/specs", GetCategorySpecsAsync);
         publicCatalog.MapGet("/brands", GetPublicBrandsAsync);
         publicCatalog.MapGet("/specification-filters", GetPublicSpecificationFiltersAsync);
         publicCatalog.MapGet("/products", GetPublicProductsAsync);
@@ -33,6 +34,8 @@ public static class CatalogEndpoints
         admin.MapPost("/categories", CreateCategoryAsync)
             .RequirePermission("Catalog.ManageTaxonomy");
         admin.MapPut("/categories/{id:guid}", UpdateCategoryAsync)
+            .RequirePermission("Catalog.ManageTaxonomy");
+        admin.MapPut("/categories/{id:guid}/specs", SetCategorySpecsAsync)
             .RequirePermission("Catalog.ManageTaxonomy");
         admin.MapPost("/categories/{id:guid}/image", UploadCategoryImageAsync)
             .RequirePermission("Catalog.ManageMedia");
@@ -172,6 +175,19 @@ public static class CatalogEndpoints
         TaxonomyService catalog,
         CancellationToken cancellationToken) =>
         Results.Ok(await catalog.SaveCategoryAsync(id, input, cancellationToken));
+
+    private static async Task<IResult> SetCategorySpecsAsync(
+        Guid id,
+        CategorySpecsInput input,
+        CategorySpecService specs,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await specs.SetSpecsAsync(id, input.Specs, input.RowVersion, cancellationToken));
+
+    private static async Task<IResult> GetCategorySpecsAsync(
+        Guid id,
+        CategorySpecService specs,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await specs.GetEffectiveSpecsAsync(id, cancellationToken));
 
     private static async Task<IResult> CreateBrandAsync(
         BrandInput input,

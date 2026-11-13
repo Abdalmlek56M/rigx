@@ -20,7 +20,8 @@ public sealed class TaxonomyService(
             .Select(category => new CategoryView(
                 category.Id, category.ParentId, category.Name, category.Slug,
                 category.Description, category.IconStorageKey, category.SortOrder,
-                category.IsActive, false, category.RowVersion, Array.Empty<CategoryView>()))
+                category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
+                category.SpecDefinitions, Array.Empty<CategoryView>()))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             allCategories.Select(category => new CatalogCategoryNode(
@@ -65,7 +66,8 @@ public sealed class TaxonomyService(
             .Select(category => new CategoryView(
                 category.Id, category.ParentId, category.Name, category.Slug,
                 category.Description, category.IconStorageKey, category.SortOrder,
-                category.IsActive, false, category.RowVersion, Array.Empty<CategoryView>()))
+                category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
+                category.SpecDefinitions, Array.Empty<CategoryView>()))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             categories.Select(category => new CatalogCategoryNode(
@@ -93,6 +95,7 @@ public sealed class TaxonomyService(
         var slug = CatalogValidation.Slug(input.Slug);
         var description = CatalogValidation.Optional(input.Description, "description", 2000);
         var iconKey = CatalogValidation.Optional(input.IconStorageKey, "iconStorageKey", 512);
+        var code = CategorySpecSchema.NormalizeCategoryCode(input.Code);
         if (input.SortOrder < 0)
             throw new CatalogValidationException("sortOrder", "Sort order must not be negative.");
 
@@ -117,6 +120,8 @@ public sealed class TaxonomyService(
             await CategoryHierarchy.EnsureParentIsAcyclicAsync(db, category.Id, input.ParentId.Value, cancellationToken);
         if (await db.Categories.AnyAsync(item => item.Slug == slug && item.Id != category.Id, cancellationToken))
             throw new CatalogConflictException("Category slug is already in use.");
+        if (code is not null && await db.Categories.AnyAsync(item => item.Code == code && item.Id != category.Id, cancellationToken))
+            throw new CatalogConflictException("Category code is already in use.");
 
         category.Name = name;
         category.Slug = slug;
@@ -125,6 +130,9 @@ public sealed class TaxonomyService(
         category.IconStorageKey = iconKey;
         category.SortOrder = input.SortOrder;
         category.IsActive = input.IsActive;
+        category.Code = code;
+        category.ShowInMenu = input.ShowInMenu;
+        category.ShowInBuilder = input.ShowInBuilder;
         category.UpdatedAtUtc = UtcNow();
         if (id is not null)
             category.RowVersion++;

@@ -6,7 +6,8 @@ internal static class CatalogViews
     public static CategoryView ToView(this CatalogCategory category, bool isEffectivelyActive) => new(
         category.Id, category.ParentId, category.Name, category.Slug,
         category.Description, category.IconStorageKey, category.SortOrder,
-        category.IsActive, isEffectivelyActive, category.RowVersion, Array.Empty<CategoryView>());
+        category.IsActive, isEffectivelyActive, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
+        category.SpecDefinitions, Array.Empty<CategoryView>());
 
     public static BrandView ToView(this CatalogBrand brand) => new(
         brand.Id, brand.Name, brand.Slug, brand.Description,

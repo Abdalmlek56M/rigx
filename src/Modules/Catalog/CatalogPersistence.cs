@@ -27,6 +27,10 @@ public sealed class CatalogCategory
     public string? IconStorageKey { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? Code { get; set; }
+    public bool ShowInMenu { get; set; } = true;
+    public bool ShowInBuilder { get; set; }
+    public List<SpecDefinition> SpecDefinitions { get; set; } = [];
     public int RowVersion { get; set; } = 1;
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
@@ -156,6 +160,11 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.Property(category => category.IconStorageKey).HasColumnName("icon_storage_key").HasMaxLength(512);
             entity.Property(category => category.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
             entity.Property(category => category.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(category => category.Code).HasColumnName("code").HasMaxLength(16);
+            entity.HasIndex(category => category.Code).IsUnique().HasDatabaseName("ux_categories_code").HasFilter("code IS NOT NULL");
+            entity.Property(category => category.ShowInMenu).HasColumnName("show_in_menu").HasDefaultValue(true);
+            entity.Property(category => category.ShowInBuilder).HasColumnName("show_in_builder").HasDefaultValue(false);
+            CategorySpecDefinitionsMapping.Configure(entity.Property(category => category.SpecDefinitions));
             entity.Property(category => category.RowVersion).HasColumnName("row_version").IsConcurrencyToken().HasDefaultValue(1);
             entity.Property(category => category.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(category => category.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");

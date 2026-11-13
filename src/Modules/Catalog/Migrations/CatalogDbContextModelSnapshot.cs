@@ -96,6 +96,11 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("code");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
@@ -133,6 +138,18 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasDefaultValue(1)
                         .HasColumnName("row_version");
 
+                    b.Property<bool>("ShowInBuilder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("show_in_builder");
+
+                    b.Property<bool>("ShowInMenu")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("show_in_menu");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(160)
@@ -145,11 +162,23 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("sort_order");
 
+                    b.Property<string>("SpecDefinitions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("spec_definitions")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at_utc");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_categories_code")
+                        .HasFilter("code IS NOT NULL");
 
                     b.HasIndex("Slug")
                         .IsUnique()

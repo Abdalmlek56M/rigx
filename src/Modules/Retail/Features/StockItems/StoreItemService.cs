@@ -1,3 +1,4 @@
+using System.Text.Json;
 using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,11 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var items = db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter).Matching(query.Search, includeSerials: false);
         if (query.CategoryIds is { Count: > 0 } categoryIds)
             items = items.Where(item => item.CategoryId != null && categoryIds.Contains(item.CategoryId.Value));
+        if (query.Specs is { Count: > 0 } specs)
+        {
+            var json = JsonSerializer.Serialize(specs);
+            items = items.Where(item => EF.Functions.JsonContains(item.Specs, json));
+        }
         if (query.InStock == true) items = items.Where(item => item.Units.Any(unit => unit.Status == UnitStatus.Available));
         if (query.MinPrice is decimal min) items = items.Where(item => item.Price >= min);
         if (query.MaxPrice is decimal max) items = items.Where(item => item.Price <= max);

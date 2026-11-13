@@ -23,9 +23,13 @@ public sealed record StoreItemCard(string Code, string ModelName, string Conditi
 public sealed record StoreItemDetail(string Code, string ModelName, string Condition, Guid? CategoryId, string? WarrantyLabel,
     int? WarrantyMonths, bool HasBox, StockItemPrices Prices, int Available, IReadOnlyList<StockItemPhoto> Photos,
     IReadOnlyDictionary<string, string> Specs);
-/// <summary><paramref name="CategoryIds"/> is the chosen category plus its descendants (resolved from Catalog by the caller).</summary>
+/// <summary>
+/// <paramref name="CategoryIds"/> is the chosen category plus its descendants (resolved from Catalog by the caller).
+/// <paramref name="Specs"/> are exact spec values an item must all have (spelled as stored).
+/// </summary>
 public sealed record StoreItemQuery(string? Search = null, IReadOnlyList<Guid>? CategoryIds = null, string? Condition = null,
-    bool? InStock = null, decimal? MinPrice = null, decimal? MaxPrice = null, string? Sort = null, int Page = 1, int PageSize = 24);
+    bool? InStock = null, decimal? MinPrice = null, decimal? MaxPrice = null, string? Sort = null, int Page = 1, int PageSize = 24,
+    IReadOnlyDictionary<string, string>? Specs = null);
 public sealed record StoreConditionCounts(int New, int Used);
 public sealed record StoreItemPage(IReadOnlyList<StoreItemCard> Items, int Page, int PageSize, int Total, StoreConditionCounts Counts);
 public sealed record ModelNameSuggestion(string ModelName, Guid? CategoryId, Guid? ProductId, int ItemCount);

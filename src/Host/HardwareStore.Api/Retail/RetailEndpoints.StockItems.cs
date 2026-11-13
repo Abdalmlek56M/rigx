@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 public static partial class RetailEndpoints
 {
     private const int MaxCatalogSuggestionCandidates = 50;
+    private const int MaxSpecFilters = 10;
+    private const string SpecFilterPrefix = "spec.";
 
     private static async Task<IResult> ListStockItemsAsync(HttpContext context, StockItemAdminService items, CancellationToken ct,
         string? search = null, Guid? categoryId = null, string? condition = null, bool? hidden = null, bool? inStock = null,
@@ -28,7 +30,7 @@ public static partial class RetailEndpoints
 
     /// <summary>Warranty is chosen from the store settings list (Storefront), so the label is resolved here.</summary>
     private static async Task<IResult> UpdateStockItemAsync(Guid id, StockItemUpdateRequest request, HttpContext context,
-        StockItemAdminService items, StoreSettingsService settings, CancellationToken ct)
+        StockItemAdminService items, StoreSettingsService settings, CategorySpecService categorySpecs, CancellationToken ct)
     {
         string? label = null;
         int? months = null;
@@ -41,7 +43,7 @@ public static partial class RetailEndpoints
         }
         var update = new StockItemUpdate(request.ModelName, request.CategoryId, request.ProductId, request.Price,
             request.WithBoardExtra, request.AloneExtra, label, months, request.HasBox, request.IsHidden, request.InternalNote,
-            request.Specs, request.RowVersion);
+            await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct), request.RowVersion);
         return Results.Ok(await items.UpdateAsync(id, update, context.HasPermission("Inventory.ViewCosts"),
             context.HasPermission("Inventory.ViewSerials"), ct));
     }
@@ -87,13 +89,29 @@ public static partial class RetailEndpoints
         return Results.Ok(suggestions);
     }
 
-    private static async Task<IResult> ListStoreItemsAsync(StoreItemService items, TaxonomyService taxonomy, CancellationToken ct,
+    private static async Task<IResult> ListStoreItemsAsync(HttpContext context, StoreItemService items, TaxonomyService taxonomy, CancellationToken ct,
         string? search = null, Guid? categoryId = null, string? condition = null, bool? inStock = null, decimal? minPrice = null,
         decimal? maxPrice = null, string? sort = null, int page = 1, int pageSize = 24)
     {
         var categoryIds = categoryId is Guid category ? await taxonomy.GetCategoryWithDescendantIdsAsync(category, ct) : null;
         return Results.Ok(await items.ListAsync(
-            new StoreItemQuery(search, categoryIds, condition, inStock, minPrice, maxPrice, sort, page, pageSize), ct));
+            new StoreItemQuery(search, categoryIds, condition, inStock, minPrice, maxPrice, sort, page, pageSize,
+                SpecFilters(context.Request.Query)), ct));
+    }
+
+    /// <summary>Reads <c>spec.&lt;key&gt;=value</c> query parameters (valid keys only, at most <see cref="MaxSpecFilters"/>).</summary>
+    private static Dictionary<string, string> SpecFilters(IQueryCollection query)
+    {
+        var filters = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (name, values) in query)
+        {
+            if (filters.Count == MaxSpecFilters) break;
+            if (!name.StartsWith(SpecFilterPrefix, StringComparison.Ordinal)) continue;
+            var key = name[SpecFilterPrefix.Length..];
+            var value = values.ToString().Trim();
+            if (value.Length > 0 && CategorySpecSchema.IsValidKey(key)) filters[key] = value;
+        }
+        return filters;
     }
 
     private static async Task<IResult> GetStoreItemAsync(string code, StoreItemService items, CancellationToken ct) =>
