@@ -23,6 +23,7 @@ Order matters: we restructure before adding features, so new features land in cl
 6. Remove dead code/legacy paths found during the split.
 
 ## Phase 2 — Align with owner decisions (backend)
+0. **Gap audit** (first, before any Phase 2 feature): compare the approved design canvas (every screen/field), the database schema and the backend API. Output `docs/07-gap-audit.md`: what is missing, wrong or extra in DB / backend / UI, each item assigned to a roadmap step (or a new one). Missing business decisions go to the owner list below.
 1. **Auth**: remove password login/registration/reset; email OTP only + Google OIDC; step-up code for destructive admin actions; session list + "logout all" + new-device email.
 2. **Catalog/intake**: free-text model + category, name normalization + alias suggestions, optional specs, hidden units, context pricing (in-build / with board / alone).
 3. **Assemblies**: warranty default + per-part override, swap between builds, remove → back to stock, copies count, sell mode (full / full-or-split).
