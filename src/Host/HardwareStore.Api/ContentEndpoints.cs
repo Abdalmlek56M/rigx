@@ -69,8 +69,7 @@ public static class ContentEndpoints
     {
         if (!TryGetActor(context, out var actorId))
             return Results.Unauthorized();
-        return await GuardAsync(async () =>
-            Results.Ok(await service.SaveDraftAsync(request, actorId, cancellationToken)));
+        return Results.Ok(await service.SaveDraftAsync(request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> PublishHomepageAsync(
@@ -81,8 +80,7 @@ public static class ContentEndpoints
     {
         if (!TryGetActor(context, out var actorId))
             return Results.Unauthorized();
-        return await GuardAsync(async () =>
-            Results.Ok(await service.PublishAsync(request.RowVersion, actorId, cancellationToken)));
+        return Results.Ok(await service.PublishAsync(request.RowVersion, actorId, cancellationToken));
     }
 
     private static async Task<IResult> ListPublicArticlesAsync(
@@ -104,7 +102,7 @@ public static class ContentEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return await GuardAsync(async () => Results.Ok(await service.GetPublicAsync(slug, cancellationToken)));
+        return Results.Ok(await service.GetPublicAsync(slug, cancellationToken));
     }
 
     private static async Task<IResult> ListAdminArticlesAsync(
@@ -113,26 +111,20 @@ public static class ContentEndpoints
         int page = 1,
         int pageSize = 25,
         string? status = null,
-        string? search = null)
-    {
-        return Results.Ok(await service.ListAdminAsync(page, pageSize, status, search, cancellationToken));
-    }
+        string? search = null) =>
+        Results.Ok(await service.ListAdminAsync(page, pageSize, status, search, cancellationToken));
 
     private static async Task<IResult> GetAdminArticleAsync(
         Guid id,
         ContentArticleService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () => Results.Ok(await service.GetAdminAsync(id, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.GetAdminAsync(id, cancellationToken));
 
     private static async Task<IResult> ListArticleRevisionsAsync(
         Guid id,
         ContentArticleService service,
-        CancellationToken cancellationToken)
-    {
-        return Results.Ok(await service.ListRevisionsAsync(id, cancellationToken));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.ListRevisionsAsync(id, cancellationToken));
 
     private static async Task<IResult> CreateArticleAsync(
         ArticleInput request,
@@ -142,8 +134,7 @@ public static class ContentEndpoints
     {
         if (!TryGetActor(context, out var actorId))
             return Results.Unauthorized();
-        return await GuardAsync(async () =>
-            Results.Ok(await service.CreateAsync(request, actorId, cancellationToken)));
+        return Results.Ok(await service.CreateAsync(request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> UpdateArticleAsync(
@@ -155,8 +146,7 @@ public static class ContentEndpoints
     {
         if (!TryGetActor(context, out var actorId))
             return Results.Unauthorized();
-        return await GuardAsync(async () =>
-            Results.Ok(await service.UpdateAsync(id, request, actorId, cancellationToken)));
+        return Results.Ok(await service.UpdateAsync(id, request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> PublishArticleAsync(
@@ -168,8 +158,7 @@ public static class ContentEndpoints
     {
         if (!TryGetActor(context, out var actorId))
             return Results.Unauthorized();
-        return await GuardAsync(async () =>
-            Results.Ok(await service.PublishAsync(id, request.RowVersion, actorId, cancellationToken)));
+        return Results.Ok(await service.PublishAsync(id, request.RowVersion, actorId, cancellationToken));
     }
 
     private static async Task<IResult> UnpublishArticleAsync(
@@ -181,8 +170,7 @@ public static class ContentEndpoints
     {
         if (!TryGetActor(context, out var actorId))
             return Results.Unauthorized();
-        return await GuardAsync(async () =>
-            Results.Ok(await service.UnpublishAsync(id, request.RowVersion, actorId, cancellationToken)));
+        return Results.Ok(await service.UnpublishAsync(id, request.RowVersion, actorId, cancellationToken));
     }
 
     private static async Task<IResult> ListPublicFaqsAsync(
@@ -202,42 +190,30 @@ public static class ContentEndpoints
     private static async Task<IResult> CreateFaqAsync(
         FaqInput request,
         ContentFaqService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.CreateAsync(request, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.CreateAsync(request, cancellationToken));
 
     private static async Task<IResult> UpdateFaqAsync(
         Guid id,
         FaqInput request,
         ContentFaqService service,
         CancellationToken cancellationToken,
-        long rowVersion = 0)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.UpdateAsync(id, request, rowVersion, cancellationToken)));
-    }
+        long rowVersion = 0) =>
+        Results.Ok(await service.UpdateAsync(id, request, rowVersion, cancellationToken));
 
     private static async Task<IResult> PublishFaqAsync(
         Guid id,
         ContentVersionRequest request,
         ContentFaqService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.SetPublishedAsync(id, true, request.RowVersion, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.SetPublishedAsync(id, true, request.RowVersion, cancellationToken));
 
     private static async Task<IResult> UnpublishFaqAsync(
         Guid id,
         ContentVersionRequest request,
         ContentFaqService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.SetPublishedAsync(id, false, request.RowVersion, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.SetPublishedAsync(id, false, request.RowVersion, cancellationToken));
 
     private static async Task<IResult> GetPublicPolicyAsync(
         string kind,
@@ -246,7 +222,7 @@ public static class ContentEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return await GuardAsync(async () => Results.Ok(await service.GetPublicAsync(kind, cancellationToken)));
+        return Results.Ok(await service.GetPublicAsync(kind, cancellationToken));
     }
 
     private static async Task<IResult> ListAdminPoliciesAsync(
@@ -258,53 +234,30 @@ public static class ContentEndpoints
     private static async Task<IResult> CreatePolicyVersionAsync(
         string kind,
         ContentPolicyService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.CreateVersionAsync(kind, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.CreateVersionAsync(kind, cancellationToken));
 
     private static async Task<IResult> UpdatePolicyAsync(
         Guid id,
         PolicyInput request,
         ContentPolicyService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.UpdateAsync(id, request, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.UpdateAsync(id, request, cancellationToken));
 
     private static async Task<IResult> ReviewPolicyAsync(
         Guid id,
         ContentVersionRequest request,
         ContentPolicyService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.MarkReviewAsync(id, request.RowVersion, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.MarkReviewAsync(id, request.RowVersion, cancellationToken));
 
     private static async Task<IResult> PublishPolicyAsync(
         Guid id,
         ContentVersionRequest request,
         ContentPolicyService service,
-        CancellationToken cancellationToken)
-    {
-        return await GuardAsync(async () =>
-            Results.Ok(await service.PublishAsync(id, request.RowVersion, cancellationToken)));
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await service.PublishAsync(id, request.RowVersion, cancellationToken));
 
-    private static async Task<IResult> GuardAsync(Func<Task<IResult>> action)
-    {
-        try
-        {
-            return await action();
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
-    }
 
     private static bool TryGetActor(HttpContext context, out Guid actorId) =>
         Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&

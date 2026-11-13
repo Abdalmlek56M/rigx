@@ -30,7 +30,7 @@ PostgreSQL 17       One database, one schema per module
 | Invoicing | online invoices, quote images/PDF | empty — to build |
 | Pricing (new) | offers, coupons, context pricing, customer tiers | offers partly in Catalog — consolidate |
 | PcBuilder | templates, slots, compatibility | exists |
-| Storefront | settings, content, articles, FAQ, videos, contact | exists — `ContentServices.cs` large, split planned |
+| Storefront | settings, content, articles, FAQ, videos, contact | exists — content split into `Features/Content` (homepage, articles, FAQ, policies) |
 | Messaging (new) | email outbox, subscriptions, campaigns, WhatsApp queue | to build |
 | Auditing | audit events (before/after), trash | exists (security events) — extend to full audit log |
 | System (new) | backups, export, data reset | to build |
