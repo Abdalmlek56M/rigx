@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -328,7 +329,7 @@ public sealed record PartnerSettlementView(Guid Id, string PartnerName, decimal 
 public sealed record ReturnView(Guid Id, Guid OrderId, Guid OrderItemId, Guid UnitId, decimal RefundAmount, string Reason, string Status, string? InspectionCondition, string? InspectionNotes, Guid? InspectedByUserAccountId, DateTimeOffset? InspectedAtUtc, DateTimeOffset CreatedAtUtc, long RowVersion);
 public sealed record PartnerLedgerView(string PartnerName, decimal Outstanding, decimal CashDue, decimal Recoverable);
 
-public sealed class RetailException(int statusCode, string message) : Exception(message) { public int StatusCode { get; } = statusCode; }
+public sealed class RetailException(int statusCode, string message) : AppException(statusCode, message);
 
 public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) : DbContext(options)
 {

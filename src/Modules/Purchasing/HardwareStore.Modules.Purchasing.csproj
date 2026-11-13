@@ -6,4 +6,7 @@
     <ProjectReference Include="../Identity/HardwareStore.Modules.Identity.csproj" />
     <ProjectReference Include="../Auditing/HardwareStore.Modules.Auditing.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.Domain\Common.Domain.csproj" />
+  </ItemGroup>
 </Project>

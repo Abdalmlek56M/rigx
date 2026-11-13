@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
@@ -115,10 +116,7 @@ public sealed record AdminReviewView(
 
 public sealed record ModerationRequest(string? Action, string? Reason, long RowVersion);
 
-public sealed class ReviewException(int statusCode, string message) : Exception(message)
-{
-    public int StatusCode { get; } = statusCode;
-}
+public sealed class ReviewException(int statusCode, string message) : AppException(statusCode, message);
 
 public sealed class ReviewService(
     IDbContextFactory<CatalogDbContext> contextFactory,

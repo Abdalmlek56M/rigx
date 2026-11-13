@@ -59,25 +59,11 @@ public sealed class PreviewInitializationService(
                 .UseNpgsql(options.MigrationConnectionString).Options;
             var catalogOptions = new DbContextOptionsBuilder<CatalogDbContext>()
                 .UseNpgsql(options.MigrationConnectionString).Options;
-            var purchasingOptions = new DbContextOptionsBuilder<PurchasingDbContext>()
-                .UseNpgsql(options.MigrationConnectionString).Options;
-            var inventoryOptions = new DbContextOptionsBuilder<InventoryDbContext>()
-                .UseNpgsql(options.MigrationConnectionString).Options;
-            var storefrontOptions = new DbContextOptionsBuilder<StorefrontDbContext>()
-                .UseNpgsql(options.MigrationConnectionString).Options;
 
+            await DatabaseMigrator.MigrateAllAsync(options.MigrationConnectionString, logger, cancellationToken);
             await using var identity = new IdentityDbContext(identityOptions);
-            await identity.Database.MigrateAsync(cancellationToken);
             await using var audit = new SecurityAuditDbContext(auditOptions);
-            await audit.Database.MigrateAsync(cancellationToken);
             await using var catalog = new CatalogDbContext(catalogOptions);
-            await catalog.Database.MigrateAsync(cancellationToken);
-            await using var purchasing = new PurchasingDbContext(purchasingOptions);
-            await purchasing.Database.MigrateAsync(cancellationToken);
-            await using var inventory = new InventoryDbContext(inventoryOptions);
-            await inventory.Database.MigrateAsync(cancellationToken);
-            await using var storefront = new StorefrontDbContext(storefrontOptions);
-            await storefront.Database.MigrateAsync(cancellationToken);
 
             var owner = await EnsureOwnerAsync(identity, audit, cancellationToken);
             var seeded = await SeedCatalogAsync(catalog, cancellationToken);

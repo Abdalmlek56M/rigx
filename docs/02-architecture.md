@@ -56,7 +56,7 @@ Rules:
 
 | Concern | Mechanism |
 |---|---|
-| Errors | `Result<T>` + typed `Error` (Validation, NotFound, Conflict, Forbidden) → one mapper to `ProblemDetails`. No exceptions for expected business outcomes. |
+| Errors | Every expected business failure derives from `Common.Domain.AppException` (status code + message + optional field errors). `ProblemDetailsExceptionHandler` maps it once, globally. **Endpoints don't try/catch business errors.** |
 | Validation | FluentValidation per request, run by one endpoint filter |
 | Authorization | permission constants + `RequirePermission(...)` endpoint filter; groups per area |
 | Audit log | EF `SaveChanges` interceptor writes actor, time, entity, before/after JSON |
@@ -74,7 +74,7 @@ Rules:
 - Money: `numeric(12,2)` in EGP. Never `float`.
 - Statuses: enums/smart constants in Domain, stored as strings.
 - Inventory integrity: stock claimed at `Confirmed` inside a transaction with `FOR UPDATE SKIP LOCKED` (already implemented and tested).
-- Migrations are applied by a dedicated startup step/CLI command (today they only run in the removed "preview" mode — to fix in phase 0/1).
+- Migrations: `DatabaseMigrator` is the single ordered list of module contexts; run with `dotnet run --project src/Host/HardwareStore.Api -- --migrate`.
 
 ## 6. API
 - REST under `/api/v1`, admin under `/api/v1/admin`.
@@ -99,3 +99,5 @@ Rules:
 | 7 | WhatsApp via prepared `wa.me` links | official bulk API is paid; can be swapped later behind `Messaging` |
 | 8 | Frontend rebuilt from scratch | old UI did not match the approved design |
 | 9 | Vertical-slice features inside modules | small files, one place per use case, easy to fix |
+| 10 | Business errors = `AppException` subclasses mapped globally (not `Result<T>`) | the existing services already throw typed errors; one base type removes ~130 duplicated try/catch blocks without rewriting every service |
+| 11 | Endpoints that orchestrate several modules stay in Host; single-module endpoints move into their module when it is restructured | avoids cross-module references just to relocate files |

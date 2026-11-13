@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
@@ -352,11 +353,11 @@ public sealed class ContentMediaService(
 }
 
 public sealed class ContentMediaNotFoundException()
-    : Exception("The media asset was not found.");
+    : AppException(404, "The media asset was not found.");
 
 public sealed class ContentMediaInUseException(string message =
         "The media asset is used by published content and cannot be deleted.")
-    : Exception(message);
+    : AppException(409, message);
 
 internal static class MediaText
 {

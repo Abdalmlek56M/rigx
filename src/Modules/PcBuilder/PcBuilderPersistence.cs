@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.PcBuilder;
@@ -92,10 +93,7 @@ public sealed record PcBuildCompatibilityRequest(IReadOnlyDictionary<string, Gui
 public sealed record PcCompatibilityMessage(string Level, string Code, string SlotKey, string? OtherSlotKey);
 public sealed record PcCompatibilityResult(string Status, decimal TotalPrice, IReadOnlyList<PcCompatibilityMessage> Messages);
 
-public sealed class PcBuildException(int statusCode, string message) : Exception(message)
-{
-    public int StatusCode { get; } = statusCode;
-}
+public sealed class PcBuildException(int statusCode, string message) : AppException(statusCode, message);
 
 public sealed class PcBuilderDbContext(DbContextOptions<PcBuilderDbContext> options) : DbContext(options)
 {

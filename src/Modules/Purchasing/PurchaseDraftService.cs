@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Text.Json;
 using HardwareStore.Modules.Auditing;
 using Microsoft.EntityFrameworkCore;
@@ -557,7 +558,4 @@ public sealed class PurchaseDraftService(
         value?.Trim() is "Prebuilt" or "Bundle" or "Other" ? value.Trim() : "Component";
 }
 
-public sealed class PurchaseDraftException(int statusCode, string message) : Exception(message)
-{
-    public int StatusCode { get; } = statusCode;
-}
+public sealed class PurchaseDraftException(int statusCode, string message) : AppException(statusCode, message);

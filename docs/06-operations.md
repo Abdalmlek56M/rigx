@@ -13,9 +13,9 @@ dotnet build HARDWARE_STORE.slnx
 
 ## Database migrations
 Each module has its own DbContext and migrations folder (`src/Modules/<Module>/**/Migrations`).
-Until the migration runner lands (roadmap phase 1.2), apply them per context:
+Apply all of them, in order, with one command (uses `ConnectionStrings:Migrations` if set, else `Default`):
 ```bash
-dotnet ef database update --project src/Modules/Identity --startup-project src/Host/HardwareStore.Api
+dotnet run --project src/Host/HardwareStore.Api -- --migrate
 ```
 Add a migration:
 ```bash

@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 namespace HardwareStore.Modules.Purchasing;
 
 public sealed record SupplierPage(
@@ -62,7 +63,4 @@ public sealed record SupplierFinancialWriteRequest(
     string? BankIban,
     long RowVersion);
 
-public sealed class SupplierDirectoryException(int statusCode, string message) : Exception(message)
-{
-    public int StatusCode { get; } = statusCode;
-}
+public sealed class SupplierDirectoryException(int statusCode, string message) : AppException(statusCode, message);

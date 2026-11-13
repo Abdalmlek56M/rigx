@@ -6,4 +6,7 @@
     <ProjectReference Include="../Auditing/HardwareStore.Modules.Auditing.csproj" />
     <ProjectReference Include="../Catalog/HardwareStore.Modules.Catalog.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.Domain\Common.Domain.csproj" />
+  </ItemGroup>
 </Project>

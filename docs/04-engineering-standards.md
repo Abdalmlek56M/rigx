@@ -6,7 +6,7 @@ Applies to every human or AI contributor. The goal: code that is easy to extend,
 - **Small units.** A file over ~300 lines or a method over ~40 lines is a smell; split by use case, not by "helpers".
 - **One place per rule.** A business rule (price floor, allocation = 100%, status transition) exists once, in Domain, and is called from everywhere that needs it.
 - **No duplication across modules.** If two modules need the same thing, it goes to `Common` (only if truly generic) or one module exposes it via `Contracts`.
-- **Expected failures are values, not exceptions**: return `Result`/`Error`; exceptions are for bugs and infrastructure faults.
+- **Expected failures**: throw a module exception that derives from `AppException` (with the right status). Never catch it in an endpoint — the global handler maps it.
 - **Names say the business**: `ConfirmOrder`, `SwapComponent`, `ReserveUnits` — not `Process`, `Handle2`, `Helper`.
 - **No magic strings** for statuses, permissions, settings keys — constants/enums.
 - **Time via `TimeProvider`**, money via `decimal`, ids via `Guid`.

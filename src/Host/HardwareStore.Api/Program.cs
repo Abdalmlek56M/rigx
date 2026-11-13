@@ -106,6 +106,12 @@ app.Use(async (context, next) =>
     await next();
 });
 
+if (args.Contains("--migrate", StringComparer.Ordinal))
+{
+    Environment.ExitCode = await DatabaseMigrator.RunCommandAsync(app.Services);
+    return;
+}
+
 if (args.Contains("--bootstrap-owner", StringComparer.Ordinal))
 {
     Environment.ExitCode = await OwnerBootstrapCommand.RunAsync(app.Services);

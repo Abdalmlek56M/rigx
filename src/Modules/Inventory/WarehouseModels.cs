@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 namespace HardwareStore.Modules.Inventory;
 
 public sealed record WarehousePage(
@@ -38,7 +39,4 @@ public sealed record WarehouseUpdateRequest(
     bool IsActive,
     long RowVersion);
 
-public sealed class WarehouseDirectoryException(int statusCode, string message) : Exception(message)
-{
-    public int StatusCode { get; } = statusCode;
-}
+public sealed class WarehouseDirectoryException(int statusCode, string message) : AppException(statusCode, message);

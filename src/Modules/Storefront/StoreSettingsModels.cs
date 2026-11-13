@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 namespace HardwareStore.Modules.Storefront;
 
 public sealed record StoreSettingsView(
@@ -32,7 +33,4 @@ public sealed record StoreSettingsUpdateRequest(
     string? ConsultationSummary,
     long RowVersion);
 
-public sealed class StorefrontException(int statusCode, string message) : Exception(message)
-{
-    public int StatusCode { get; } = statusCode;
-}
+public sealed class StorefrontException(int statusCode, string message) : AppException(statusCode, message);

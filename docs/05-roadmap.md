@@ -12,9 +12,12 @@ Order matters: we restructure before adding features, so new features land in cl
 - [ ] Private GitHub repository + push (owner creates the repo)
 
 ## Phase 1 — Backend restructure (behavior unchanged)
-1. **Common building blocks**: `Result/Error` → ProblemDetails mapper, validation filter, permission filter groups, paging, soft delete + trash, audit interceptor (before/after).
-2. **Migration runner**: `dotnet run -- migrate` command (and startup option) applying all module migrations in order.
-3. **Endpoints into modules**: move the 30 endpoint files from Host into their modules; Host becomes composition only. Move `AdminAnalyticsService` to Financials.
+1. **Common building blocks**
+   - [x] `AppException` base + one global ProblemDetails mapping; all 14 module exception types derive from it
+   - [ ] Remove the now-redundant endpoint try/catch blocks (done per area as each module is restructured)
+   - [ ] Soft delete + trash, audit interceptor (before/after), paging (built with the first feature that needs them: 2.10/2.11)
+2. [x] **Migration runner**: `--migrate` command; `DatabaseMigrator` is the single ordered context list (preview init reuses it; it previously skipped Retail and PcBuilder)
+3. **Endpoints**: single-module endpoint files move into their module during that module's split (4–5); cross-module orchestration endpoints stay in Host. Move `AdminAnalyticsService` to Financials.
 4. **Split `RetailService`** (characterization tests first) into: Inventory units · Assemblies · Sales (orders, reservation, payments, returns) · Partners · Financials (expenses, reports).
 5. **Split `CatalogApplication`** (products · taxonomy · media · queries) and `ContentServices` (settings · articles · FAQ · videos · contact).
 6. Remove dead code/legacy paths found during the split.

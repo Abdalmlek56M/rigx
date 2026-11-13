@@ -1,8 +1,9 @@
+using HardwareStore.Common.Domain;
 using System.Text.RegularExpressions;
 
 namespace HardwareStore.Modules.Catalog;
 
-public sealed partial class CatalogValidationException : Exception
+public sealed partial class CatalogValidationException : AppException
 {
     public CatalogValidationException(string field, string message)
         : this(new Dictionary<string, string[]> { [field] = [message] })
@@ -10,17 +11,16 @@ public sealed partial class CatalogValidationException : Exception
     }
 
     public CatalogValidationException(IReadOnlyDictionary<string, string[]> errors)
-        : base("Catalog validation failed.")
+        : base(400, "Catalog validation failed.", errors)
     {
-        Errors = errors;
     }
 
-    public IReadOnlyDictionary<string, string[]> Errors { get; }
+    public new IReadOnlyDictionary<string, string[]> Errors => base.Errors!;
 }
 
-public sealed class CatalogNotFoundException(string message) : Exception(message);
+public sealed class CatalogNotFoundException(string message) : AppException(404, message);
 
-public sealed class CatalogConflictException(string message) : Exception(message);
+public sealed class CatalogConflictException(string message) : AppException(409, message);
 
 public static partial class CatalogValidation
 {
