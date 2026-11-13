@@ -24,6 +24,13 @@ public sealed class CatalogConflictException(string message) : AppException(409,
 
 public static partial class CatalogValidation
 {
+    /// <summary>Rejects an update whose row version is stale (creates, with no id, are not checked).</summary>
+    public static void EnsureVersion(int currentVersion, int? requestedVersion, Guid? id)
+    {
+        if (id is not null && requestedVersion != currentVersion)
+            throw new CatalogConflictException("The record was changed by another request.");
+    }
+
     [GeneratedRegex("^[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]
     private static partial Regex SlugPattern();
 

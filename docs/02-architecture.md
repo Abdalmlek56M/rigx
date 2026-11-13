@@ -20,7 +20,7 @@ PostgreSQL 17       One database, one schema per module
 | Module | Owns | Status |
 |---|---|---|
 | Identity | users, sessions, roles/permissions, email OTP, profile, addresses | exists — password login to be removed, Google to be added |
-| Catalog | products, variants, category tree, brands, specs, media | exists — `CatalogApplication.cs` too large, split planned |
+| Catalog | products, variants, category tree, brands, specs, media | exists — split into `Features/Products` (search, management, images) and `Features/Taxonomy` (categories/brands, their images) |
 | Inventory | units (`RX-xxxx`), warehouses, stock states, hidden/visible | exists — units currently live in `Retail/Features/Inventory`; move here |
 | Purchasing | suppliers/sellers, purchase drafts, receipts | exists |
 | Assemblies (new) | builds: components, swaps, warranty, allocation | logic in `Retail/Features/Assemblies` → extract |

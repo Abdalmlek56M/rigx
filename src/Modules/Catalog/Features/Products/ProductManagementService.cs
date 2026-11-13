@@ -1,0 +1,282 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace HardwareStore.Modules.Catalog;
+
+/// <summary>
+/// Admin product editing: list, load, create/update with variants and specifications, and status changes
+/// (publishing requires an effectively active category and an active brand).
+/// </summary>
+public sealed class ProductManagementService(
+    IDbContextFactory<CatalogDbContext> contextFactory,
+    TimeProvider timeProvider)
+{
+    public async Task<IReadOnlyList<ProductSummaryView>> GetProductsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.Products.AsNoTracking()
+            .OrderByDescending(product => product.UpdatedAtUtc).ThenBy(product => product.Name)
+            .Select(product => new ProductSummaryView(
+                product.Id, product.Name, product.Slug, product.Sku,
+                product.BasePrice,
+                product.Variants.Where(variant => variant.IsActive && variant.Price != null)
+                    .Select(variant => variant.Price).Min() ?? product.BasePrice,
+                product.Status,
+                product.Condition,
+                product.Category.Name, product.Category.Slug,
+                product.Brand != null ? product.Brand.Name : null,
+                product.Specifications
+                    .Where(specification => specification.VariantId == null)
+                    .OrderBy(specification => specification.SortOrder)
+                    .ThenBy(specification => specification.Name)
+                    .Take(3)
+                    .Select(specification => new ProductSpecificationSummaryView(
+                        specification.GroupName,
+                        specification.Name,
+                        specification.Value))
+                    .ToList(),
+                product.Images.Where(image => image.IsPrimary).Select(image => image.ThumbnailStorageKey).FirstOrDefault()))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ProductDetailView> GetProductAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await ProductDetailQuery.LoadAsync(
+            db, id, cancellationToken, includeInactiveVariants: true);
+    }
+
+    public async Task<ProductDetailView> SaveProductAsync(
+        Guid? id,
+        ProductInput input,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateProductInput(input);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var category = await db.Categories.SingleOrDefaultAsync(
+            item => item.Id == input.CategoryId, cancellationToken)
+            ?? throw new CatalogValidationException("categoryId", "Category was not found.");
+        var brand = input.BrandId is null
+            ? null
+            : await db.Brands.SingleOrDefaultAsync(item => item.Id == input.BrandId, cancellationToken)
+              ?? throw new CatalogValidationException("brandId", "Brand was not found.");
+        if (input.Status == CatalogProductStatus.Published &&
+            (!await CategoryHierarchy.IsEffectivelyActiveAsync(db, category.Id, cancellationToken) ||
+             (brand is not null && !brand.IsActive)))
+            throw new CatalogValidationException(
+                "status", "A product cannot be published under an inactive category or brand.");
+
+        var product = id is null
+            ? new CatalogProduct
+            {
+                Id = Guid.CreateVersion7(),
+                Name = string.Empty,
+                Slug = string.Empty,
+                Sku = string.Empty,
+                CreatedAtUtc = UtcNow()
+            }
+            : await db.Products
+                .Include(item => item.Variants)
+                .Include(item => item.Specifications)
+                .SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
+              ?? throw new CatalogNotFoundException("Product was not found.");
+        CatalogValidation.EnsureVersion(product.RowVersion, input.RowVersion, id);
+
+        var sku = CatalogValidation.Required(input.Sku, "sku", 128);
+        var barcode = CatalogValidation.Optional(input.Barcode, "barcode", 128);
+        if (await db.Products.AnyAsync(
+                item => (item.Sku == sku || (barcode != null && item.Barcode == barcode)) &&
+                        item.Id != product.Id,
+                cancellationToken))
+            throw new CatalogConflictException("Product SKU or barcode is already in use.");
+
+        product.Name = CatalogValidation.Required(input.Name, "name", 255);
+        product.Slug = CatalogValidation.Slug(input.Slug);
+        product.Sku = sku;
+        product.Barcode = barcode;
+        product.CategoryId = category.Id;
+        product.BrandId = brand?.Id;
+        product.ShortDescription = CatalogValidation.Optional(input.ShortDescription, "shortDescription", 600);
+        product.Description = CatalogValidation.Optional(input.Description, "description", 8000);
+        product.BasePrice = CatalogValidation.NonNegativeMoney(input.BasePrice, "basePrice");
+        product.Status = input.Status;
+        product.Condition = input.Condition;
+        product.UpdatedAtUtc = UtcNow();
+        if (id is null)
+            db.Products.Add(product);
+        else
+            product.RowVersion++;
+
+        SynchronizeVariants(db, product, input.Variants ?? []);
+        SynchronizeSpecifications(db, product, input.Specifications ?? []);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync(CancellationToken.None);
+            throw new CatalogConflictException("Product, variant, or specification identifiers conflict with existing data.");
+        }
+
+        return await ProductDetailQuery.LoadAsync(
+            db, product.Id, cancellationToken, includeInactiveVariants: true);
+    }
+
+    public async Task<ProductDetailView> SetProductStatusAsync(
+        Guid id,
+        CatalogProductStatus status,
+        int rowVersion,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var product = await db.Products.Include(item => item.Category).Include(item => item.Brand)
+            .SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
+            ?? throw new CatalogNotFoundException("Product was not found.");
+        CatalogValidation.EnsureVersion(product.RowVersion, rowVersion, id);
+        if (status == CatalogProductStatus.Published &&
+            (!await CategoryHierarchy.IsEffectivelyActiveAsync(db, product.Category.Id, cancellationToken) ||
+             (product.Brand is not null && !product.Brand.IsActive)))
+            throw new CatalogValidationException(
+                "status", "A product cannot be published under an inactive category or brand.");
+        product.Status = status;
+        product.RowVersion++;
+        product.UpdatedAtUtc = UtcNow();
+        await db.SaveChangesAsync(cancellationToken);
+        return await ProductDetailQuery.LoadAsync(
+            db, product.Id, cancellationToken, includeInactiveVariants: true);
+    }
+
+    private DateTimeOffset UtcNow() => timeProvider.GetUtcNow().ToUniversalTime();
+
+    private static void ValidateProductInput(ProductInput input)
+    {
+        CatalogValidation.Required(input.Name, "name", 255);
+        CatalogValidation.Slug(input.Slug);
+        CatalogValidation.Required(input.Sku, "sku", 128);
+        CatalogValidation.Optional(input.Barcode, "barcode", 128);
+        CatalogValidation.Optional(input.ShortDescription, "shortDescription", 600);
+        CatalogValidation.Optional(input.Description, "description", 8000);
+        CatalogValidation.NonNegativeMoney(input.BasePrice, "basePrice");
+        if (input.CategoryId == Guid.Empty)
+            throw new CatalogValidationException("categoryId", "Category is required.");
+
+        var variants = input.Variants ?? [];
+        foreach (var variant in variants)
+        {
+            CatalogValidation.Required(variant.Name, "variants.name", 160);
+            CatalogValidation.Required(variant.Sku, "variants.sku", 128);
+            CatalogValidation.Optional(variant.Barcode, "variants.barcode", 128);
+            if (variant.Price is not null)
+                CatalogValidation.NonNegativeMoney(variant.Price.Value, "variants.price");
+        }
+        EnsureUnique(variants.Select(item => item.Sku!.Trim()), "variants.sku", "Variant SKUs must be unique.");
+        EnsureUnique(
+            variants.Where(item => !string.IsNullOrWhiteSpace(item.Barcode)).Select(item => item.Barcode!.Trim()),
+            "variants.barcode",
+            "Variant barcodes must be unique.");
+
+        var specifications = input.Specifications ?? [];
+        foreach (var specification in specifications)
+        {
+            CatalogValidation.Required(specification.GroupName, "specifications.groupName", 100);
+            CatalogValidation.Required(specification.Name, "specifications.name", 128);
+            CatalogValidation.Required(specification.Value, "specifications.value", 500);
+            if (specification.SortOrder < 0)
+                throw new CatalogValidationException("specifications.sortOrder", "Sort order must not be negative.");
+        }
+        EnsureUnique(
+            specifications.Select(item =>
+                $"{item.VariantId?.ToString("N") ?? item.VariantSku?.Trim().ToUpperInvariant() ?? "product"}\u001f{item.GroupName!.Trim()}\u001f{item.Name!.Trim().ToLowerInvariant()}"),
+            "specifications",
+            "Specification names must be unique within each product or variant scope and group.");
+    }
+
+    private static void EnsureUnique(IEnumerable<string> values, string field, string message)
+    {
+        if (values.GroupBy(value => value, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() > 1))
+            throw new CatalogValidationException(field, message);
+    }
+
+    private static void SynchronizeVariants(
+        CatalogDbContext db,
+        CatalogProduct product,
+        IReadOnlyList<ProductVariantInput> inputs)
+    {
+        var retainedIds = inputs.Where(input => input.Id is not null).Select(input => input.Id!.Value).ToHashSet();
+        foreach (var removed in product.Variants.Where(variant => !retainedIds.Contains(variant.Id)).ToList())
+            db.ProductVariants.Remove(removed);
+
+        foreach (var input in inputs)
+        {
+            var variant = input.Id is null
+                ? null
+                : product.Variants.SingleOrDefault(item => item.Id == input.Id)
+                  ?? throw new CatalogValidationException("variants.id", "A variant does not belong to this product.");
+            if (variant is null)
+            {
+                variant = new CatalogProductVariant
+                {
+                    Id = Guid.CreateVersion7(),
+                    Name = string.Empty,
+                    Sku = string.Empty,
+                    Product = product
+                };
+                product.Variants.Add(variant);
+            }
+            variant.Name = input.Name!.Trim();
+            variant.Sku = input.Sku!.Trim();
+            variant.Barcode = string.IsNullOrWhiteSpace(input.Barcode) ? null : input.Barcode.Trim();
+            variant.Price = input.Price;
+            variant.IsActive = input.IsActive;
+        }
+    }
+
+    private static void SynchronizeSpecifications(
+        CatalogDbContext db,
+        CatalogProduct product,
+        IReadOnlyList<ProductSpecificationInput> inputs)
+    {
+        var retainedIds = inputs.Where(input => input.Id is not null).Select(input => input.Id!.Value).ToHashSet();
+        foreach (var removed in product.Specifications.Where(item => !retainedIds.Contains(item.Id)).ToList())
+            db.ProductSpecifications.Remove(removed);
+
+        foreach (var input in inputs)
+        {
+            var specification = input.Id is null
+                ? null
+                : product.Specifications.SingleOrDefault(item => item.Id == input.Id)
+                  ?? throw new CatalogValidationException(
+                      "specifications.id", "A specification does not belong to this product.");
+            if (specification is null)
+            {
+                specification = new CatalogProductSpecification
+                {
+                    Id = Guid.CreateVersion7(),
+                    GroupName = string.Empty,
+                    Name = string.Empty,
+                    Value = string.Empty,
+                    Product = product
+                };
+                product.Specifications.Add(specification);
+            }
+            specification.GroupName = input.GroupName!.Trim();
+            specification.Name = input.Name!.Trim();
+            specification.Value = input.Value!.Trim();
+            specification.SortOrder = input.SortOrder;
+            var variant = input.VariantId is not null
+                ? product.Variants.SingleOrDefault(item => item.Id == input.VariantId)
+                : input.VariantSku is not null
+                    ? product.Variants.SingleOrDefault(item =>
+                        string.Equals(item.Sku, input.VariantSku.Trim(), StringComparison.OrdinalIgnoreCase))
+                    : null;
+            if ((input.VariantId is not null || input.VariantSku is not null) && variant is null)
+                throw new CatalogValidationException(
+                    "specifications.variant", "A specification references an unknown product variant.");
+            specification.VariantId = variant?.Id;
+        }
+    }
+}

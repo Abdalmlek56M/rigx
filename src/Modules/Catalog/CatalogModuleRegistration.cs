@@ -34,8 +34,11 @@ public static class CatalogModuleRegistration
         services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton<ICatalogImageProcessor, SkiaCatalogImageProcessor>();
         services.AddSingleton<ICatalogMediaStorage, LocalCatalogMediaStorage>();
-        services.AddScoped<CatalogManagementService>();
-        services.AddScoped<CatalogStorefrontService>();
+        services.AddScoped<ProductSearchService>();
+        services.AddScoped<ProductManagementService>();
+        services.AddScoped<ProductImageService>();
+        services.AddScoped<TaxonomyService>();
+        services.AddScoped<TaxonomyImageService>();
         services.AddScoped<CatalogMediaMaintenanceService>();
         services.AddScoped<ContentMediaService>();
         services.AddScoped<ReviewService>();

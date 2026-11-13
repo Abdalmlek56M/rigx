@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 
+/// <summary>
+/// Catalog HTTP API (public browsing + admin). Business errors (validation 400, not found 404, conflict 409)
+/// are mapped once by <c>ProblemDetailsExceptionHandler</c>.
+/// </summary>
 public static class CatalogEndpoints
 {
     public static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder endpoints)
@@ -62,17 +66,17 @@ public static class CatalogEndpoints
     }
 
     private static Task<IReadOnlyList<CategoryView>> GetPublicCategoriesAsync(
-        CatalogStorefrontService catalog,
+        TaxonomyService catalog,
         CancellationToken cancellationToken) =>
         catalog.GetCategoryTreeAsync(cancellationToken);
 
     private static Task<IReadOnlyList<BrandView>> GetPublicBrandsAsync(
-        CatalogStorefrontService catalog,
+        TaxonomyService catalog,
         CancellationToken cancellationToken) =>
-        catalog.GetBrandsAsync(cancellationToken);
+        catalog.GetActiveBrandsAsync(cancellationToken);
 
     private static Task<IReadOnlyList<SpecificationFilterView>> GetPublicSpecificationFiltersAsync(
-        CatalogStorefrontService catalog,
+        ProductSearchService catalog,
         CancellationToken cancellationToken) =>
         catalog.GetSpecificationFiltersAsync(cancellationToken);
 
@@ -80,18 +84,11 @@ public static class CatalogEndpoints
         string? q,
         int? limit,
         HttpContext context,
-        CatalogStorefrontService catalog,
+        ProductSearchService catalog,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=30";
-        try
-        {
-            return Results.Ok(await catalog.SuggestAsync(q, limit ?? 8, cancellationToken));
-        }
-        catch (CatalogValidationException exception)
-        {
-            return Results.BadRequest(new { error = exception.Errors.Values.FirstOrDefault()?.FirstOrDefault() });
-        }
+        return Results.Ok(await catalog.SuggestAsync(q, limit ?? 8, cancellationToken));
     }
 
     private static async Task<IResult> GetPublicProductsAsync(
@@ -105,35 +102,17 @@ public static class CatalogEndpoints
         string? sort,
         int? page,
         int? pageSize,
-        CatalogStorefrontService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.GetProductsAsync(
-                category, brand, search, ParseCondition(condition), minimumPrice, maximumPrice,
-                specification, ParseSort(sort), page ?? 1, pageSize ?? 12, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductSearchService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.GetProductsAsync(
+            category, brand, search, ParseCondition(condition), minimumPrice, maximumPrice,
+            specification, ParseSort(sort), page ?? 1, pageSize ?? 12, cancellationToken));
 
     private static async Task<IResult> GetPublicProductAsync(
         string slug,
-        CatalogStorefrontService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.GetProductBySlugAsync(slug, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductSearchService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.GetProductBySlugAsync(slug, cancellationToken));
 
     private static IResult GetMediaAsync(
         string storageKey,
@@ -159,154 +138,82 @@ public static class CatalogEndpoints
     }
 
     private static Task<IReadOnlyList<CategoryView>> GetAdminCategoriesAsync(
-        CatalogManagementService catalog,
+        TaxonomyService catalog,
         CancellationToken cancellationToken) =>
         catalog.GetCategoriesAsync(cancellationToken);
 
     private static Task<IReadOnlyList<BrandView>> GetAdminBrandsAsync(
-        CatalogManagementService catalog,
+        TaxonomyService catalog,
         CancellationToken cancellationToken) =>
         catalog.GetBrandsAsync(cancellationToken);
 
     private static Task<IReadOnlyList<ProductSummaryView>> GetAdminProductsAsync(
-        CatalogManagementService catalog,
+        ProductManagementService catalog,
         CancellationToken cancellationToken) =>
         catalog.GetProductsAsync(cancellationToken);
 
     private static async Task<IResult> GetAdminProductAsync(
         Guid id,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.GetProductAsync(id, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductManagementService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.GetProductAsync(id, cancellationToken));
 
     private static async Task<IResult> CreateCategoryAsync(
         CategoryInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Created(
-                (string?)null,
-                await catalog.SaveCategoryAsync(null, input, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        TaxonomyService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Created(
+            (string?)null,
+            await catalog.SaveCategoryAsync(null, input, cancellationToken));
 
     private static async Task<IResult> UpdateCategoryAsync(
         Guid id,
         CategoryInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.SaveCategoryAsync(id, input, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        TaxonomyService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.SaveCategoryAsync(id, input, cancellationToken));
 
     private static async Task<IResult> CreateBrandAsync(
         BrandInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Created(
-                (string?)null,
-                await catalog.SaveBrandAsync(null, input, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        TaxonomyService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Created(
+            (string?)null,
+            await catalog.SaveBrandAsync(null, input, cancellationToken));
 
     private static async Task<IResult> UpdateBrandAsync(
         Guid id,
         BrandInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.SaveBrandAsync(id, input, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        TaxonomyService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.SaveBrandAsync(id, input, cancellationToken));
 
     private static async Task<IResult> CreateProductAsync(
         ProductInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Created(
-                (string?)null,
-                await catalog.SaveProductAsync(null, input, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductManagementService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Created(
+            (string?)null,
+            await catalog.SaveProductAsync(null, input, cancellationToken));
 
     private static async Task<IResult> UpdateProductAsync(
         Guid id,
         ProductInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.SaveProductAsync(id, input, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductManagementService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.SaveProductAsync(id, input, cancellationToken));
 
     private static async Task<IResult> UpdateProductStatusAsync(
         Guid id,
         ProductStatusInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.SetProductStatusAsync(
-                id, input.Status, input.RowVersion, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductManagementService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.SetProductStatusAsync(
+            id, input.Status, input.RowVersion, cancellationToken));
 
     private static async Task<IResult> UploadImageAsync(
         Guid id,
-        CatalogManagementService catalog,
+        ProductImageService catalog,
         CatalogMediaOptions options,
         HttpContext context,
         CancellationToken cancellationToken)
@@ -321,135 +228,80 @@ public static class CatalogEndpoints
             return Results.Problem(
                 statusCode: StatusCodes.Status413PayloadTooLarge,
                 title: "The uploaded image is too large.");
-        try
-        {
-            var form = await context.Request.ReadFormAsync(cancellationToken);
-            var image = form.Files.GetFile("image");
-            if (image is null)
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["image"] = ["An image file is required."]
-                });
-            var altText = form["altText"].ToString();
-            var isPrimary = bool.TryParse(form["isPrimary"].ToString(), out var parsedPrimary) && parsedPrimary;
-            var result = await catalog.AddImageAsync(
-                id,
-                altText,
-                isPrimary,
-                new CatalogImageUpload(
-                    image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
-                cancellationToken);
-            return Results.Created((string?)null, result);
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
+        var form = await context.Request.ReadFormAsync(cancellationToken);
+        var image = form.Files.GetFile("image");
+        if (image is null)
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["image"] = ["An image file is required."]
+            });
+        var altText = form["altText"].ToString();
+        var isPrimary = bool.TryParse(form["isPrimary"].ToString(), out var parsedPrimary) && parsedPrimary;
+        var result = await catalog.AddImageAsync(
+            id,
+            altText,
+            isPrimary,
+            new CatalogImageUpload(
+                image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
+            cancellationToken);
+        return Results.Created((string?)null, result);
     }
 
     private static async Task<IResult> UploadCategoryImageAsync(
         Guid id,
-        CatalogManagementService catalog,
+        TaxonomyImageService catalog,
         CatalogMediaOptions options,
         HttpContext context,
         CancellationToken cancellationToken)
     {
         var image = await ReadSingleImageAsync(context, options, cancellationToken);
         if (image.Result is not null) return image.Result;
-        try
-        {
-            return Results.Ok(await catalog.SetCategoryImageAsync(
-                id, image.Upload!, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
+        return Results.Ok(await catalog.SetCategoryImageAsync(
+            id, image.Upload!, cancellationToken));
     }
 
     private static async Task<IResult> DeleteCategoryImageAsync(
         Guid id,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.DeleteCategoryImageAsync(id, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        TaxonomyImageService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.DeleteCategoryImageAsync(id, cancellationToken));
 
     private static async Task<IResult> UploadBrandLogoAsync(
         Guid id,
-        CatalogManagementService catalog,
+        TaxonomyImageService catalog,
         CatalogMediaOptions options,
         HttpContext context,
         CancellationToken cancellationToken)
     {
         var image = await ReadSingleImageAsync(context, options, cancellationToken);
         if (image.Result is not null) return image.Result;
-        try
-        {
-            return Results.Ok(await catalog.SetBrandLogoAsync(
-                id, image.Upload!, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
+        return Results.Ok(await catalog.SetBrandLogoAsync(
+            id, image.Upload!, cancellationToken));
     }
 
     private static async Task<IResult> DeleteBrandLogoAsync(
         Guid id,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.DeleteBrandLogoAsync(id, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        TaxonomyImageService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.DeleteBrandLogoAsync(id, cancellationToken));
 
     private static async Task<IResult> UpdateImageAsync(
         Guid id,
         Guid imageId,
         ImageMetadataInput input,
-        CatalogManagementService catalog,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await catalog.UpdateImageAsync(
-                id, imageId, input.AltText, input.SortOrder, input.IsPrimary, cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        ProductImageService catalog,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await catalog.UpdateImageAsync(
+            id, imageId, input.AltText, input.SortOrder, input.IsPrimary, cancellationToken));
 
     private static async Task<IResult> DeleteImageAsync(
         Guid id,
         Guid imageId,
-        CatalogManagementService catalog,
+        ProductImageService catalog,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            await catalog.DeleteImageAsync(id, imageId, cancellationToken);
-            return Results.NoContent();
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
+        await catalog.DeleteImageAsync(id, imageId, cancellationToken);
+        return Results.NoContent();
     }
 
     private static Task<CatalogMediaAuditView> GetMediaAuditAsync(
@@ -459,31 +311,9 @@ public static class CatalogEndpoints
 
     private static async Task<IResult> CleanupOrphanMediaAsync(
         CatalogMediaMaintenanceService maintenance,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await maintenance.CleanupOrphansAsync(cancellationToken));
-        }
-        catch (Exception exception)
-        {
-            return MapException(exception);
-        }
-    }
+        CancellationToken cancellationToken) =>
+        Results.Ok(await maintenance.CleanupOrphansAsync(cancellationToken));
 
-    private static IResult MapException(Exception exception) => exception switch
-    {
-        CatalogValidationException validation => Results.ValidationProblem(validation.Errors),
-        CatalogNotFoundException notFound => Results.Problem(
-            statusCode: StatusCodes.Status404NotFound,
-            title: "Catalog record was not found.",
-            detail: notFound.Message),
-        CatalogConflictException conflict => Results.Problem(
-            statusCode: StatusCodes.Status409Conflict,
-            title: "Catalog change conflicts with existing data.",
-            detail: conflict.Message),
-        _ => throw exception
-    };
 
     private static CatalogProductCondition? ParseCondition(string? condition) => condition?.ToLowerInvariant() switch
     {

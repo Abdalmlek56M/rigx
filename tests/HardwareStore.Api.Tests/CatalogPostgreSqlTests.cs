@@ -31,7 +31,7 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
             NewProduct(category.Id, "Draft GPU", "draft-gpu", "GPU-002", CatalogProductStatus.Draft));
         await db.SaveChangesAsync();
 
-        var storefront = new CatalogStorefrontService(new TestCatalogContextFactory(fixture.Options));
+        var storefront = new ProductSearchService(new TestCatalogContextFactory(fixture.Options));
         var page = await storefront.GetProductsAsync(
             "graphics-cards", null, null, null, null, null, [], CatalogProductSort.Newest, 1, 20);
         Assert.Single(page.Items);
@@ -61,7 +61,7 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         db.Products.Add(product);
         await db.SaveChangesAsync();
 
-        var storefront = new CatalogStorefrontService(new TestCatalogContextFactory(fixture.Options));
+        var storefront = new ProductSearchService(new TestCatalogContextFactory(fixture.Options));
         Assert.Single(await storefront.SuggestAsync($"SuggestBrand{suffix}", 8));
         Assert.Single(await storefront.SuggestAsync($"SUG-{suffix}", 8));
         Assert.Single(await storefront.SuggestAsync($"Suggest Cards {suffix}", 8));
@@ -152,7 +152,7 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
             NewProduct(hiddenChild.Id, "Hidden product", "hidden-product", "P-HIDDEN", CatalogProductStatus.Published));
         await db.SaveChangesAsync();
 
-        var storefront = new CatalogStorefrontService(new TestCatalogContextFactory(fixture.Options));
+        var storefront = new ProductSearchService(new TestCatalogContextFactory(fixture.Options));
         var filtered = await storefront.GetProductsAsync(
             "active-products", null, null, null, null, 100m, [], CatalogProductSort.PriceAscending, 1, 1);
         Assert.Equal(1, filtered.TotalCount);
@@ -223,7 +223,7 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
             var options = new CatalogMediaOptions { RootPath = root };
             var storage = new LocalCatalogMediaStorage(
                 options, new SkiaCatalogImageProcessor(options));
-            var management = new CatalogManagementService(
+            var management = new ProductImageService(
                 new TestCatalogContextFactory(fixture.Options),
                 storage,
                 TimeProvider.System,
@@ -251,6 +251,46 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
     }
 
     [Fact]
+    public async Task Taxonomy_rules_enforce_hierarchy_slugs_versions_and_publish_guard()
+    {
+        var taxonomy = new TaxonomyService(new TestCatalogContextFactory(fixture.Options), TimeProvider.System);
+        var products = new ProductManagementService(new TestCatalogContextFactory(fixture.Options), TimeProvider.System);
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var parent = await taxonomy.SaveCategoryAsync(null,
+            new CategoryInput("Parent", $"parent-{suffix}", null, null, null, 0, true, null));
+        var child = await taxonomy.SaveCategoryAsync(null,
+            new CategoryInput("Child", $"child-{suffix}", parent.Id, null, null, 1, true, null));
+        Assert.True(child.IsEffectivelyActive);
+
+        var cycle = await Assert.ThrowsAsync<CatalogValidationException>(() => taxonomy.SaveCategoryAsync(parent.Id,
+            new CategoryInput("Parent", parent.Slug, child.Id, null, null, 0, true, parent.RowVersion)));
+        Assert.Contains("parentId", cycle.Errors.Keys);
+        await Assert.ThrowsAsync<CatalogConflictException>(() => taxonomy.SaveCategoryAsync(null,
+            new CategoryInput("Duplicate", parent.Slug, null, null, null, 0, true, null)));
+        await Assert.ThrowsAsync<CatalogConflictException>(() => taxonomy.SaveCategoryAsync(parent.Id,
+            new CategoryInput("Parent", parent.Slug, null, null, null, 0, true, parent.RowVersion + 5)));
+
+        var inactiveParent = await taxonomy.SaveCategoryAsync(parent.Id,
+            new CategoryInput("Parent", parent.Slug, null, null, null, 0, false, parent.RowVersion));
+        Assert.False(inactiveParent.IsEffectivelyActive);
+        Assert.False((await taxonomy.GetCategoriesAsync()).Single(item => item.Id == child.Id).IsEffectivelyActive);
+
+        var badUrl = await Assert.ThrowsAsync<CatalogValidationException>(() => taxonomy.SaveBrandAsync(null,
+            new BrandInput("Brand", $"brand-{suffix}", null, null, "ftp://example.test", true, null)));
+        Assert.Contains("supportUrl", badUrl.Errors.Keys);
+        var brand = await taxonomy.SaveBrandAsync(null,
+            new BrandInput("Brand", $"brand-{suffix}", null, null, "https://example.test", true, null));
+        Assert.Contains(await taxonomy.GetBrandsAsync(), item => item.Id == brand.Id);
+
+        var draft = await products.SaveProductAsync(null, new ProductInput("Guarded", $"guarded-{suffix}",
+            $"GUARD-{suffix}", null, child.Id, brand.Id, null, null, 10m, CatalogProductStatus.Draft,
+            CatalogProductCondition.New, [], [], null));
+        var blocked = await Assert.ThrowsAsync<CatalogValidationException>(() =>
+            products.SetProductStatusAsync(draft.Id, CatalogProductStatus.Published, draft.RowVersion));
+        Assert.Contains("status", blocked.Errors.Keys);
+    }
+
+    [Fact]
     public async Task Product_management_persists_variant_price_and_variant_specific_specifications()
     {
         await using var db = fixture.CreateContext();
@@ -264,11 +304,9 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         };
         db.Categories.Add(category);
         await db.SaveChangesAsync();
-        var management = new CatalogManagementService(
+        var management = new ProductManagementService(
             new TestCatalogContextFactory(fixture.Options),
-            new NoOpMediaStorage(),
-            TimeProvider.System,
-            []);
+            TimeProvider.System);
 
         var created = await management.SaveProductAsync(null, new ProductInput(
             "Variant product",
@@ -348,30 +386,6 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         public CatalogDbContext CreateDbContext() => new(options);
         public Task<CatalogDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(CreateDbContext());
-    }
-
-    private sealed class NoOpMediaStorage : ICatalogMediaStorage
-    {
-        public Task<CatalogStoredMedia> SaveImageAsync(
-            Guid productId, Guid imageId, CatalogImageUpload image, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
-        public Task<string> SaveAssetImageAsync(
-            string collection, Guid ownerId, Guid assetId, CatalogImageUpload image,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
-        public Task<CatalogStoredMedia> SaveContentImageAsync(
-            Guid assetId, CatalogImageUpload image, bool replace, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
-        public Task<CatalogStoredVideo> SaveContentVideoAsync(
-            Guid assetId, Stream content, long length, string extension, CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
-        public Stream OpenRead(string storageKey) => throw new NotSupportedException();
-        public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
-        public Task<IReadOnlyList<StoredMediaFile>> ListFilesAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<StoredMediaFile>>([]);
-        public Task DeleteStorageKeyAsync(string storageKey, CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
     }
 }
 
