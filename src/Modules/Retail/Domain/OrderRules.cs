@@ -164,6 +164,9 @@ public static class OrderRules
     }
 
     /// <summary>Unguessable token for the public tracking link (/t/{token}).</summary>
-    public static string NewTrackingToken() =>
-        Convert.ToBase64String(RandomNumberGenerator.GetBytes(16)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+    public static string NewTrackingToken() => NewToken(16);
+
+    /// <summary>Random URL-safe token (base64url, no padding) from <paramref name="byteCount"/> random bytes.</summary>
+    public static string NewToken(int byteCount) =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(byteCount)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }

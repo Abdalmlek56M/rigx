@@ -13,8 +13,10 @@
 - Forwarded headers trusted only from configured proxies.
 - Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`).
 - Double-sale prevention: row locks at order confirmation (PostgreSQL concurrency tests).
-- Public DTOs exclude cost/supplier/serial/partner/private data.
+- Public DTOs exclude cost/supplier/serial/partner/private data, except the invoice link (below).
 - Warranty lookup: anonymous, rate-limited 20 / 10 min per IP (`warranty-lookup`); phone masked to last 3 digits; no name, serial or prices.
+- Invoice link `GET /api/v1/invoices/{token}`: anonymous, 32-byte unguessable token (the only access control), rate-limited (order-tracking policy), `no-store`. Returns the full customer document by design (name, phone, address, lines, serials, prices).
+- Quote `POST /api/v1/store/quote`: anonymous, rate-limited, no customer data, no invoice number.
 - Dependency audit (12 Nov 2026): 0 known vulnerable NuGet packages.
 
 ## Rules every change must keep

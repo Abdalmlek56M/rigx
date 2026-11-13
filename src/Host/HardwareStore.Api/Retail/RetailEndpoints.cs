@@ -55,6 +55,8 @@ public static partial class RetailEndpoints
         admin.MapPost("/returns/{id:guid}/inspect", InspectReturnAsync).RequirePermission("Sales.ProcessReturn");
         admin.MapPost("/returns/{id:guid}/reject", RejectReturnAsync).RequirePermission("Sales.ProcessReturn");
         admin.MapGet("/warranties", ListWarrantiesAsync).RequirePermission("Sales.ViewOrders");
+        admin.MapGet("/orders/{id:guid}/invoice", GetOrderInvoiceAsync).RequirePermission("Sales.ViewOrders");
+        admin.MapGet("/invoices", ListInvoicesAsync).RequirePermission("Sales.ViewOrders");
         admin.MapPost("/warranties/{id:guid}/void", VoidWarrantyAsync).RequirePermission("Sales.ProcessReturn");
         admin.MapGet("/partner/earnings", ListEarningsAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/expenses", ListExpensesAsync).RequirePermission("Finance.ViewReports");
@@ -82,6 +84,9 @@ public static partial class RetailEndpoints
         endpoints.MapGet("/api/v1/orders/mine/{id:guid}", GetMyOrderAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/warranty/lookup", LookupWarrantyAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.WarrantyLookup);
         endpoints.MapGet("/api/v1/warranties/mine", ListMyWarrantiesAsync).RequireAuthorization();
+        endpoints.MapGet("/api/v1/invoices/mine", ListMyInvoicesAsync).RequireAuthorization();
+        endpoints.MapGet("/api/v1/invoices/{token}", GetInvoiceByTokenAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
+        endpoints.MapPost("/api/v1/store/quote", QuoteAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
         return endpoints;
     }
 }

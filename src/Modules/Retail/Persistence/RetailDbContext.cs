@@ -24,6 +24,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<RetailExpense> Expenses => Set<RetailExpense>();
     public DbSet<OrderReturn> OrderReturns => Set<OrderReturn>();
     public DbSet<Warranty> Warranties => Set<Warranty>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceCounter> InvoiceCounters => Set<InvoiceCounter>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -426,6 +428,30 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.VoidedByUserAccountId).HasColumnName("voided_by_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+        });
+        model.Entity<Invoice>(e =>
+        {
+            e.ToTable("invoices");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.OrderId).HasColumnName("order_id");
+            e.HasIndex(x => x.OrderId).IsUnique().HasDatabaseName("ux_invoices_order");
+            e.Property(x => x.Number).HasColumnName("number").HasMaxLength(24).IsRequired();
+            e.HasIndex(x => x.Number).IsUnique().HasDatabaseName("ux_invoices_number");
+            e.Property(x => x.Year).HasColumnName("year");
+            e.Property(x => x.Sequence).HasColumnName("sequence");
+            e.Property(x => x.AccessToken).HasColumnName("access_token").HasMaxLength(64).IsRequired();
+            e.HasIndex(x => x.AccessToken).IsUnique().HasDatabaseName("ux_invoices_token");
+            e.Property(x => x.SellerName).HasColumnName("seller_name").HasMaxLength(200);
+            e.Property(x => x.IssuedAtUtc).HasColumnName("issued_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+        });
+        model.Entity<InvoiceCounter>(e =>
+        {
+            e.ToTable("invoice_counters");
+            e.HasKey(x => x.Year);
+            e.Property(x => x.Year).HasColumnName("year").ValueGeneratedNever();
+            e.Property(x => x.LastNumber).HasColumnName("last_number");
         });
     }
 }

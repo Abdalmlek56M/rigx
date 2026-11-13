@@ -662,22 +662,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         },
                         new
                         {
-                            Code = "Invoices.IssueFinal"
-                        },
-                        new
-                        {
-                            Code = "Invoices.ManageTemplates"
-                        },
-                        new
-                        {
-                            Code = "Invoices.Reprint"
-                        },
-                        new
-                        {
-                            Code = "Invoices.ReviewDraft"
-                        },
-                        new
-                        {
                             Code = "Purchasing.CreateOrder"
                         },
                         new

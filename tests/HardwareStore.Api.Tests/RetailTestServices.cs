@@ -91,7 +91,7 @@ public static class RetailSales
         retail.Pos.SellAsync(request, policy ?? PosUnlimited, Guid.NewGuid());
 
     public static Task<OrderView> StatusAsync(this RetailTestServices retail, OrderView order, string status, string? notes = null) =>
-        retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(status, notes, order.RowVersion), Guid.NewGuid(), Reservation);
+        retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(status, notes, order.RowVersion), Guid.NewGuid(), Reservation, new InvoicePolicy("INV", null));
 
     public static async Task<OrderView> StatusesAsync(this RetailTestServices retail, OrderView order, params string[] statuses)
     {

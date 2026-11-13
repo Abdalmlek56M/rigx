@@ -9,7 +9,6 @@ public static class PermissionCatalog
         "Catalog.View", "Catalog.ManageProducts", "Catalog.ManageTaxonomy", "Catalog.ManageMedia",
         "Sales.ViewOrders", "Sales.LogCommunication", "Sales.ApproveOrder", "Sales.CreatePOS",
         "Sales.OverrideMinimumPrice", "Sales.FulfillStorePickup", "Sales.ProcessReturn", "Sales.CompleteOrder", "Sales.ViewCustomerContact",
-        "Invoices.ManageTemplates", "Invoices.ReviewDraft", "Invoices.IssueFinal", "Invoices.Reprint",
         "Inventory.View", "Inventory.Transfer", "Inventory.StockCount", "Inventory.StockAdjust", "Inventory.ManageSerials",
         "Inventory.ManageWarehouses", "Inventory.ViewCosts", "Inventory.ViewSerials",
         "Purchasing.View", "Purchasing.ManageSuppliers", "Purchasing.CreateOrder", "Purchasing.ReceiveGoods", "Purchasing.PostBill",

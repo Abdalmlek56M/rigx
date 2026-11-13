@@ -182,7 +182,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(order, "Ready")));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(order, OrderStatus.Completed)));
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.OrderStatus.UpdateStatusAsync(
-            order.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion + 5), Actor, Reservation)));
+            order.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion + 5), Actor, Reservation, new InvoicePolicy("INV", null))));
 
         var cancelled = await retail.StatusAsync(order, OrderStatus.Cancelled);
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(cancelled, OrderStatus.Confirmed)));
@@ -198,7 +198,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Null(order.ReservedUntilUtc);
 
         var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(48, true));
+            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(48, true), new InvoicePolicy("INV", null));
         AssertNear(clock.GetUtcNow().AddHours(48), confirmed.ReservedUntilUtc);
         Assert.True(confirmed.ReservationAutoRelease);
         Assert.Equal(1, await AvailableAsync(retail, item));
@@ -244,7 +244,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         var item = await retail.PublishedItemAsync("Release GPU", 3, 500m);
         var order = await retail.CheckoutAsync(Checkout([StockLine(item.Id, 2)]));
         var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(1, true));
+            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(1, true), new InvoicePolicy("INV", null));
         Assert.Equal(1, await AvailableAsync(retail, item));
 
         clock.Advance(TimeSpan.FromMinutes(61));

@@ -7,7 +7,7 @@ namespace HardwareStore.Modules.Retail;
 /// </summary>
 public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    public async Task<OrderView> UpdateStatusAsync(Guid id, OrderStatusRequest request, Guid actorId, ReservationPolicy reservation,
+    public async Task<OrderView> UpdateStatusAsync(Guid id, OrderStatusRequest request, Guid actorId, ReservationPolicy reservation, InvoicePolicy invoice,
         CancellationToken cancellationToken = default)
     {
         var next = request.Status?.Trim();
@@ -35,7 +35,11 @@ public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contex
                 order.ReservedUntilUtc = now.AddHours(reservation.Hours);
                 order.ReservationAutoRelease = reservation.AutoRelease;
             }
-            if (next == OrderStatus.Delivered) await WarrantyRegistry.IssueForOrderAsync(db, order, now, cancellationToken);
+            if (next == OrderStatus.Delivered)
+            {
+                await WarrantyRegistry.IssueForOrderAsync(db, order, now, cancellationToken);
+                await InvoiceRegistry.IssueForOrderAsync(db, order, invoice, now, cancellationToken);
+            }
             if (next == OrderStatus.Cancelled && order.Status == OrderStatus.Delivered)
                 await WarrantyRegistry.VoidForOrderAsync(db, order.Id, "Order cancelled", actorId, now, cancellationToken);
             if (next == OrderStatus.Cancelled && order.Status != OrderStatus.New)

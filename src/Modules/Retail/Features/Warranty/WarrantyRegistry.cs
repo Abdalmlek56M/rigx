@@ -13,7 +13,11 @@ internal static class WarrantyRegistry
         var unitIds = components.Select(entry => entry.Component.UnitId).ToList();
         var units = await db.Units.AsNoTracking().Include(unit => unit.StockItem)
             .Where(unit => unitIds.Contains(unit.Id)).ToDictionaryAsync(unit => unit.Id, cancellationToken);
-        var existing = (await db.Warranties.Where(w => w.OrderId == order.Id).Select(w => new { w.OrderItemId, w.UnitId }).ToListAsync(cancellationToken))
+        // A split build sale stores the part's RX code on the line, so the BLD code comes from the build itself.
+        var buildIds = components.Where(entry => entry.Item.AssemblyId is not null).Select(entry => entry.Item.AssemblyId!.Value).Distinct().ToList();
+        var buildCodes = await db.Assemblies.AsNoTracking().Where(build => buildIds.Contains(build.Id))
+            .ToDictionaryAsync(build => build.Id, build => build.Code, cancellationToken);
+        var existing =(await db.Warranties.Where(w => w.OrderId == order.Id).Select(w => new { w.OrderItemId, w.UnitId }).ToListAsync(cancellationToken))
             .Select(w => (w.OrderItemId, w.UnitId)).ToHashSet();
         foreach (var (item, component) in components)
         {
@@ -23,7 +27,7 @@ internal static class WarrantyRegistry
             {
                 Id = Guid.CreateVersion7(), OrderId = order.Id, OrderItemId = item.Id, UnitId = unit.Id, StockItemId = unit.StockItemId,
                 Code = unit.StockItem.Code, Name = unit.Name, Condition = unit.Condition, SerialNumber = unit.SerialNumber,
-                BuildCode = item.AssemblyId is null ? null : item.Code, Label = component.WarrantyLabel!, Months = component.WarrantyMonths,
+                BuildCode = item.AssemblyId is Guid buildId ? buildCodes[buildId] : null, Label = component.WarrantyLabel!, Months = component.WarrantyMonths,
                 StartsAtUtc = now, EndsAtUtc = WarrantyRules.EndsAt(now, component.WarrantyMonths),
                 PhoneNumber = order.PhoneNumber, UserAccountId = order.UserAccountId, CreatedAtUtc = now
             });

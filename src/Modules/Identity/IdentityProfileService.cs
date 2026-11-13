@@ -12,6 +12,14 @@ public sealed class IdentityProfileService(
     IDbContextFactory<IdentityDbContext> contextFactory,
     ISecurityAuditTransactionWriter auditWriter)
 {
+    /// <summary>Full name of an active account, or null when the account is unknown (used to copy the seller name onto invoices).</summary>
+    public async Task<string?> GetFullNameAsync(Guid accountId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.UserAccounts.AsNoTracking().Where(item => item.Id == accountId && item.IsActive)
+            .Select(item => item.Person.FullName).SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task UpdateAsync(
         Guid accountId,
         UpdateIdentityProfileRequest request,

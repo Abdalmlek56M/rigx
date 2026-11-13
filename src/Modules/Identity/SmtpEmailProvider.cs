@@ -120,15 +120,17 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
             OrderEmailMessage.Confirmed => ($"طلبك {message.Reference} اتأكد", "طلبك اتأكد وبنجهزه دلوقتي."),
             OrderEmailMessage.Shipped => ($"طلبك {message.Reference} اتشحن",
                 $"طلبك اتشحن مع {message.CourierName ?? "شركة الشحن"}{(message.WaybillNumber is null ? "" : $"، رقم البوليصة {message.WaybillNumber}")}."),
+            OrderEmailMessage.Invoiced => ($"فاتورة طلبك {message.InvoiceNumber}", "طلبك اتسلّم. دي فاتورتك، وفيها ضمان كل قطعة:"),
             _ => ($"استلمنا طلبك {message.Reference}", "استلمنا طلبك، وهنكلمك نأكد كل حاجة قبل ما نجهزه.")
         };
+        var link = message.Stage == OrderEmailMessage.Invoiced ? message.InvoiceUrl : $"تابع طلبك من هنا: {message.TrackingUrl}";
         return SendAsync(message.Email, message.FullName, subject,
             $"""
             أهلًا {message.FullName}،
 
             {line}
 
-            تابع طلبك من هنا: {message.TrackingUrl}
+            {link}
 
             RIGX
             """,

@@ -150,6 +150,34 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
     }
 
     [Fact]
+    public async Task Invoice_routes_follow_their_permissions_and_the_public_link_and_quote_are_anonymous()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "invoice-viewer", ["Sales.ViewOrders"]);
+        await CreateUserAsync(database, "invoice-clerk", ["Sales.ProcessReturn"]);
+        await using var factory = CreateFactory(database.ConnectionString);
+        var orderInvoiceUrl = $"/api/v1/admin/retail/orders/{Guid.NewGuid()}/invoice";
+
+        using var anonymous = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync("/api/v1/invoices/unknown-token")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/invoices/mine")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(anonymous, "/api/v1/store/quote", new { items = Array.Empty<object>() })).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(orderInvoiceUrl)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/admin/retail/invoices")).StatusCode);
+
+        using var viewer = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(viewer, factory, "invoice-viewer");
+        Assert.Equal(HttpStatusCode.NotFound, (await viewer.GetAsync(orderInvoiceUrl)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/v1/admin/retail/invoices")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/v1/invoices/mine")).StatusCode);
+
+        using var clerk = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(clerk, factory, "invoice-clerk");
+        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.GetAsync(orderInvoiceUrl)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.GetAsync("/api/v1/admin/retail/invoices")).StatusCode);
+    }
+
+    [Fact]
     public async Task Tracking_and_the_sold_feed_are_public_and_unknown_tokens_are_not_found()
     {
         var database = await fixture.CreateDatabaseAsync();

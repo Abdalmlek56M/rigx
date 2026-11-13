@@ -24,13 +24,14 @@ public interface IEmailProvider
     Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default);
 }
 
-/// <summary>Order emails (business §5): <see cref="Stage"/> is Received, Confirmed or Shipped; the link opens the public tracking page.</summary>
+/// <summary>Order emails (business §5): <see cref="Stage"/> is Received, Confirmed, Shipped or Invoiced; the link opens the public tracking page (the invoice page for Invoiced).</summary>
 public sealed record OrderEmailMessage(string Email, string FullName, string Reference, string Stage, string TrackingUrl,
-    string? CourierName, string? WaybillNumber)
+    string? CourierName, string? WaybillNumber, string? InvoiceNumber = null, string? InvoiceUrl = null)
 {
     public const string Received = "Received";
     public const string Confirmed = "Confirmed";
     public const string Shipped = "Shipped";
+    public const string Invoiced = "Invoiced";
 }
 
 /// <summary>Development/Testing provider. Messages stay in process memory and are never logged or sent.</summary>

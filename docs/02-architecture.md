@@ -27,7 +27,7 @@ PostgreSQL 17       One database, one schema per module
 | Sales | orders, reservation, payments, POS, returns, blacklist, tracking | in Retail: rules in `Domain/OrderRules`, `Features/Sales` (checkout, POS, status/stock claim, payments, fulfillment + reservation expiry, tracking, blacklist, sold feed); warranty in `Domain/WarrantyRules`, `Features/Warranty` → extract |
 | Partners (new) | agreements, per-unit overrides, earnings, settlements | logic in `Retail/Features/Partners` → extract |
 | Financials | expenses, business reports | no project yet; logic in `Retail/Features/Financials` → extract |
-| Invoicing | online invoices, quote images/PDF | no project yet — created in 2.6 |
+| Invoicing | online invoices, quote images/PDF | in Retail: rules in `Domain/InvoiceRules`, `Features/Invoicing` (`InvoiceRegistry`, `InvoiceService`, `QuoteService`) → extract |
 | Pricing (new) | offers, coupons, context pricing, customer tiers | offers partly in Catalog — consolidate |
 | PcBuilder | templates, slots, compatibility | exists |
 | Storefront | settings, content, articles, FAQ, videos, contact | exists — content split into `Features/Content` (articles, FAQ, policies); settings v2 in `Domain/Settings` + `Features/Settings` (2.17) |
@@ -94,7 +94,7 @@ Rules:
 - REST under `/api/v1`, admin under `/api/v1/admin`.
 - OpenAPI document generated from code; the frontend TypeScript client is **generated** from it (no hand-written duplicate types).
 - Cookie auth (HttpOnly, `__Host-`, `SameSite=Lax`) + CSRF token for unsafe methods.
-- Public DTOs never contain cost, supplier, serial, partner, or private user data.
+- Public DTOs never contain cost, supplier, serial, partner, or private user data. Exception: the invoice link `/i/{token}` is a customer document (name, address, serials), reachable only by its unguessable token (decision 22).
 
 ## 7. Frontend (target)
 - Next.js App Router, TypeScript `strict`, server components for catalog pages (SEO), client components only where interaction needs it.
@@ -125,3 +125,4 @@ Rules:
 | 19 | Build warranty = one label from the settings list applied to every part; a part override wins; no build warranty ("per part") falls back to the stock item's own. Each part keeps a `PartPrice` (default = item in-build price) for split sales; adding a part resets the revenue split to the default (alone prices), removing rebalances the rest, a replacement takes the old part's share. "Add a part not in stock" creates a single-piece RX item straight into the build. `Copies` is a declared count; how extra copies are sold is settled in 2.4 | one place per rule (`AssemblyRules`, `AssemblyEditing`); the owner's design (ADM-Build) drives the fields |
 | 20 | Checkout and POS share one pricing path (`OrderDrafting`) over stock items and published builds; catalog-product order lines removed. Reservation starts at `Confirmed` with settings defaults (24h) and a per-order expiry action (notify only, or release). A build with copies > 1 refills a sold part from an available unit of the same RX item. Order emails go through the existing email outbox (new kind) until Messaging exists. Tracking by an unguessable token. Blacklist flags orders and gates confirmation on full prepayment | owner decisions (13 Nov 2026) + design boards ADM-POS, ADM-Orders, D-Checkout, X-Track, X-Sold |
 | 21 | Warranty is snapshotted per sold unit at claim (part override → build → item) and registered at delivery (start = delivery, which the 2.6 invoice date will equal); status is computed, never stored; the public lookup is one box parsed by prefix (`RX-`, `RIGX-`, digits, else serial), masked, rate-limited | one record per unit with the terms it was sold on; no stale status flags; one search box matches how customers ask |
+| 22 | Invoice issued at delivery in the same transaction as the warranties (invoice date = warranty start); number `{prefix}-{YYYY}-{NNNN}` from a per-year counter table (gap-free, UTC year); one invoice per order; kind (Build / Parts) and status (Void when cancelled, else Issued) computed; content read live from the order; seller = staff who marked it delivered (snapshot); public link `/i/{token}` with a 32-byte unguessable token; backend serves data only, the frontend renders the page, watermark, warranty QR and PDF/PNG (no PDF/QR libraries on the server) | owner has no printer; the invoice always matches the order; the unguessable link is the access control; rendering belongs to the frontend |

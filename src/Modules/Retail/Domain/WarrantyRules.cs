@@ -1,14 +1,14 @@
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>What a public warranty search text means.</summary>
-public enum WarrantyLookupKind { Code, OrderReference, Phone, Serial }
+public enum WarrantyLookupKind { Code, OrderReference, InvoiceNumber, Phone, Serial }
 
 /// <summary>Warranty rules: end date, computed status, public search parsing, phone masking and voiding.</summary>
 public static class WarrantyRules
 {
     private const int MaxQueryLength = 64;
     private const int MinSerialLength = 4;
-    private const string QueryHint = "Enter a phone number, order number or item code.";
+    private const string QueryHint = "Enter a phone number, invoice number or item code.";
 
     public static DateTimeOffset? EndsAt(DateTimeOffset start, int? months) => months is null ? null : start.AddMonths(months.Value);
 
@@ -29,14 +29,15 @@ public static class WarrantyRules
         digits.Length <= 3 ? digits : new string('*', digits.Length - 3) + digits[^3..];
 
     /// <summary>
-    /// Reads the public search text: RX- is an item code, RIGX- an order reference (stands in for the invoice number
-    /// until invoices exist), all digits a phone number, anything else a serial number.
+    /// Reads the public search text: an invoice number (INV-2026-0001), RX- an item code, RIGX- an order reference
+    /// (staff use), all digits a phone number, anything else a serial number.
     /// </summary>
     public static (WarrantyLookupKind Kind, string Value) ParseLookup(string? query)
     {
         var text = query?.Trim();
         if (string.IsNullOrEmpty(text) || text.Length > MaxQueryLength) throw new RetailException(400, QueryHint);
         var upper = text.ToUpperInvariant();
+        if (InvoiceRules.TryParseNumber(text, out var invoiceNumber)) return (WarrantyLookupKind.InvoiceNumber, invoiceNumber);
         if (upper.StartsWith("RX-", StringComparison.Ordinal)) return (WarrantyLookupKind.Code, upper);
         if (upper.StartsWith("RIGX-", StringComparison.Ordinal)) return (WarrantyLookupKind.OrderReference, upper);
         var stripped = text.Where(c => c is not (' ' or '-' or '+' or '(' or ')')).ToArray();

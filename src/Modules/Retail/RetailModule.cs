@@ -27,6 +27,8 @@ public static class RetailRegistration
         services.AddScoped<SoldFeedService>();
         services.AddScoped<ReturnService>();
         services.AddScoped<WarrantyService>();
+        services.AddScoped<InvoiceService>();
+        services.AddScoped<QuoteService>();
         services.AddScoped<PartnerAgreementService>();
         services.AddScoped<PartnerAllocationService>();
         services.AddScoped<PartnerLedgerService>();

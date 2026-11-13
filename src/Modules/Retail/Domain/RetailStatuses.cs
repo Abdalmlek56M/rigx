@@ -31,3 +31,7 @@ public static class OrderPaymentMethod
 }
 /// <summary>Computed warranty state (never stored): Void when voided, Expired once the end date passed.</summary>
 public static class WarrantyStatus { public const string Active = "Active"; public const string Expired = "Expired"; public const string Void = "Void"; }
+/// <summary>What an invoice documents: a whole build ("تجميعة كاملة") or single parts ("قطع منفردة").</summary>
+public static class InvoiceKind { public const string Build = "Build"; public const string Parts = "Parts"; }
+/// <summary>Computed invoice state (never stored): Void once its order is cancelled.</summary>
+public static class InvoiceStatus { public const string Issued = "Issued"; public const string Void = "Void"; }

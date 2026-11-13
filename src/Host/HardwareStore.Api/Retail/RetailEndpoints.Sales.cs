@@ -17,13 +17,23 @@ public static partial class RetailEndpoints
         return Results.Ok(await orders.GetAdminOrderDetailAsync(id, context.HasPermission("Inventory.ViewSerials"), ct));
     }
 
-    /// <summary>Status change; confirming starts the reservation from the store settings and emails the customer (confirmed, shipped).</summary>
+    /// <summary>
+    /// Status change; confirming starts the reservation from the store settings, delivering issues the invoice (numbered with the
+    /// settings prefix, seller = the signed-in staff member) and the customer is emailed (confirmed, shipped, invoice).
+    /// </summary>
     private static async Task<IResult> UpdateStatusAsync(Guid id, OrderStatusRequest request, HttpContext context, OrderStatusService statuses,
-        StoreSettingsService settings, IdentityEmailOutboxWriter outbox, OrderLinks links, CancellationToken ct)
+        StoreSettingsService settings, IdentityProfileService profiles, InvoiceService invoices, IdentityEmailOutboxWriter outbox,
+        OrderLinks links, CancellationToken ct)
     {
         if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
-        var order = await statuses.UpdateStatusAsync(id, request, actorId, await ReservationPolicyAsync(settings, ct), ct);
-        var stage = order.Status != request.Status?.Trim() ? null : order.Status switch
+        var store = await settings.GetAdminAsync(ct);
+        var seller = request.Status?.Trim() == OrderStatus.Delivered ? await profiles.GetFullNameAsync(actorId, ct) : null;
+        var order = await statuses.UpdateStatusAsync(id, request, actorId, new ReservationPolicy(store.Sales.ReservationHours, store.Sales.ReservationAutoRelease),
+            new InvoicePolicy(store.Invoice.NumberPrefix, seller), ct);
+        // Same row version = the order was already in that status, so nothing changed and no email goes out again.
+        if (order.Status != request.Status?.Trim() || order.RowVersion == request.RowVersion) return Results.Ok(order);
+        if (order.Status == OrderStatus.Delivered) await OrderEmails.QueueInvoiceAsync(outbox, links, order, invoices, ct);
+        var stage = order.Status switch
         {
             OrderStatus.Confirmed => OrderEmailMessage.Confirmed,
             OrderStatus.Shipped => OrderEmailMessage.Shipped,
@@ -31,12 +41,6 @@ public static partial class RetailEndpoints
         };
         if (stage is not null) await OrderEmails.QueueAsync(outbox, links, order, stage, ct);
         return Results.Ok(order);
-    }
-
-    private static async Task<ReservationPolicy> ReservationPolicyAsync(StoreSettingsService settings, CancellationToken ct)
-    {
-        var sales = (await settings.GetAdminAsync(ct)).Sales;
-        return new ReservationPolicy(sales.ReservationHours, sales.ReservationAutoRelease);
     }
 
     private static async Task<IResult> AddPaymentAsync(Guid id, OrderPaymentRequest request, HttpContext context, OrderPaymentService payments, CancellationToken ct)
