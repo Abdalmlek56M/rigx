@@ -61,7 +61,6 @@ Order matters: we restructure before adding features, so new features land in cl
 - Hosting + TLS + reverse proxy, production SMTP (`rigxhardware@gmail.com` sender or domain mail), off-host backups, CSP, monitoring/logs, Google OIDC production client, external security review, real catalog data replaces seed data.
 
 ## Owner decisions still needed (asked when the step arrives)
-- D1–D8 in `docs/07-gap-audit.md` §6 (RX codes per lot/piece, customer-facing statuses, money accounts, partner "whole shop" basis, lead sources, warranty options, removing unused backend parts, product Q&A).
 - Reservation length default (24h?) and expiry action.
 - Tier conditions and perk values (when tiers are enabled).
 - Hosting provider and domain mail.

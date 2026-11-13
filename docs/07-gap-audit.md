@@ -90,9 +90,9 @@ How to read: **Missing** = the design needs it and the backend has nothing. **Pa
 
 ---
 
-## 6. Owner decisions needed (added to the roadmap list)
+## 6. Owner decisions — all approved as proposed (13 Nov 2026)
 
-| # | Question | Default I will use if you agree |
+| # | Question | Decision |
 |---|---|---|
 | D1 | New items: one RX code per lot of identical new pieces (page shows "متاح: [الكمية]"), used items: one RX code per piece? | yes, as drawn |
 | D2 | Order statuses shown to the customer: استلمنا → اتأكد → بيتجهز → اتشحن → اتسلم (+ اتلغى). "مكتمل" (payment settled, partner profit posted) stays internal? | yes |
