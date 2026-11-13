@@ -237,7 +237,7 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         public bool Fail { get; set; }
         public List<EmailVerificationMessage> Verifications { get; } = [];
         public List<PasswordResetMessage> PasswordResets { get; } = [];
-        public List<EmailOtpMessage> EmailOtps { get; } = [];
+        public List<EmailCodeMessage> EmailCodes { get; } = [];
 
         public Task SendEmailVerificationAsync(
             EmailVerificationMessage message,
@@ -265,12 +265,12 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
             return Task.CompletedTask;
         }
 
-        public Task SendEmailOtpAsync(
-            EmailOtpMessage message,
+        public Task SendEmailCodeAsync(
+            EmailCodeMessage message,
             CancellationToken cancellationToken = default)
         {
             if (Fail) throw new InvalidOperationException("Simulated provider outage.");
-            EmailOtps.Add(message);
+            EmailCodes.Add(message);
             return Task.CompletedTask;
         }
     }

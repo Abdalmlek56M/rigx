@@ -154,7 +154,7 @@ public sealed class IdentityLoginService(
         if (account is null || !account.IsActive || !account.IsEmailVerified)
         {
             await transaction.CommitAsync(cancellationToken);
-            return new IdentityLoginResult(IdentityLoginStatus.InvalidCredentials, account?.Id, AuditReason: "OtpAccountUnavailable");
+            return new IdentityLoginResult(IdentityLoginStatus.InvalidCredentials, account?.Id, AuditReason: "AccountUnavailable");
         }
         var restrictions = await db.AccountRestrictions.AsNoTracking()
             .Where(item => item.UserAccountId == account.Id && item.RevokedAtUtc == null)
@@ -169,7 +169,7 @@ public sealed class IdentityLoginService(
             .SingleAsync(cancellationToken);
         var principal = await CreatePrincipalAsync(db, account, authorizationState.RbacRevision, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return new IdentityLoginResult(IdentityLoginStatus.Succeeded, account.Id, principal, "OtpLoginSucceeded");
+        return new IdentityLoginResult(IdentityLoginStatus.Succeeded, account.Id, principal, "LoginSucceeded");
     }
 
     public static string NormalizeIdentifier(string identifier) =>

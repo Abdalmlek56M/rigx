@@ -65,6 +65,20 @@ public sealed class IdentityToken
     public UserAccount UserAccount { get; set; } = null!;
 }
 
+/// <summary>A one-time 6-digit code sent by email (sign-in or step-up). Only the protected code is stored.</summary>
+public sealed class EmailCode
+{
+    public Guid Id { get; set; }
+    public required string NormalizedEmail { get; set; }
+    public required string Purpose { get; set; }
+    public byte[] ProtectedCode { get; set; } = [];
+    public int Attempts { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset ExpiresAtUtc { get; set; }
+    public DateTimeOffset? UsedAtUtc { get; set; }
+    public DateTimeOffset? RevokedAtUtc { get; set; }
+}
+
 public sealed class AuthSession
 {
     public byte[] SessionKeyHash { get; set; } = [];
@@ -248,6 +262,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<AccountRestriction> AccountRestrictions => Set<AccountRestriction>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
     public DbSet<AuthorizationState> AuthorizationStates => Set<AuthorizationState>();
+    public DbSet<EmailCode> EmailCodes => Set<EmailCode>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -419,6 +434,30 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        model.Entity<EmailCode>(e =>
+        {
+            e.ToTable("email_codes", table =>
+            {
+                table.HasCheckConstraint("ck_email_codes_purpose", "purpose IN ('SignIn', 'StepUp')");
+                table.HasCheckConstraint("ck_email_codes_expiry_order", "expires_at_utc > created_at_utc");
+                table.HasCheckConstraint("ck_email_codes_attempts", "attempts >= 0");
+            });
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.NormalizedEmail).HasColumnName("normalized_email").HasMaxLength(255).IsRequired();
+            e.Property(x => x.Purpose).HasColumnName("purpose").HasMaxLength(16).IsRequired();
+            e.Property(x => x.ProtectedCode).HasColumnName("protected_code").HasColumnType("bytea").IsRequired();
+            e.Property(x => x.Attempts).HasColumnName("attempts").HasDefaultValue(0);
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.ExpiresAtUtc).HasColumnName("expires_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.UsedAtUtc).HasColumnName("used_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.RevokedAtUtc).HasColumnName("revoked_at_utc").HasColumnType("timestamp with time zone");
+            e.HasIndex(x => new { x.NormalizedEmail, x.Purpose }).IsUnique()
+                .HasFilter("used_at_utc IS NULL AND revoked_at_utc IS NULL")
+                .HasDatabaseName("ux_email_codes_active_email_purpose");
+            e.HasIndex(x => new { x.NormalizedEmail, x.Purpose, x.CreatedAtUtc })
+                .HasDatabaseName("ix_email_codes_email_purpose_created");
+        });
         model.Entity<AuthorizationState>(e =>
         {
             e.ToTable("authorization_state", table =>
@@ -432,10 +471,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         model.Entity<UserAccount>(e =>
         {
             e.ToTable("user_accounts", table =>
-            {
-                table.HasCheckConstraint("ck_user_accounts_access_failed_count", "access_failed_count >= 0");
-                table.HasCheckConstraint("ck_user_accounts_verified_requires_password_hash", "NOT is_email_verified OR COALESCE(password_hash IS NOT NULL, FALSE)");
-            });
+                table.HasCheckConstraint("ck_user_accounts_access_failed_count", "access_failed_count >= 0"));
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             e.Property(x => x.PersonId).HasColumnName("person_id"); e.HasIndex(x => x.PersonId).IsUnique().HasDatabaseName("ux_user_accounts_person_id");

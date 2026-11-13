@@ -59,7 +59,7 @@ public sealed class IdentityPersistenceTests
         var tables = context.Model.GetEntityTypes().Select(entity => entity.GetTableName()).Order().ToArray();
         Assert.Equal(new[]
         {
-            "account_restrictions", "auth_sessions", "authorization_state", "customer_addresses",
+            "account_restrictions", "auth_sessions", "authorization_state", "customer_addresses", "email_codes",
             "identity_email_change_requests", "identity_email_outbox", "identity_tokens", "permissions",
             "person_code_counters", "persons", "role_permissions", "roles",
             "user_account_login_identifiers", "user_accounts", "user_notifications", "user_roles"
@@ -79,9 +79,9 @@ public sealed class IdentityPersistenceTests
         Assert.Contains(accountType.GetIndexes(), index => index.IsUnique &&
             index.Properties.Select(property => property.Name).SequenceEqual([nameof(UserAccount.PersonId)]));
         Assert.True(accountType.FindProperty(nameof(UserAccount.PasswordHash))!.IsNullable);
-        Assert.Contains(accountType.GetCheckConstraints(), constraint =>
-            constraint.Name == "ck_user_accounts_verified_requires_password_hash" &&
-            constraint.Sql == "NOT is_email_verified OR COALESCE(password_hash IS NOT NULL, FALSE)");
+        var emailCodeType = designModel.FindEntityType(typeof(EmailCode))!;
+        Assert.Contains(emailCodeType.GetIndexes(), index => index.IsUnique &&
+            index.GetFilter() == "used_at_utc IS NULL AND revoked_at_utc IS NULL");
         var tokenType = designModel.FindEntityType(typeof(IdentityToken))!;
         Assert.Contains(tokenType.GetIndexes(), index => index.IsUnique &&
             index.GetFilter() == "used_at_utc IS NULL AND revoked_at_utc IS NULL");

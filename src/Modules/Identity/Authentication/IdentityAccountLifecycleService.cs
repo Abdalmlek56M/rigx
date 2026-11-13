@@ -339,57 +339,6 @@ public sealed class IdentityAccountLifecycleService
         }
     }
 
-    public async Task<IdentityActionResult> ResetPasswordWithVerifiedOtpAsync(
-        Guid accountId,
-        string? newPassword,
-        string correlationId,
-        CancellationToken cancellationToken = default)
-    {
-        var policyFailure = _passwordPolicy.Validate(newPassword);
-        if (policyFailure != PasswordPolicyFailure.None)
-            return InvalidPassword(policyFailure);
-        await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var account = await LockAccountAsync(db, accountId, cancellationToken);
-            if (account is null || !account.IsActive || !account.IsEmailVerified)
-            {
-                await transaction.CommitAsync(cancellationToken);
-                return RejectedToken();
-            }
-            var now = UtcNow();
-            account.PasswordHash = _passwordHashing.HashPassword(account, newPassword!);
-            account.AccessFailedCount = 0;
-            account.AccessFailedWindowStartedUtc = null;
-            account.LockoutEndUtc = null;
-            account.AuthorizationVersion = checked(account.AuthorizationVersion + 1);
-            await db.SaveChangesAsync(cancellationToken);
-            await RevokeAllSessionsAsync(db, account.Id, "PasswordReset", now, cancellationToken);
-            await WriteAuditAsync(db, new SecurityAuditEntry(
-                "Identity.PasswordReset.Succeeded",
-                "Succeeded",
-                "Anonymous",
-                SubjectUserAccountId: account.Id,
-                CorrelationId: correlationId,
-                SafeMetadata: "{\"reason\":\"EmailOtp\"}"), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            var fullName = await db.Persons.AsNoTracking()
-                .Where(person => person.Id == account.PersonId)
-                .Select(person => person.FullName)
-                .SingleOrDefaultAsync(cancellationToken) ?? account.Username;
-            await TryEnqueueSecurityNotificationAsync(account.Id, account.Email, fullName,
-                IdentitySecurityNotificationKind.PasswordResetCompleted, now, correlationId, CancellationToken.None);
-            return new IdentityActionResult(IdentityActionStatus.Succeeded);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-            _logger.LogError(exception, "Unable to complete OTP password reset.");
-            return Failed();
-        }
-    }
-
     public async Task<IdentityActionResult> ChangePasswordAsync(
         Guid accountId,
         string? currentPassword,

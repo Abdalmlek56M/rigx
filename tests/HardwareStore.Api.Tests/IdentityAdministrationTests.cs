@@ -517,10 +517,4 @@ internal sealed class CapturingEmailDispatcher : IIdentityEmailDispatcher
         SecurityNotifications.Add(message);
         return ValueTask.CompletedTask;
     }
-
-    public ValueTask EnqueueEmailOtpAsync(
-        Guid userAccountId,
-        EmailOtpMessage message,
-        CancellationToken cancellationToken = default) =>
-        ValueTask.CompletedTask;
 }

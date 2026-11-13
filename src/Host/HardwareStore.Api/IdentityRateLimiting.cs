@@ -12,8 +12,8 @@ public static class IdentityRateLimitPolicies
     public const string PasswordResetRequest = "identity-password-reset-request";
     public const string PasswordReset = "identity-password-reset";
     public const string EmailChange = "identity-email-change";
-    public const string EmailOtpRequest = "identity-email-otp-request";
-    public const string EmailOtpVerify = "identity-email-otp-verify";
+    public const string EmailCodeRequest = "identity-email-code-request";
+    public const string EmailCodeVerify = "identity-email-code-verify";
     public const string Contact = "contact-submit";
     public const string CatalogSuggest = "catalog-suggest";
 }
@@ -32,8 +32,8 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.PasswordResetRequest, 10, TimeSpan.FromHours(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.PasswordReset, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailChange, 10, TimeSpan.FromHours(1));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailOtpRequest, 10, TimeSpan.FromHours(1));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailOtpVerify, 20, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeRequest, 10, TimeSpan.FromHours(1));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeVerify, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Contact, 5, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CatalogSuggest, 120, TimeSpan.FromMinutes(1));
 
@@ -102,8 +102,8 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.PasswordResetRequest => "Identity.PasswordReset.Request.RateLimited",
         IdentityRateLimitPolicies.PasswordReset => "Identity.PasswordReset.RateLimited",
         IdentityRateLimitPolicies.EmailChange => "Identity.EmailChange.RateLimited",
-        IdentityRateLimitPolicies.EmailOtpRequest => "Identity.EmailOtp.Request.RateLimited",
-        IdentityRateLimitPolicies.EmailOtpVerify => "Identity.EmailOtp.Verify.RateLimited",
+        IdentityRateLimitPolicies.EmailCodeRequest => "Identity.EmailCode.Request.RateLimited",
+        IdentityRateLimitPolicies.EmailCodeVerify => "Identity.EmailCode.Verify.RateLimited",
         IdentityRateLimitPolicies.Contact => "Contact.Submit.RateLimited",
         IdentityRateLimitPolicies.CatalogSuggest => "Catalog.Search.RateLimited",
         _ => "Identity.RateLimited"

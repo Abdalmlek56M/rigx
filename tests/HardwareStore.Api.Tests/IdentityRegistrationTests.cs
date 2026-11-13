@@ -309,8 +309,8 @@ public sealed class PostgreSqlIdentityRegistrationTests(PostgreSqlIdentityFixtur
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
 
-        public Task SendEmailOtpAsync(
-            EmailOtpMessage message,
+        public Task SendEmailCodeAsync(
+            EmailCodeMessage message,
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
     }
@@ -319,7 +319,7 @@ public sealed class PostgreSqlIdentityRegistrationTests(PostgreSqlIdentityFixtur
     {
         public ValueTask EnqueueEmailOtpAsync(
             Guid userAccountId,
-            EmailOtpMessage message,
+            EmailCodeMessage message,
             CancellationToken cancellationToken = default) =>
             throw new InvalidOperationException("Simulated provider outage.");
 

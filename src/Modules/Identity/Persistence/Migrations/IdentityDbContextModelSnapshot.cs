@@ -347,6 +347,71 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                     b.ToTable("customer_addresses", (string)null);
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.EmailCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at_utc");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<byte[]>("ProtectedCode")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("protected_code");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("purpose");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at_utc");
+
+                    b.Property<DateTimeOffset?>("UsedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail", "Purpose")
+                        .IsUnique()
+                        .HasDatabaseName("ux_email_codes_active_email_purpose")
+                        .HasFilter("used_at_utc IS NULL AND revoked_at_utc IS NULL");
+
+                    b.HasIndex("NormalizedEmail", "Purpose", "CreatedAtUtc")
+                        .HasDatabaseName("ix_email_codes_email_purpose_created");
+
+                    b.ToTable("email_codes", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_email_codes_attempts", "attempts >= 0");
+
+                            t.HasCheckConstraint("ck_email_codes_expiry_order", "expires_at_utc > created_at_utc");
+
+                            t.HasCheckConstraint("ck_email_codes_purpose", "purpose IN ('SignIn', 'StepUp')");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.IdentityEmailChangeRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -993,8 +1058,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                     b.ToTable("user_accounts", null, t =>
                         {
                             t.HasCheckConstraint("ck_user_accounts_access_failed_count", "access_failed_count >= 0");
-
-                            t.HasCheckConstraint("ck_user_accounts_verified_requires_password_hash", "NOT is_email_verified OR COALESCE(password_hash IS NOT NULL, FALSE)");
                         });
                 });
 

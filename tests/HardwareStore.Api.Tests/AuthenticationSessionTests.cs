@@ -127,7 +127,7 @@ public sealed class PostgreSqlAuthenticationSessionTests(PostgreSqlIdentityFixtu
         identity.AddClaim(new Claim(ClaimTypes.Role, "Owner"));
         identity.AddClaim(new Claim(IdentityLoginService.AuthorizationVersionClaim, "0"));
         identity.AddClaim(new Claim(IdentityLoginService.RbacRevisionClaim, "0"));
-        var key = await store.StoreAsync(new AuthenticationTicket(new ClaimsPrincipal(identity), new AuthenticationProperties(), "Cookies"));
+        var key = await store.StoreAsync(new AuthenticationTicket(new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = true }, "Cookies"));
 
         clock.Advance(TimeSpan.FromMinutes(31));
         Assert.Null(await store.RetrieveAsync(key));
@@ -175,7 +175,7 @@ public sealed class PostgreSqlAuthenticationSessionTests(PostgreSqlIdentityFixtu
         identity.AddClaim(new Claim(ClaimTypes.Role, "Customer"));
         identity.AddClaim(new Claim(IdentityLoginService.AuthorizationVersionClaim, "0"));
         identity.AddClaim(new Claim(IdentityLoginService.RbacRevisionClaim, "0"));
-        return new AuthenticationTicket(new ClaimsPrincipal(identity), new AuthenticationProperties(), "Cookies");
+        return new AuthenticationTicket(new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = true }, "Cookies");
     }
 }
 

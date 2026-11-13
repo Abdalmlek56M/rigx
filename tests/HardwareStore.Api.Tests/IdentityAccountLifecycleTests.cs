@@ -814,8 +814,8 @@ internal sealed class BlockingPasswordEmailProvider : IEmailProvider
         CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
-    public Task SendEmailOtpAsync(
-        EmailOtpMessage message,
+    public Task SendEmailCodeAsync(
+        EmailCodeMessage message,
         CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 }

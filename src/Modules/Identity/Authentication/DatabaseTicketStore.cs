@@ -27,7 +27,7 @@ public sealed class DatabaseTicketStore(
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
         var accountId = ReadAccountId(ticket.Principal);
-        var (idle, absolute) = GetSessionPolicy(ticket.Principal);
+        var (idle, absolute) = GetSessionPolicy(ticket);
         var now = timeProvider.GetUtcNow();
 
         await using var db = await contextFactory.CreateDbContextAsync();
@@ -172,7 +172,7 @@ public sealed class DatabaseTicketStore(
             return;
 
         var accountId = ReadAccountId(ticket.Principal);
-        var (idle, _) = GetSessionPolicy(ticket.Principal);
+        var (idle, _) = GetSessionPolicy(ticket);
         var now = timeProvider.GetUtcNow();
         await using var db = await contextFactory.CreateDbContextAsync();
         var current = await db.AuthSessions.AsNoTracking()
@@ -278,13 +278,23 @@ public sealed class DatabaseTicketStore(
             ? value
             : throw new InvalidOperationException($"Authentication ticket has no valid {claimType} claim.");
 
-    private static (TimeSpan Idle, TimeSpan Absolute) GetSessionPolicy(ClaimsPrincipal principal)
+    /// <summary>
+    /// Customers stay signed in up to 30 days on a remembered device; staff sessions end within 8 hours.
+    /// Without "remember this device" a session also ends within <see cref="UnrememberedMaxLifetime"/>.
+    /// </summary>
+    private static (TimeSpan Idle, TimeSpan Absolute) GetSessionPolicy(AuthenticationTicket ticket)
     {
+        var principal = ticket.Principal;
         var customerOnly = principal.IsInRole("Customer") && principal.FindAll(ClaimTypes.Role).Count() == 1;
-        return customerOnly
+        var (idle, absolute) = customerOnly
             ? (TimeSpan.FromDays(14), TimeSpan.FromDays(30))
             : (TimeSpan.FromMinutes(30), TimeSpan.FromHours(8));
+        return ticket.Properties.IsPersistent || absolute <= UnrememberedMaxLifetime
+            ? (idle, absolute)
+            : (idle, UnrememberedMaxLifetime);
     }
+
+    private static readonly TimeSpan UnrememberedMaxLifetime = TimeSpan.FromHours(12);
 
     private static DateTimeOffset Min(DateTimeOffset left, DateTimeOffset right) => left <= right ? left : right;
 

@@ -144,7 +144,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 }).AllowAnonymous();
 
 app.MapIdentityLoginEndpoints();
-app.MapEmailOtpEndpoints();
+app.MapEmailCodeSignInEndpoints();
 app.MapContactEndpoints();
 app.MapArticleVideoEndpoints();
 app.MapIdentityCurrentUserEndpoints();

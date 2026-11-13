@@ -76,21 +76,22 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
             """,
             cancellationToken);
 
-    public Task SendEmailOtpAsync(
-        EmailOtpMessage message,
+    public Task SendEmailCodeAsync(
+        EmailCodeMessage message,
         CancellationToken cancellationToken = default) =>
         SendAsync(
             message.Email,
             message.FullName,
-            message.Purpose == "PasswordResetCode"
-                ? "Your HARDWARE STORE password reset code"
-                : "Your HARDWARE STORE sign-in code",
+            message.Purpose == Authentication.EmailCodePurpose.StepUp
+                ? "Your RIGX confirmation code"
+                : "Your RIGX sign-in code",
             $"""
             Hello {message.FullName},
 
             Your one-time code is: {message.Code}
 
-            It expires at {message.ExpiresAtUtc:u} and can be used once. If you did not request it, ignore this message.
+            It expires at {message.ExpiresAtUtc:u} and can be used once. Never share it with anyone, including RIGX staff.
+            If you did not request it, ignore this message.
             """,
             cancellationToken);
 

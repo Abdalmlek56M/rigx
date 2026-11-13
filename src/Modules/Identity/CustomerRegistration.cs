@@ -22,7 +22,7 @@ public sealed record CustomerRegistrationRequest(
 
 public sealed record EmailVerificationMessage(string Email, string FullName, Uri VerificationUrl);
 public sealed record PasswordResetMessage(string Email, string FullName, Uri ResetUrl);
-public sealed record EmailOtpMessage(string Email, string FullName, string Code, DateTimeOffset ExpiresAtUtc, string Purpose);
+public sealed record EmailCodeMessage(string Email, string FullName, string Code, DateTimeOffset ExpiresAtUtc, string Purpose);
 
 public enum IdentitySecurityNotificationKind
 {
@@ -93,7 +93,7 @@ public interface IEmailProvider
 {
     Task SendEmailVerificationAsync(EmailVerificationMessage message, CancellationToken cancellationToken = default);
     Task SendPasswordResetAsync(PasswordResetMessage message, CancellationToken cancellationToken = default);
-    Task SendEmailOtpAsync(EmailOtpMessage message, CancellationToken cancellationToken = default);
+    Task SendEmailCodeAsync(EmailCodeMessage message, CancellationToken cancellationToken = default);
     Task SendSecurityNotificationAsync(
         IdentitySecurityNotificationMessage message,
         CancellationToken cancellationToken = default);
@@ -109,12 +109,12 @@ public sealed class InMemoryTestEmailProvider : IEmailProvider
 {
     private readonly ConcurrentQueue<EmailVerificationMessage> _verificationMessages = new();
     private readonly ConcurrentQueue<PasswordResetMessage> _passwordResetMessages = new();
-    private readonly ConcurrentQueue<EmailOtpMessage> _emailOtpMessages = new();
+    private readonly ConcurrentQueue<EmailCodeMessage> _emailCodes = new();
     private readonly ConcurrentQueue<IdentitySecurityNotificationMessage> _securityNotifications = new();
 
     public IReadOnlyCollection<EmailVerificationMessage> Messages => _verificationMessages.ToArray();
     public IReadOnlyCollection<PasswordResetMessage> PasswordResetMessages => _passwordResetMessages.ToArray();
-    public IReadOnlyCollection<EmailOtpMessage> EmailOtpMessages => _emailOtpMessages.ToArray();
+    public IReadOnlyCollection<EmailCodeMessage> EmailCodes => _emailCodes.ToArray();
     public IReadOnlyCollection<IdentitySecurityNotificationMessage> SecurityNotifications =>
         _securityNotifications.ToArray();
 
@@ -132,10 +132,10 @@ public sealed class InMemoryTestEmailProvider : IEmailProvider
         return Task.CompletedTask;
     }
 
-    public Task SendEmailOtpAsync(EmailOtpMessage message, CancellationToken cancellationToken = default)
+    public Task SendEmailCodeAsync(EmailCodeMessage message, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _emailOtpMessages.Enqueue(message);
+        _emailCodes.Enqueue(message);
         return Task.CompletedTask;
     }
 
@@ -363,7 +363,9 @@ public static class CustomerRegistrationServices
         services.AddScoped<IPasswordPolicyValidator, PasswordPolicyValidator>();
         services.AddScoped<IdentityAccountLifecycleService>();
         services.AddScoped<IdentitySessionService>();
-        services.AddScoped<EmailOtpService>();
+        services.AddScoped<EmailCodeService>();
+        services.AddScoped<IdentityAccountProvisioner>();
+        services.AddScoped<EmailCodeSignInService>();
 
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {
