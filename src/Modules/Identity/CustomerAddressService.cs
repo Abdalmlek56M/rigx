@@ -142,7 +142,7 @@ public sealed class CustomerAddressService(
         CancellationToken cancellationToken = default)
     {
         if (request.RowVersion <= 0)
-            throw new IdentityAdministrationException(400, "A positive address row version is required.");
+            throw new IdentityException(400, "A positive address row version is required.");
         var input = Normalize(request);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -155,9 +155,9 @@ public sealed class CustomerAddressService(
                 cancellationToken);
             var address = await db.CustomerAddresses.SingleOrDefaultAsync(
                 item => item.Id == addressId && item.UserAccountId == accountId && !item.IsDeleted,
-                cancellationToken) ?? throw new IdentityAdministrationException(404, "Address was not found.");
+                cancellationToken) ?? throw new IdentityException(404, "Address was not found.");
             if (address.RowVersion != request.RowVersion)
-                throw new IdentityAdministrationException(409, "The address was changed by another user.");
+                throw new IdentityException(409, "The address was changed by another user.");
             if (input.IsDefault && !address.IsDefault)
                 await ClearDefaultAsync(db, accountId, address.Id, cancellationToken);
 
@@ -184,7 +184,7 @@ public sealed class CustomerAddressService(
             await transaction.CommitAsync(cancellationToken);
             return Map(address);
         }
-        catch (IdentityAdministrationException)
+        catch (IdentityException)
         {
             await SafeRollbackAsync(transaction, cancellationToken);
             throw;
@@ -192,7 +192,7 @@ public sealed class CustomerAddressService(
         catch (DbUpdateConcurrencyException)
         {
             await SafeRollbackAsync(transaction, cancellationToken);
-            throw new IdentityAdministrationException(409, "The address was changed by another user.");
+            throw new IdentityException(409, "The address was changed by another user.");
         }
         catch
         {
@@ -208,7 +208,7 @@ public sealed class CustomerAddressService(
         CancellationToken cancellationToken = default)
     {
         if (rowVersion <= 0)
-            throw new IdentityAdministrationException(400, "A positive address row version is required.");
+            throw new IdentityException(400, "A positive address row version is required.");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
@@ -216,9 +216,9 @@ public sealed class CustomerAddressService(
             await LockAccountAsync(db, accountId, cancellationToken);
             var address = await db.CustomerAddresses.SingleOrDefaultAsync(
                 item => item.Id == addressId && item.UserAccountId == accountId && !item.IsDeleted,
-                cancellationToken) ?? throw new IdentityAdministrationException(404, "Address was not found.");
+                cancellationToken) ?? throw new IdentityException(404, "Address was not found.");
             if (address.RowVersion != rowVersion)
-                throw new IdentityAdministrationException(409, "The address was changed by another user.");
+                throw new IdentityException(409, "The address was changed by another user.");
             address.IsDeleted = true;
             address.IsDefault = false;
             address.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
@@ -227,7 +227,7 @@ public sealed class CustomerAddressService(
             await WriteAuditAsync(db, transaction, accountId, "Identity.AddressDeleted", address, cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
-        catch (IdentityAdministrationException)
+        catch (IdentityException)
         {
             await SafeRollbackAsync(transaction, cancellationToken);
             throw;
@@ -247,7 +247,7 @@ public sealed class CustomerAddressService(
         var exists = await db.UserAccounts.AnyAsync(
             account => account.Id == accountId && account.IsActive, cancellationToken);
         if (!exists)
-            throw new IdentityAdministrationException(401, "The account is not active or does not exist.");
+            throw new IdentityException(401, "The account is not active or does not exist.");
         await db.Database.ExecuteSqlRawAsync(
             "SELECT 1 FROM user_accounts WHERE id = {0} FOR UPDATE",
             new object[] { accountId },
@@ -351,10 +351,10 @@ public sealed class CustomerAddressService(
     {
         var country = string.IsNullOrWhiteSpace(countryCode) ? "EG" : countryCode.Trim().ToUpperInvariant();
         if (country.Length != 2)
-            throw new IdentityAdministrationException(400, "Country code must contain two letters.");
+            throw new IdentityException(400, "Country code must contain two letters.");
         var calling = string.IsNullOrWhiteSpace(countryCallingCode) ? "+20" : countryCallingCode.Trim();
         if (!calling.StartsWith('+') || calling.Length > 8 || calling[1..].Any(character => !char.IsAsciiDigit(character)))
-            throw new IdentityAdministrationException(400, "Country calling code is invalid.");
+            throw new IdentityException(400, "Country calling code is invalid.");
         return new NormalizedAddress(
             Required(label, 32, "Label"),
             Required(recipientName, 255, "Recipient name"),
@@ -377,10 +377,10 @@ public sealed class CustomerAddressService(
     private static string Required(string? value, int max, string label)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new IdentityAdministrationException(400, $"{label} is required.");
+            throw new IdentityException(400, $"{label} is required.");
         var normalized = value.Trim().Normalize(System.Text.NormalizationForm.FormC);
         if (normalized.Length > max)
-            throw new IdentityAdministrationException(400, $"{label} is too long.");
+            throw new IdentityException(400, $"{label} is too long.");
         return normalized;
     }
 
@@ -390,7 +390,7 @@ public sealed class CustomerAddressService(
             return null;
         var normalized = value.Trim().Normalize(System.Text.NormalizationForm.FormC);
         if (normalized.Length > max)
-            throw new IdentityAdministrationException(400, "Address field is too long.");
+            throw new IdentityException(400, "Address field is too long.");
         return normalized;
     }
 

@@ -30,51 +30,44 @@ public static class ProfileAvatarEndpoints
             .MaxRequestBodySize = options.MaxUploadBytes + 64 * 1024;
         if (context.Request.ContentLength > options.MaxUploadBytes + 64 * 1024)
             return Results.Problem(statusCode: 413, title: "The uploaded image is too large.");
-        try
-        {
-            var form = await context.Request.ReadFormAsync(cancellationToken);
-            var image = form.Files.GetFile("image");
-            if (image is null)
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["image"] = ["An image file is required."]
-                });
-            var storageKey = await media.SaveAssetImageAsync(
-                "avatars",
-                accountId,
-                Guid.CreateVersion7(),
-                new CatalogImageUpload(image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
-                cancellationToken);
+        var form = await context.Request.ReadFormAsync(cancellationToken);
+        var image = form.Files.GetFile("image");
+        if (image is null)
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["image"] = ["An image file is required."]
+            });
+        var storageKey = await media.SaveAssetImageAsync(
+            "avatars",
+            accountId,
+            Guid.CreateVersion7(),
+            new CatalogImageUpload(image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
+            cancellationToken);
 
-            string? previousKey;
-            await using (var db = await identityFactory.CreateDbContextAsync(cancellationToken))
-            {
-                var account = await db.UserAccounts.SingleOrDefaultAsync(
-                    item => item.Id == accountId && item.IsActive, cancellationToken);
-                if (account is null)
-                    return Results.Unauthorized();
-                previousKey = account.AvatarStorageKey;
-                account.AvatarStorageKey = storageKey;
-                await db.SaveChangesAsync(cancellationToken);
-            }
-            if (!string.IsNullOrWhiteSpace(previousKey))
-            {
-                try
-                {
-                    await media.DeleteStorageKeyAsync(previousKey, CancellationToken.None);
-                }
-                catch
-                {
-                    // Old avatar cleanup is best-effort; the new avatar is already stored.
-                }
-            }
-            context.Response.Headers.CacheControl = "no-store";
-            return Results.Ok(new { avatarStorageKey = storageKey });
-        }
-        catch (CatalogValidationException exception)
+        string? previousKey;
+        await using (var db = await identityFactory.CreateDbContextAsync(cancellationToken))
         {
-            return Results.ValidationProblem(exception.Errors);
+            var account = await db.UserAccounts.SingleOrDefaultAsync(
+                item => item.Id == accountId && item.IsActive, cancellationToken);
+            if (account is null)
+                return Results.Unauthorized();
+            previousKey = account.AvatarStorageKey;
+            account.AvatarStorageKey = storageKey;
+            await db.SaveChangesAsync(cancellationToken);
         }
+        if (!string.IsNullOrWhiteSpace(previousKey))
+        {
+            try
+            {
+                await media.DeleteStorageKeyAsync(previousKey, CancellationToken.None);
+            }
+            catch
+            {
+                // Old avatar cleanup is best-effort; the new avatar is already stored.
+            }
+        }
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(new { avatarStorageKey = storageKey });
     }
 
     private static async Task<IResult> DeleteAsync(

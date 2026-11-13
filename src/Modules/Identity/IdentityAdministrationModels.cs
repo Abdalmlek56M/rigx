@@ -1,4 +1,3 @@
-using HardwareStore.Common.Domain;
 public sealed record AdminIdentityUser(
     Guid Id,
     string Username,
@@ -50,4 +49,3 @@ public sealed record CreateAdminIdentityRoleRequest(
     string? Name,
     IReadOnlyList<string>? PermissionCodes);
 
-public sealed class IdentityAdministrationException(int statusCode, string message) : AppException(statusCode, message);

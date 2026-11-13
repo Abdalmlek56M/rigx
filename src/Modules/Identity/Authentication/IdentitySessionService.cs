@@ -4,7 +4,6 @@ using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace HardwareStore.Modules.Identity.Authentication;
 
@@ -23,122 +22,68 @@ public sealed class IdentitySessionService
     private readonly IDbContextFactory<IdentityDbContext> _contextFactory;
     private readonly ISecurityAuditTransactionWriter _auditWriter;
     private readonly TimeProvider _timeProvider;
-    private readonly ILogger<IdentitySessionService> _logger;
 
     public IdentitySessionService(
         IDbContextFactory<IdentityDbContext> contextFactory,
         ISecurityAuditTransactionWriter auditWriter,
-        TimeProvider timeProvider,
-        ILogger<IdentitySessionService> logger)
+        TimeProvider timeProvider)
     {
         _contextFactory = contextFactory;
         _auditWriter = auditWriter;
         _timeProvider = timeProvider;
-        _logger = logger;
     }
 
-    public async Task<IdentityActionResult> RevokeCurrentAsync(
+    /// <summary>Signs out the session that made this request.</summary>
+    public async Task RevokeCurrentAsync(
         Guid accountId,
         string? rawSessionKey,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
         if (accountId == Guid.Empty || !IdentityTokenFactory.TryHashRawToken(rawSessionKey, out var keyHash))
-            return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
+            throw InvalidSession();
 
-        var now = UtcNow();
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var account = await LockAccountAsync(db, accountId, cancellationToken);
-            var session = await db.AuthSessions
-                .FromSqlInterpolated($"""
-                    SELECT *
-                    FROM auth_sessions
-                    WHERE session_key_hash = {keyHash}
-                      AND user_account_id = {accountId}
-                    FOR UPDATE
-                    """)
-                .SingleOrDefaultAsync(cancellationToken);
-            if (account is null || session is null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-            }
+        _ = await LockAccountAsync(db, accountId, cancellationToken) ?? throw InvalidSession();
+        var session = await db.AuthSessions
+            .FromSqlInterpolated($"""
+                SELECT *
+                FROM auth_sessions
+                WHERE session_key_hash = {keyHash}
+                  AND user_account_id = {accountId}
+                FOR UPDATE
+                """)
+            .SingleOrDefaultAsync(cancellationToken) ?? throw InvalidSession();
 
-            if (session.RevokedAtUtc is null)
-            {
-                session.RevokedAtUtc = now;
-                session.RevokeReason = "LogoutCurrent";
-                session.RowVersion++;
-                await db.SaveChangesAsync(cancellationToken);
-            }
-
-            await WriteAuditAsync(db, new SecurityAuditEntry(
-                "Identity.Session.LoggedOut",
-                "Succeeded",
-                "User",
-                ActorUserAccountId: accountId,
-                SubjectUserAccountId: accountId,
-                CorrelationId: correlationId,
-                SafeMetadata: "{\"scope\":\"Current\"}"), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return new IdentityActionResult(IdentityActionStatus.Succeeded);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        if (session.RevokedAtUtc is null)
         {
-            await transaction.RollbackAsync(CancellationToken.None);
-            _logger.LogError(exception, "Unable to revoke the current identity session.");
-            return new IdentityActionResult(IdentityActionStatus.Failed);
+            session.RevokedAtUtc = UtcNow();
+            session.RevokeReason = "LogoutCurrent";
+            session.RowVersion++;
+            await db.SaveChangesAsync(cancellationToken);
         }
+
+        await WriteAuditAsync(db, UserEntry(accountId, "Identity.Session.LoggedOut", correlationId,
+            "{\"scope\":\"Current\"}"), cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
-    public async Task<IdentityActionResult> RevokeAllAsync(
+    /// <summary>Signs out every session of the account, including the current one.</summary>
+    public async Task RevokeAllAsync(
         Guid accountId,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        if (accountId == Guid.Empty)
-            return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-
-        var now = UtcNow();
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var account = await LockAccountAsync(db, accountId, cancellationToken);
-            if (account is null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-            }
-
-            var revokedCount = await db.AuthSessions
-                .Where(session => session.UserAccountId == accountId && session.RevokedAtUtc == null)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(session => session.RevokedAtUtc, now)
-                    .SetProperty(session => session.RevokeReason, "LogoutAll")
-                    .SetProperty(session => session.RowVersion, session => session.RowVersion + 1),
-                    cancellationToken);
-
-            await WriteAuditAsync(db, new SecurityAuditEntry(
-                "Identity.Session.LoggedOutAll",
-                "Succeeded",
-                "User",
-                ActorUserAccountId: accountId,
-                SubjectUserAccountId: accountId,
-                CorrelationId: correlationId,
-                SafeMetadata: JsonSerializer.Serialize(new { scope = "All", revokedCount })), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return new IdentityActionResult(IdentityActionStatus.Succeeded);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-            _logger.LogError(exception, "Unable to revoke all identity sessions.");
-            return new IdentityActionResult(IdentityActionStatus.Failed);
-        }
+        _ = await LockAccountAsync(db, accountId, cancellationToken) ?? throw InvalidSession();
+        var revokedCount = await RevokeWhereAsync(db,
+            session => session.UserAccountId == accountId && session.RevokedAtUtc == null,
+            "LogoutAll", cancellationToken);
+        await WriteAuditAsync(db, UserEntry(accountId, "Identity.Session.LoggedOutAll", correlationId,
+            JsonSerializer.Serialize(new { scope = "All", revokedCount })), cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<IdentitySessionView>> ListAsync(
@@ -183,121 +128,80 @@ public sealed class IdentitySessionService
             .ToList();
     }
 
-    public async Task<IdentityActionResult> RevokeSessionAsync(
+    /// <summary>Signs out one session of the account (from the devices list).</summary>
+    public async Task RevokeSessionAsync(
         Guid accountId,
         Guid sessionPublicId,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        if (accountId == Guid.Empty || sessionPublicId == Guid.Empty)
-            return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-
-        var now = UtcNow();
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var account = await LockAccountAsync(db, accountId, cancellationToken);
-            if (account is null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-            }
-
-            var session = await db.AuthSessions
-                .SingleOrDefaultAsync(row => row.UserAccountId == accountId &&
-                                             row.PublicId == sessionPublicId &&
-                                             row.RevokedAtUtc == null,
-                    cancellationToken);
-            if (session is null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-            }
-
-            session.RevokedAtUtc = now;
-            session.RevokeReason = "AccountSessionRevoked";
-            session.RowVersion++;
-            await db.SaveChangesAsync(cancellationToken);
-            await WriteAuditAsync(db, new SecurityAuditEntry(
-                "Identity.Session.Revoked",
-                "Succeeded",
-                "User",
-                ActorUserAccountId: accountId,
-                SubjectUserAccountId: accountId,
-                CorrelationId: correlationId,
-                SafeMetadata: JsonSerializer.Serialize(new { sessionId = sessionPublicId })), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return new IdentityActionResult(IdentityActionStatus.Succeeded);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-            _logger.LogError(exception, "Unable to revoke an identity session by public id.");
-            return new IdentityActionResult(IdentityActionStatus.Failed);
-        }
+        _ = await LockAccountAsync(db, accountId, cancellationToken) ?? throw InvalidSession();
+        var revoked = await RevokeWhereAsync(db,
+            row => row.UserAccountId == accountId && row.PublicId == sessionPublicId && row.RevokedAtUtc == null,
+            "AccountSessionRevoked", cancellationToken);
+        if (revoked == 0)
+            throw new IdentityException(404, "Session was not found.");
+        await WriteAuditAsync(db, UserEntry(accountId, "Identity.Session.Revoked", correlationId,
+            JsonSerializer.Serialize(new { sessionId = sessionPublicId })), cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
-    public async Task<IdentityActionResult> RevokeOtherSessionsAsync(
+    /// <summary>Signs out every session of the account except the one that made this request.</summary>
+    public async Task RevokeOtherSessionsAsync(
         Guid accountId,
         string? currentRawSessionKey,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        if (accountId == Guid.Empty ||
-            !IdentityTokenFactory.TryHashRawToken(currentRawSessionKey, out var currentHash))
-            return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
+        if (!IdentityTokenFactory.TryHashRawToken(currentRawSessionKey, out var currentHash))
+            throw InvalidSession();
 
-        var now = UtcNow();
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var account = await LockAccountAsync(db, accountId, cancellationToken);
-            if (account is null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-            }
-            var currentExists = await db.AuthSessions.AsNoTracking().AnyAsync(
-                session => session.UserAccountId == accountId &&
-                           session.SessionKeyHash == currentHash &&
-                           session.RevokedAtUtc == null,
-                cancellationToken);
-            if (!currentExists)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new IdentityActionResult(IdentityActionStatus.InvalidCredentials);
-            }
+        _ = await LockAccountAsync(db, accountId, cancellationToken) ?? throw InvalidSession();
+        var currentExists = await db.AuthSessions.AsNoTracking().AnyAsync(
+            session => session.UserAccountId == accountId &&
+                       session.SessionKeyHash == currentHash &&
+                       session.RevokedAtUtc == null,
+            cancellationToken);
+        if (!currentExists)
+            throw InvalidSession();
 
-            var revokedCount = await db.AuthSessions
-                .Where(session => session.UserAccountId == accountId &&
-                                  session.SessionKeyHash != currentHash &&
-                                  session.RevokedAtUtc == null)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(session => session.RevokedAtUtc, now)
-                    .SetProperty(session => session.RevokeReason, "AccountOtherSessionsRevoked")
-                    .SetProperty(session => session.RowVersion, session => session.RowVersion + 1),
-                    cancellationToken);
-
-            await WriteAuditAsync(db, new SecurityAuditEntry(
-                "Identity.Session.RevokedOthers",
-                "Succeeded",
-                "User",
-                ActorUserAccountId: accountId,
-                SubjectUserAccountId: accountId,
-                CorrelationId: correlationId,
-                SafeMetadata: JsonSerializer.Serialize(new { revokedCount })), cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return new IdentityActionResult(IdentityActionStatus.Succeeded);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-            _logger.LogError(exception, "Unable to revoke other identity sessions.");
-            return new IdentityActionResult(IdentityActionStatus.Failed);
-        }
+        var revokedCount = await RevokeWhereAsync(db,
+            session => session.UserAccountId == accountId &&
+                       session.SessionKeyHash != currentHash &&
+                       session.RevokedAtUtc == null,
+            "AccountOtherSessionsRevoked", cancellationToken);
+        await WriteAuditAsync(db, UserEntry(accountId, "Identity.Session.RevokedOthers", correlationId,
+            JsonSerializer.Serialize(new { revokedCount })), cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
+
+    private Task<int> RevokeWhereAsync(
+        IdentityDbContext db,
+        System.Linq.Expressions.Expression<Func<AuthSession, bool>> filter,
+        string reason,
+        CancellationToken cancellationToken)
+    {
+        var now = UtcNow();
+        return db.AuthSessions.Where(filter)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(session => session.RevokedAtUtc, now)
+                .SetProperty(session => session.RevokeReason, reason)
+                .SetProperty(session => session.RowVersion, session => session.RowVersion + 1),
+                cancellationToken);
+    }
+
+    private static SecurityAuditEntry UserEntry(Guid accountId, string eventType, string correlationId, string metadata) =>
+        new(eventType, "Succeeded", "User",
+            ActorUserAccountId: accountId,
+            SubjectUserAccountId: accountId,
+            CorrelationId: correlationId,
+            SafeMetadata: metadata);
+
+    private static IdentityException InvalidSession() => new(401, "The session is no longer valid.");
 
     private static string DeviceLabel(string? userAgent)
     {

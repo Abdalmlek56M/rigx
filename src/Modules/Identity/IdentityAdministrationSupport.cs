@@ -36,7 +36,7 @@ public sealed class IdentityAdministrationSupport(
             })
             .SingleOrDefaultAsync(cancellationToken);
         if (data is null)
-            throw new IdentityAdministrationException(403, "The acting account is not active or does not exist.");
+            throw new IdentityException(403, "The acting account is not active or does not exist.");
         return new IdentityActor(
             actorUserId,
             data.RoleCodes.Contains("Owner", StringComparer.Ordinal),
@@ -85,7 +85,7 @@ public sealed class IdentityAdministrationSupport(
             userRole => userRole.Role.Code == "Owner" && userRole.UserAccount.IsActive,
             cancellationToken);
         if (activeOwners == 0)
-            throw new IdentityAdministrationException(409, "The last active Owner cannot be removed or deactivated.");
+            throw new IdentityException(409, "The last active Owner cannot be removed or deactivated.");
 
         var activeManagers = await db.UserAccounts.CountAsync(
             account => account.IsActive &&
@@ -94,7 +94,7 @@ public sealed class IdentityAdministrationSupport(
                                permission.PermissionCode == "System.ManageUsers")),
             cancellationToken);
         if (activeManagers == 0)
-            throw new IdentityAdministrationException(409, "At least one active user must retain System.ManageUsers.");
+            throw new IdentityException(409, "At least one active user must retain System.ManageUsers.");
     }
 
     public static async Task EnsureNotLastOwnerAsync(
@@ -114,7 +114,7 @@ public sealed class IdentityAdministrationSupport(
                     item.UserAccount.IsActive,
             cancellationToken);
         if (otherActiveOwners == 0)
-            throw new IdentityAdministrationException(409, "The last active Owner cannot be removed or deactivated.");
+            throw new IdentityException(409, "The last active Owner cannot be removed or deactivated.");
     }
 
     public async Task RevokeSessionsAsync(
@@ -152,7 +152,7 @@ public sealed class IdentityAdministrationSupport(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is not IdentityAdministrationException { StatusCode: 403 or 409 } denied)
+        if (exception is not IdentityException { StatusCode: 403 or 409 } denied)
             return;
         try
         {
@@ -201,17 +201,17 @@ public sealed class IdentityAdministrationSupport(
             .Where(code => !PermissionCatalog.All.Contains(code))
             .ToArray();
         if (unknown.Length > 0)
-            throw new IdentityAdministrationException(400, "One or more permissions are not in the permission catalog.");
+            throw new IdentityException(400, "One or more permissions are not in the permission catalog.");
         return requested;
     }
 
     public static string NormalizeRequired(string? value, int maxLength, string label)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new IdentityAdministrationException(400, $"{label} is required.");
+            throw new IdentityException(400, $"{label} is required.");
         var normalized = value.Trim().Normalize(System.Text.NormalizationForm.FormC);
         if (normalized.Length > maxLength)
-            throw new IdentityAdministrationException(400, $"{label} is too long.");
+            throw new IdentityException(400, $"{label} is too long.");
         return normalized;
     }
 
@@ -221,7 +221,7 @@ public sealed class IdentityAdministrationSupport(
             return null;
         var normalized = value.Trim().Normalize(System.Text.NormalizationForm.FormC);
         if (normalized.Length > maxLength)
-            throw new IdentityAdministrationException(400, $"{label} is too long.");
+            throw new IdentityException(400, $"{label} is too long.");
         return normalized;
     }
 }

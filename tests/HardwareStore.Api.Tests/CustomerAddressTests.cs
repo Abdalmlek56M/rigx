@@ -34,14 +34,14 @@ public sealed class CustomerAddressPostgreSqlTests(OwnerBootstrapPostgreSqlFixtu
         Assert.Single(list, address => address.IsDefault);
         Assert.Equal(second.Id, list.Single(address => address.IsDefault).Id);
 
-        var stale = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var stale = await Assert.ThrowsAsync<IdentityException>(() =>
             service.UpdateAsync(
                 accountId,
                 second.Id,
                 UpdateRequest("Stale", true, second.RowVersion)));
         Assert.Equal(409, stale.StatusCode);
 
-        var foreign = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var foreign = await Assert.ThrowsAsync<IdentityException>(() =>
             service.UpdateAsync(
                 otherAccountId,
                 first.Id,
@@ -70,11 +70,11 @@ public sealed class CustomerAddressPostgreSqlTests(OwnerBootstrapPostgreSqlFixtu
         var accountId = await CreateAccountAsync(database, "address-invalid");
         var service = database.CreateAddressService();
 
-        var invalid = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var invalid = await Assert.ThrowsAsync<IdentityException>(() =>
             service.CreateAsync(accountId, CreateRequest("Home", false) with { CountryCallingCode = "20" }));
         Assert.Equal(400, invalid.StatusCode);
 
-        var missing = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var missing = await Assert.ThrowsAsync<IdentityException>(() =>
             service.CreateAsync(accountId, CreateRequest("Home", false) with { Street = " " }));
         Assert.Equal(400, missing.StatusCode);
     }

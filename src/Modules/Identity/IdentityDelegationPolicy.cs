@@ -66,7 +66,7 @@ public static class IdentityDelegationPolicy
     {
         if (string.Equals(role.Code, "Owner", StringComparison.Ordinal) ||
             string.Equals(role.Code, "Customer", StringComparison.Ordinal))
-            throw new IdentityAdministrationException(409, "Owner and Customer permissions are fixed.");
+            throw new IdentityException(409, "Owner and Customer permissions are fixed.");
         EnsureSubset(actor, role.Permissions, "You cannot edit a role with permissions you do not hold.");
         EnsureSubset(actor, requestedPermissions, "You cannot grant permissions you do not hold.");
     }
@@ -80,6 +80,6 @@ public static class IdentityDelegationPolicy
             throw Denied(message);
     }
 
-    private static IdentityAdministrationException Denied(string message) =>
+    private static IdentityException Denied(string message) =>
         new(403, message);
 }

@@ -198,11 +198,11 @@ public sealed class PostgreSqlIdentitySessionManagementTests(PostgreSqlIdentityF
         Assert.Single(sessions, session => session.IsCurrent);
         Assert.Contains(sessions, session => session.Id == other.PublicId && session.Browser == "Safari" && session.Device == "Mobile");
 
-        var foreignAttempt = await service.RevokeSessionAsync(accountId, foreign.PublicId, "test");
-        Assert.Equal(IdentityActionStatus.InvalidCredentials, foreignAttempt.Status);
+        var foreignAttempt = await Assert.ThrowsAsync<IdentityException>(() =>
+            service.RevokeSessionAsync(accountId, foreign.PublicId, "test"));
+        Assert.Equal(404, foreignAttempt.StatusCode);
 
-        var revoked = await service.RevokeSessionAsync(accountId, other.PublicId, "test");
-        Assert.Equal(IdentityActionStatus.Succeeded, revoked.Status);
+        await service.RevokeSessionAsync(accountId, other.PublicId, "test");
         var remaining = await service.ListAsync(accountId, current.RawKey);
         Assert.Single(remaining);
         Assert.True(remaining[0].IsCurrent);
@@ -217,8 +217,7 @@ public sealed class PostgreSqlIdentitySessionManagementTests(PostgreSqlIdentityF
         await CreateSessionAsync(accountId, "Mozilla/5.0 (Linux) Firefox/128.0");
         var service = CreateService();
 
-        var result = await service.RevokeOtherSessionsAsync(accountId, current.RawKey, "test");
-        Assert.Equal(IdentityActionStatus.Succeeded, result.Status);
+        await service.RevokeOtherSessionsAsync(accountId, current.RawKey, "test");
         var remaining = await service.ListAsync(accountId, current.RawKey);
         Assert.Single(remaining);
         Assert.True(remaining[0].IsCurrent);
@@ -236,8 +235,7 @@ public sealed class PostgreSqlIdentitySessionManagementTests(PostgreSqlIdentityF
             new TestIdentityContextFactory(options),
             new HardwareStore.Modules.Auditing.SecurityAuditWriter(
                 new PooledDbContextFactory<HardwareStore.Modules.Auditing.SecurityAuditDbContext>(auditOptions)),
-            TimeProvider.System,
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<IdentitySessionService>.Instance);
+            TimeProvider.System);
     }
 
     private async Task<Guid> CreateAccountAsync()

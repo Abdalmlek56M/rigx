@@ -77,7 +77,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
         var database = await fixture.CreateDatabaseAsync();
         var ownerId = (await database.CreateService().BootstrapAsync(OwnerRequest)).UserAccountId;
         var admin = database.CreateAdministrationService();
-        var direct = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var direct = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.UpdateUserAsync(
                 ownerId,
                 new UpdateAdminIdentityUserRequest("RIGX Owner", null, false),
@@ -99,7 +99,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
         Assert.Equal(1, activeOwners);
 
         var current = await admin.GetUserAsync(ownerId);
-        var roleRemoval = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var roleRemoval = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.AssignRolesAsync(
                 ownerId,
                 new AssignAdminIdentityRolesRequest([]),
@@ -133,49 +133,49 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
             ownerId);
 
         var managerAdmin = database.CreateAdministrationService();
-        var grantDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var grantDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.CreateRoleAsync(
                 new CreateAdminIdentityRoleRequest("Escalated", "Escalated", ["Catalog.View"]),
                 managerId));
         Assert.Equal(403, grantDenied.StatusCode);
 
         var ownerRole = (await ownerAdmin.GetRolesAsync()).Single(role => role.Code == "Owner");
-        var ownerAssignmentDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var ownerAssignmentDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.AssignRolesAsync(
                 managerId,
                 new AssignAdminIdentityRolesRequest([ownerRole.Id]),
                 managerId));
         Assert.Equal(403, ownerAssignmentDenied.StatusCode);
 
-        var ownerManagementDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var ownerManagementDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.UpdateUserAsync(
                 ownerId,
                 new UpdateAdminIdentityUserRequest("RIGX Owner", null, false),
                 managerId));
         Assert.Equal(403, ownerManagementDenied.StatusCode);
 
-        var powerRoleEditDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var powerRoleEditDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.UpdateRolePermissionsAsync(
                 powerRole.Id,
                 new UpdateAdminIdentityRolePermissionsRequest(["Catalog.View"]),
                 managerId));
         Assert.Equal(403, powerRoleEditDenied.StatusCode);
 
-        var morePrivilegedTargetDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var morePrivilegedTargetDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.UpdateUserAsync(
                 powerUserId,
                 new UpdateAdminIdentityUserRequest("Power User", null, false),
                 managerId));
         Assert.Equal(403, morePrivilegedTargetDenied.StatusCode);
 
-        var selfEscalationDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var selfEscalationDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.AssignRolesAsync(
                 managerId,
                 new AssignAdminIdentityRolesRequest([managerRole.Id, powerRole.Id]),
                 managerId));
         Assert.Equal(403, selfEscalationDenied.StatusCode);
 
-        var selfDeactivationDenied = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var selfDeactivationDenied = await Assert.ThrowsAsync<IdentityException>(() =>
             managerAdmin.UpdateUserAsync(
                 managerId,
                 new UpdateAdminIdentityUserRequest("Manager User", null, false),
@@ -224,7 +224,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
             var beforeVersion = before.AuthorizationVersion;
             var beforeRevision = (await db.AuthorizationStates.SingleAsync()).RbacRevision;
 
-            var rejected = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+            var rejected = await Assert.ThrowsAsync<IdentityException>(() =>
                 admin.AssignRolesAsync(
                     ownerId,
                     new AssignAdminIdentityRolesRequest([supportRole.Id]),
@@ -336,7 +336,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
         Assert.Contains("token=", message.VerificationUrl.Fragment);
         Assert.DoesNotContain("staff-user@example.test", message.VerificationUrl.Query);
 
-        var duplicate = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var duplicate = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.CreateUserAsync(
                 new CreateAdminIdentityUserRequest(
                     "staff-user-2",
@@ -355,13 +355,13 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
         var ownerId = (await database.CreateService().BootstrapAsync(OwnerRequest)).UserAccountId;
         var admin = database.CreateAdministrationService();
 
-        var unknown = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var unknown = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.CreateRoleAsync(
                 new CreateAdminIdentityRoleRequest("BadRole", "Bad role", ["Not.A.Permission"]),
                 ownerId));
         Assert.Equal(400, unknown.StatusCode);
 
-        var reserved = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var reserved = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.CreateRoleAsync(
                 new CreateAdminIdentityRoleRequest("Owner", "Another owner", []),
                 ownerId));
@@ -369,7 +369,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
 
         var roles = await admin.GetRolesAsync();
         var ownerRole = roles.Single(role => role.Code == "Owner");
-        var ownerEdit = await Assert.ThrowsAsync<IdentityAdministrationException>(() =>
+        var ownerEdit = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.UpdateRolePermissionsAsync(
                 ownerRole.Id,
                 new UpdateAdminIdentityRolePermissionsRequest(["Catalog.View"]),
@@ -377,7 +377,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
         Assert.Equal(409, ownerEdit.StatusCode);
     }
 
-    private static async Task<IdentityAdministrationException?> CaptureAsync(
+    private static async Task<IdentityException?> CaptureAsync(
         IdentityAdministrationService admin,
         Guid targetUserId,
         Guid actorUserId)
@@ -390,7 +390,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
                 actorUserId);
             return null;
         }
-        catch (IdentityAdministrationException exception)
+        catch (IdentityException exception)
         {
             return exception;
         }
@@ -456,7 +456,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
         return role;
     }
 
-    private static async Task<IdentityAdministrationException?> CaptureRoleUpdateAsync(
+    private static async Task<IdentityException?> CaptureRoleUpdateAsync(
         IdentityAdministrationService admin,
         Guid roleId,
         string[] permissions,
@@ -470,7 +470,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
                 actorUserId);
             return null;
         }
-        catch (IdentityAdministrationException exception)
+        catch (IdentityException exception)
         {
             return exception;
         }

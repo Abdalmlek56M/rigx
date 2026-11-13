@@ -58,7 +58,7 @@ public sealed class IdentityEmailChangeService(
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(input.CurrentPassword))
-            throw new IdentityAdministrationException(400, "The current password is required.");
+            throw new IdentityException(400, "The current password is required.");
         var newEmail = NormalizeEmail(input.NewEmail);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -66,15 +66,15 @@ public sealed class IdentityEmailChangeService(
         {
             var account = await db.UserAccounts.Include(item => item.Person)
                 .SingleOrDefaultAsync(item => item.Id == accountId && item.IsActive, cancellationToken)
-                ?? throw new IdentityAdministrationException(401, "The account is not active.");
+                ?? throw new IdentityException(401, "The account is not active.");
             if (passwordHashing.VerifyPassword(account, account.PasswordHash, input.CurrentPassword) ==
                 PasswordHashVerification.Failed)
-                throw new IdentityAdministrationException(400, "The current password is incorrect.");
+                throw new IdentityException(400, "The current password is incorrect.");
             if (string.Equals(account.NormalizedEmail, newEmail, StringComparison.Ordinal))
-                throw new IdentityAdministrationException(400, "The new email matches the current email.");
+                throw new IdentityException(400, "The new email matches the current email.");
             if (await db.UserAccounts.AnyAsync(
                     item => item.NormalizedEmail == newEmail && item.Id != accountId, cancellationToken))
-                throw new IdentityAdministrationException(409, "This email is already used by another account.");
+                throw new IdentityException(409, "This email is already used by another account.");
 
             var now = timeProvider.GetUtcNow().ToUniversalTime();
             await db.EmailChangeRequests
@@ -104,7 +104,7 @@ public sealed class IdentityEmailChangeService(
             var baseUrl = configuration["Identity:EmailChangeBaseUrl"]
                 ?? "http://localhost:3000/change-email";
             if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri))
-                throw new IdentityAdministrationException(500, "Email change base URL is invalid.");
+                throw new IdentityException(500, "Email change base URL is invalid.");
             var url = new UriBuilder(baseUri)
             {
                 Fragment = $"token={Uri.EscapeDataString(token)}"
@@ -127,7 +127,7 @@ public sealed class IdentityEmailChangeService(
     public async Task<string> ConfirmAsync(string? token, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(token))
-            throw new IdentityAdministrationException(400, "A verification token is required.");
+            throw new IdentityException(400, "A verification token is required.");
         byte[] tokenBytes;
         try
         {
@@ -135,7 +135,7 @@ public sealed class IdentityEmailChangeService(
         }
         catch (FormatException)
         {
-            throw new IdentityAdministrationException(400, "The verification token is invalid.");
+            throw new IdentityException(400, "The verification token is invalid.");
         }
         var hash = SHA256.HashData(tokenBytes);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -145,18 +145,18 @@ public sealed class IdentityEmailChangeService(
             var now = timeProvider.GetUtcNow().ToUniversalTime();
             var request = await db.EmailChangeRequests
                 .SingleOrDefaultAsync(item => item.TokenHash == hash, cancellationToken)
-                ?? throw new IdentityAdministrationException(400, "The verification token is invalid.");
+                ?? throw new IdentityException(400, "The verification token is invalid.");
             if (request.ConsumedAtUtc is not null || request.RevokedAtUtc is not null)
-                throw new IdentityAdministrationException(400, "The verification token was already used.");
+                throw new IdentityException(400, "The verification token was already used.");
             if (request.ExpiresAtUtc <= now)
-                throw new IdentityAdministrationException(400, "The verification token expired.");
+                throw new IdentityException(400, "The verification token expired.");
             if (request.Attempts >= 5)
-                throw new IdentityAdministrationException(400, "Too many verification attempts.");
+                throw new IdentityException(400, "Too many verification attempts.");
             var account = await db.UserAccounts.Include(item => item.Person)
                 .SingleOrDefaultAsync(item => item.Id == request.UserAccountId, cancellationToken)
-                ?? throw new IdentityAdministrationException(400, "The account was not found.");
+                ?? throw new IdentityException(400, "The account was not found.");
             if (!account.IsActive)
-                throw new IdentityAdministrationException(401, "The account is not active.");
+                throw new IdentityException(401, "The account is not active.");
             if (await db.UserAccounts.AnyAsync(
                     item => item.NormalizedEmail == request.NormalizedNewEmail && item.Id != account.Id,
                     cancellationToken))
@@ -165,7 +165,7 @@ public sealed class IdentityEmailChangeService(
                 request.RowVersion++;
                 await db.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-                throw new IdentityAdministrationException(409, "This email is already used by another account.");
+                throw new IdentityException(409, "This email is already used by another account.");
             }
 
             account.Email = request.NewEmail;
@@ -214,11 +214,11 @@ public sealed class IdentityEmailChangeService(
     private static string NormalizeEmail(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
-            throw new IdentityAdministrationException(400, "A new email is required.");
+            throw new IdentityException(400, "A new email is required.");
         var trimmed = email.Trim();
         if (trimmed.Length > 255 || !trimmed.Contains('@') || trimmed.StartsWith('@') || trimmed.EndsWith('@') ||
             trimmed.Contains(' '))
-            throw new IdentityAdministrationException(400, "The new email is invalid.");
+            throw new IdentityException(400, "The new email is invalid.");
         return trimmed.ToUpperInvariant();
     }
 
@@ -325,16 +325,16 @@ public sealed class AccountRestrictionService(
     {
         var type = request.Type?.Trim();
         if (type is not (AccountRestrictionType.Suspension or AccountRestrictionType.Ban))
-            throw new IdentityAdministrationException(400, "A supported restriction type is required.");
+            throw new IdentityException(400, "A supported restriction type is required.");
         if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5)
-            throw new IdentityAdministrationException(400, "A restriction reason of at least 5 characters is required.");
+            throw new IdentityException(400, "A restriction reason of at least 5 characters is required.");
         if (request.Reason.Trim().Length > 1000)
-            throw new IdentityAdministrationException(400, "The restriction reason is too long.");
+            throw new IdentityException(400, "The restriction reason is too long.");
         if (targetAccountId == actorId)
-            throw new IdentityAdministrationException(409, "An administrator cannot restrict their own account.");
+            throw new IdentityException(409, "An administrator cannot restrict their own account.");
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         if (request.ExpiresAtUtc is not null && request.ExpiresAtUtc <= now)
-            throw new IdentityAdministrationException(400, "The restriction expiry must be in the future.");
+            throw new IdentityException(400, "The restriction expiry must be in the future.");
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -342,9 +342,9 @@ public sealed class AccountRestrictionService(
         {
             var target = await db.UserAccounts.Include(item => item.UserRoles).ThenInclude(item => item.Role)
                 .SingleOrDefaultAsync(item => item.Id == targetAccountId, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "Account was not found.");
+                ?? throw new IdentityException(404, "Account was not found.");
             if (target.UserRoles.Any(role => role.Role.Code == "Owner"))
-                throw new IdentityAdministrationException(409, "Owner accounts cannot be restricted.");
+                throw new IdentityException(409, "Owner accounts cannot be restricted.");
             var restriction = new AccountRestriction
             {
                 Id = Guid.CreateVersion7(),
@@ -386,7 +386,7 @@ public sealed class AccountRestrictionService(
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5)
-            throw new IdentityAdministrationException(400, "A reinstatement reason of at least 5 characters is required.");
+            throw new IdentityException(400, "A reinstatement reason of at least 5 characters is required.");
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -394,11 +394,11 @@ public sealed class AccountRestrictionService(
         {
             var restriction = await db.AccountRestrictions
                 .SingleOrDefaultAsync(item => item.Id == restrictionId, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "Restriction was not found.");
+                ?? throw new IdentityException(404, "Restriction was not found.");
             if (restriction.RevokedAtUtc is not null)
-                throw new IdentityAdministrationException(409, "The restriction is already revoked.");
+                throw new IdentityException(409, "The restriction is already revoked.");
             if (restriction.RowVersion != request.RowVersion)
-                throw new IdentityAdministrationException(409, "The restriction was changed by another user.");
+                throw new IdentityException(409, "The restriction was changed by another user.");
             restriction.RevokedAtUtc = now;
             restriction.RevokedByUserAccountId = actorId;
             restriction.ReinstatementReason = request.Reason.Trim();

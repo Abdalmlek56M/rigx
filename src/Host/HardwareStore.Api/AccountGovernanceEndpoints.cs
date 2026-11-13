@@ -37,14 +37,7 @@ public static class AccountGovernanceEndpoints
     {
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await service.RequestAsync(accountId, request, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return Results.Ok(await service.RequestAsync(accountId, request, cancellationToken));
     }
 
     private static async Task<IResult> ConfirmEmailChangeAsync(
@@ -52,14 +45,7 @@ public static class AccountGovernanceEndpoints
         IdentityEmailChangeService service,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            return Results.Ok(new { status = await service.ConfirmAsync(request.Token, cancellationToken) });
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return Results.Ok(new { status = await service.ConfirmAsync(request.Token, cancellationToken) });
     }
 
     private static async Task<IResult> GetNotificationsAsync(
@@ -111,14 +97,7 @@ public static class AccountGovernanceEndpoints
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await restrictions.ApplyAsync(id, actorId, request, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return Results.Ok(await restrictions.ApplyAsync(id, actorId, request, cancellationToken));
     }
 
     private static async Task<IResult> ReinstateAsync(
@@ -130,14 +109,7 @@ public static class AccountGovernanceEndpoints
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await restrictions.ReinstateAsync(id, actorId, request, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return Results.Ok(await restrictions.ReinstateAsync(id, actorId, request, cancellationToken));
     }
 }
 

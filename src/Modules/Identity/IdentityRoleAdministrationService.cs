@@ -40,9 +40,9 @@ public sealed class IdentityRoleAdministrationService(
         var code = IdentityAdministrationSupport.NormalizeRequired(request.Code, 64, "Role code");
         var name = IdentityAdministrationSupport.NormalizeRequired(request.Name, 128, "Role name");
         if (code is "Owner" or "Customer")
-            throw new IdentityAdministrationException(409, "Owner and Customer roles are reserved.");
+            throw new IdentityException(409, "Owner and Customer roles are reserved.");
         if (!code.All(character => char.IsLetterOrDigit(character) || character is '.' or '_' or '-'))
-            throw new IdentityAdministrationException(400, "Role code contains unsupported characters.");
+            throw new IdentityException(400, "Role code contains unsupported characters.");
         var requestedPermissions = IdentityAdministrationSupport.ValidatePermissions(request.PermissionCodes);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -53,7 +53,7 @@ public sealed class IdentityRoleAdministrationService(
             var actor = await support.RequireActorAsync(db, actorUserId, cancellationToken);
             IdentityDelegationPolicy.EnsureCanCreateRole(actor, requestedPermissions);
             if (await db.Roles.AnyAsync(role => role.Code == code, cancellationToken))
-                throw new IdentityAdministrationException(409, "A role with this code already exists.");
+                throw new IdentityException(409, "A role with this code already exists.");
 
             var role = new Role
             {
@@ -116,7 +116,7 @@ public sealed class IdentityRoleAdministrationService(
             var role = await db.Roles
                 .Include(item => item.RolePermissions)
                 .SingleOrDefaultAsync(item => item.Id == roleId, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "Role was not found.");
+                ?? throw new IdentityException(404, "Role was not found.");
             var existingGrant = new IdentityRoleGrant(
                 role.Id,
                 role.Code,

@@ -32,14 +32,7 @@ public static class CustomerAddressEndpoints
     {
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await addresses.CreateAsync(accountId, request, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Map(exception);
-        }
+        return Results.Ok(await addresses.CreateAsync(accountId, request, cancellationToken));
     }
 
     private static async Task<IResult> UpdateAsync(
@@ -51,14 +44,7 @@ public static class CustomerAddressEndpoints
     {
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await addresses.UpdateAsync(accountId, id, request, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Map(exception);
-        }
+        return Results.Ok(await addresses.UpdateAsync(accountId, id, request, cancellationToken));
     }
 
     private static async Task<IResult> DeleteAsync(
@@ -70,17 +56,7 @@ public static class CustomerAddressEndpoints
     {
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
-        try
-        {
-            await addresses.DeleteAsync(accountId, id, rowVersion, cancellationToken);
-            return Results.NoContent();
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Map(exception);
-        }
+        await addresses.DeleteAsync(accountId, id, rowVersion, cancellationToken);
+        return Results.NoContent();
     }
-
-    private static IResult Map(IdentityAdministrationException exception) =>
-        Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
 }

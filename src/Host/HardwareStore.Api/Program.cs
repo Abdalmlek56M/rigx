@@ -148,6 +148,7 @@ app.MapEmailOtpEndpoints();
 app.MapContactEndpoints();
 app.MapArticleVideoEndpoints();
 app.MapIdentityCurrentUserEndpoints();
+app.MapIdentitySessionEndpoints();
 app.MapProfileAvatarEndpoints();
 app.MapAccountGovernanceEndpoints();
 app.MapCustomerAddressEndpoints();

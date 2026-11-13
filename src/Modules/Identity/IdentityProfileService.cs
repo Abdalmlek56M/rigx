@@ -18,7 +18,7 @@ public sealed class IdentityProfileService(
         CancellationToken cancellationToken = default)
     {
         if (accountId == Guid.Empty)
-            throw new IdentityAdministrationException(401, "The account is not authenticated.");
+            throw new IdentityException(401, "The account is not authenticated.");
         var fullName = IdentityAdministrationSupport.NormalizeRequired(request.FullName, 255, "Full name");
         var phoneNumber = IdentityAdministrationSupport.NormalizeOptional(request.PhoneNumber, 32, "Phone number");
 
@@ -29,7 +29,7 @@ public sealed class IdentityProfileService(
             var account = await db.UserAccounts
                 .Include(item => item.Person)
                 .SingleOrDefaultAsync(item => item.Id == accountId && item.IsActive, cancellationToken)
-                ?? throw new IdentityAdministrationException(401, "The account is not active or does not exist.");
+                ?? throw new IdentityException(401, "The account is not active or does not exist.");
             var changed =
                 !string.Equals(account.Person.FullName, fullName, StringComparison.Ordinal) ||
                 !string.Equals(account.Person.PhoneNumber, phoneNumber, StringComparison.Ordinal);
@@ -49,7 +49,7 @@ public sealed class IdentityProfileService(
                 cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
-        catch (IdentityAdministrationException)
+        catch (IdentityException)
         {
             await IdentityAdministrationSupport.SafeRollbackAsync(transaction, cancellationToken);
             throw;

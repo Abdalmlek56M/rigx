@@ -20,29 +20,10 @@ public static class IdentityCurrentUserEndpoints
         IdentityCurrentUserService users,
         CancellationToken cancellationToken)
     {
-        context.Response.Headers.CacheControl = "no-store";
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
-        try
-        {
-            await profiles.UpdateAsync(accountId, request, cancellationToken);
-            var user = await users.GetAsync(accountId, cancellationToken);
-            return user is null ? Results.Unauthorized() : Results.Ok(new
-            {
-                user.Username,
-                user.Email,
-                user.FullName,
-                user.PhoneNumber,
-                user.Roles,
-                user.Permissions,
-                user.IsEmailVerified,
-                user.AvatarStorageKey
-            });
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        await profiles.UpdateAsync(accountId, request, cancellationToken);
+        return await GetCurrentUserAsync(context, users, cancellationToken);
     }
 
     private static async Task<IResult> GetCurrentUserAsync(
@@ -50,9 +31,7 @@ public static class IdentityCurrentUserEndpoints
         IdentityCurrentUserService users,
         CancellationToken cancellationToken)
     {
-        context.Response.Headers.CacheControl = "no-store";
-        context.Response.Headers.Pragma = "no-cache";
-
+        IdentityHttp.NoStore(context);
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
 

@@ -69,10 +69,10 @@ public sealed class IdentityUserAdministrationService(
         var fullName = IdentityAdministrationSupport.NormalizeRequired(request.FullName, 255, "Full name");
         var phoneNumber = IdentityAdministrationSupport.NormalizeOptional(request.PhoneNumber, 32, "Phone number");
         if (!new EmailAddressAttribute().IsValid(email))
-            throw new IdentityAdministrationException(400, "Email is invalid.");
+            throw new IdentityException(400, "Email is invalid.");
         var roleIds = (request.RoleIds ?? []).Distinct().ToArray();
         if (roleIds.Length == 0)
-            throw new IdentityAdministrationException(400, "At least one role is required.");
+            throw new IdentityException(400, "At least one role is required.");
 
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -86,7 +86,7 @@ public sealed class IdentityUserAdministrationService(
                 .Where(role => roleIds.Contains(role.Id))
                 .ToListAsync(cancellationToken);
             if (roles.Count != roleIds.Length)
-                throw new IdentityAdministrationException(400, "One or more roles do not exist.");
+                throw new IdentityException(400, "One or more roles do not exist.");
 
             var grants = roles.Select(role => new IdentityRoleGrant(
                 role.Id,
@@ -106,7 +106,7 @@ public sealed class IdentityUserAdministrationService(
                                   identifier.NormalizedIdentifier == normalizedEmail,
                     cancellationToken);
             if (collision)
-                throw new IdentityAdministrationException(409, "The username or email is already in use.");
+                throw new IdentityException(409, "The username or email is already in use.");
 
             var person = new Person
             {
@@ -196,7 +196,7 @@ public sealed class IdentityUserAdministrationService(
             }
 
             var user = await GetUserAsync(account.Id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
             return new AdminIdentityUserInvitationResult(user, dispatchQueued);
         }
         catch (Exception exception)
@@ -223,16 +223,16 @@ public sealed class IdentityUserAdministrationService(
             await IdentityAdministrationSupport.LockAuthorizationStateAsync(db, cancellationToken);
             var actor = await support.RequireActorAsync(db, actorUserId, cancellationToken);
             var targetAuthority = await support.GetUserAuthorityAsync(db, id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
             IdentityDelegationPolicy.EnsureCanManageUser(actor, id, targetAuthority.IsOwner, targetAuthority.Permissions);
             if (id == actorUserId && !request.IsActive)
-                throw new IdentityAdministrationException(409, "You cannot deactivate your own account.");
+                throw new IdentityException(409, "You cannot deactivate your own account.");
 
             var account = await db.UserAccounts
                 .Include(item => item.Person)
                 .Include(item => item.UserRoles)
                 .SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
 
             var deactivating = account.IsActive && !request.IsActive;
             if (deactivating)
@@ -270,7 +270,7 @@ public sealed class IdentityUserAdministrationService(
             await transaction.CommitAsync(cancellationToken);
 
             return await GetUserAsync(account.Id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
         }
         catch (Exception exception)
         {
@@ -290,7 +290,7 @@ public sealed class IdentityUserAdministrationService(
             .Distinct()
             .ToArray();
         if (requestedRoleIds.Length == 0)
-            throw new IdentityAdministrationException(400, "At least one role is required.");
+            throw new IdentityException(400, "At least one role is required.");
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -299,18 +299,18 @@ public sealed class IdentityUserAdministrationService(
             await IdentityAdministrationSupport.LockAuthorizationStateAsync(db, cancellationToken);
             var actor = await support.RequireActorAsync(db, actorUserId, cancellationToken);
             var targetAuthority = await support.GetUserAuthorityAsync(db, id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
             var account = await db.UserAccounts
                 .Include(item => item.UserRoles)
                 .SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
 
             var roles = await db.Roles
                 .Include(role => role.RolePermissions)
                 .Where(role => requestedRoleIds.Contains(role.Id))
                 .ToListAsync(cancellationToken);
             if (roles.Count != requestedRoleIds.Length)
-                throw new IdentityAdministrationException(400, "One or more roles do not exist.");
+                throw new IdentityException(400, "One or more roles do not exist.");
 
             var grants = roles
                 .Select(role => new IdentityRoleGrant(
@@ -364,7 +364,7 @@ public sealed class IdentityUserAdministrationService(
             await transaction.CommitAsync(cancellationToken);
 
             return await GetUserAsync(account.Id, cancellationToken)
-                ?? throw new IdentityAdministrationException(404, "User was not found.");
+                ?? throw new IdentityException(404, "User was not found.");
         }
         catch (Exception exception)
         {

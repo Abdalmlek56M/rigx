@@ -74,16 +74,9 @@ public static class IdentityAdministrationEndpoints
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            var result = await service.CreateUserAsync(request, actorId, cancellationToken);
-            context.Response.Headers.CacheControl = "no-store";
-            return Results.Created((string?)null, result);
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return MapException(exception);
-        }
+        var result = await service.CreateUserAsync(request, actorId, cancellationToken);
+        IdentityHttp.NoStore(context);
+        return Results.Created((string?)null, result);
     }
 
     private static async Task<IResult> RequestPasswordResetAsync(
@@ -117,14 +110,7 @@ public static class IdentityAdministrationEndpoints
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await service.UpdateUserAsync(id, request, actorId, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return MapException(exception);
-        }
+        return Results.Ok(await service.UpdateUserAsync(id, request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> AssignRolesAsync(
@@ -136,14 +122,7 @@ public static class IdentityAdministrationEndpoints
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await service.AssignRolesAsync(id, request, actorId, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return MapException(exception);
-        }
+        return Results.Ok(await service.AssignRolesAsync(id, request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> GetRolesAsync(
@@ -168,21 +147,15 @@ public static class IdentityAdministrationEndpoints
         return Results.Ok(PermissionCatalog.All.OrderBy(code => code, StringComparer.Ordinal).ToArray());
     }
 
-    private static async Task<IResult> CreateRoleAsync(        CreateAdminIdentityRoleRequest request,
+    private static async Task<IResult> CreateRoleAsync(
+        CreateAdminIdentityRoleRequest request,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await service.CreateRoleAsync(request, actorId, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return MapException(exception);
-        }
+        return Results.Ok(await service.CreateRoleAsync(request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> UpdateRolePermissionsAsync(
@@ -194,16 +167,6 @@ public static class IdentityAdministrationEndpoints
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await service.UpdateRolePermissionsAsync(id, request, actorId, cancellationToken));
-        }
-        catch (IdentityAdministrationException exception)
-        {
-            return MapException(exception);
-        }
+        return Results.Ok(await service.UpdateRolePermissionsAsync(id, request, actorId, cancellationToken));
     }
-
-    private static IResult MapException(IdentityAdministrationException exception) =>
-        Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
 }
