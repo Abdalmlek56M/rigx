@@ -40,7 +40,7 @@ Order matters: we restructure before adding features, so new features land in cl
 14. **Partners v2**: partner record (phone, capital, join date, default %, basis), capital deposits/withdrawals, payouts, statement PDF.
 15. **Money & dashboard**: money accounts (cash / InstaPay / wallet) if D3 = yes; dashboard KPIs from the design; expenses v2 (types list, build link, paid-from, recurring, export).
 16. **Content v2**: scheduled articles, view counts, structured article blocks incl. store product card; FAQ scope (general / category / product, exclusions, YouTube).
-17. **Settings v2**: store info, social links table, shipping groups, payment + deposit, watermark, store controls, WhatsApp templates, reviews, language, invoice settings (do right after 2.1).
+17. [x] **Settings v2**: store info, social links table, shipping groups, payment + deposit, watermark, store controls, WhatsApp templates, reviews, language, invoice settings, lead-source and warranty-option lists (D5/D6); homepage layout JSON replaced by section order in store controls; public checkout quote (shipping fee + upfront/deposit). Done 13 Nov 2026 (migration M16). Logo uploads (store + watermark) land with 2.9. Checkpoint: `docs/checkpoints/2.17-settings.md`.
 18. **Customers admin**: customer 360 view, merge accounts, extend warranty, read-only "view as customer".
 
 ## Phase 3 — API contract

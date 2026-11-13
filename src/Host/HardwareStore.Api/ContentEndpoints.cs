@@ -7,17 +7,12 @@ public static class ContentEndpoints
     public static IEndpointRouteBuilder MapContentEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var publicGroup = endpoints.MapGroup("/api/v1/content");
-        publicGroup.MapGet("/homepage", GetPublishedHomepageAsync).AllowAnonymous();
         publicGroup.MapGet("/articles", ListPublicArticlesAsync).AllowAnonymous();
         publicGroup.MapGet("/articles/{slug}", GetPublicArticleAsync).AllowAnonymous();
         publicGroup.MapGet("/faqs", ListPublicFaqsAsync).AllowAnonymous();
         publicGroup.MapGet("/policies/{kind}", GetPublicPolicyAsync).AllowAnonymous();
 
         var admin = endpoints.MapGroup("/api/v1/admin/content");
-        admin.MapGet("/homepage", GetHomepageDraftAsync).RequirePermission(ContentPermission);
-        admin.MapPut("/homepage", SaveHomepageDraftAsync).RequirePermission(ContentPermission);
-        admin.MapPost("/homepage/publish", PublishHomepageAsync).RequirePermission(ContentPermission);
-
         admin.MapGet("/articles", ListAdminArticlesAsync).RequirePermission(ContentPermission);
         admin.MapGet("/articles/{id:guid}", GetAdminArticleAsync).RequirePermission(ContentPermission);
         admin.MapGet("/articles/{id:guid}/revisions", ListArticleRevisionsAsync).RequirePermission(ContentPermission);
@@ -41,46 +36,6 @@ public static class ContentEndpoints
     }
 
     private const string ContentPermission = "System.StoreSettings";
-
-    private static async Task<IResult> GetPublishedHomepageAsync(
-        HttpContext context,
-        HomepageContentService service,
-        CancellationToken cancellationToken)
-    {
-        context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await service.GetPublishedAsync(cancellationToken));
-    }
-
-    private static async Task<IResult> GetHomepageDraftAsync(
-        HttpContext context,
-        HomepageContentService service,
-        CancellationToken cancellationToken)
-    {
-        context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await service.GetDraftAsync(cancellationToken));
-    }
-
-    private static async Task<IResult> SaveHomepageDraftAsync(
-        HomepageLayoutUpdateRequest request,
-        HttpContext context,
-        HomepageContentService service,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.SaveDraftAsync(request, actorId, cancellationToken));
-    }
-
-    private static async Task<IResult> PublishHomepageAsync(
-        HomepagePublishRequest request,
-        HttpContext context,
-        HomepageContentService service,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.PublishAsync(request.RowVersion, actorId, cancellationToken));
-    }
 
     private static async Task<IResult> ListPublicArticlesAsync(
         HttpContext context,
@@ -258,5 +213,4 @@ public static class ContentEndpoints
         Results.Ok(await service.PublishAsync(id, request.RowVersion, cancellationToken));
 }
 
-public sealed record HomepagePublishRequest(long RowVersion);
 public sealed record ContentVersionRequest(long RowVersion);

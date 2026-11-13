@@ -16,18 +16,6 @@ public static class ContentPolicyKind
         ["Shipping", "Returns", "Exchanges", "Warranty", "Terms"];
 }
 
-public sealed class HomepageLayout
-{
-    public Guid Id { get; set; }
-    public required string Status { get; set; }
-    public required string LayoutJson { get; set; }
-    public DateTimeOffset CreatedAtUtc { get; set; }
-    public DateTimeOffset UpdatedAtUtc { get; set; }
-    public DateTimeOffset? PublishedAtUtc { get; set; }
-    public Guid? UpdatedByUserAccountId { get; set; }
-    public long RowVersion { get; set; } = 1;
-}
-
 public sealed class ContentArticle
 {
     public Guid Id { get; set; }
@@ -105,21 +93,6 @@ public static class ContentModelConfiguration
 {
     public static void Configure(ModelBuilder model)
     {
-        model.Entity<HomepageLayout>(entity =>
-        {
-            entity.ToTable("homepage_layouts");
-            entity.HasKey(layout => layout.Id);
-            entity.Property(layout => layout.Id).HasColumnName("id").ValueGeneratedNever();
-            entity.Property(layout => layout.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
-            entity.Property(layout => layout.LayoutJson).HasColumnName("layout_json").HasColumnType("jsonb").IsRequired();
-            entity.Property(layout => layout.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
-            entity.Property(layout => layout.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
-            entity.Property(layout => layout.PublishedAtUtc).HasColumnName("published_at_utc").HasColumnType("timestamp with time zone");
-            entity.Property(layout => layout.UpdatedByUserAccountId).HasColumnName("updated_by_user_account_id");
-            entity.Property(layout => layout.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
-            entity.HasIndex(layout => layout.Status).IsUnique().HasDatabaseName("ux_homepage_layouts_status");
-        });
-
         model.Entity<ContentArticle>(entity =>
         {
             entity.ToTable("content_articles");

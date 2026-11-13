@@ -445,55 +445,6 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                     b.ToTable("content_policies", (string)null);
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Storefront.HomepageLayout", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<string>("LayoutJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("layout_json");
-
-                    b.Property<DateTimeOffset?>("PublishedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("published_at_utc");
-
-                    b.Property<long>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1L)
-                        .HasColumnName("row_version");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("status");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at_utc");
-
-                    b.Property<Guid?>("UpdatedByUserAccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by_user_account_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Status")
-                        .IsUnique()
-                        .HasDatabaseName("ux_homepage_layouts_status");
-
-                    b.ToTable("homepage_layouts", (string)null);
-                });
-
             modelBuilder.Entity("HardwareStore.Modules.Storefront.Offer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -613,39 +564,58 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    b.Property<string>("ConsultationSummary")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("consultation_summary");
+                    b.Property<string>("ContactLinks")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("contact_links")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
+                    b.Property<string>("Controls")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("controls")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
-                    b.Property<string>("FacebookUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("facebook_url");
+                    b.Property<string>("Invoice")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("invoice")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("InstagramUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("instagram_url");
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("language")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("PickupAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("pickup_address");
+                    b.Property<string>("LeadSources")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("lead_sources")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("PickupHours")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("pickup_hours");
+                    b.Property<string>("Payment")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payment")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("PickupInstructions")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("pickup_instructions");
+                    b.Property<string>("Reviews")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("reviews")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
@@ -654,44 +624,44 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasDefaultValue(1L)
                         .HasColumnName("row_version");
 
-                    b.Property<string>("ServiceSummary")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("service_summary");
+                    b.Property<string>("Shipping")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("shipping")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("TelegramUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("telegram_url");
-
-                    b.Property<string>("TikTokUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("tiktok_url");
+                    b.Property<string>("StoreInfo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("store_info")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at_utc");
 
-                    b.Property<string>("WarrantySummary")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("warranty_summary");
+                    b.Property<string>("WarrantyOptions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("warranty_options")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("WhatsAppMessage")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("whatsapp_message");
+                    b.Property<string>("Watermark")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("watermark")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<string>("WhatsAppNumber")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("whatsapp_number");
-
-                    b.Property<string>("YouTubeUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("youtube_url");
+                    b.Property<string>("WhatsAppTemplates")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("whatsapp_templates")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
                     b.HasKey("Id");
 

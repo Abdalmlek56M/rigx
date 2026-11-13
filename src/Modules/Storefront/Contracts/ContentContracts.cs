@@ -1,8 +1,5 @@
 namespace HardwareStore.Modules.Storefront;
 
-public sealed record HomepageLayoutView(string LayoutJson, long RowVersion, DateTimeOffset? PublishedAtUtc);
-public sealed record HomepageLayoutUpdateRequest(string? LayoutJson, long RowVersion);
-
 public sealed record ArticleView(
     Guid Id,
     string Slug,

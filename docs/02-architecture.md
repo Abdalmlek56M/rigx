@@ -30,7 +30,7 @@ PostgreSQL 17       One database, one schema per module
 | Invoicing | online invoices, quote images/PDF | no project yet — created in 2.6 |
 | Pricing (new) | offers, coupons, context pricing, customer tiers | offers partly in Catalog — consolidate |
 | PcBuilder | templates, slots, compatibility | exists |
-| Storefront | settings, content, articles, FAQ, videos, contact | exists — content split into `Features/Content` (homepage, articles, FAQ, policies) |
+| Storefront | settings, content, articles, FAQ, videos, contact | exists — content split into `Features/Content` (articles, FAQ, policies); settings v2 in `Domain/Settings` + `Features/Settings` (2.17) |
 | Messaging (new) | email outbox, subscriptions, campaigns, WhatsApp queue | to build |
 | Auditing | audit events (before/after), trash | exists (security events) — extend to full audit log |
 | System (new) | backups, export, data reset | to build |
@@ -119,3 +119,4 @@ Rules:
 | 13 | Module projects are created when their first feature lands (no empty placeholder projects) | an empty project is dead code; creating one takes a minute |
 | 14 | Gap-audit decisions D1–D8 approved by the owner (13 Nov 2026), see `07-gap-audit.md` §6: RX code per used piece / per new lot; customer sees received→confirmed→preparing→shipped→delivered (+cancelled), "completed" is internal; money accounts (cash/InstaPay/wallet) with opening balances; partner "whole shop" basis = % of monthly net profit after expenses; editable lead-source and warranty-option lists; remove warehouses, supplier bank data, PC-builder templates, variants, video file hosting, in-app notifications (reviews stay); product Q&A is owner-written | needed to model Phase 2 data correctly |
 | 15 | Google uses the ID-token flow (client id only, no secret) | the frontend gets the ID token from Google's button; the server checks signature, issuer, audience and lifetime with `Identity:Google:ClientId` only, so no client secret is stored or rotated |
+| 16 | Store settings = one row, one `jsonb` column per section (12 sections), each section a record with its defaults and its own `Normalize()` rules; admin replaces one section at a time (`PUT /api/v1/admin/storefront/settings/{section}`) guarded by one row version; shipping fee and upfront/deposit rules live in the section records and are served by `GET /api/v1/storefront/checkout-quote` | one place per rule, defaults in code (`{}` = defaults), later steps (2.4, 2.6, 2.7, 2.9, 2.12) read typed values; one owner editing makes a shared row version enough |

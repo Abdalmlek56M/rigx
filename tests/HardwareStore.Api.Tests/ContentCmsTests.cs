@@ -1,4 +1,3 @@
-using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -9,47 +8,6 @@ namespace HardwareStore.Api.Tests;
 public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture)
     : IClassFixture<OwnerBootstrapPostgreSqlFixture>
 {
-    [Fact]
-    public async Task Homepage_draft_publish_and_reference_validation()
-    {
-        var database = await fixture.CreateDatabaseAsync();
-        var category = await SeedCategoryAsync(database, "graphics-cards");
-        var services = ContentServices.Create(database, TimeProvider.System);
-
-        var initial = await services.Homepage.GetPublishedAsync();
-        Assert.Contains("\"version\":1", initial.LayoutJson);
-
-        var draft = await services.Homepage.GetDraftAsync();
-        var saved = await services.Homepage.SaveDraftAsync(
-            new HomepageLayoutUpdateRequest(Layout(category.Id, "hero"), draft.RowVersion),
-            Guid.NewGuid());
-        Assert.Equal(1, saved.RowVersion);
-
-        var published = await services.Homepage.PublishAsync(saved.RowVersion, Guid.NewGuid());
-        Assert.NotNull(published.PublishedAtUtc);
-        var publicLayout = await services.Homepage.GetPublishedAsync();
-        Assert.Contains(category.Id.ToString(), publicLayout.LayoutJson, StringComparison.OrdinalIgnoreCase);
-
-        // Editing the draft after publishing never changes the public layout.
-        var draft2 = await services.Homepage.GetDraftAsync();
-        var save2 = await services.Homepage.SaveDraftAsync(
-            new HomepageLayoutUpdateRequest(Layout(category.Id, "brands"), draft2.RowVersion),
-            Guid.NewGuid());
-        Assert.Contains("\"categories\"", save2.LayoutJson);
-        Assert.Contains("hero", (await services.Homepage.GetPublishedAsync()).LayoutJson);
-
-        var invalidDraft = await services.Homepage.SaveDraftAsync(
-            new HomepageLayoutUpdateRequest(Layout(Guid.NewGuid(), "hero"), save2.RowVersion),
-            Guid.NewGuid());
-        await Assert.ThrowsAsync<StorefrontException>(() =>
-            services.Homepage.PublishAsync(invalidDraft.RowVersion, Guid.NewGuid()));
-
-        await Assert.ThrowsAsync<StorefrontException>(() =>
-            services.Homepage.SaveDraftAsync(
-                new HomepageLayoutUpdateRequest("<script>alert(1)</script>", 0),
-                Guid.NewGuid()));
-    }
-
     [Fact]
     public async Task Articles_draft_publish_unpublish_and_revisions()
     {
@@ -139,15 +97,6 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             services.Policies.GetPublicAsync("Unknown"));
     }
 
-    private static string Layout(Guid categoryId, string firstSection) =>
-        "{\"version\":1,\"sections\":[" +
-        $"{{\"id\":\"{firstSection}\",\"visible\":true}}," +
-        "{\"id\":\"categories\",\"visible\":true}]," +
-        "\"rails\":{" +
-        "\"brands\":{\"title\":\"\",\"lead\":\"\",\"contentType\":\"brands\",\"limit\":10,\"itemOrder\":[],\"hiddenItemIds\":[]}," +
-        "\"categories\":{\"title\":\"Categories\",\"lead\":\"\",\"contentType\":\"categories\",\"limit\":8," +
-        $"\"itemOrder\":[\"{categoryId}\"],\"hiddenItemIds\":[]}}}}}}";
-
     private static ArticleInput Article(string slug) =>
         new(
             slug,
@@ -167,27 +116,7 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             "/articles/" + slug,
             0);
 
-    private static async Task<CatalogCategory> SeedCategoryAsync(
-        OwnerBootstrapDatabase database,
-        string slug)
-    {
-        await using var catalog = database.CreateCatalogContext();
-        var category = new CatalogCategory
-        {
-            Id = Guid.CreateVersion7(),
-            Name = "Graphics Cards",
-            Slug = slug,
-            IsActive = true,
-            CreatedAtUtc = DateTimeOffset.UtcNow,
-            UpdatedAtUtc = DateTimeOffset.UtcNow
-        };
-        catalog.Categories.Add(category);
-        await catalog.SaveChangesAsync();
-        return category;
-    }
-
     private sealed record ContentServices(
-        HomepageContentService Homepage,
         ContentArticleService Articles,
         ContentFaqService Faqs,
         ContentPolicyService Policies)
@@ -196,7 +125,6 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         {
             var factory = new StorefrontFactory(database.ConnectionString);
             return new ContentServices(
-                new HomepageContentService(factory, clock),
                 new ContentArticleService(factory, clock, new NoopUsageSink()),
                 new ContentFaqService(factory, clock),
                 new ContentPolicyService(factory, clock));

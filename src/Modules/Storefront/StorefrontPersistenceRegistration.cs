@@ -16,7 +16,6 @@ public static class StorefrontPersistenceRegistration
         services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<StoreSettingsService>();
         services.AddScoped<WishlistService>();
-        services.AddScoped<HomepageContentService>();
         services.AddScoped<ContentArticleService>();
         services.AddScoped<ContentFaqService>();
         services.AddScoped<ContentPolicyService>();

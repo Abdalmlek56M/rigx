@@ -82,7 +82,7 @@ public sealed class PermissionAuthorizationTests
         await using var factory = new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program>();
         using var client = factory.CreateClient(); // Starts the TestServer before its dynamic EndpointDataSource is resolved.
         var endpoints = factory.Services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>().Endpoints;
-        foreach (var path in new[] { "/health/live", "/health/ready", "/api/v1/storefront/settings" })
+        foreach (var path in new[] { "/health/live", "/health/ready", "/api/v1/storefront/settings", "/api/v1/storefront/checkout-quote" })
         {
             var endpoint = Assert.Single(endpoints, endpoint =>
                 endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint route &&
@@ -154,7 +154,7 @@ public sealed class PermissionAuthorizationTests
             .Where(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/v1/admin/storefront/settings", StringComparison.Ordinal) == true)
             .ToArray();
 
-        Assert.Equal(2, endpoints.Length);
+        Assert.Equal(13, endpoints.Length);
         Assert.All(endpoints, endpoint =>
             Assert.NotNull(endpoint.Metadata.GetMetadata<IAuthorizeData>()));
     }

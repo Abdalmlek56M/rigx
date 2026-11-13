@@ -6,12 +6,23 @@ public static class StorefrontEndpoints
 {
     public static IEndpointRouteBuilder MapStorefrontEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/api/v1/storefront/settings", GetPublicSettingsAsync)
-            .AllowAnonymous();
-        endpoints.MapGet("/api/v1/admin/storefront/settings", GetAdminSettingsAsync)
-            .RequirePermission("System.StoreSettings");
-        endpoints.MapPut("/api/v1/admin/storefront/settings", UpdateSettingsAsync)
-            .RequirePermission("System.StoreSettings");
+        endpoints.MapGet("/api/v1/storefront/settings", GetPublicSettingsAsync).AllowAnonymous();
+        endpoints.MapGet("/api/v1/storefront/checkout-quote", QuoteCheckoutAsync).AllowAnonymous();
+
+        var settings = endpoints.MapGroup("/api/v1/admin/storefront/settings");
+        settings.MapGet("", GetAdminSettingsAsync).RequirePermission(SettingsPermission);
+        MapSection<StoreInfoSettings>(settings);
+        MapSection<ContactLinkSettings>(settings);
+        MapSection<ShippingSettings>(settings);
+        MapSection<PaymentSettings>(settings);
+        MapSection<WatermarkSettings>(settings);
+        MapSection<StoreControlSettings>(settings);
+        MapSection<WhatsAppTemplateSettings>(settings);
+        MapSection<ReviewSettings>(settings);
+        MapSection<LanguageSettings>(settings);
+        MapSection<InvoiceSettings>(settings);
+        MapSection<LeadSourceSettings>(settings);
+        MapSection<WarrantyOptionSettings>(settings);
 
         var wishlist = endpoints.MapGroup("/api/v1/wishlist").RequireAuthorization();
         wishlist.MapGet("", ListWishlistAsync);
@@ -20,6 +31,16 @@ public static class StorefrontEndpoints
         wishlist.MapDelete("", ClearWishlistAsync);
         wishlist.MapPost("/merge", MergeWishlistAsync);
         return endpoints;
+    }
+
+    private const string SettingsPermission = "System.StoreSettings";
+
+    private static void MapSection<T>(RouteGroupBuilder group) where T : class, IStoreSettingsSection<T>
+    {
+        // Passed as a plain Delegate so the compile-time endpoint generators skip the open generic handler
+        // (they cannot emit code for T); the runtime binder handles each closed section type.
+        Delegate handler = UpdateSectionAsync<T>;
+        group.MapPut("/" + T.Key, handler).RequirePermission(SettingsPermission);
     }
 
     private static async Task<IResult> ListWishlistAsync(
@@ -41,15 +62,8 @@ public static class StorefrontEndpoints
     {
         if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
-        try
-        {
-            await wishlist.AddAsync(accountId, productId, cancellationToken);
-            return Results.NoContent();
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        await wishlist.AddAsync(accountId, productId, cancellationToken);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> RemoveWishlistAsync(
@@ -96,36 +110,36 @@ public static class StorefrontEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await settings.GetAsync(cancellationToken));
+        return Results.Ok(await settings.GetPublicAsync(cancellationToken));
     }
+
+    private static async Task<IResult> QuoteCheckoutAsync(
+        StoreSettingsService settings,
+        CancellationToken cancellationToken,
+        string? governorate = null,
+        decimal subtotal = 0,
+        bool pickup = false) =>
+        Results.Ok(await settings.QuoteCheckoutAsync(governorate, subtotal, pickup, cancellationToken));
 
     private static async Task<IResult> GetAdminSettingsAsync(
         HttpContext context,
         StoreSettingsService settings,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await settings.GetAsync(cancellationToken));
+        return Results.Ok(await settings.GetAdminAsync(cancellationToken));
     }
 
-    private static async Task<IResult> UpdateSettingsAsync(
-        StoreSettingsUpdateRequest request,
+    private static async Task<IResult> UpdateSectionAsync<T>(
+        StoreSettingsSectionUpdate<T> request,
         HttpContext context,
         StoreSettingsService settings,
         CancellationToken cancellationToken)
+        where T : class, IStoreSettingsSection<T>
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await settings.UpdateAsync(request, actorId, cancellationToken));
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return Results.Ok(await settings.UpdateSectionAsync(request.Value, request.RowVersion, actorId, cancellationToken));
     }
 }
 

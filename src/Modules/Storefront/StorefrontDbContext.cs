@@ -2,27 +2,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Storefront;
 
-public sealed class StoreSettings
-{
-    public int Id { get; set; } = 1;
-    public string? WhatsAppNumber { get; set; }
-    public string? WhatsAppMessage { get; set; }
-    public string? FacebookUrl { get; set; }
-    public string? TelegramUrl { get; set; }
-    public string? TikTokUrl { get; set; }
-    public string? YouTubeUrl { get; set; }
-    public string? InstagramUrl { get; set; }
-    public string? PickupAddress { get; set; }
-    public string? PickupHours { get; set; }
-    public string? PickupInstructions { get; set; }
-    public string? WarrantySummary { get; set; }
-    public string? ServiceSummary { get; set; }
-    public string? ConsultationSummary { get; set; }
-    public DateTimeOffset CreatedAtUtc { get; set; }
-    public DateTimeOffset UpdatedAtUtc { get; set; }
-    public long RowVersion { get; set; } = 1;
-}
-
 public sealed class WishlistItem
 {
     public Guid Id { get; set; }
@@ -193,7 +172,6 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
     public DbSet<WishlistProductReference> WishlistProducts => Set<WishlistProductReference>();
     public DbSet<WishlistProductImageReference> WishlistProductImages => Set<WishlistProductImageReference>();
     public DbSet<WishlistCategoryReference> WishlistCategories => Set<WishlistCategoryReference>();
-    public DbSet<HomepageLayout> HomepageLayouts => Set<HomepageLayout>();
     public DbSet<ContentArticle> ContentArticles => Set<ContentArticle>();
     public DbSet<ContentArticleRevision> ContentArticleRevisions => Set<ContentArticleRevision>();
     public DbSet<ContentFaq> ContentFaqs => Set<ContentFaq>();
@@ -262,29 +240,7 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
             entity.Property(category => category.Slug).HasColumnName("slug");
         });
 
-        model.Entity<StoreSettings>(entity =>
-        {
-            entity.ToTable("store_settings");
-            entity.HasKey(item => item.Id);
-            entity.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
-            entity.Property(item => item.WhatsAppNumber).HasColumnName("whatsapp_number").HasMaxLength(32);
-            entity.Property(item => item.WhatsAppMessage).HasColumnName("whatsapp_message").HasMaxLength(500);
-            entity.Property(item => item.FacebookUrl).HasColumnName("facebook_url").HasMaxLength(512);
-            entity.Property(item => item.TelegramUrl).HasColumnName("telegram_url").HasMaxLength(512);
-            entity.Property(item => item.TikTokUrl).HasColumnName("tiktok_url").HasMaxLength(512);
-            entity.Property(item => item.YouTubeUrl).HasColumnName("youtube_url").HasMaxLength(512);
-            entity.Property(item => item.InstagramUrl).HasColumnName("instagram_url").HasMaxLength(512);
-            entity.Property(item => item.PickupAddress).HasColumnName("pickup_address").HasMaxLength(500);
-            entity.Property(item => item.PickupHours).HasColumnName("pickup_hours").HasMaxLength(255);
-            entity.Property(item => item.PickupInstructions).HasColumnName("pickup_instructions").HasMaxLength(1000);
-            entity.Property(item => item.WarrantySummary).HasColumnName("warranty_summary").HasMaxLength(1000);
-            entity.Property(item => item.ServiceSummary).HasColumnName("service_summary").HasMaxLength(1000);
-            entity.Property(item => item.ConsultationSummary).HasColumnName("consultation_summary").HasMaxLength(1000);
-            entity.Property(item => item.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
-            entity.Property(item => item.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
-            entity.Property(item => item.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
-        });
-
+        StoreSettingsConfiguration.Configure(model);
         ContentModelConfiguration.Configure(model);
         OfferModelConfiguration.Configure(model);
     }
