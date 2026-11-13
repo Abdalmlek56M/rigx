@@ -682,6 +682,14 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         },
                         new
                         {
+                            Code = "Requests.Manage"
+                        },
+                        new
+                        {
+                            Code = "Requests.View"
+                        },
+                        new
+                        {
                             Code = "Sales.ApproveOrder"
                         },
                         new

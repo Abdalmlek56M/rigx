@@ -47,16 +47,10 @@ public static class PurchaseRules
     public const int MaxLines = 100;
 
     /// <summary>Egyptian mobile in one form (01xxxxxxxxx): spaces, dashes and a +20 / 0020 prefix are removed.</summary>
-    public static string NormalizePhone(string? phone)
-    {
-        var digits = string.Concat((phone ?? string.Empty).Where(char.IsAsciiDigit));
-        if (digits.StartsWith("0020", StringComparison.Ordinal)) digits = digits[4..];
-        else if (digits.StartsWith("20", StringComparison.Ordinal) && digits.Length == 12) digits = digits[2..];
-        if (digits.Length == 10 && digits[0] == '1') digits = "0" + digits;
-        if (digits.Length != 11 || !digits.StartsWith("01", StringComparison.Ordinal))
-            throw new PurchasingException(400, "Enter an Egyptian mobile number (01xxxxxxxxx).");
-        return digits;
-    }
+    public static string NormalizePhone(string? phone) =>
+        EgyptMobile.TryNormalize(phone, out var mobile)
+            ? mobile
+            : throw new PurchasingException(400, "Enter an Egyptian mobile number (01xxxxxxxxx).");
 
     public static string ParseSellerKind(string? kind) =>
         SellerKind.All.FirstOrDefault(value => string.Equals(value, kind?.Trim(), StringComparison.OrdinalIgnoreCase))

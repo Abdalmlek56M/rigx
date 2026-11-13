@@ -9,7 +9,7 @@ public static class IdentityRateLimitPolicies
     public const string EmailChangeConfirm = "identity-email-change-confirm";
     public const string EmailCodeRequest = "identity-email-code-request";
     public const string EmailCodeVerify = "identity-email-code-verify";
-    public const string Contact = "contact-submit";
+    public const string CustomerRequest = "customer-request";
     public const string CatalogSuggest = "catalog-suggest";
     public const string Checkout = "order-checkout";
     public const string OrderTracking = "order-tracking";
@@ -27,7 +27,7 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailChangeConfirm, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeRequest, 10, TimeSpan.FromHours(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeVerify, 20, TimeSpan.FromMinutes(10));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Contact, 5, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CustomerRequest, 5, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CatalogSuggest, 120, TimeSpan.FromMinutes(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Checkout, 10, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.OrderTracking, 60, TimeSpan.FromMinutes(1));
@@ -94,7 +94,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.EmailChangeConfirm => "Identity.EmailChange.Confirm.RateLimited",
         IdentityRateLimitPolicies.EmailCodeRequest => "Identity.EmailCode.Request.RateLimited",
         IdentityRateLimitPolicies.EmailCodeVerify => "Identity.EmailCode.Verify.RateLimited",
-        IdentityRateLimitPolicies.Contact => "Contact.Submit.RateLimited",
+        IdentityRateLimitPolicies.CustomerRequest => "Request.Submit.RateLimited",
         IdentityRateLimitPolicies.CatalogSuggest => "Catalog.Search.RateLimited",
         IdentityRateLimitPolicies.Checkout => "Sales.Checkout.RateLimited",
         IdentityRateLimitPolicies.WarrantyLookup => "Sales.WarrantyLookup.RateLimited",

@@ -4,7 +4,7 @@ namespace HardwareStore.Common.Domain;
 
 /// <summary>
 /// Public, human-readable codes shown on the site, stickers and documents:
-/// stock items <c>RX-0142</c>, builds <c>BLD-07</c>, purchases <c>PO-0031</c>.
+/// stock items <c>RX-0142</c>, builds <c>BLD-07</c>, purchases <c>PO-0031</c>, customer requests <c>REQ-0012</c>.
 /// Numbers come from one database sequence per prefix; the width is a minimum (RX-12345 is valid).
 /// </summary>
 public static class PublicCode
@@ -12,6 +12,7 @@ public static class PublicCode
     public const string StockItem = "RX";
     public const string Build = "BLD";
     public const string Purchase = "PO";
+    public const string Request = "REQ";
 
     public static string Format(string prefix, long number)
     {
@@ -39,7 +40,7 @@ public static class PublicCode
 
     private static int Width(string prefix) => prefix switch
     {
-        StockItem or Purchase => 4,
+        StockItem or Purchase or Request => 4,
         Build => 2,
         _ => throw new ArgumentOutOfRangeException(nameof(prefix), prefix, "Unknown public code prefix.")
     };

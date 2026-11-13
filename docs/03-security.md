@@ -4,7 +4,7 @@
 - Cookie auth: HttpOnly, `__Host-` prefix, `Secure` outside Development, `SameSite=Lax`, server-side ticket store, revocable sessions. Browser session capped at 12h unless "remember this device" (persistent cookie).
 - CSRF middleware on all unsafe methods (`X-CSRF-TOKEN`).
 - Permission checks per admin route (`RequirePermission`), covered by tests.
-- Rate limits: email code request, email code verify (also Google sign-in), email change + confirm, contact, search suggestions.
+- Rate limits: email code request, email code verify (also Google sign-in), email change + confirm, customer requests (`customer-request`, 5 / 10 min per IP, replaces contact), search suggestions.
 - Email sign-in code: 6 digits, 5 min, 5 attempts, single use, stored protected (encrypted), resend timer, attempts left returned. Code sign-in creates a customer on first use. No passwords, no SMS.
 - Google sign-in (ID-token flow): server validates signature, issuer, audience (`Identity:Google:ClientId`) and lifetime; no client secret stored. First use links to the account with the same Google-verified email or creates a customer; one Google link per account. Without `ClientId` the Google endpoints return 404.
 - New-device alert email: sent when the account has earlier sessions but none from the same user agent. First sign-in never alerts. On/off per account (default on).
@@ -18,6 +18,7 @@
 - Invoice link `GET /api/v1/invoices/{token}`: anonymous, 32-byte unguessable token (the only access control), rate-limited (order-tracking policy), `no-store`. Returns the full customer document by design (name, phone, address, lines, serials, prices).
 - Quote `POST /api/v1/store/quote`: anonymous, rate-limited, no customer data, no invoice number.
 - Shipping rates `GET /api/v1/storefront/shipping-rates`: anonymous, public shipping settings only (pickup address, governorate fees and delivery times), no customer data.
+- Requests `POST /api/v1/requests`: anonymous (links the user when signed in), rate-limited `customer-request` 5 / 10 min per IP, honeypot field, duplicate within 10 min returns the same code. Returns 202 with the public `REQ` code only, no request data. Admin routes need `Requests.View` / `Requests.Manage`.
 - Dependency audit (12 Nov 2026): 0 known vulnerable NuGet packages.
 
 ## Rules every change must keep
@@ -42,4 +43,5 @@
 | Off-host encrypted backups + restore drill | High | 2/5 |
 | Migration runner outside dev-only "preview" mode | High | 0/1 |
 | External penetration test before launch | High | 5 |
-| Rate limits for new public endpoints (notify-me, warranty lookup, tracking): partly closed, notify-me left (2.8) | Normal | 2 |
+| ~~Rate limits for notify-me submissions~~ | Closed in 2.12: notify-me goes through the rate-limited requests endpoint | 2 |
+| Rate limits for new public endpoints (warranty lookup, tracking): partly closed | Normal | 2 |
