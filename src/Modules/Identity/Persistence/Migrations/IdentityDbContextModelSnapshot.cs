@@ -682,10 +682,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         },
                         new
                         {
-                            Code = "Purchasing.ManageSupplierFinancials"
-                        },
-                        new
-                        {
                             Code = "Purchasing.ManageSuppliers"
                         },
                         new
@@ -699,10 +695,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         new
                         {
                             Code = "Purchasing.View"
-                        },
-                        new
-                        {
-                            Code = "Purchasing.ViewSupplierFinancials"
                         },
                         new
                         {

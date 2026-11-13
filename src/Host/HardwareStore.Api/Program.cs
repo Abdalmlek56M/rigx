@@ -90,6 +90,7 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
 
 builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<AdminAnalyticsService>();
+builder.Services.AddScoped<PurchaseReceiptService>();
 builder.Services.AddHealthChecks()
     .AddCheck("live", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"])
     .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
@@ -164,7 +165,6 @@ app.MapRetailEndpoints();
 app.MapIdentityAdministrationEndpoints();
 app.MapCatalogEndpoints();
 app.MapPurchasingEndpoints();
-app.MapPurchaseDraftEndpoints();
 app.MapInventoryEndpoints();
 app.MapStorefrontEndpoints();
 if (previewEnabled)

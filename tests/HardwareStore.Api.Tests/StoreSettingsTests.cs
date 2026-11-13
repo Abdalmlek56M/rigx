@@ -8,8 +8,8 @@ using Xunit;
 namespace HardwareStore.Api.Tests;
 
 [Trait("Category", "RequiresDocker")]
-public sealed class StoreSettingsPostgreSqlTests(SupplierDirectoryPostgreSqlFixture fixture)
-    : IClassFixture<SupplierDirectoryPostgreSqlFixture>
+public sealed class StoreSettingsPostgreSqlTests(StoreAdminPostgreSqlFixture fixture)
+    : IClassFixture<StoreAdminPostgreSqlFixture>
 {
     [Fact]
     public async Task Fresh_database_reads_the_default_sections()
@@ -174,7 +174,7 @@ public sealed class StoreSettingsPostgreSqlTests(SupplierDirectoryPostgreSqlFixt
         }
     }
 
-    private static async Task<Guid> CreateActorAsync(SupplierDirectoryDatabase database)
+    private static async Task<Guid> CreateActorAsync(StoreAdminDatabase database)
     {
         await using var db = database.CreateIdentityContext();
         await using var transaction = await db.Database.BeginTransactionAsync();

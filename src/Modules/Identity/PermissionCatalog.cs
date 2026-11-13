@@ -13,7 +13,6 @@ public static class PermissionCatalog
         "Inventory.View", "Inventory.Transfer", "Inventory.StockCount", "Inventory.StockAdjust", "Inventory.ManageSerials",
         "Inventory.ManageWarehouses", "Inventory.ViewCosts", "Inventory.ViewSerials",
         "Purchasing.View", "Purchasing.ManageSuppliers", "Purchasing.CreateOrder", "Purchasing.ReceiveGoods", "Purchasing.PostBill",
-        "Purchasing.ViewSupplierFinancials", "Purchasing.ManageSupplierFinancials",
         "Finance.ViewVaults", "Finance.VerifyPayment", "Finance.Disburse", "Finance.ManageExpenses", "Finance.ViewReports",
         "Finance.ManagePartnerAgreements", "Finance.PostPartnerSettlements",
         "System.ManageUsers", "System.ViewAuditLogs", "System.ViewErrorLogs", "System.ExecuteAllowlistedAction",

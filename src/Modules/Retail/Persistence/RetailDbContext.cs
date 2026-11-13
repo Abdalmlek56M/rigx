@@ -58,8 +58,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.ToTable("purchase_receipts");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
-            e.Property(x => x.PurchaseDraftId).HasColumnName("purchase_draft_id");
-            e.HasIndex(x => x.PurchaseDraftId).IsUnique().HasDatabaseName("ux_purchase_receipts_draft");
+            e.Property(x => x.PurchaseId).HasColumnName("purchase_draft_id");
+            e.HasIndex(x => x.PurchaseId).IsUnique().HasDatabaseName("ux_purchase_receipts_draft");
             e.Property(x => x.ReceivedByUserAccountId).HasColumnName("received_by_user_account_id");
             e.Property(x => x.ReceivedAtUtc).HasColumnName("received_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(1000);

@@ -8,8 +8,8 @@ using Xunit;
 namespace HardwareStore.Api.Tests;
 
 [Trait("Category", "RequiresDocker")]
-public sealed class WarehouseDirectoryPostgreSqlTests(SupplierDirectoryPostgreSqlFixture fixture)
-    : IClassFixture<SupplierDirectoryPostgreSqlFixture>
+public sealed class WarehouseDirectoryPostgreSqlTests(StoreAdminPostgreSqlFixture fixture)
+    : IClassFixture<StoreAdminPostgreSqlFixture>
 {
     [Fact]
     public async Task Creates_updates_lists_and_audits_a_warehouse()
@@ -109,7 +109,7 @@ public sealed class WarehouseDirectoryPostgreSqlTests(SupplierDirectoryPostgreSq
         }
     }
 
-    private static async Task<Guid> CreateActorAsync(SupplierDirectoryDatabase database)
+    private static async Task<Guid> CreateActorAsync(StoreAdminDatabase database)
     {
         await using var db = database.CreateIdentityContext();
         await using var transaction = await db.Database.BeginTransactionAsync();

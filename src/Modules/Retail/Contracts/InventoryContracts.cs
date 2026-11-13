@@ -9,7 +9,7 @@ public sealed record ReceiptLine(string ModelName, string Condition, int Quantit
     string? SerialNumber = null, decimal? PartnerPercentOverride = null, string? WarrantyLabel = null, int? WarrantyMonths = null,
     bool HasBox = false, bool IsHidden = false, string? InternalNote = null, IReadOnlyDictionary<string, string>? Specs = null);
 public sealed record ReceiptSource(string? SourceName, string? SourceType, string? PurchaseKind, DateOnly? PurchaseDate);
-public sealed record ReceiveRequest(Guid PurchaseDraftId, string? Notes, ReceiptSource Source, IReadOnlyList<ReceiptLine> Lines);
+public sealed record ReceiveRequest(Guid PurchaseId, string? Notes, ReceiptSource Source, IReadOnlyList<ReceiptLine> Lines);
 public sealed record UnitView(Guid Id, Guid StockItemId, string StockItemCode, Guid? ProductId, string Name, string Condition,
     string? InspectionCondition, string? SerialNumber, string? SourceName, string? SourceType, string? PurchaseKind, DateOnly? PurchaseDate,
     decimal? AcquisitionCost, decimal? PartnerPercentOverride, string Status, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc);

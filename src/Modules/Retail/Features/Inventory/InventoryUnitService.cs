@@ -30,7 +30,7 @@ public sealed class InventoryUnitService(IDbContextFactory<RetailDbContext> cont
         try
         {
             var existing = await db.Receipts.AsNoTracking().SingleOrDefaultAsync(
-                receipt => receipt.PurchaseDraftId == request.PurchaseDraftId, cancellationToken);
+                receipt => receipt.PurchaseId == request.PurchaseId, cancellationToken);
             var now = timeProvider.GetUtcNow().ToUniversalTime();
             if (existing is not null)
             {
@@ -42,7 +42,7 @@ public sealed class InventoryUnitService(IDbContextFactory<RetailDbContext> cont
             var receipt = new PurchaseReceipt
             {
                 Id = Guid.CreateVersion7(),
-                PurchaseDraftId = request.PurchaseDraftId,
+                PurchaseId = request.PurchaseId,
                 ReceivedByUserAccountId = actorId,
                 ReceivedAtUtc = now,
                 Notes = request.Notes?.Trim()

@@ -22,11 +22,26 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseDraft", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Purchasing.Purchase", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("AssemblyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assembly_id");
+
+                    b.Property<string>("BuildName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("build_name");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("code");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -36,40 +51,44 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_account_id");
 
-                    b.Property<string>("ExternalSellerContact")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("external_seller_contact");
+                    b.Property<bool>("KeepAsBuild")
+                        .HasColumnType("boolean")
+                        .HasColumnName("keep_as_build");
 
-                    b.Property<string>("ExternalSellerName")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("external_seller_name");
-
-                    b.Property<string>("ListingUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("listing_url");
-
-                    b.Property<string>("MarketplaceName")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("marketplace_name");
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("notes");
 
-                    b.Property<DateOnly?>("PurchaseDate")
-                        .HasColumnType("date")
-                        .HasColumnName("purchase_date");
+                    b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("paid_amount");
 
-                    b.Property<string>("PurchaseKind")
+                    b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
-                        .HasColumnName("purchase_kind");
+                        .HasColumnName("payment_method");
+
+                    b.Property<DateOnly>("PurchaseDate")
+                        .HasColumnType("date")
+                        .HasColumnName("purchase_date");
+
+                    b.Property<DateTimeOffset?>("ReceivedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at_utc");
+
+                    b.Property<decimal>("Remaining")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("remaining");
 
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
@@ -78,11 +97,9 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasDefaultValue(1L)
                         .HasColumnName("row_version");
 
-                    b.Property<string>("SourceType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("source_type");
+                    b.Property<Guid>("SellerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("seller_id");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -90,14 +107,20 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
-                    b.Property<Guid?>("SupplierId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("supplier_id");
-
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("Total")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("total_amount");
+                        .HasColumnName("total");
+
+                    b.Property<string>("TradeInNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("trade_in_note");
+
+                    b.Property<decimal>("TradeInValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("trade_in_value");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -105,222 +128,188 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SourceType")
-                        .HasDatabaseName("ix_purchase_drafts_source");
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_purchases_code");
 
-                    b.HasIndex("SupplierId");
+                    b.HasIndex("SellerId")
+                        .HasDatabaseName("ix_purchases_seller");
 
                     b.HasIndex("Status", "CreatedAtUtc")
-                        .HasDatabaseName("ix_purchase_drafts_status_created");
+                        .HasDatabaseName("ix_purchases_status_created");
 
-                    b.ToTable("purchase_drafts", null, t =>
+                    b.ToTable("purchases", null, t =>
                         {
-                            t.HasCheckConstraint("ck_purchase_drafts_kind", "purchase_kind IN ('Component','Components','Prebuilt','Bundle','Other')");
+                            t.HasCheckConstraint("ck_purchases_kind", "kind IN ('Parts','FullPc')");
 
-                            t.HasCheckConstraint("ck_purchase_drafts_registered_supplier", "source_type <> 'RegisteredSupplier' OR supplier_id IS NOT NULL");
+                            t.HasCheckConstraint("ck_purchases_method", "payment_method IN ('Cash','InstaPay','Wallet','TradeIn','CashAndTradeIn')");
 
-                            t.HasCheckConstraint("ck_purchase_drafts_source", "source_type IN ('RegisteredSupplier','Marketplace','IndividualSeller','Other')");
+                            t.HasCheckConstraint("ck_purchases_money", "total >= 0 AND paid_amount >= 0 AND trade_in_value >= 0 AND remaining >= 0");
 
-                            t.HasCheckConstraint("ck_purchase_drafts_status", "status IN ('Draft','Cancelled','Received')");
-
-                            t.HasCheckConstraint("ck_purchase_drafts_total", "total_amount >= 0");
+                            t.HasCheckConstraint("ck_purchases_status", "status IN ('Draft','Received','Cancelled')");
                         });
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseDraftItem", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseLine", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Brand")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("brand");
+                    b.Property<decimal?>("AloneExtra")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("alone_extra");
 
-                    b.Property<string>("Category")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("category");
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
 
                     b.Property<string>("Condition")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("item_condition");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("description");
-
-                    b.Property<Guid>("DraftId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("draft_id");
-
-                    b.Property<string>("ExternalCode")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("external_code");
-
-                    b.Property<string>("ItemKind")
                         .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("item_kind");
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("condition");
 
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("item_name");
+                    b.Property<bool>("HasBox")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_box");
+
+                    b.Property<string>("InternalNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("internal_note");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_hidden");
 
                     b.Property<decimal>("LineTotal")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("line_total");
 
-                    b.Property<string>("Model")
+                    b.Property<string>("ModelName")
+                        .IsRequired()
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)")
-                        .HasColumnName("model");
+                        .HasColumnName("model_name");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<decimal?>("PartnerPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("partner_percent");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid")
                         .HasColumnName("product_id");
+
+                    b.Property<Guid>("PurchaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("purchase_id");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("sku");
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("serial_number");
 
                     b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("sort_order");
 
-                    b.Property<string>("SpecificationsJson")
+                    b.Property<string>("Specs")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("jsonb")
-                        .HasColumnName("specifications_json");
+                        .HasColumnName("specs")
+                        .HasDefaultValueSql("'{}'::jsonb");
 
-                    b.Property<decimal>("UnitPrice")
+                    b.Property<decimal>("UnitCost")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
-                        .HasColumnName("unit_price");
+                        .HasColumnName("unit_cost");
 
-                    b.Property<Guid?>("VariantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("variant_id");
+                    b.Property<string>("WarrantyLabel")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("warranty_label");
+
+                    b.Property<decimal?>("WithBoardExtra")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("with_board_extra");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DraftId")
-                        .HasDatabaseName("ix_purchase_draft_items_draft");
+                    b.HasIndex("PurchaseId")
+                        .HasDatabaseName("ix_purchase_lines_purchase");
 
-                    b.ToTable("purchase_draft_items", null, t =>
+                    b.ToTable("purchase_lines", null, t =>
                         {
-                            t.HasCheckConstraint("ck_purchase_draft_items_price", "unit_price > 0");
+                            t.HasCheckConstraint("ck_purchase_lines_condition", "condition IN ('New','Used')");
 
-                            t.HasCheckConstraint("ck_purchase_draft_items_quantity", "quantity > 0 AND quantity <= 100000");
+                            t.HasCheckConstraint("ck_purchase_lines_money", "unit_cost >= 0 AND line_total >= 0 AND price >= 0");
 
-                            t.HasCheckConstraint("ck_purchase_draft_items_total", "line_total > 0");
+                            t.HasCheckConstraint("ck_purchase_lines_quantity", "quantity BETWEEN 1 AND 1000");
                         });
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierCatalogProductReference", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Purchasing.Seller", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("sku");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("slug");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("products", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierPersonReference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text")
-                        .HasColumnName("email");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("full_name");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("PersonCode")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("person_code");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text")
-                        .HasColumnName("phone_number");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("persons", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierProduct", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                    b.Property<string>("Area")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("area");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
+                    b.Property<string>("Governorate")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("governorate");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NationalId")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("national_id");
 
                     b.Property<string>("Notes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
 
-                    b.Property<Guid>("ProductVariantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_variant_id");
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("phone");
 
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
@@ -329,15 +318,10 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasDefaultValue(1L)
                         .HasColumnName("row_version");
 
-                    b.Property<Guid>("SupplierProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("supplier_profile_id");
-
-                    b.Property<string>("SupplierSku")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("supplier_sku");
+                    b.Property<string>("Source")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("source");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -345,227 +329,39 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("ix_supplier_products_is_active");
-
-                    b.HasIndex("ProductVariantId");
-
-                    b.HasIndex("SupplierProfileId", "ProductVariantId")
+                    b.HasIndex("Phone")
                         .IsUnique()
-                        .HasDatabaseName("ux_supplier_products_supplier_variant");
+                        .HasDatabaseName("ux_sellers_phone");
 
-                    b.HasIndex("SupplierProfileId", "SupplierSku")
-                        .IsUnique()
-                        .HasDatabaseName("ux_supplier_products_supplier_sku");
-
-                    b.ToTable("supplier_products", (string)null);
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("BankAccountNumber")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("bank_account_number");
-
-                    b.Property<string>("BankIban")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("bank_iban");
-
-                    b.Property<string>("BankName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("bank_name");
-
-                    b.Property<string>("CommercialRegistration")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("commercial_registration");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("company_name");
-
-                    b.Property<string>("ContactPersonName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("contact_person_name");
-
-                    b.Property<string>("ContactPersonPhone")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("contact_person_phone");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("notes");
-
-                    b.Property<int>("PaymentTermsDays")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("payment_terms_days");
-
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("person_id");
-
-                    b.Property<long>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1L)
-                        .HasColumnName("row_version");
-
-                    b.Property<string>("TaxIdNumber")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("tax_id_number");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at_utc");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommercialRegistration")
-                        .IsUnique()
-                        .HasDatabaseName("ux_supplier_profiles_commercial_registration")
-                        .HasFilter("commercial_registration IS NOT NULL");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("ix_supplier_profiles_is_active");
-
-                    b.HasIndex("PersonId")
-                        .IsUnique()
-                        .HasDatabaseName("ux_supplier_profiles_person_id");
-
-                    b.HasIndex("TaxIdNumber")
-                        .IsUnique()
-                        .HasDatabaseName("ux_supplier_profiles_tax_id_number")
-                        .HasFilter("tax_id_number IS NOT NULL");
-
-                    b.ToTable("supplier_profiles", null, t =>
+                    b.ToTable("sellers", null, t =>
                         {
-                            t.HasCheckConstraint("ck_supplier_profiles_payment_terms_days", "payment_terms_days >= 0 AND payment_terms_days <= 3650");
+                            t.HasCheckConstraint("ck_sellers_kind", "kind IN ('Person','Trader','Company')");
                         });
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierVariantReference", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Purchasing.Purchase", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("sku");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("product_variants", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseDraft", b =>
-                {
-                    b.HasOne("HardwareStore.Modules.Purchasing.SupplierProfile", null)
+                    b.HasOne("HardwareStore.Modules.Purchasing.Seller", "Seller")
                         .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Seller");
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseDraftItem", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseLine", b =>
                 {
-                    b.HasOne("HardwareStore.Modules.Purchasing.PurchaseDraft", "Draft")
-                        .WithMany("Items")
-                        .HasForeignKey("DraftId")
+                    b.HasOne("HardwareStore.Modules.Purchasing.Purchase", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("PurchaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Draft");
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierProduct", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Purchasing.Purchase", b =>
                 {
-                    b.HasOne("HardwareStore.Modules.Purchasing.SupplierVariantReference", "Variant")
-                        .WithMany()
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("HardwareStore.Modules.Purchasing.SupplierProfile", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Supplier");
-
-                    b.Navigation("Variant");
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierProfile", b =>
-                {
-                    b.HasOne("HardwareStore.Modules.Purchasing.SupplierPersonReference", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.SupplierVariantReference", b =>
-                {
-                    b.HasOne("HardwareStore.Modules.Purchasing.SupplierCatalogProductReference", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Purchasing.PurchaseDraft", b =>
-                {
-                    b.Navigation("Items");
+                    b.Navigation("Lines");
                 });
 #pragma warning restore 612, 618
         }

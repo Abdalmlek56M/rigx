@@ -32,15 +32,7 @@ public static partial class RetailEndpoints
     private static async Task<IResult> UpdateStockItemAsync(Guid id, StockItemUpdateRequest request, HttpContext context,
         StockItemAdminService items, StoreSettingsService settings, CategorySpecService categorySpecs, CancellationToken ct)
     {
-        string? label = null;
-        int? months = null;
-        if (!string.IsNullOrWhiteSpace(request.WarrantyLabel))
-        {
-            var options = (await settings.GetAdminAsync(ct)).WarrantyOptions.Options;
-            var option = options.FirstOrDefault(entry => entry.Label == request.WarrantyLabel.Trim())
-                ?? throw new RetailException(400, "Choose the warranty from the list in the store settings.");
-            (label, months) = (option.Label, option.Months);
-        }
+        var (label, months) = WarrantyChoice.Resolve(await WarrantyChoice.LoadOptionsAsync(settings, ct), request.WarrantyLabel);
         var update = new StockItemUpdate(request.ModelName, request.CategoryId, request.ProductId, request.Price,
             request.WithBoardExtra, request.AloneExtra, label, months, request.HasBox, request.IsHidden, request.InternalNote,
             await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct), request.RowVersion);

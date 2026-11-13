@@ -9,7 +9,6 @@ using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Inventory;
-using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

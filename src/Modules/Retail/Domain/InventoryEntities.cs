@@ -29,7 +29,7 @@ public sealed class InventoryUnit
 public sealed class PurchaseReceipt
 {
     public Guid Id { get; set; }
-    public Guid PurchaseDraftId { get; set; }
+    public Guid PurchaseId { get; set; }
     public Guid ReceivedByUserAccountId { get; set; }
     public DateTimeOffset ReceivedAtUtc { get; set; }
     public string? Notes { get; set; }

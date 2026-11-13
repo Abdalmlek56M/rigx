@@ -181,7 +181,7 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
             await connection.OpenAsync();
             foreach (var table in new[]
                      {
-                         "supplier_profiles", "supplier_products", "warehouses",
+                         "sellers", "purchases", "warehouses",
                          "products", "product_variants", "security_audit_events", "store_settings"
                      })
             {

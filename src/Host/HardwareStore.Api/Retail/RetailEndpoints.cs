@@ -19,7 +19,6 @@ public static partial class RetailEndpoints
         admin.MapPost("/stock-items/{id:guid}/photos", AddStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapDelete("/stock-items/{id:guid}/photos", RemoveStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapGet("/models/suggest", SuggestModelsAsync).RequirePermission("Inventory.View");
-        admin.MapPost("/receipts/from-draft/{draftId:guid}", ReceiveFromDraftAsync).RequirePermission("Purchasing.ReceiveGoods");
         admin.MapGet("/assemblies", ListAssembliesAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies", CreateAssemblyAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPut("/assemblies/{id:guid}", UpdateAssemblyAsync).RequirePermission("Catalog.ManageProducts");
@@ -66,5 +65,4 @@ public static partial class RetailEndpoints
 }
 
 public sealed record RetailVersionRequest(long RowVersion);
-public sealed record ReceiveNotes(string? Notes);
 public sealed record AllocationDeactivateRequest(long RowVersion, string? Reason);

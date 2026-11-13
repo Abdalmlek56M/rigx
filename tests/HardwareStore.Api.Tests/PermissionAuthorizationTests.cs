@@ -109,7 +109,7 @@ public sealed class PermissionAuthorizationTests
     }
 
     [Fact]
-    public async Task Purchasing_supplier_endpoints_require_authorization()
+    public async Task Purchasing_endpoints_require_authorization()
     {
         await using var factory = new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program>();
         using var client = factory.CreateClient();
@@ -117,10 +117,10 @@ public sealed class PermissionAuthorizationTests
             .GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>()
             .Endpoints
             .OfType<Microsoft.AspNetCore.Routing.RouteEndpoint>()
-            .Where(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/v1/admin/purchasing/suppliers", StringComparison.Ordinal) == true)
+            .Where(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/v1/admin/purchasing", StringComparison.Ordinal) == true)
             .ToArray();
 
-        Assert.Equal(11, endpoints.Length);
+        Assert.Equal(10, endpoints.Length);
         Assert.All(endpoints, endpoint =>
             Assert.NotNull(endpoint.Metadata.GetMetadata<IAuthorizeData>()));
     }

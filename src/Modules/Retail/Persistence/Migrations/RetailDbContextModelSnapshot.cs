@@ -889,7 +889,7 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
 
-                    b.Property<Guid>("PurchaseDraftId")
+                    b.Property<Guid>("PurchaseId")
                         .HasColumnType("uuid")
                         .HasColumnName("purchase_draft_id");
 
@@ -903,7 +903,7 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PurchaseDraftId")
+                    b.HasIndex("PurchaseId")
                         .IsUnique()
                         .HasDatabaseName("ux_purchase_receipts_draft");
 

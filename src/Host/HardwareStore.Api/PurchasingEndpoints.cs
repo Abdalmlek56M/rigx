@@ -2,245 +2,75 @@ using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Purchasing;
 using Microsoft.AspNetCore.Http;
 
+/// <summary>
+/// Purchasing HTTP API: sellers, purchases and receiving a purchase into stock. Business errors are
+/// <c>PurchasingException</c>s mapped once by <c>ProblemDetailsExceptionHandler</c>, so handlers do not catch them.
+/// </summary>
 public static class PurchasingEndpoints
 {
+    private const string ManageSuppliers = "Purchasing.ManageSuppliers";
+
     public static IEndpointRouteBuilder MapPurchasingEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/api/v1/admin/purchasing/suppliers", GetSuppliersAsync)
-            .RequirePermission("Purchasing.View");
-        endpoints.MapGet("/api/v1/admin/purchasing/suppliers/{id:guid}", GetSupplierAsync)
-            .RequirePermission("Purchasing.View");
-        endpoints.MapPost("/api/v1/admin/purchasing/suppliers", CreateSupplierAsync)
-            .RequirePermission("Purchasing.ManageSuppliers");
-        endpoints.MapPut("/api/v1/admin/purchasing/suppliers/{id:guid}", UpdateSupplierAsync)
-            .RequirePermission("Purchasing.ManageSuppliers");
-        endpoints.MapGet("/api/v1/admin/purchasing/suppliers/{id:guid}/financials", GetSupplierFinancialsAsync)
-            .RequirePermission("Purchasing.ViewSupplierFinancials");
-        endpoints.MapPut("/api/v1/admin/purchasing/suppliers/{id:guid}/financials", UpdateSupplierFinancialsAsync)
-            .RequirePermission("Purchasing.ManageSupplierFinancials");
-        endpoints.MapGet("/api/v1/admin/purchasing/suppliers/{supplierId:guid}/products", GetSupplierProductsAsync)
-            .RequirePermission("Purchasing.View");
-        endpoints.MapGet("/api/v1/admin/purchasing/suppliers/{supplierId:guid}/products/{id:guid}", GetSupplierProductAsync)
-            .RequirePermission("Purchasing.View");
-        endpoints.MapPost("/api/v1/admin/purchasing/suppliers/{supplierId:guid}/products", CreateSupplierProductAsync)
-            .RequirePermission("Purchasing.ManageSuppliers");
-        endpoints.MapPut("/api/v1/admin/purchasing/suppliers/{supplierId:guid}/products/{id:guid}", UpdateSupplierProductAsync)
-            .RequirePermission("Purchasing.ManageSuppliers");
-        endpoints.MapGet("/api/v1/admin/purchasing/suppliers/{supplierId:guid}/available-variants", GetAvailableVariantsAsync)
-            .RequirePermission("Purchasing.View");
+        var admin = endpoints.MapGroup("/api/v1/admin/purchasing");
+        admin.MapGet("/sellers", ListSellersAsync).RequirePermission("Purchasing.View");
+        admin.MapGet("/sellers/{id:guid}", GetSellerAsync).RequirePermission("Purchasing.View");
+        admin.MapPost("/sellers", CreateSellerAsync).RequirePermission(ManageSuppliers);
+        admin.MapPut("/sellers/{id:guid}", UpdateSellerAsync).RequirePermission(ManageSuppliers);
+        admin.MapGet("/purchases", ListPurchasesAsync).RequirePermission("Purchasing.View");
+        admin.MapGet("/purchases/{id:guid}", GetPurchaseAsync).RequirePermission("Purchasing.View");
+        admin.MapPost("/purchases", CreatePurchaseAsync).RequirePermission("Purchasing.CreateOrder");
+        admin.MapPut("/purchases/{id:guid}", UpdatePurchaseAsync).RequirePermission("Purchasing.CreateOrder");
+        admin.MapPost("/purchases/{id:guid}/cancel", CancelPurchaseAsync).RequirePermission("Purchasing.CreateOrder");
+        admin.MapPost("/purchases/{id:guid}/receive", ReceivePurchaseAsync).RequirePermission("Purchasing.ReceiveGoods");
         return endpoints;
     }
 
-    private static async Task<IResult> GetSuppliersAsync(
-        string? search,
-        bool? isActive,
-        int? page,
-        int? pageSize,
-        HttpContext context,
-        SupplierDirectoryService suppliers,
-        CancellationToken cancellationToken)
+    private static async Task<IResult> ListSellersAsync(HttpContext context, SellerService sellers, CancellationToken ct,
+        string? phone = null, string? q = null)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await suppliers.GetAsync(
-            search,
-            isActive,
-            page ?? 1,
-            pageSize ?? 25,
-            cancellationToken));
+        return Results.Ok(await sellers.ListAsync(phone, q, context.HasPermission(ManageSuppliers), ct));
     }
 
-    private static async Task<IResult> GetSupplierAsync(
-        Guid id,
-        HttpContext context,
-        SupplierDirectoryService suppliers,
-        CancellationToken cancellationToken)
+    private static async Task<IResult> GetSellerAsync(Guid id, HttpContext context, SellerService sellers, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
-        var supplier = await suppliers.GetByIdAsync(id, cancellationToken);
-        return supplier is null ? Results.NotFound() : Results.Ok(supplier);
+        return Results.Ok(await sellers.GetAsync(id, context.HasPermission(ManageSuppliers), ct));
     }
 
-    private static async Task<IResult> CreateSupplierAsync(
-        SupplierCreateRequest request,
-        HttpContext context,
-        SupplierDirectoryService suppliers,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await suppliers.CreateAsync(request, actorId, cancellationToken));
-        }
-        catch (SupplierDirectoryException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
-    }
+    private static async Task<IResult> CreateSellerAsync(SellerRequest request, SellerService sellers, CancellationToken ct) =>
+        Results.Created((string?)null, await sellers.CreateAsync(request, ct));
 
-    private static async Task<IResult> UpdateSupplierAsync(
-        Guid id,
-        SupplierUpdateRequest request,
-        HttpContext context,
-        SupplierDirectoryService suppliers,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await suppliers.UpdateAsync(id, request, actorId, cancellationToken));
-        }
-        catch (SupplierDirectoryException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
-    }
+    private static async Task<IResult> UpdateSellerAsync(Guid id, SellerRequest request, SellerService sellers, CancellationToken ct) =>
+        Results.Ok(await sellers.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> GetSupplierFinancialsAsync(
-        Guid id,
-        HttpContext context,
-        SupplierDirectoryService suppliers,
-        CancellationToken cancellationToken)
+    private static async Task<IResult> ListPurchasesAsync(HttpContext context, PurchaseService purchases, CancellationToken ct,
+        string? status = null, string? q = null, int page = 1, int pageSize = 25)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            context.Response.Headers.CacheControl = "no-store";
-            return Results.Ok(await suppliers.GetFinancialsAsync(id, actorId, cancellationToken));
-        }
-        catch (SupplierDirectoryException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
-    }
-
-    private static async Task<IResult> UpdateSupplierFinancialsAsync(
-        Guid id,
-        SupplierFinancialWriteRequest request,
-        HttpContext context,
-        SupplierDirectoryService suppliers,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await suppliers.UpdateFinancialsAsync(id, request, actorId, cancellationToken));
-        }
-        catch (SupplierDirectoryException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
-    }
-
-    private static async Task<IResult> GetSupplierProductsAsync(
-        Guid supplierId,
-        string? search,
-        bool? isActive,
-        int? page,
-        int? pageSize,
-        HttpContext context,
-        SupplierProductCatalogService catalog,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
-        try
-        {
-            context.Response.Headers.CacheControl = "no-store";
-            return Results.Ok(await catalog.GetAsync(
-                supplierId,
-                search,
-                isActive,
-                page ?? 1,
-                pageSize ?? 25,
-                cancellationToken));
-        }
-        catch (PurchasingValidationException exception)
-        {
-            return MapException(exception);
-        }
-    }
-
-    private static async Task<IResult> GetSupplierProductAsync(
-        Guid supplierId,
-        Guid id,
-        HttpContext context,
-        SupplierProductCatalogService catalog,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
-        var item = await catalog.GetByIdAsync(supplierId, id, cancellationToken);
-        return item is null ? Results.NotFound() : Results.Ok(item);
+        return Results.Ok(await purchases.ListAsync(new PurchaseQuery(status, q, page, pageSize), ct));
     }
 
-    private static async Task<IResult> CreateSupplierProductAsync(
-        Guid supplierId,
-        SupplierProductCreateRequest request,
-        HttpContext context,
-        SupplierProductCatalogService catalog,
-        CancellationToken cancellationToken)
+    private static async Task<IResult> GetPurchaseAsync(Guid id, HttpContext context, PurchaseService purchases, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await catalog.CreateAsync(supplierId, request, actorId, cancellationToken));
-        }
-        catch (PurchasingValidationException exception)
-        {
-            return MapException(exception);
-        }
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await purchases.GetAsync(id, ct));
     }
 
-    private static async Task<IResult> UpdateSupplierProductAsync(
-        Guid supplierId,
-        Guid id,
-        SupplierProductUpdateRequest request,
-        HttpContext context,
-        SupplierProductCatalogService catalog,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await catalog.UpdateAsync(supplierId, id, request, actorId, cancellationToken));
-        }
-        catch (PurchasingValidationException exception)
-        {
-            return MapException(exception);
-        }
-    }
+    private static async Task<IResult> CreatePurchaseAsync(PurchaseRequest request, HttpContext context, PurchaseService purchases, CancellationToken ct) =>
+        context.TryGetUserId(out var actorId)
+            ? Results.Created((string?)null, await purchases.CreateAsync(request, actorId, ct))
+            : Results.Unauthorized();
 
-    private static async Task<IResult> GetAvailableVariantsAsync(
-        Guid supplierId,
-        string? search,
-        HttpContext context,
-        SupplierProductCatalogService catalog,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
-        try
-        {
-            context.Response.Headers.CacheControl = "no-store";
-            return Results.Ok(await catalog.SearchVariantsAsync(supplierId, search, 25, cancellationToken));
-        }
-        catch (PurchasingValidationException exception)
-        {
-            return MapException(exception);
-        }
-    }
+    private static async Task<IResult> UpdatePurchaseAsync(Guid id, PurchaseRequest request, PurchaseService purchases, CancellationToken ct) =>
+        Results.Ok(await purchases.UpdateAsync(id, request, ct));
 
-    private static IResult MapException(PurchasingValidationException exception) =>
-        Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
+    private static async Task<IResult> CancelPurchaseAsync(Guid id, PurchaseVersionRequest request, PurchaseService purchases, CancellationToken ct) =>
+        Results.Ok(await purchases.CancelAsync(id, request.RowVersion, ct));
+
+    private static async Task<IResult> ReceivePurchaseAsync(Guid id, HttpContext context, PurchaseReceiptService receipts, CancellationToken ct) =>
+        context.TryGetUserId(out var actorId) ? Results.Ok(await receipts.ReceiveAsync(id, actorId, ct)) : Results.Unauthorized();
 }
+
+public sealed record PurchaseVersionRequest(long RowVersion);

@@ -1,0 +1,189 @@
+using HardwareStore.Modules.Auditing;
+using HardwareStore.Modules.Catalog;
+using HardwareStore.Modules.Purchasing;
+using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+
+namespace HardwareStore.Api.Tests;
+
+[Trait("Category", "RequiresDocker")]
+public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture)
+    : IClassFixture<OwnerBootstrapPostgreSqlFixture>
+{
+    private static readonly Guid Actor = Guid.NewGuid();
+    private static readonly DateOnly Day = new(2026, 11, 10);
+
+    private sealed class Harness(OwnerBootstrapDatabase database)
+    {
+        public SellerService Sellers { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System);
+        public PurchaseService Purchases { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System);
+        public RetailTestServices Retail { get; } = database.CreateRetailServices();
+        public PurchaseReceiptService Receipts => new(Purchases, Retail.Units, Retail.Assemblies,
+            new StoreSettingsService(Factory<StorefrontDbContext>(database), new SecurityAuditWriter(Factory<SecurityAuditDbContext>(database)), TimeProvider.System),
+            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System));
+
+        public async Task<SellerView> NewSellerAsync(string phone = "01012345678") =>
+            await Sellers.CreateAsync(new SellerRequest("Person", "Ahmed", phone, null, null, null, null, null));
+
+        private static TestFactory<T> Factory<T>(OwnerBootstrapDatabase db) where T : DbContext => new(db.ConnectionString);
+    }
+
+    private sealed class TestFactory<T>(string connectionString) : IDbContextFactory<T> where T : DbContext
+    {
+        public T CreateDbContext() =>
+            (T)Activator.CreateInstance(typeof(T), new DbContextOptionsBuilder<T>().UseNpgsql(connectionString).Options)!;
+    }
+
+    private static PurchaseRequest Parts(Guid sellerId, decimal paid, params PurchaseLineRequest[] lines) =>
+        new(sellerId, PurchaseKind.Parts, false, null, Day, null, SellerPaymentMethod.Cash, paid, 0, null, lines);
+
+    private static PurchaseRequest FullPc(Guid sellerId, params PurchaseLineRequest[] lines) =>
+        new(sellerId, PurchaseKind.FullPc, true, "Gaming PC", Day, null, SellerPaymentMethod.Cash, 0, 0, null, lines);
+
+    private static PurchaseLineRequest Used(string model, int quantity = 1, string? warranty = null) =>
+        new(model, "Used", quantity, 2000m, 3000m, SerialNumber: quantity == 1 ? "SN-" + model : null, WarrantyLabel: warranty);
+
+    private static PurchaseLineRequest New(string model, int quantity) => new(model, "New", quantity, 100m, 150m);
+
+    [Fact]
+    public async Task Second_seller_with_the_same_phone_is_a_conflict_naming_the_first()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var first = await harness.NewSellerAsync();
+
+        var error = await Assert.ThrowsAsync<PurchasingException>(() => harness.NewSellerAsync("+20 101 234 5678"));
+
+        Assert.Equal(409, error.StatusCode);
+        Assert.Contains(first.Id.ToString(), error.Message);
+        var found = Assert.Single(await harness.Sellers.ListAsync("010-1234-5678", null, false));
+        Assert.Equal(first.Id, found.Id);
+    }
+
+    [Fact]
+    public async Task National_id_is_hidden_unless_the_caller_may_see_it()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.Sellers.CreateAsync(new SellerRequest("Trader", "Mona", "01111111111", "29801011234567", "C", null, null, null));
+
+        Assert.Equal("29801011234567", (await harness.Sellers.GetAsync(seller.Id, true)).NationalId);
+        Assert.Null((await harness.Sellers.GetAsync(seller.Id, false)).NationalId);
+    }
+
+    [Fact]
+    public async Task Purchase_gets_the_next_PO_code_and_the_remaining_amount()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+
+        var first = await harness.Purchases.CreateAsync(Parts(seller.Id, 1000m, Used("RTX 3060", 2)), Actor);
+        var second = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, New("Fan", 3)), Actor);
+
+        Assert.Equal("PO-0001", first.Code);
+        Assert.Equal("PO-0002", second.Code);
+        Assert.Equal(4000m, first.Total);
+        Assert.Equal(3000m, first.Remaining);
+        Assert.Equal(PurchaseStatus.Draft, first.Status);
+        var byCode = await harness.Purchases.ListAsync(new PurchaseQuery(Search: "po 2"));
+        Assert.Equal(second.Id, Assert.Single(byCode.Items).Id);
+        Assert.Equal(2, (await harness.Purchases.ListAsync(new PurchaseQuery(Search: "01012345678"))).Total);
+    }
+
+    [Fact]
+    public async Task Receiving_a_parts_purchase_creates_the_stock_items_and_closes_the_purchase()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("RTX 3060", 2, "شهر"), New("Fan", 3)), Actor);
+
+        var received = await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+
+        Assert.Equal(3, received.Items.Items.Count);
+        Assert.Equal(PurchaseStatus.Received, received.Purchase.Status);
+        Assert.NotNull(received.Purchase.ReceivedAtUtc);
+        Assert.Null(received.Purchase.AssemblyId);
+        var used = received.Items.Items.Where(item => item.Condition == "Used").ToList();
+        Assert.All(used, item => Assert.Equal(1, item.WarrantyMonths));
+        Assert.Equal(3, Assert.Single(received.Items.Items, item => item.Condition == "New").Units.Count);
+    }
+
+    [Fact]
+    public async Task Receiving_twice_is_a_conflict_and_creates_no_second_set_of_units()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("RX 6600")), Actor);
+        await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+
+        var error = await Assert.ThrowsAsync<PurchasingException>(() => harness.Receipts.ReceiveAsync(purchase.Id, Actor, default));
+
+        Assert.Equal(409, error.StatusCode);
+        Assert.Single((await harness.Retail.StockItems.ListAsync(new StockItemQuery(), true, true)).Items);
+    }
+
+    [Fact]
+    public async Task Full_pc_kept_as_a_build_becomes_one_assembly_with_all_units()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(FullPc(seller.Id, Used("Ryzen 5 5600"), Used("RTX 3060"), New("DDR4 8GB", 2)), Actor);
+
+        var received = await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+
+        var assembly = Assert.Single(await harness.Retail.Assemblies.ListAssembliesAsync(true));
+        Assert.Equal(received.Purchase.AssemblyId, assembly.Id);
+        Assert.Equal("BLD-01", assembly.Code);
+        Assert.Equal("Gaming PC", assembly.Name);
+        Assert.Equal(4, assembly.Units.Count);
+        Assert.Equal(received.Items.Items.SelectMany(item => item.Units).Select(unit => unit.Id).Order(), assembly.Units.Select(unit => unit.UnitId).Order());
+    }
+
+    [Fact]
+    public async Task Unknown_warranty_label_is_a_bad_request_and_the_purchase_stays_a_draft()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("RX 580", 1, "99 years")), Actor);
+
+        var error = await Assert.ThrowsAsync<RetailException>(() => harness.Receipts.ReceiveAsync(purchase.Id, Actor, default));
+
+        Assert.Equal(400, error.StatusCode);
+        Assert.Equal(PurchaseStatus.Draft, (await harness.Purchases.GetAsync(purchase.Id)).Status);
+        Assert.Empty((await harness.Retail.StockItems.ListAsync(new StockItemQuery(), true, true)).Items);
+    }
+
+    [Fact]
+    public async Task A_received_purchase_cannot_be_edited_or_cancelled_and_a_stale_draft_edit_is_a_conflict()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var stale = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("GTX 1060")), Actor);
+        await harness.Purchases.UpdateAsync(stale.Id, Parts(seller.Id, 500m, Used("GTX 1060")) with { RowVersion = stale.RowVersion });
+        var staleEdit = await Assert.ThrowsAsync<PurchasingException>(() =>
+            harness.Purchases.UpdateAsync(stale.Id, Parts(seller.Id, 0m, Used("GTX 1060")) with { RowVersion = stale.RowVersion }));
+        Assert.Equal(409, staleEdit.StatusCode);
+
+        var received = (await harness.Receipts.ReceiveAsync(stale.Id, Actor, default)).Purchase;
+        var edit = await Assert.ThrowsAsync<PurchasingException>(() =>
+            harness.Purchases.UpdateAsync(received.Id, Parts(seller.Id, 0m, Used("GTX 1060")) with { RowVersion = received.RowVersion }));
+        var cancel = await Assert.ThrowsAsync<PurchasingException>(() => harness.Purchases.CancelAsync(received.Id, received.RowVersion));
+
+        Assert.Equal(409, edit.StatusCode);
+        Assert.Equal(409, cancel.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cancelling_a_draft_closes_it_for_receiving()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("RX 570")), Actor);
+
+        var cancelled = await harness.Purchases.CancelAsync(purchase.Id, purchase.RowVersion);
+
+        Assert.Equal(PurchaseStatus.Cancelled, cancelled.Status);
+        var error = await Assert.ThrowsAsync<PurchasingException>(() => harness.Receipts.ReceiveAsync(purchase.Id, Actor, default));
+        Assert.Equal(409, error.StatusCode);
+    }
+}

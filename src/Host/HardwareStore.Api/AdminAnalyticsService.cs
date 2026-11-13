@@ -95,15 +95,14 @@ public sealed class AdminAnalyticsService(
             cancellationToken);
 
         await using var purchasing = await purchasingFactory.CreateDbContextAsync(cancellationToken);
-        var suppliers = await purchasing.SupplierProfiles.CountAsync(supplier => supplier.IsActive, cancellationToken);
-        var supplierProducts = await purchasing.SupplierProducts.CountAsync(item => item.IsActive, cancellationToken);
-        var draftPurchases = await purchasing.PurchaseDrafts.CountAsync(
-            draft => draft.Status == PurchaseDraftStatus.Draft, cancellationToken);
-        var cancelledPurchases = await purchasing.PurchaseDrafts.CountAsync(
-            draft => draft.Status == PurchaseDraftStatus.Cancelled, cancellationToken);
-        var draftSources = await purchasing.PurchaseDrafts.AsNoTracking()
-            .Where(draft => draft.Status == PurchaseDraftStatus.Draft)
-            .GroupBy(draft => draft.SourceType)
+        var sellers = await purchasing.Sellers.CountAsync(cancellationToken);
+        var draftPurchases = await purchasing.Purchases.CountAsync(
+            purchase => purchase.Status == PurchaseStatus.Draft, cancellationToken);
+        var cancelledPurchases = await purchasing.Purchases.CountAsync(
+            purchase => purchase.Status == PurchaseStatus.Cancelled, cancellationToken);
+        var draftSources = await purchasing.Purchases.AsNoTracking()
+            .Where(purchase => purchase.Status == PurchaseStatus.Draft)
+            .GroupBy(purchase => purchase.Seller.Kind)
             .Select(group => new DashboardBreakdown(group.Key, group.Count()))
             .ToListAsync(cancellationToken);
 
@@ -150,8 +149,7 @@ public sealed class AdminAnalyticsService(
                 new("recentProducts", recentlyAdded)
             ],
             [
-                new("activeSuppliers", suppliers),
-                new("supplierProducts", supplierProducts),
+                new("sellers", sellers),
                 new("draftPurchases", draftPurchases),
                 new("cancelledPurchases", cancelledPurchases),
                 new("warehouses", warehouses)
