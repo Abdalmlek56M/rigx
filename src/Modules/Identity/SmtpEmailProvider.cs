@@ -96,6 +96,22 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
             """,
             cancellationToken);
 
+    public Task SendNewDeviceSignInAsync(
+        NewDeviceSignInMessage message,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            message.Email,
+            message.FullName,
+            "New sign-in to your RIGX account",
+            $"""
+            Hello {message.FullName},
+
+            Your RIGX account was just signed in from a new device: {message.Browser} on {message.Device}, at {message.SignedInAtUtc:yyyy-MM-dd HH:mm} UTC.
+
+            If this was you, there is nothing to do. If not, open your account, sign out of the devices you do not know, and contact us.
+            """,
+            cancellationToken);
+
     private async Task SendAsync(
         string recipient,
         string recipientName,

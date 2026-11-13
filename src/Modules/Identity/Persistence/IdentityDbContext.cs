@@ -255,6 +255,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.IsEmailVerified).HasColumnName("is_email_verified").HasDefaultValue(false);
             e.Property(x => x.AvatarStorageKey).HasColumnName("avatar_storage_key").HasMaxLength(512);
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            e.Property(x => x.NotifyNewDeviceSignIn).HasColumnName("notify_new_device_sign_in").HasDefaultValue(true);
             e.Property(x => x.AuthorizationVersion).HasColumnName("authorization_version").HasDefaultValue(0);
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
         });

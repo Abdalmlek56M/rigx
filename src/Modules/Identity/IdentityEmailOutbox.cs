@@ -21,6 +21,7 @@ public interface IIdentityEmailDispatcher
 public sealed record OutboxEmailCodePayload(string Email, string FullName, string Code, DateTimeOffset ExpiresAtUtc, string Purpose);
 public sealed record OutboxStaffInvitationPayload(string Email, string FullName, IReadOnlyList<string> Roles, string SignInUrl);
 public sealed record OutboxEmailChangePayload(string NewEmail, string FullName, string VerificationUrl);
+public sealed record OutboxNewDeviceSignInPayload(string Email, string FullName, string Device, string Browser, DateTimeOffset SignedInAtUtc);
 
 /// <summary>
 /// Durable, encrypted identity email queue. Codes and action URLs never appear
@@ -34,6 +35,7 @@ public sealed class IdentityEmailOutboxWriter(
     public const string EmailCodeKind = "EmailCode";
     public const string StaffInvitationKind = "StaffInvitation";
     public const string EmailChangeKind = "EmailChangeVerification";
+    public const string NewDeviceSignInKind = "NewDeviceSignIn";
 
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector("HardwareStore.IdentityEmailOutbox.v1");
@@ -208,6 +210,7 @@ public sealed class IdentityEmailOutboxProcessor(
             IdentityEmailOutboxWriter.EmailCodeKind => SendEmailCodeAsync(row, cancellationToken),
             IdentityEmailOutboxWriter.StaffInvitationKind => SendStaffInvitationAsync(row, cancellationToken),
             IdentityEmailOutboxWriter.EmailChangeKind => SendEmailChangeAsync(row, cancellationToken),
+            IdentityEmailOutboxWriter.NewDeviceSignInKind => SendNewDeviceSignInAsync(row, cancellationToken),
             _ => throw new InvalidOperationException("Unknown identity email outbox kind.")
         };
 
@@ -232,6 +235,14 @@ public sealed class IdentityEmailOutboxProcessor(
         var payload = writer.Unprotect<OutboxEmailChangePayload>(row.ProtectedPayload);
         return emailProvider.SendEmailChangeVerificationAsync(
             new EmailChangeMessage(payload.NewEmail, payload.FullName, new Uri(payload.VerificationUrl)),
+            cancellationToken);
+    }
+
+    private Task SendNewDeviceSignInAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
+    {
+        var payload = writer.Unprotect<OutboxNewDeviceSignInPayload>(row.ProtectedPayload);
+        return emailProvider.SendNewDeviceSignInAsync(
+            new NewDeviceSignInMessage(payload.Email, payload.FullName, payload.Device, payload.Browser, payload.SignedInAtUtc),
             cancellationToken);
     }
 

@@ -54,7 +54,7 @@ public sealed class DatabaseTicketStore(
         ticket.Properties.IssuedUtc = now;
         ticket.Properties.ExpiresUtc = idleExpiry;
         var request = httpContextAccessor?.HttpContext?.Request;
-        var userAgent = Truncate(request?.Headers.UserAgent.ToString(), 512);
+        var userAgent = NormalizeUserAgent(request?.Headers.UserAgent.ToString());
         // Raw IP addresses are intentionally not collected: device/browser labels are
         // sufficient for customer session management, and the column remains for legacy rows only.
 
@@ -297,6 +297,9 @@ public sealed class DatabaseTicketStore(
     private static readonly TimeSpan UnrememberedMaxLifetime = TimeSpan.FromHours(12);
 
     private static DateTimeOffset Min(DateTimeOffset left, DateTimeOffset right) => left <= right ? left : right;
+
+    /// <summary>The user agent exactly as sessions store it.</summary>
+    internal static string? NormalizeUserAgent(string? value) => Truncate(value, 512);
 
     private static string? Truncate(string? value, int maxLength)
     {

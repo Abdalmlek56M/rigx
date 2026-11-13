@@ -22,6 +22,7 @@ public static class IdentityAccountsRegistration
         services.AddScoped<IdentityAccountProvisioner>();
         services.AddScoped<EmailCodeSignInService>();
         services.AddScoped<StepUpService>();
+        services.AddScoped<NewDeviceSignInAlerts>();
         services.AddSingleton(GoogleSignInOptions.FromConfiguration(configuration));
         services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<GoogleSignInService>();

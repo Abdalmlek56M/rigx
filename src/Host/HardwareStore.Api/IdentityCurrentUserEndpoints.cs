@@ -10,6 +10,10 @@ public static class IdentityCurrentUserEndpoints
             .RequireAuthorization();
         endpoints.MapPatch("/api/v1/identity/profile", UpdateProfileAsync)
             .RequireAuthorization();
+        endpoints.MapGet("/api/v1/identity/settings/new-device-alerts", GetNewDeviceAlertsAsync)
+            .RequireAuthorization();
+        endpoints.MapPut("/api/v1/identity/settings/new-device-alerts", SetNewDeviceAlertsAsync)
+            .RequireAuthorization();
         return endpoints;
     }
 
@@ -24,6 +28,24 @@ public static class IdentityCurrentUserEndpoints
             return Results.Unauthorized();
         await profiles.UpdateAsync(accountId, request, cancellationToken);
         return await GetCurrentUserAsync(context, users, cancellationToken);
+    }
+
+    private static async Task<IResult> GetNewDeviceAlertsAsync(
+        HttpContext context, NewDeviceSignInAlerts alerts, CancellationToken cancellationToken)
+    {
+        IdentityHttp.NoStore(context);
+        return context.TryGetUserId(out var accountId)
+            ? Results.Ok(new NewDeviceAlertsSetting(await alerts.GetAsync(accountId, cancellationToken)))
+            : Results.Unauthorized();
+    }
+
+    private static async Task<IResult> SetNewDeviceAlertsAsync(
+        NewDeviceAlertsSetting request, HttpContext context, NewDeviceSignInAlerts alerts, CancellationToken cancellationToken)
+    {
+        if (!context.TryGetUserId(out var accountId))
+            return Results.Unauthorized();
+        await alerts.SetAsync(accountId, request.Enabled, cancellationToken);
+        return Results.Ok(request);
     }
 
     private static async Task<IResult> GetCurrentUserAsync(
@@ -50,4 +72,6 @@ public static class IdentityCurrentUserEndpoints
                 user.AvatarStorageKey
             });
     }
+
+    public sealed record NewDeviceAlertsSetting(bool Enabled);
 }

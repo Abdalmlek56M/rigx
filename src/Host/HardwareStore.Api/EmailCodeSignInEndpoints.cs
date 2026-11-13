@@ -81,6 +81,7 @@ public static class IdentitySignIn
     /// <summary>
     /// The success audit is written first: if it fails, no session is created. "Remember this device"
     /// makes the cookie persistent; otherwise it ends with the browser session (and within 12 hours).
+    /// A sign-in from a browser the account has not used before emails the owner (if they kept that on).
     /// </summary>
     public static async Task CompleteAsync(
         HttpContext context,
@@ -98,6 +99,8 @@ public static class IdentitySignIn
             CorrelationId: context.TraceIdentifier,
             SafeMetadata: JsonSerializer.Serialize(new { method, rememberDevice, sessionScope = "Full" })),
             cancellationToken);
+        await context.RequestServices.GetRequiredService<NewDeviceSignInAlerts>()
+            .NotifyIfNewDeviceAsync(accountId, context.Request.Headers.UserAgent.ToString(), cancellationToken);
         await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
             new AuthenticationProperties { IsPersistent = rememberDevice });
     }

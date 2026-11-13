@@ -28,6 +28,7 @@ public sealed class UserAccount
     public bool IsEmailVerified { get; set; }
     public string? AvatarStorageKey { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool NotifyNewDeviceSignIn { get; set; } = true;
     public int AuthorizationVersion { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public Person Person { get; set; } = null!;

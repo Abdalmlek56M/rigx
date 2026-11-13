@@ -203,7 +203,7 @@ public sealed class IdentitySessionService
 
     private static IdentityException InvalidSession() => new(401, "The session is no longer valid.");
 
-    private static string DeviceLabel(string? userAgent)
+    internal static string DeviceLabel(string? userAgent)
     {
         if (string.IsNullOrWhiteSpace(userAgent))
             return "Unknown";
@@ -217,7 +217,7 @@ public sealed class IdentitySessionService
         return "Desktop";
     }
 
-    private static string BrowserLabel(string? userAgent)
+    internal static string BrowserLabel(string? userAgent)
     {
         if (string.IsNullOrWhiteSpace(userAgent))
             return "Unknown";

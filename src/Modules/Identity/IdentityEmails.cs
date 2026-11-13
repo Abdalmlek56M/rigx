@@ -11,12 +11,16 @@ public sealed record StaffInvitationMessage(string Email, string FullName, IRead
 /// <summary>Link sent to the new address to confirm an email change.</summary>
 public sealed record EmailChangeMessage(string NewEmail, string FullName, Uri ConfirmUrl);
 
+/// <summary>Tells the account owner about a sign-in from a device it has not used before.</summary>
+public sealed record NewDeviceSignInMessage(string Email, string FullName, string Device, string Browser, DateTimeOffset SignedInAtUtc);
+
 /// <summary>Delivers Identity emails. Called only by the outbox processor, never inside a request.</summary>
 public interface IEmailProvider
 {
     Task SendEmailCodeAsync(EmailCodeMessage message, CancellationToken cancellationToken = default);
     Task SendStaffInvitationAsync(StaffInvitationMessage message, CancellationToken cancellationToken = default);
     Task SendEmailChangeVerificationAsync(EmailChangeMessage message, CancellationToken cancellationToken = default);
+    Task SendNewDeviceSignInAsync(NewDeviceSignInMessage message, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Development/Testing provider. Messages stay in process memory and are never logged or sent.</summary>
@@ -25,10 +29,12 @@ public sealed class InMemoryTestEmailProvider : IEmailProvider
     private readonly ConcurrentQueue<EmailCodeMessage> _emailCodes = new();
     private readonly ConcurrentQueue<StaffInvitationMessage> _staffInvitations = new();
     private readonly ConcurrentQueue<EmailChangeMessage> _emailChanges = new();
+    private readonly ConcurrentQueue<NewDeviceSignInMessage> _newDeviceSignIns = new();
 
     public IReadOnlyCollection<EmailCodeMessage> EmailCodes => _emailCodes.ToArray();
     public IReadOnlyCollection<StaffInvitationMessage> StaffInvitations => _staffInvitations.ToArray();
     public IReadOnlyCollection<EmailChangeMessage> EmailChanges => _emailChanges.ToArray();
+    public IReadOnlyCollection<NewDeviceSignInMessage> NewDeviceSignIns => _newDeviceSignIns.ToArray();
 
     public Task SendEmailCodeAsync(EmailCodeMessage message, CancellationToken cancellationToken = default) =>
         Capture(_emailCodes, message, cancellationToken);
@@ -38,6 +44,9 @@ public sealed class InMemoryTestEmailProvider : IEmailProvider
 
     public Task SendEmailChangeVerificationAsync(EmailChangeMessage message, CancellationToken cancellationToken = default) =>
         Capture(_emailChanges, message, cancellationToken);
+
+    public Task SendNewDeviceSignInAsync(NewDeviceSignInMessage message, CancellationToken cancellationToken = default) =>
+        Capture(_newDeviceSignIns, message, cancellationToken);
 
     private static Task Capture<T>(ConcurrentQueue<T> queue, T message, CancellationToken cancellationToken)
     {

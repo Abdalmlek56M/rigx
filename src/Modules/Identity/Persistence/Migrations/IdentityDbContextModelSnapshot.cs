@@ -966,6 +966,12 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("normalized_username");
 
+                    b.Property<bool>("NotifyNewDeviceSignIn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("notify_new_device_sign_in");
+
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid")
                         .HasColumnName("person_id");
