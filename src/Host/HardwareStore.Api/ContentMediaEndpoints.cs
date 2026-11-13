@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +30,7 @@ public static class ContentMediaEndpoints
         CatalogMediaOptions options,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         if (!context.Request.HasFormContentType)
             return Results.ValidationProblem(new Dictionary<string, string[]>
@@ -169,8 +168,4 @@ public static class ContentMediaEndpoints
     private static void LimitRequestSize(HttpContext context, CatalogMediaOptions options) =>
         context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>()!
             .MaxRequestBodySize = options.MaxUploadBytes + 64 * 1024;
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 }

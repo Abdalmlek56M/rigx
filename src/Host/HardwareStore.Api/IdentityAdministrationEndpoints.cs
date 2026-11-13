@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Authorization;
@@ -43,7 +42,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await service.GetUsersAsync(
@@ -60,7 +59,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         var user = await service.GetUserAsync(id, cancellationToken);
@@ -73,7 +72,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -94,7 +93,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAccountLifecycleService lifecycle,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         var user = await service.GetUserAsync(id, cancellationToken);
         if (user is null)
@@ -116,7 +115,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -135,7 +134,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -152,7 +151,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await service.GetRolesAsync(cancellationToken));
@@ -162,7 +161,7 @@ public static class IdentityAdministrationEndpoints
         HttpContext context,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         await Task.CompletedTask;
@@ -174,7 +173,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -193,7 +192,7 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -204,10 +203,6 @@ public static class IdentityAdministrationEndpoints
             return MapException(exception);
         }
     }
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 
     private static IResult MapException(IdentityAdministrationException exception) =>
         Results.Problem(statusCode: exception.StatusCode, title: exception.Message);

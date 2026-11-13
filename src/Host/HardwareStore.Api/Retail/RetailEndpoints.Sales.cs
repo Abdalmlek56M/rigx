@@ -9,13 +9,13 @@ public static partial class RetailEndpoints
     private static async Task<IResult> ListOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct, string? status = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await orders.ListOrdersAsync(status, HasPermission(context, "Sales.ViewCustomerContact"), ct));
+        return Results.Ok(await orders.ListOrdersAsync(status, context.HasPermission("Sales.ViewCustomerContact"), ct));
     }
 
     private static async Task<IResult> GetOrderDetailAsync(Guid id, HttpContext context, OrderService orders, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await orders.GetAdminOrderDetailAsync(id, HasPermission(context, "Inventory.ViewSerials"), ct));
+        return Results.Ok(await orders.GetAdminOrderDetailAsync(id, context.HasPermission("Inventory.ViewSerials"), ct));
     }
 
     /// <summary>POS/manual order: prices come from the published catalog or build (Catalog + Retail, so it stays in Host).</summary>
@@ -23,7 +23,7 @@ public static partial class RetailEndpoints
         OrderCreateRequest request, HttpContext context, OrderService orders, AssemblyService assemblies,
         IDbContextFactory<CatalogDbContext> catalogFactory, CancellationToken ct)
     {
-        if (!TryGetActor(context, out _)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out _)) return Results.Unauthorized();
         var lines = new List<OrderLine>();
         await using var catalog = await catalogFactory.CreateDbContextAsync(ct);
         var publishedAssemblies = await assemblies.ListPublishedAssembliesAsync(ct);
@@ -52,25 +52,25 @@ public static partial class RetailEndpoints
 
     private static async Task<IResult> UpdateStatusAsync(Guid id, OrderStatusRequest request, HttpContext context, OrderStatusService statuses, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await statuses.UpdateStatusAsync(id, request, actorId, ct));
     }
 
     private static async Task<IResult> CompleteOrderAsync(Guid id, CompleteOrderRequest request, HttpContext context, OrderStatusService statuses, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await statuses.CompleteOrderAsync(id, request, actorId, ct));
     }
 
     private static async Task<IResult> UpdatePaymentAsync(Guid id, PaymentStatusRequest request, HttpContext context, OrderPaymentService payments, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await payments.UpdatePaymentAsync(id, request, actorId, ct));
     }
 
     private static async Task<IResult> WaivePaymentAsync(Guid id, WaivePaymentRequest request, HttpContext context, OrderPaymentService payments, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await payments.WaivePaymentAsync(id, request, actorId, ct));
     }
 
@@ -82,19 +82,19 @@ public static partial class RetailEndpoints
 
     private static async Task<IResult> CreateReturnAsync(ReturnCreateRequest request, HttpContext context, ReturnService returns, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await returns.CreateReturnAsync(request, actorId, ct));
     }
 
     private static async Task<IResult> InspectReturnAsync(Guid id, ReturnInspectRequest request, HttpContext context, ReturnService returns, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await returns.InspectReturnAsync(id, request, actorId, ct));
     }
 
     private static async Task<IResult> RejectReturnAsync(Guid id, ReturnRejectRequest request, HttpContext context, ReturnService returns, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await returns.RejectReturnAsync(id, request, actorId, ct));
     }
 
@@ -106,7 +106,7 @@ public static partial class RetailEndpoints
         OrderCreateRequest request, HttpContext context, OrderService orders, AssemblyService assemblies,
         IDbContextFactory<CatalogDbContext> catalogFactory, ContentPolicyService policies, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var accountId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var accountId)) return Results.Unauthorized();
         if (request.TermsAccepted != true)
             return Results.BadRequest(new { error = "Terms and Privacy consent is required." });
         string termsVersion;
@@ -172,14 +172,14 @@ public static partial class RetailEndpoints
 
     private static async Task<IResult> ListMyOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var accountId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var accountId)) return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await orders.ListMyOrdersAsync(accountId, ct));
     }
 
     private static async Task<IResult> GetMyOrderAsync(Guid id, HttpContext context, OrderService orders, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var accountId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var accountId)) return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await orders.GetMyOrderAsync(id, accountId, ct));
     }

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +27,7 @@ public static class StorefrontEndpoints
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await wishlist.ListAsync(accountId, cancellationToken));
@@ -40,7 +39,7 @@ public static class StorefrontEndpoints
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         try
         {
@@ -59,7 +58,7 @@ public static class StorefrontEndpoints
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         await wishlist.RemoveAsync(accountId, productId, cancellationToken);
         return Results.NoContent();
@@ -70,7 +69,7 @@ public static class StorefrontEndpoints
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         await wishlist.ClearAsync(accountId, cancellationToken);
         return Results.NoContent();
@@ -82,7 +81,7 @@ public static class StorefrontEndpoints
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         await wishlist.MergeAsync(
             accountId,
@@ -105,7 +104,7 @@ public static class StorefrontEndpoints
         StoreSettingsService settings,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await settings.GetAsync(cancellationToken));
@@ -117,7 +116,7 @@ public static class StorefrontEndpoints
         StoreSettingsService settings,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -128,10 +127,6 @@ public static class StorefrontEndpoints
             return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
         }
     }
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 }
 
 public sealed record WishlistMergeRequest(IReadOnlyList<Guid>? ProductIds);

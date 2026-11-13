@@ -10,8 +10,8 @@ public static partial class RetailEndpoints
     private static async Task<IResult> ListUnitsAsync(HttpContext context, InventoryUnitService units, CancellationToken ct, string? status = null, Guid? productId = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        var includeCosts = HasPermission(context, "Inventory.ViewCosts");
-        var includeSerials = HasPermission(context, "Inventory.ViewSerials");
+        var includeCosts = context.HasPermission("Inventory.ViewCosts");
+        var includeSerials = context.HasPermission("Inventory.ViewSerials");
         return Results.Ok(await units.ListUnitsAsync(status, productId, includeCosts, includeSerials, ct));
     }
 
@@ -24,7 +24,7 @@ public static partial class RetailEndpoints
         IDbContextFactory<PurchasingDbContext> purchasingFactory,
         IDbContextFactory<CatalogDbContext> catalogFactory, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         await using var purchasing = await purchasingFactory.CreateDbContextAsync(ct);
         var draft = await purchasing.PurchaseDrafts.AsNoTracking().Include(item => item.Items)
             .SingleOrDefaultAsync(item => item.Id == draftId, ct);

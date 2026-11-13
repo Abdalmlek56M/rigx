@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -22,7 +21,7 @@ public static class IdentityCurrentUserEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        if (!Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         try
         {
@@ -54,7 +53,7 @@ public static class IdentityCurrentUserEndpoints
         context.Response.Headers.CacheControl = "no-store";
         context.Response.Headers.Pragma = "no-cache";
 
-        if (!Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
 
         var user = await users.GetAsync(accountId, cancellationToken);

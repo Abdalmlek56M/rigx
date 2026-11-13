@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +19,7 @@ public static class ProfileAvatarEndpoints
         CatalogMediaOptions options,
         CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         if (!context.Request.HasFormContentType)
             return Results.ValidationProblem(new Dictionary<string, string[]>
@@ -84,7 +83,7 @@ public static class ProfileAvatarEndpoints
         ICatalogMediaStorage media,
         CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         string? previousKey;
         await using (var db = await identityFactory.CreateDbContextAsync(cancellationToken))

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -101,7 +100,7 @@ public static class IdentityAccountLifecycleEndpoints
         CancellationToken cancellationToken)
     {
         NoStore(context);
-        if (!TryReadAccountId(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
 
         var result = await lifecycle.ChangePasswordAsync(
@@ -129,7 +128,7 @@ public static class IdentityAccountLifecycleEndpoints
         CancellationToken cancellationToken)
     {
         NoStore(context);
-        if (!TryReadAccountId(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
         {
             loggerFactory.CreateLogger("Identity.Sessions")
                 .LogWarning("Logout is missing an authenticated account identifier.");
@@ -159,7 +158,7 @@ public static class IdentityAccountLifecycleEndpoints
         CancellationToken cancellationToken)
     {
         NoStore(context);
-        if (!TryReadAccountId(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var currentKey);
         return Results.Ok(await sessions.ListAsync(accountId, currentKey, cancellationToken));
@@ -172,7 +171,7 @@ public static class IdentityAccountLifecycleEndpoints
         CancellationToken cancellationToken)
     {
         NoStore(context);
-        if (!TryReadAccountId(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         var result = await sessions.RevokeSessionAsync(
             accountId, id, context.TraceIdentifier, cancellationToken);
@@ -190,7 +189,7 @@ public static class IdentityAccountLifecycleEndpoints
         CancellationToken cancellationToken)
     {
         NoStore(context);
-        if (!TryReadAccountId(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         if (!DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var currentKey))
             return Results.Unauthorized();
@@ -211,7 +210,7 @@ public static class IdentityAccountLifecycleEndpoints
         CancellationToken cancellationToken)
     {
         NoStore(context);
-        if (!TryReadAccountId(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
 
         var result = await sessions.RevokeAllAsync(accountId, context.TraceIdentifier, cancellationToken);
@@ -274,9 +273,6 @@ public static class IdentityAccountLifecycleEndpoints
         context.Response.Headers.CacheControl = "no-store";
         context.Response.Headers.Pragma = "no-cache";
     }
-
-    private static bool TryReadAccountId(HttpContext context, out Guid accountId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out accountId);
 
     private static async Task SignOutCurrentCookieAsync(HttpContext context, ILoggerFactory loggerFactory)
     {

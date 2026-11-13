@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Inventory;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +26,7 @@ public static class InventoryEndpoints
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await warehouses.GetAsync(
@@ -44,7 +43,7 @@ public static class InventoryEndpoints
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         var warehouse = await warehouses.GetByIdAsync(id, cancellationToken);
@@ -57,7 +56,7 @@ public static class InventoryEndpoints
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -76,7 +75,7 @@ public static class InventoryEndpoints
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -87,8 +86,4 @@ public static class InventoryEndpoints
             return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
         }
     }
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 }

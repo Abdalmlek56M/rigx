@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Purchasing;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +27,7 @@ public static class PurchaseDraftEndpoints
         int page = 1,
         int pageSize = 25)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await drafts.GetAsync(
@@ -41,7 +40,7 @@ public static class PurchaseDraftEndpoints
         PurchaseDraftService drafts,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         try
@@ -60,7 +59,7 @@ public static class PurchaseDraftEndpoints
         PurchaseDraftService drafts,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -81,7 +80,7 @@ public static class PurchaseDraftEndpoints
         PurchaseDraftService drafts,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -100,7 +99,7 @@ public static class PurchaseDraftEndpoints
         PurchaseDraftService drafts,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -111,10 +110,6 @@ public static class PurchaseDraftEndpoints
             return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
         }
     }
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 }
 
 public sealed record PurchaseDraftVersionRequest(long RowVersion);

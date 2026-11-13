@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -67,7 +66,7 @@ public static class ContentEndpoints
         HomepageContentService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.SaveDraftAsync(request, actorId, cancellationToken));
     }
@@ -78,7 +77,7 @@ public static class ContentEndpoints
         HomepageContentService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.PublishAsync(request.RowVersion, actorId, cancellationToken));
     }
@@ -132,7 +131,7 @@ public static class ContentEndpoints
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.CreateAsync(request, actorId, cancellationToken));
     }
@@ -144,7 +143,7 @@ public static class ContentEndpoints
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.UpdateAsync(id, request, actorId, cancellationToken));
     }
@@ -156,7 +155,7 @@ public static class ContentEndpoints
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.PublishAsync(id, request.RowVersion, actorId, cancellationToken));
     }
@@ -168,7 +167,7 @@ public static class ContentEndpoints
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.UnpublishAsync(id, request.RowVersion, actorId, cancellationToken));
     }
@@ -257,11 +256,6 @@ public static class ContentEndpoints
         ContentPolicyService service,
         CancellationToken cancellationToken) =>
         Results.Ok(await service.PublishAsync(id, request.RowVersion, cancellationToken));
-
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 }
 
 public sealed record HomepagePublishRequest(long RowVersion);

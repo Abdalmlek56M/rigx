@@ -11,7 +11,8 @@ Applies to every human or AI contributor. The goal: code that is easy to extend,
 - **No magic strings** for statuses, permissions, settings keys — constants/enums.
 - **Time via `TimeProvider`**, money via `decimal`, ids via `Guid`.
 - **No commented-out code, no dead code, no TODO without an issue/roadmap item.**
-- Nullable reference types and warnings-as-errors on; TypeScript `strict`, no `any`.
+- Nullable reference types and warnings-as-errors on (`Directory.Build.props`), with unused private members/parameters (IDE0051/0052/0060) failing the build; TypeScript `strict`, no `any`.
+- Read the signed-in user only through `HttpContextUserExtensions` (`TryGetUserId`, `HasPermission`).
 
 ## Before writing code, ask
 1. Would I write it this way from scratch? If not, fix it now or record why not.

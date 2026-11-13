@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -55,14 +54,6 @@ public static partial class RetailEndpoints
         endpoints.MapGet("/api/v1/orders/mine/{id:guid}", GetMyOrderAsync).RequireAuthorization();
         return endpoints;
     }
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) && actorId != Guid.Empty;
-
-    private static bool HasPermission(HttpContext context, string permission) =>
-        context.User.Claims.Any(claim =>
-            claim.Type == PermissionAuthorizationHandler.ClaimType &&
-            string.Equals(claim.Value, permission, StringComparison.Ordinal));
 }
 
 public sealed record RetailVersionRequest(long RowVersion);

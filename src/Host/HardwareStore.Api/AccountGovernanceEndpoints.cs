@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +35,7 @@ public static class AccountGovernanceEndpoints
         IdentityEmailChangeService service,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         try
         {
@@ -68,7 +67,7 @@ public static class AccountGovernanceEndpoints
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await notifications.GetAsync(accountId, cancellationToken));
@@ -80,7 +79,7 @@ public static class AccountGovernanceEndpoints
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         await notifications.MarkReadAsync(accountId, id, cancellationToken);
         return Results.NoContent();
@@ -91,7 +90,7 @@ public static class AccountGovernanceEndpoints
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         await notifications.MarkAllReadAsync(accountId, cancellationToken);
         return Results.NoContent();
@@ -110,7 +109,7 @@ public static class AccountGovernanceEndpoints
         AccountRestrictionService restrictions,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -129,7 +128,7 @@ public static class AccountGovernanceEndpoints
         AccountRestrictionService restrictions,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -140,10 +139,6 @@ public static class AccountGovernanceEndpoints
             return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
         }
     }
-
-    private static bool TryGetAccount(HttpContext context, out Guid accountId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out accountId) &&
-        accountId != Guid.Empty;
 }
 
 public sealed record EmailChangeConfirmRequest(string? Token);

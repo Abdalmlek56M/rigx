@@ -24,10 +24,10 @@ PostgreSQL 17       One database, one schema per module
 | Inventory | units (`RX-xxxx`), warehouses, stock states, hidden/visible | exists — units currently live in `Retail/Features/Inventory`; move here |
 | Purchasing | suppliers/sellers, purchase drafts, receipts | exists |
 | Assemblies (new) | builds: components, swaps, warranty, allocation | logic in `Retail/Features/Assemblies` → extract |
-| Sales | orders, reservation, payments, POS, returns, blacklist, tracking | module is empty; logic in `Retail/Features/Sales` → extract |
+| Sales | orders, reservation, payments, POS, returns, blacklist, tracking | no project yet (created in 2.4); logic in `Retail/Features/Sales` → extract |
 | Partners (new) | agreements, per-unit overrides, earnings, settlements | logic in `Retail/Features/Partners` → extract |
-| Financials | expenses, business reports | empty module; logic in `Retail/Features/Financials` → extract |
-| Invoicing | online invoices, quote images/PDF | empty — to build |
+| Financials | expenses, business reports | no project yet; logic in `Retail/Features/Financials` → extract |
+| Invoicing | online invoices, quote images/PDF | no project yet — created in 2.6 |
 | Pricing (new) | offers, coupons, context pricing, customer tiers | offers partly in Catalog — consolidate |
 | PcBuilder | templates, slots, compatibility | exists |
 | Storefront | settings, content, articles, FAQ, videos, contact | exists — content split into `Features/Content` (homepage, articles, FAQ, policies) |
@@ -115,3 +115,5 @@ Rules:
 | 9 | Vertical-slice features inside modules | small files, one place per use case, easy to fix |
 | 10 | Business errors = `AppException` subclasses mapped globally (not `Result<T>`) | the existing services already throw typed errors; one base type removes ~130 duplicated try/catch blocks without rewriting every service |
 | 11 | Endpoints that orchestrate several modules stay in Host; single-module endpoints move into their module when it is restructured | avoids cross-module references just to relocate files |
+| 12 | Endpoints stay in Host for now, even single-module ones; the admin dashboard (`AdminAnalyticsService`) stays in Host | every endpoint needs Identity's `RequirePermission`, so moving them would make each module reference Identity; the dashboard reads six modules (catalog, purchasing, identity, content, inventory, audit) and holds no money data, so it is composition, not Financials. Revisit when modules expose `Contracts` (Phase 2) |
+| 13 | Module projects are created when their first feature lands (no empty placeholder projects) | an empty project is dead code; creating one takes a minute |

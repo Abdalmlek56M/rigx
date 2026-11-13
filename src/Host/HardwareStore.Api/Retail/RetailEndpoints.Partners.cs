@@ -23,7 +23,7 @@ public static partial class RetailEndpoints
 
     private static async Task<IResult> SettleAsync(SettlementRequest request, HttpContext context, PartnerLedgerService ledger, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await ledger.SettleAsync(request, actorId, ct));
     }
 
@@ -42,14 +42,14 @@ public static partial class RetailEndpoints
     private static async Task<IResult> UpsertAllocationAsync(PartnerAllocationRequest request, HttpContext context,
         PartnerAllocationService allocations, CancellationToken ct)
     {
-        TryGetActor(context, out var actorId);
+        context.TryGetUserId(out var actorId);
         return Results.Ok(await allocations.UpsertAllocationAsync(request, actorId, ct));
     }
 
     private static async Task<IResult> DeactivateAllocationAsync(Guid id, AllocationDeactivateRequest request,
         HttpContext context, PartnerAllocationService allocations, CancellationToken ct)
     {
-        TryGetActor(context, out var actorId);
+        context.TryGetUserId(out var actorId);
         return Results.Ok(await allocations.DeactivateAllocationAsync(id, request.RowVersion, request.Reason, actorId, ct));
     }
 

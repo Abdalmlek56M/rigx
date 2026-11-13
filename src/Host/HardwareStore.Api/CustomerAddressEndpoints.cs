@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity;
 using Microsoft.AspNetCore.Http;
 
@@ -20,7 +19,7 @@ public static class CustomerAddressEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return TryGetAccount(context, out var accountId)
+        return context.TryGetUserId(out var accountId)
             ? Results.Ok(await addresses.ListAsync(accountId, cancellationToken))
             : Results.Unauthorized();
     }
@@ -31,7 +30,7 @@ public static class CustomerAddressEndpoints
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         try
         {
@@ -50,7 +49,7 @@ public static class CustomerAddressEndpoints
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         try
         {
@@ -69,7 +68,7 @@ public static class CustomerAddressEndpoints
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
-        if (!TryGetAccount(context, out var accountId))
+        if (!context.TryGetUserId(out var accountId))
             return Results.Unauthorized();
         try
         {
@@ -81,10 +80,6 @@ public static class CustomerAddressEndpoints
             return Map(exception);
         }
     }
-
-    private static bool TryGetAccount(HttpContext context, out Guid accountId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out accountId) &&
-        accountId != Guid.Empty;
 
     private static IResult Map(IdentityAdministrationException exception) =>
         Results.Problem(statusCode: exception.StatusCode, title: exception.Message);

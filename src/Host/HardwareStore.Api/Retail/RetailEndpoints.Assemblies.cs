@@ -6,7 +6,7 @@ public static partial class RetailEndpoints
     private static async Task<IResult> ListAssembliesAsync(HttpContext context, AssemblyService assemblies, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await assemblies.ListAssembliesAsync(HasPermission(context, "Inventory.ViewCosts"), ct));
+        return Results.Ok(await assemblies.ListAssembliesAsync(context.HasPermission("Inventory.ViewCosts"), ct));
     }
 
     private static async Task<IResult> ListPublishedAssembliesAsync(HttpContext context, AssemblyService assemblies, CancellationToken ct)

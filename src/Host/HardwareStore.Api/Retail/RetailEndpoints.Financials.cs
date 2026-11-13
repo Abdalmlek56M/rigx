@@ -13,7 +13,7 @@ public static partial class RetailEndpoints
     private static async Task<IResult> CreateExpenseAsync(ExpenseCreateRequest request, HttpContext context,
         ExpenseService expenses, CancellationToken ct)
     {
-        if (!TryGetActor(context, out var actorId)) return Results.Unauthorized();
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         return Results.Ok(await expenses.CreateExpenseAsync(request, actorId, ct));
     }
 

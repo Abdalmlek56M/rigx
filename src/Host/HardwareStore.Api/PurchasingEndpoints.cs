@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Purchasing;
 using Microsoft.AspNetCore.Http;
@@ -41,7 +40,7 @@ public static class PurchasingEndpoints
         SupplierDirectoryService suppliers,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await suppliers.GetAsync(
@@ -58,7 +57,7 @@ public static class PurchasingEndpoints
         SupplierDirectoryService suppliers,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         var supplier = await suppliers.GetByIdAsync(id, cancellationToken);
@@ -71,7 +70,7 @@ public static class PurchasingEndpoints
         SupplierDirectoryService suppliers,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -90,7 +89,7 @@ public static class PurchasingEndpoints
         SupplierDirectoryService suppliers,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -108,7 +107,7 @@ public static class PurchasingEndpoints
         SupplierDirectoryService suppliers,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -128,7 +127,7 @@ public static class PurchasingEndpoints
         SupplierDirectoryService suppliers,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -150,7 +149,7 @@ public static class PurchasingEndpoints
         SupplierProductCatalogService catalog,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         try
         {
@@ -176,7 +175,7 @@ public static class PurchasingEndpoints
         SupplierProductCatalogService catalog,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         context.Response.Headers.CacheControl = "no-store";
         var item = await catalog.GetByIdAsync(supplierId, id, cancellationToken);
@@ -190,7 +189,7 @@ public static class PurchasingEndpoints
         SupplierProductCatalogService catalog,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -210,7 +209,7 @@ public static class PurchasingEndpoints
         SupplierProductCatalogService catalog,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out var actorId))
+        if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         try
         {
@@ -229,7 +228,7 @@ public static class PurchasingEndpoints
         SupplierProductCatalogService catalog,
         CancellationToken cancellationToken)
     {
-        if (!TryGetActor(context, out _))
+        if (!context.TryGetUserId(out _))
             return Results.Unauthorized();
         try
         {
@@ -244,8 +243,4 @@ public static class PurchasingEndpoints
 
     private static IResult MapException(PurchasingValidationException exception) =>
         Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-
-    private static bool TryGetActor(HttpContext context, out Guid actorId) =>
-        Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out actorId) &&
-        actorId != Guid.Empty;
 }
