@@ -118,7 +118,7 @@ public sealed class ContentVideoService(
 
     public async Task<ContentVideoView> UploadAsync(
         string? titleAr, string? titleEn, string? descriptionAr, string? descriptionEn,
-        Stream content, long length, string? fileName, string? contentType,
+        Stream content, long length, string? fileName,
         CancellationToken cancellationToken = default)
     {
         var extension = Path.GetExtension(fileName ?? string.Empty).TrimStart('.').ToLowerInvariant();

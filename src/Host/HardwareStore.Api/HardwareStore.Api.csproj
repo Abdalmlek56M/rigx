@@ -12,9 +12,6 @@
     <ProjectReference Include="../../Modules/Inventory/HardwareStore.Modules.Inventory.csproj" />
     <ProjectReference Include="../../Modules/Purchasing/HardwareStore.Modules.Purchasing.csproj" />
     <ProjectReference Include="../../Modules/Storefront/HardwareStore.Modules.Storefront.csproj" />
-    <ProjectReference Include="../../Modules/Sales/HardwareStore.Modules.Sales.csproj" />
-    <ProjectReference Include="../../Modules/Invoicing/HardwareStore.Modules.Invoicing.csproj" />
-    <ProjectReference Include="../../Modules/Financials/HardwareStore.Modules.Financials.csproj" />
     <ProjectReference Include="../../Modules/PcBuilder/HardwareStore.Modules.PcBuilder.csproj" />
     <ProjectReference Include="../../Modules/Retail/HardwareStore.Modules.Retail.csproj" />
     <ProjectReference Include="../../Modules/Auditing/HardwareStore.Modules.Auditing.csproj" />

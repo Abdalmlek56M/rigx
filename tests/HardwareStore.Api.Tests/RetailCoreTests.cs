@@ -113,7 +113,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var error = await Assert.ThrowsAsync<RetailException>(() =>
             retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor));
         Assert.Equal(409, error.StatusCode);
-        Assert.Single((await retail.Units.ListUnitsAsync(UnitStatus.Available, productId)).Where(unit => unit.ProductId == productId));
+        Assert.Single(await retail.Units.ListUnitsAsync(UnitStatus.Available, productId), unit => unit.ProductId == productId);
     }
 
     [Fact]

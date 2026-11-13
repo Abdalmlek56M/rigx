@@ -43,7 +43,7 @@ public sealed class HomepageContentService(
         Guid actorId,
         CancellationToken cancellationToken = default)
     {
-        var layoutJson = HomepageLayoutRules.Normalize(request.LayoutJson, validateReferences: false);
+        var layoutJson = HomepageLayoutRules.Normalize(request.LayoutJson);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var draft = await db.HomepageLayouts
             .SingleOrDefaultAsync(layout => layout.Status == ContentStatus.Draft, cancellationToken);
@@ -90,7 +90,7 @@ public sealed class HomepageContentService(
                 ?? throw new StorefrontException(400, "There is no homepage draft to publish.");
             if (draft.RowVersion != rowVersion)
                 throw new StorefrontException(409, "The homepage draft was changed by another user.");
-            var layoutJson = HomepageLayoutRules.Normalize(draft.LayoutJson, validateReferences: true);
+            var layoutJson = HomepageLayoutRules.Normalize(draft.LayoutJson);
             await HomepageLayoutRules.ValidateReferencesAsync(db, layoutJson, cancellationToken);
 
             var now = timeProvider.GetUtcNow().ToUniversalTime();

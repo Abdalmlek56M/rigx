@@ -122,7 +122,7 @@ public static class ContentVideoEndpoints
                 return Results.ValidationProblem(new Dictionary<string, string[]> { ["video"] = ["A video file is required."] });
             var result = await videos.UploadAsync(
                 form["titleAr"], form["titleEn"], form["descriptionAr"], form["descriptionEn"],
-                file.OpenReadStream(), file.Length, file.FileName, file.ContentType, cancellationToken);
+                file.OpenReadStream(), file.Length, file.FileName, cancellationToken);
             return Results.Ok(result);
         }
         catch (CatalogValidationException exception)

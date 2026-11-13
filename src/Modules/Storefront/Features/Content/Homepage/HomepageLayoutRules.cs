@@ -9,7 +9,7 @@ namespace HardwareStore.Modules.Storefront;
 /// </summary>
 internal static class HomepageLayoutRules
 {
-    public static string Normalize(string? raw, bool validateReferences)
+    public static string Normalize(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             throw new StorefrontException(400, "A homepage layout is required.");

@@ -1,0 +1,8 @@
+<Project>
+  <!-- Applies to every project: warnings fail the build, and code-style rules from .editorconfig
+       (unused private members/parameters) are checked at build time, not only in the IDE. -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>

@@ -104,10 +104,10 @@ public sealed class PostgreSqlIdentityMigrationPreflightTests(
         await db.Database.ExecuteSqlRawAsync(
             "INSERT INTO persons (id, person_code, full_name, is_customer, created_at_utc) VALUES ({0}, {1}, {2}, {3}, {4})",
             personId, personCode, $"Migration preflight {Guid.NewGuid():N}", false, DateTimeOffset.UtcNow);
-        await db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO user_accounts (id, person_id, username, normalized_username, email, normalized_email, password_hash, is_email_verified, created_at_utc) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})",
-            accountId, personId, username, IdentityLoginService.NormalizeIdentifier(username),
-            email, IdentityLoginService.NormalizeIdentifier(email), passwordHash, isEmailVerified, DateTimeOffset.UtcNow);
+        var normalizedUsername = IdentityLoginService.NormalizeIdentifier(username);
+        var normalizedEmail = IdentityLoginService.NormalizeIdentifier(email);
+        await db.Database.ExecuteSqlAsync(
+            $"INSERT INTO user_accounts (id, person_id, username, normalized_username, email, normalized_email, password_hash, is_email_verified, created_at_utc) VALUES ({accountId}, {personId}, {username}, {normalizedUsername}, {email}, {normalizedEmail}, {passwordHash}, {isEmailVerified}, {DateTimeOffset.UtcNow})");
         return new UserAccount
         {
             Id = accountId,

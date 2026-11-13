@@ -68,7 +68,7 @@ public sealed class IdentityEmailOutboxWriter(
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        await EnqueueAsync(db, kind, accountId, payload, cancellationToken);
+        Enqueue(db, kind, accountId, payload);
         await db.SaveChangesAsync(cancellationToken);
     }
 
@@ -93,16 +93,6 @@ public sealed class IdentityEmailOutboxWriter(
         });
     }
 
-    private Task EnqueueAsync(
-        IdentityDbContext db,
-        string kind,
-        Guid? accountId,
-        object payload,
-        CancellationToken cancellationToken)
-    {
-        Enqueue(db, kind, accountId, payload);
-        return Task.CompletedTask;
-    }
 
     internal T Unprotect<T>(byte[] protectedPayload)
     {

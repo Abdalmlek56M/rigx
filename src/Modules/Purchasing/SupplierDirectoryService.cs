@@ -415,23 +415,6 @@ public sealed class SupplierDirectoryService(
             profile.UpdatedAtUtc,
             profile.RowVersion);
 
-    private static SupplierView Map(SupplierProfile profile) => new(
-        profile.Id,
-        profile.PersonId,
-        profile.Person.PersonCode,
-        profile.CompanyName,
-        profile.Person.PhoneNumber,
-        profile.Person.Email,
-        profile.TaxIdNumber,
-        profile.CommercialRegistration,
-        profile.ContactPersonName,
-        profile.ContactPersonPhone,
-        profile.PaymentTermsDays,
-        profile.Notes,
-        profile.IsActive,
-        profile.CreatedAtUtc,
-        profile.UpdatedAtUtc,
-        profile.RowVersion);
 
     private static SupplierFinancialView MapFinancials(SupplierProfile profile) => new(
         profile.Id,
