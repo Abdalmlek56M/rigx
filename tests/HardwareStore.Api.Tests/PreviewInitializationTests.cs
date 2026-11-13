@@ -182,7 +182,7 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
             foreach (var table in new[]
                      {
                          "sellers", "purchases", "warehouses",
-                         "products", "product_variants", "security_audit_events", "store_settings"
+                         "products", "security_audit_events", "store_settings"
                      })
             {
                 await using var command = connection.CreateCommand();

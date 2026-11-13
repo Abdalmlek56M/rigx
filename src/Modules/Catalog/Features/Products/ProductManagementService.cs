@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HardwareStore.Modules.Catalog;
 
 /// <summary>
-/// Admin product editing: list, load, create/update with variants and specifications, and status changes
+/// Admin product editing: list, load, create/update with specifications, and status changes
 /// (publishing requires an effectively active category and an active brand).
 /// </summary>
 public sealed class ProductManagementService(
@@ -19,14 +19,11 @@ public sealed class ProductManagementService(
             .Select(product => new ProductSummaryView(
                 product.Id, product.Name, product.Slug, product.Sku,
                 product.BasePrice,
-                product.Variants.Where(variant => variant.IsActive && variant.Price != null)
-                    .Select(variant => variant.Price).Min() ?? product.BasePrice,
                 product.Status,
                 product.Condition,
                 product.Category.Name, product.Category.Slug,
                 product.Brand != null ? product.Brand.Name : null,
                 product.Specifications
-                    .Where(specification => specification.VariantId == null)
                     .OrderBy(specification => specification.SortOrder)
                     .ThenBy(specification => specification.Name)
                     .Take(3)
@@ -42,8 +39,7 @@ public sealed class ProductManagementService(
     public async Task<ProductDetailView> GetProductAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await ProductDetailQuery.LoadAsync(
-            db, id, cancellationToken, includeInactiveVariants: true);
+        return await ProductDetailQuery.LoadAsync(db, id, cancellationToken);
     }
 
     public async Task<ProductDetailView> SaveProductAsync(
@@ -77,7 +73,6 @@ public sealed class ProductManagementService(
                 CreatedAtUtc = UtcNow()
             }
             : await db.Products
-                .Include(item => item.Variants)
                 .Include(item => item.Specifications)
                 .SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
               ?? throw new CatalogNotFoundException("Product was not found.");
@@ -108,7 +103,6 @@ public sealed class ProductManagementService(
         else
             product.RowVersion++;
 
-        SynchronizeVariants(db, product, input.Variants ?? []);
         SynchronizeSpecifications(db, product, input.Specifications ?? []);
 
         try
@@ -119,11 +113,10 @@ public sealed class ProductManagementService(
         catch (DbUpdateException)
         {
             await transaction.RollbackAsync(CancellationToken.None);
-            throw new CatalogConflictException("Product, variant, or specification identifiers conflict with existing data.");
+            throw new CatalogConflictException("Product or specification identifiers conflict with existing data.");
         }
 
-        return await ProductDetailQuery.LoadAsync(
-            db, product.Id, cancellationToken, includeInactiveVariants: true);
+        return await ProductDetailQuery.LoadAsync(db, product.Id, cancellationToken);
     }
 
     public async Task<ProductDetailView> SetProductStatusAsync(
@@ -146,8 +139,7 @@ public sealed class ProductManagementService(
         product.RowVersion++;
         product.UpdatedAtUtc = UtcNow();
         await db.SaveChangesAsync(cancellationToken);
-        return await ProductDetailQuery.LoadAsync(
-            db, product.Id, cancellationToken, includeInactiveVariants: true);
+        return await ProductDetailQuery.LoadAsync(db, product.Id, cancellationToken);
     }
 
     private DateTimeOffset UtcNow() => timeProvider.GetUtcNow().ToUniversalTime();
@@ -164,21 +156,6 @@ public sealed class ProductManagementService(
         if (input.CategoryId == Guid.Empty)
             throw new CatalogValidationException("categoryId", "Category is required.");
 
-        var variants = input.Variants ?? [];
-        foreach (var variant in variants)
-        {
-            CatalogValidation.Required(variant.Name, "variants.name", 160);
-            CatalogValidation.Required(variant.Sku, "variants.sku", 128);
-            CatalogValidation.Optional(variant.Barcode, "variants.barcode", 128);
-            if (variant.Price is not null)
-                CatalogValidation.NonNegativeMoney(variant.Price.Value, "variants.price");
-        }
-        EnsureUnique(variants.Select(item => item.Sku!.Trim()), "variants.sku", "Variant SKUs must be unique.");
-        EnsureUnique(
-            variants.Where(item => !string.IsNullOrWhiteSpace(item.Barcode)).Select(item => item.Barcode!.Trim()),
-            "variants.barcode",
-            "Variant barcodes must be unique.");
-
         var specifications = input.Specifications ?? [];
         foreach (var specification in specifications)
         {
@@ -189,50 +166,15 @@ public sealed class ProductManagementService(
                 throw new CatalogValidationException("specifications.sortOrder", "Sort order must not be negative.");
         }
         EnsureUnique(
-            specifications.Select(item =>
-                $"{item.VariantId?.ToString("N") ?? item.VariantSku?.Trim().ToUpperInvariant() ?? "product"}\u001f{item.GroupName!.Trim()}\u001f{item.Name!.Trim().ToLowerInvariant()}"),
+            specifications.Select(item => $"{item.GroupName!.Trim()}\u001f{item.Name!.Trim().ToLowerInvariant()}"),
             "specifications",
-            "Specification names must be unique within each product or variant scope and group.");
+            "Specification names must be unique within each product group.");
     }
 
     private static void EnsureUnique(IEnumerable<string> values, string field, string message)
     {
         if (values.GroupBy(value => value, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() > 1))
             throw new CatalogValidationException(field, message);
-    }
-
-    private static void SynchronizeVariants(
-        CatalogDbContext db,
-        CatalogProduct product,
-        IReadOnlyList<ProductVariantInput> inputs)
-    {
-        var retainedIds = inputs.Where(input => input.Id is not null).Select(input => input.Id!.Value).ToHashSet();
-        foreach (var removed in product.Variants.Where(variant => !retainedIds.Contains(variant.Id)).ToList())
-            db.ProductVariants.Remove(removed);
-
-        foreach (var input in inputs)
-        {
-            var variant = input.Id is null
-                ? null
-                : product.Variants.SingleOrDefault(item => item.Id == input.Id)
-                  ?? throw new CatalogValidationException("variants.id", "A variant does not belong to this product.");
-            if (variant is null)
-            {
-                variant = new CatalogProductVariant
-                {
-                    Id = Guid.CreateVersion7(),
-                    Name = string.Empty,
-                    Sku = string.Empty,
-                    Product = product
-                };
-                product.Variants.Add(variant);
-            }
-            variant.Name = input.Name!.Trim();
-            variant.Sku = input.Sku!.Trim();
-            variant.Barcode = string.IsNullOrWhiteSpace(input.Barcode) ? null : input.Barcode.Trim();
-            variant.Price = input.Price;
-            variant.IsActive = input.IsActive;
-        }
     }
 
     private static void SynchronizeSpecifications(
@@ -267,16 +209,6 @@ public sealed class ProductManagementService(
             specification.Name = input.Name!.Trim();
             specification.Value = input.Value!.Trim();
             specification.SortOrder = input.SortOrder;
-            var variant = input.VariantId is not null
-                ? product.Variants.SingleOrDefault(item => item.Id == input.VariantId)
-                : input.VariantSku is not null
-                    ? product.Variants.SingleOrDefault(item =>
-                        string.Equals(item.Sku, input.VariantSku.Trim(), StringComparison.OrdinalIgnoreCase))
-                    : null;
-            if ((input.VariantId is not null || input.VariantSku is not null) && variant is null)
-                throw new CatalogValidationException(
-                    "specifications.variant", "A specification references an unknown product variant.");
-            specification.VariantId = variant?.Id;
         }
     }
 }

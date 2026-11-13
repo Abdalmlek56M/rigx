@@ -8,8 +8,7 @@ internal static class ProductDetailQuery
     public static async Task<ProductDetailView> LoadAsync(
         CatalogDbContext db,
         Guid productId,
-        CancellationToken cancellationToken,
-        bool includeInactiveVariants = true)
+        CancellationToken cancellationToken)
     {
         return await db.Products.AsNoTracking()
             .Where(product => product.Id == productId)
@@ -30,20 +29,11 @@ internal static class ProductDetailQuery
                 product.Status,
                 product.Condition,
                 product.RowVersion,
-                product.Variants.Where(variant => includeInactiveVariants || variant.IsActive)
-                    .OrderBy(variant => variant.Name)
-                    .Select(variant => new ProductVariantView(
-                        variant.Id, variant.Name, variant.Sku, variant.Barcode, variant.Price, variant.IsActive))
-                    .ToList(),
                 product.Specifications
-                    .Where(specification =>
-                        includeInactiveVariants ||
-                        specification.VariantId == null ||
-                        specification.Variant!.IsActive)
                     .OrderBy(specification => specification.SortOrder)
                     .ThenBy(specification => specification.Name)
                     .Select(specification => new ProductSpecificationView(
-                        specification.Id, specification.VariantId, specification.GroupName, specification.Name,
+                        specification.Id, specification.GroupName, specification.Name,
                         specification.Value, specification.SortOrder))
                     .ToList(),
                 product.Images.OrderByDescending(image => image.IsPrimary)

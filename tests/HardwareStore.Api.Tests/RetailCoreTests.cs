@@ -552,7 +552,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     }
 
     [Fact]
-    public async Task Fulfillment_payment_matrix_terms_and_variant_snapshots_are_server_enforced()
+    public async Task Fulfillment_payment_matrix_terms_and_thumbnail_snapshots_are_server_enforced()
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
@@ -562,12 +562,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var delivery = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
             [new OrderLine(productId, null, "Matrix Unit", "MATRIX-1", 1, 300m, null, null, null,
-                Guid.NewGuid(), "OC Edition", "thumb/key.webp")], LeadSource.Website, TermsAccepted: true,
+                "thumb/key.webp")], LeadSource.Website, TermsAccepted: true,
             TermsPolicyVersion: "3"), null);
         Assert.Equal("Delivery", delivery.FulfillmentMethod);
         Assert.Equal("CashOnDelivery", delivery.PaymentMethod);
         Assert.True(delivery.PaymentRequired);
-        Assert.Equal("OC Edition", delivery.Items[0].VariantName);
         Assert.Equal("thumb/key.webp", delivery.Items[0].ThumbnailStorageKeySnapshot);
         await using (var db = database.CreateRetailContext())
         {

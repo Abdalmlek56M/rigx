@@ -73,34 +73,19 @@ public sealed class CatalogProduct
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public CatalogCategory Category { get; set; } = null!;
     public CatalogBrand? Brand { get; set; }
-    public ICollection<CatalogProductVariant> Variants { get; set; } = new List<CatalogProductVariant>();
     public ICollection<CatalogProductSpecification> Specifications { get; set; } = new List<CatalogProductSpecification>();
     public ICollection<CatalogProductImage> Images { get; set; } = new List<CatalogProductImage>();
-}
-
-public sealed class CatalogProductVariant
-{
-    public Guid Id { get; set; }
-    public Guid ProductId { get; set; }
-    public required string Name { get; set; }
-    public required string Sku { get; set; }
-    public string? Barcode { get; set; }
-    public decimal? Price { get; set; }
-    public bool IsActive { get; set; } = true;
-    public CatalogProduct Product { get; set; } = null!;
 }
 
 public sealed class CatalogProductSpecification
 {
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }
-    public Guid? VariantId { get; set; }
     public required string GroupName { get; set; }
     public required string Name { get; set; }
     public required string Value { get; set; }
     public int SortOrder { get; set; }
     public CatalogProduct Product { get; set; } = null!;
-    public CatalogProductVariant? Variant { get; set; }
 }
 
 public sealed class CatalogProductImage
@@ -127,7 +112,6 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     public DbSet<CatalogCategory> Categories => Set<CatalogCategory>();
     public DbSet<CatalogBrand> Brands => Set<CatalogBrand>();
     public DbSet<CatalogProduct> Products => Set<CatalogProduct>();
-    public DbSet<CatalogProductVariant> ProductVariants => Set<CatalogProductVariant>();
     public DbSet<CatalogProductSpecification> ProductSpecifications => Set<CatalogProductSpecification>();
     public DbSet<CatalogProductImage> ProductImages => Set<CatalogProductImage>();
     public DbSet<ContentMediaAsset> ContentMediaAssets => Set<ContentMediaAsset>();
@@ -234,33 +218,6 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
                 .HasForeignKey(product => product.BrandId).OnDelete(DeleteBehavior.Restrict);
         });
 
-        model.Entity<CatalogProductVariant>(entity =>
-        {
-            entity.ToTable("product_variants", table =>
-            {
-                table.HasCheckConstraint("ck_product_variants_price", "price IS NULL OR price >= 0");
-                table.HasCheckConstraint("ck_product_variants_barcode_not_blank", "barcode IS NULL OR length(btrim(barcode)) > 0");
-                table.HasCheckConstraint("ck_product_variants_name_not_blank", "length(btrim(name)) > 0");
-                table.HasCheckConstraint("ck_product_variants_sku_not_blank", "length(btrim(sku)) > 0");
-            });
-            entity.HasKey(variant => variant.Id);
-            entity.Property(variant => variant.Id).HasColumnName("id").ValueGeneratedNever();
-            entity.Property(variant => variant.ProductId).HasColumnName("product_id");
-            entity.Property(variant => variant.Name).HasColumnName("name").HasMaxLength(160).IsRequired();
-            entity.Property(variant => variant.Sku).HasColumnName("sku").HasMaxLength(128).IsRequired();
-            entity.HasIndex(variant => variant.Sku).IsUnique().HasDatabaseName("ux_product_variants_sku");
-            entity.Property(variant => variant.Barcode).HasColumnName("barcode").HasMaxLength(128);
-            entity.HasIndex(variant => variant.Barcode).IsUnique().HasDatabaseName("ux_product_variants_barcode")
-                .HasFilter("barcode IS NOT NULL");
-            entity.Property(variant => variant.Price).HasColumnName("price").HasPrecision(18, 4);
-            entity.Property(variant => variant.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            entity.HasIndex(variant => variant.ProductId).HasDatabaseName("ix_product_variants_product");
-            entity.HasIndex(variant => new { variant.Id, variant.ProductId })
-                .IsUnique().HasDatabaseName("ux_product_variants_id_product");
-            entity.HasOne(variant => variant.Product).WithMany(product => product.Variants)
-                .HasForeignKey(variant => variant.ProductId).OnDelete(DeleteBehavior.Restrict);
-        });
-
         model.Entity<CatalogProductSpecification>(entity =>
         {
             entity.ToTable("product_specifications", table =>
@@ -273,26 +230,16 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.HasKey(specification => specification.Id);
             entity.Property(specification => specification.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(specification => specification.ProductId).HasColumnName("product_id");
-            entity.Property(specification => specification.VariantId).HasColumnName("variant_id");
             entity.Property(specification => specification.GroupName).HasColumnName("group_name").HasMaxLength(100).IsRequired();
             entity.Property(specification => specification.Name).HasColumnName("name").HasMaxLength(128).IsRequired();
             entity.Property(specification => specification.Value).HasColumnName("value").HasMaxLength(500).IsRequired();
             entity.Property(specification => specification.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
             entity.HasIndex(specification => new { specification.ProductId, specification.GroupName, specification.Name })
-                .IsUnique().HasFilter("variant_id IS NULL")
-                .HasDatabaseName("ux_product_specifications_product_group_name");
-            entity.HasIndex(specification => new { specification.VariantId, specification.GroupName, specification.Name })
-                .IsUnique().HasFilter("variant_id IS NOT NULL")
-                .HasDatabaseName("ux_product_specifications_variant_group_name");
+                .IsUnique().HasDatabaseName("ux_product_specifications_product_group_name");
             entity.HasIndex(specification => new { specification.ProductId, specification.SortOrder })
                 .HasDatabaseName("ix_product_specifications_product_sort");
             entity.HasOne(specification => specification.Product).WithMany(product => product.Specifications)
                 .HasForeignKey(specification => specification.ProductId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(specification => specification.Variant).WithMany()
-                .HasForeignKey(specification => new { specification.VariantId, specification.ProductId })
-                .HasPrincipalKey(variant => new { variant.Id, variant.ProductId })
-                .HasConstraintName("fk_product_specifications_variant_product")
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         model.Entity<CatalogProductImage>(entity =>

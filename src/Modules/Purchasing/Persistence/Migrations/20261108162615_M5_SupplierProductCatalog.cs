@@ -29,12 +29,6 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_supplier_products", x => x.id);
                     table.ForeignKey(
-                        name: "FK_supplier_products_product_variants_product_variant_id",
-                        column: x => x.product_variant_id,
-                        principalTable: "product_variants",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_supplier_products_supplier_profiles_supplier_profile_id",
                         column: x => x.supplier_profile_id,
                         principalTable: "supplier_profiles",

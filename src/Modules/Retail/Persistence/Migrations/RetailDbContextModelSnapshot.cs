@@ -341,15 +341,6 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("unit_price");
 
-                    b.Property<Guid?>("VariantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("variant_id");
-
-                    b.Property<string>("VariantName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("variant_name");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");

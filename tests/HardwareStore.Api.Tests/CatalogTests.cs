@@ -29,7 +29,7 @@ public sealed class CatalogModelTests
             new[]
             {
                 "brands", "categories", "content_media_asset_usages", "content_media_assets", "content_videos",
-                "product_images", "product_reviews", "product_specifications", "product_variants", "products", "store_reviews"
+                "product_images", "product_reviews", "product_specifications", "products", "store_reviews"
             },
             tables);
         var allowedCascades = new HashSet<string>(["ContentMediaAssetUsage", "ProductReview"], StringComparer.Ordinal);

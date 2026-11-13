@@ -75,7 +75,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
                 order.Items.Add(new OrderItem
                 {
                     Id = Guid.CreateVersion7(), Name = line.Name.Trim(), Sku = line.Sku?.Trim(),
-                    ProductId = line.ProductId, VariantId = line.VariantId, VariantName = line.VariantName?.Trim(),
+                    ProductId = line.ProductId,
                     ThumbnailStorageKeySnapshot = line.ThumbnailStorageKeySnapshot,
                     AssemblyId = line.AssemblyId,
                     StockItemId = line.StockItemId,

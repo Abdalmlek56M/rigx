@@ -25,18 +25,8 @@ public sealed record BrandInput(
     bool IsActive,
     int? RowVersion);
 
-public sealed record ProductVariantInput(
-    Guid? Id,
-    string? Name,
-    string? Sku,
-    string? Barcode,
-    decimal? Price,
-    bool IsActive);
-
 public sealed record ProductSpecificationInput(
     Guid? Id,
-    Guid? VariantId,
-    string? VariantSku,
     string? GroupName,
     string? Name,
     string? Value,
@@ -54,7 +44,6 @@ public sealed record ProductInput(
     decimal BasePrice,
     CatalogProductStatus Status,
     CatalogProductCondition Condition,
-    IReadOnlyList<ProductVariantInput>? Variants,
     IReadOnlyList<ProductSpecificationInput>? Specifications,
     int? RowVersion);
 
@@ -85,17 +74,8 @@ public sealed record BrandView(
     bool IsActive,
     int RowVersion);
 
-public sealed record ProductVariantView(
-    Guid Id,
-    string Name,
-    string Sku,
-    string? Barcode,
-    decimal? Price,
-    bool IsActive);
-
 public sealed record ProductSpecificationView(
     Guid Id,
-    Guid? VariantId,
     string GroupName,
     string Name,
     string Value,
@@ -124,7 +104,6 @@ public sealed record ProductSummaryView(
     string Slug,
     string Sku,
     decimal BasePrice,
-    decimal FromPrice,
     CatalogProductStatus Status,
     CatalogProductCondition Condition,
     string CategoryName,
@@ -150,7 +129,6 @@ public sealed record ProductDetailView(
     CatalogProductStatus Status,
     CatalogProductCondition Condition,
     int RowVersion,
-    IReadOnlyList<ProductVariantView> Variants,
     IReadOnlyList<ProductSpecificationView> Specifications,
     IReadOnlyList<ProductImageView> Images);
 

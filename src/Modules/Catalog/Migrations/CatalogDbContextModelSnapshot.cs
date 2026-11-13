@@ -463,26 +463,14 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("value");
 
-                    b.Property<Guid?>("VariantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("variant_id");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId", "SortOrder")
                         .HasDatabaseName("ix_product_specifications_product_sort");
 
-                    b.HasIndex("VariantId", "ProductId");
-
                     b.HasIndex("ProductId", "GroupName", "Name")
                         .IsUnique()
-                        .HasDatabaseName("ux_product_specifications_product_group_name")
-                        .HasFilter("variant_id IS NULL");
-
-                    b.HasIndex("VariantId", "GroupName", "Name")
-                        .IsUnique()
-                        .HasDatabaseName("ux_product_specifications_variant_group_name")
-                        .HasFilter("variant_id IS NOT NULL");
+                        .HasDatabaseName("ux_product_specifications_product_group_name");
 
                     b.ToTable("product_specifications", null, t =>
                         {
@@ -493,74 +481,6 @@ namespace HardwareStore.Modules.Catalog.Migrations
                             t.HasCheckConstraint("ck_product_specifications_sort_order", "sort_order >= 0");
 
                             t.HasCheckConstraint("ck_product_specifications_value_not_blank", "length(btrim(value)) > 0");
-                        });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogProductVariant", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Barcode")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("barcode");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("name");
-
-                    b.Property<decimal?>("Price")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)")
-                        .HasColumnName("price");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("sku");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Barcode")
-                        .IsUnique()
-                        .HasDatabaseName("ux_product_variants_barcode")
-                        .HasFilter("barcode IS NOT NULL");
-
-                    b.HasIndex("ProductId")
-                        .HasDatabaseName("ix_product_variants_product");
-
-                    b.HasIndex("Sku")
-                        .IsUnique()
-                        .HasDatabaseName("ux_product_variants_sku");
-
-                    b.HasIndex("Id", "ProductId")
-                        .IsUnique()
-                        .HasDatabaseName("ux_product_variants_id_product");
-
-                    b.ToTable("product_variants", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_product_variants_barcode_not_blank", "barcode IS NULL OR length(btrim(barcode)) > 0");
-
-                            t.HasCheckConstraint("ck_product_variants_name_not_blank", "length(btrim(name)) > 0");
-
-                            t.HasCheckConstraint("ck_product_variants_price", "price IS NULL OR price >= 0");
-
-                            t.HasCheckConstraint("ck_product_variants_sku_not_blank", "length(btrim(sku)) > 0");
                         });
                 });
 
@@ -1053,26 +973,6 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("HardwareStore.Modules.Catalog.CatalogProductVariant", "Variant")
-                        .WithMany()
-                        .HasForeignKey("VariantId", "ProductId")
-                        .HasPrincipalKey("Id", "ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_product_specifications_variant_product");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Variant");
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogProductVariant", b =>
-                {
-                    b.HasOne("HardwareStore.Modules.Catalog.CatalogProduct", "Product")
-                        .WithMany("Variants")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Product");
                 });
 
@@ -1111,8 +1011,6 @@ namespace HardwareStore.Modules.Catalog.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Specifications");
-
-                    b.Navigation("Variants");
                 });
 #pragma warning restore 612, 618
         }

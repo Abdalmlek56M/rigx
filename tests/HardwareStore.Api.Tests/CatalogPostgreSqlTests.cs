@@ -106,27 +106,13 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         var cheap = NewProduct(
             activeCategory.Id, "Cheap product", "cheap-product", "P-100", CatalogProductStatus.Published);
         cheap.CreatedAtUtc = DateTimeOffset.UtcNow.AddDays(-2);
-        cheap.Variants.Add(new CatalogProductVariant
-        {
-            Id = Guid.CreateVersion7(),
-            Name = "Small",
-            Sku = "P-100-S",
-            Price = 50m
-        });
+        cheap.BasePrice = 50m;
         cheap.Specifications.Add(new CatalogProductSpecification
         {
             Id = Guid.CreateVersion7(),
             GroupName = "Memory",
             Name = "Capacity",
             Value = "8 GB"
-        });
-        cheap.Specifications.Add(new CatalogProductSpecification
-        {
-            Id = Guid.CreateVersion7(),
-            GroupName = "Variant",
-            Name = "Edition",
-            Value = "Small",
-            Variant = cheap.Variants.Single()
         });
         var expensive = NewProduct(
             activeCategory.Id, "Expensive product", "expensive-product", "P-300", CatalogProductStatus.Published);
@@ -192,10 +178,8 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         Assert.Contains("8 GB", capacityFilter.Values);
 
         var details = await storefront.GetProductBySlugAsync("cheap-product");
-        Assert.Equal(50m, details.Variants.Single().Price);
-        var variantSpecification = Assert.Single(details.Specifications,
-            specification => specification.VariantId is not null);
-        Assert.Equal(details.Variants.Single().Id, variantSpecification.VariantId);
+        Assert.Equal(50m, details.BasePrice);
+        Assert.Equal("8 GB", Assert.Single(details.Specifications).Value);
     }
 
     [Fact]
@@ -284,21 +268,21 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
 
         var draft = await products.SaveProductAsync(null, new ProductInput("Guarded", $"guarded-{suffix}",
             $"GUARD-{suffix}", null, child.Id, brand.Id, null, null, 10m, CatalogProductStatus.Draft,
-            CatalogProductCondition.New, [], [], null));
+            CatalogProductCondition.New, [], null));
         var blocked = await Assert.ThrowsAsync<CatalogValidationException>(() =>
             products.SetProductStatusAsync(draft.Id, CatalogProductStatus.Published, draft.RowVersion));
         Assert.Contains("status", blocked.Errors.Keys);
     }
 
     [Fact]
-    public async Task Product_management_persists_variant_price_and_variant_specific_specifications()
+    public async Task Product_management_persists_condition_and_specifications()
     {
         await using var db = fixture.CreateContext();
         var category = new CatalogCategory
         {
             Id = Guid.CreateVersion7(),
-            Name = "Variant products",
-            Slug = $"variant-products-{Guid.NewGuid():N}",
+            Name = "Managed products",
+            Slug = $"managed-products-{Guid.NewGuid():N}",
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
@@ -309,24 +293,22 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
             TimeProvider.System);
 
         var created = await management.SaveProductAsync(null, new ProductInput(
-            "Variant product",
-            $"variant-product-{Guid.NewGuid():N}",
-            $"VARIANT-{Guid.NewGuid():N}",
+            "Managed product",
+            $"managed-product-{Guid.NewGuid():N}",
+            $"MANAGED-{Guid.NewGuid():N}",
             null,
             category.Id,
             null,
-            "Variant test",
-            "Variant CRUD test",
+            "Management test",
+            "Management CRUD test",
             100m,
             CatalogProductStatus.Draft,
             CatalogProductCondition.New,
-            [new ProductVariantInput(null, "Large", "VARIANT-LARGE", null, 125m, true)],
-            [new ProductSpecificationInput(null, null, "VARIANT-LARGE", "Capacity", "Capacity", "16 GB", 0)],
+            [new ProductSpecificationInput(null, "Capacity", "Capacity", "16 GB", 0)],
             null));
 
-        Assert.Equal(125m, created.Variants.Single().Price);
         Assert.Equal(CatalogProductCondition.New, created.Condition);
-        Assert.Equal(created.Variants.Single().Id, created.Specifications.Single().VariantId);
+        Assert.Equal("16 GB", created.Specifications.Single().Value);
 
         var updated = await management.SaveProductAsync(created.Id, new ProductInput(
             created.Name,
@@ -340,11 +322,9 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
             created.BasePrice,
             created.Status,
             CatalogProductCondition.Used,
-            [new ProductVariantInput(created.Variants.Single().Id, "Large", "VARIANT-LARGE", null, 150m, true)],
-            [new ProductSpecificationInput(null, null, "VARIANT-LARGE", "Capacity", "Capacity", "24 GB", 0)],
+            [new ProductSpecificationInput(null, "Capacity", "Capacity", "24 GB", 0)],
             created.RowVersion));
 
-        Assert.Equal(150m, updated.Variants.Single().Price);
         Assert.Equal(CatalogProductCondition.Used, updated.Condition);
         Assert.Equal("24 GB", updated.Specifications.Single().Value);
     }

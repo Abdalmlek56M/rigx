@@ -368,15 +368,6 @@ public sealed class PreviewInitializationService(
             var productId = StableGuid($"product:{seed.Slug}");
             if (!await db.Products.AnyAsync(item => item.Id == productId, cancellationToken))
             {
-                var variants = seed.Variants.Select(variant => new CatalogProductVariant
-                {
-                    Id = StableGuid($"variant:{seed.Slug}:{variant.Sku}"),
-                    Name = variant.Name,
-                    Sku = variant.Sku,
-                    Barcode = variant.Barcode,
-                    Price = variant.Price,
-                    IsActive = true
-                }).ToList();
                 var product = new CatalogProduct
                 {
                     Id = productId,
@@ -390,17 +381,13 @@ public sealed class PreviewInitializationService(
                     BasePrice = seed.BasePrice,
                     Status = seed.Status,
                     CreatedAtUtc = now,
-                    UpdatedAtUtc = now,
-                    Variants = variants
+                    UpdatedAtUtc = now
                 };
                 foreach (var specification in seed.Specifications)
                 {
                     product.Specifications.Add(new CatalogProductSpecification
                     {
                         Id = StableGuid($"spec:{seed.Slug}:{specification.Group}:{specification.Name}"),
-                        VariantId = specification.VariantSku is null
-                            ? null
-                            : variants.Single(variant => variant.Sku == specification.VariantSku).Id,
                         GroupName = specification.Group,
                         Name = specification.Name,
                         Value = specification.Value,
@@ -485,35 +472,33 @@ public sealed class PreviewInitializationService(
     private static PreviewProductSeed[] PreviewProductDefinitions() =>
     [
         P("AMD Ryzen 7 9800X3D", "amd-ryzen-7-9800x3d", "CPU-9800X3D", "amd-processors", "AMD", 25990m, "AMD processors",
-            [V("Boxed", "CPU-9800X3D-BOX", null, null)], [S("Platform", "Socket", "AM5")]),
+            [S("Platform", "Socket", "AM5")]),
         P("Intel Core Ultra 7 265K", "intel-core-ultra-7-265k", "CPU-265K", "intel-processors", "Intel", 21490m, "Intel processors",
-            [V("Boxed", "CPU-265K-BOX", null, null)], [S("Platform", "Socket", "LGA1851")]),
+            [S("Platform", "Socket", "LGA1851")]),
         P("NVIDIA GeForce RTX 5080 16GB", "nvidia-geforce-rtx-5080-16gb", "GPU-5080", "graphics-cards", "NVIDIA", 57990m, "graphics cards",
-            [V("16 GB OC", "GPU-5080-OC", null, 58990m)], [S("Graphics", "Memory", "16 GB GDDR7"), S("Graphics", "Cooling", "Triple Fan")]),
+            [S("Graphics", "Memory", "16 GB GDDR7"), S("Graphics", "Cooling", "Triple Fan")]),
         P("AMD Radeon RX 9070 XT 16GB", "amd-radeon-rx-9070-xt-16gb", "GPU-9070XT", "graphics-cards", "AMD", 38990m, "graphics cards",
-            [V("Reference", "GPU-9070XT-REF", null, null), V("OC Edition", "GPU-9070XT-OC", null, 40990m)],
             [S("Graphics", "Memory", "16 GB GDDR6"), S("Graphics", "Interface", "PCIe 5.0")]),
         P("ASUS ROG Strix B650E-F", "asus-rog-strix-b650e-f", "MB-B650E-F", "motherboards", "ASUS", 12490m, "motherboards",
-            [V("Wi-Fi", "MB-B650E-F-WIFI", null, null)], [S("Platform", "Socket", "AM5"), S("Platform", "Form Factor", "ATX")]),
+            [S("Platform", "Socket", "AM5"), S("Platform", "Form Factor", "ATX")]),
         P("Corsair Vengeance 32GB DDR5-6000", "corsair-vengeance-32gb-ddr5-6000", "RAM-VEN32", "memory", "Corsair", 5490m, "memory",
-            [V("32 GB Black", "RAM-VEN32-BLK", null, null), V("64 GB Black", "RAM-VEN64-BLK", null, 9990m)],
             [S("Memory", "Capacity", "32 GB"), S("Memory", "Speed", "6000 MT/s")]),
         P("Samsung 990 PRO 2TB NVMe", "samsung-990-pro-2tb", "SSD-990P2", "storage", "Samsung", 8390m, "storage",
-            [V("2 TB", "SSD-990P2", null, null), V("4 TB", "SSD-990P4", null, 15490m)], [S("Storage", "Interface", "PCIe 4.0 x4")]),
+            [S("Storage", "Interface", "PCIe 4.0 x4")]),
         P("Kingston NV3 1TB NVMe", "kingston-nv3-1tb", "SSD-NV3-1", "storage", "Kingston", 2790m, "storage",
-            [V("1 TB", "SSD-NV3-1", null, null)], [S("Storage", "Interface", "PCIe 4.0 x4")]),
+            [S("Storage", "Interface", "PCIe 4.0 x4")]),
         P("NZXT Kraken 360 RGB", "nzxt-kraken-360-rgb", "COOL-K360", "cooling", "NZXT", 9890m, "cooling",
-            [V("Black", "COOL-K360-BLK", null, null), V("White", "COOL-K360-WHT", null, 10090m)], [S("Cooling", "Radiator", "360 mm")]),
+            [S("Cooling", "Radiator", "360 mm")]),
         P("Corsair RM850e Gold", "corsair-rm850e-gold", "PSU-RM850E", "power-supplies", "Corsair", 6490m, "power supplies",
-            [V("850 W", "PSU-RM850E", null, null)], [S("Power", "Wattage", "850 W"), S("Power", "Efficiency", "80+ Gold")]),
+            [S("Power", "Wattage", "850 W"), S("Power", "Efficiency", "80+ Gold")]),
         P("Lian Li O11 Vision", "lian-li-o11-vision", "CASE-O11V", "cases", "Lian Li", 7290m, "cases",
-            [V("Black", "CASE-O11V-BLK", null, null), V("White", "CASE-O11V-WHT", null, 7490m)], [S("Case", "Form Factor", "Mid Tower")]),
+            [S("Case", "Form Factor", "Mid Tower")]),
         P("Logitech G Pro X Superlight 2", "logitech-g-pro-x-superlight-2", "MOU-GPX2", "peripherals", "Logitech", 5990m, "peripherals",
-            [V("Black", "MOU-GPX2-BLK", null, null), V("White", "MOU-GPX2-WHT", null, 6090m)], [S("Mouse", "Weight", "60 g")]),
+            [S("Mouse", "Weight", "60 g")]),
         P("ASUS TUF Gaming 27 QHD", "asus-tuf-gaming-27-qhd", "MON-TUF27", "peripherals", "ASUS", 13990m, "peripherals",
-            [V("165 Hz", "MON-TUF27-165", null, null)], [S("Display", "Resolution", "2560 x 1440")], CatalogProductStatus.Draft),
+            [S("Display", "Resolution", "2560 x 1440")], CatalogProductStatus.Draft),
         P("Corsair iCUE Link Titan 360", "corsair-icue-link-titan-360", "COOL-TITAN360", "cooling", "Corsair", 11990m, "cooling",
-            [V("Black", "COOL-TITAN360-BLK", null, null)], [S("Cooling", "Radiator", "360 mm")], CatalogProductStatus.Draft)
+            [S("Cooling", "Radiator", "360 mm")], CatalogProductStatus.Draft)
     ];
 
     private static PreviewProductSeed P(
@@ -524,19 +509,15 @@ public sealed class PreviewInitializationService(
         string brandName,
         decimal price,
         string descriptionKey,
-        PreviewVariantSeed[] variants,
         PreviewSpecSeed[] specs,
         CatalogProductStatus status = CatalogProductStatus.Published) =>
         new(name, slug, sku, categorySlug, brandName, price,
             $"Demo catalog item for {descriptionKey}.",
             $"Local preview product. {name} is seeded only for Development UI testing.",
-            variants, specs, status);
+            specs, status);
 
-    private static PreviewVariantSeed V(string name, string sku, string? barcode, decimal? price) =>
-        new(name, sku, barcode, price);
-
-    private static PreviewSpecSeed S(string group, string name, string value, string? variantSku = null) =>
-        new(group, name, value, variantSku);
+    private static PreviewSpecSeed S(string group, string name, string value) =>
+        new(group, name, value);
 
     private static Guid StableGuid(string value)
     {
@@ -556,12 +537,10 @@ public sealed class PreviewInitializationService(
         decimal BasePrice,
         string ShortDescription,
         string Description,
-        PreviewVariantSeed[] Variants,
         PreviewSpecSeed[] Specifications,
         CatalogProductStatus Status);
 
-    private sealed record PreviewVariantSeed(string Name, string Sku, string? Barcode, decimal? Price);
-    private sealed record PreviewSpecSeed(string Group, string Name, string Value, string? VariantSku);
+    private sealed record PreviewSpecSeed(string Group, string Name, string Value);
 }
 
 public static class PreviewInitializationEndpoints

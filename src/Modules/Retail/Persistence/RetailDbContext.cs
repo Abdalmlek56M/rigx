@@ -130,8 +130,6 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.OrderId).HasColumnName("order_id");
             e.Property(x => x.UnitId).HasColumnName("unit_id");
             e.Property(x => x.ProductId).HasColumnName("product_id");
-            e.Property(x => x.VariantId).HasColumnName("variant_id");
-            e.Property(x => x.VariantName).HasColumnName("variant_name").HasMaxLength(200);
             e.Property(x => x.ThumbnailStorageKeySnapshot).HasColumnName("thumbnail_storage_key_snapshot").HasMaxLength(512);
             e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
             e.Property(x => x.StockItemId).HasColumnName("stock_item_id");

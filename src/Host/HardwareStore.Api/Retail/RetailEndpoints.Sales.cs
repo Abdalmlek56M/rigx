@@ -44,7 +44,7 @@ public static partial class RetailEndpoints
             var thumbnail = product.Images.OrderByDescending(image => image.IsPrimary)
                 .ThenBy(image => image.SortOrder).Select(image => image.ThumbnailStorageKey).FirstOrDefault();
             lines.Add(new OrderLine(product.Id, null, product.Name, product.Sku, Math.Clamp(line.Quantity, 1, 20),
-                product.BasePrice, null, null, null, null, null, thumbnail));
+                product.BasePrice, null, null, null, thumbnail));
         }
         return Results.Ok(await orders.CreateOrderAsync(
             request with { Items = lines, LeadSource = request.LeadSource ?? LeadSource.Manual }, null, ct));
@@ -136,30 +136,18 @@ public static partial class RetailEndpoints
                         .OrderByDescending(image => image.IsPrimary).ThenBy(image => image.SortOrder)
                         .Select(image => image.ThumbnailStorageKey).FirstOrDefaultAsync(ct);
                 lines.Add(new OrderLine(null, assembly.Id, assembly.TitleAr ?? assembly.TitleEn ?? "RIGX build", "BUILD", 1,
-                    assembly.SalePrice, null, null, null, null, null, buildThumbnail));
+                    assembly.SalePrice, null, null, null, buildThumbnail));
                 continue;
             }
             if (line.ProductId is null) throw new RetailException(400, "Each order line needs a product or build.");
             var product = await catalog.Products.AsNoTracking()
-                .Include(item => item.Variants)
                 .Include(item => item.Images)
                 .SingleOrDefaultAsync(item => item.Id == line.ProductId && item.Status == CatalogProductStatus.Published, ct)
                 ?? throw new RetailException(409, "A product in the cart is no longer available.");
-            var price = product.BasePrice;
-            var sku = product.Sku;
-            string? variantName = null;
-            if (line.VariantId is not null)
-            {
-                var variant = product.Variants.SingleOrDefault(item => item.Id == line.VariantId && item.IsActive)
-                    ?? throw new RetailException(409, "The selected product variant is no longer available.");
-                price = variant.Price ?? product.BasePrice;
-                sku = variant.Sku;
-                variantName = variant.Name;
-            }
             var thumbnail = product.Images.OrderByDescending(image => image.IsPrimary)
                 .ThenBy(image => image.SortOrder).Select(image => image.ThumbnailStorageKey).FirstOrDefault();
-            lines.Add(new OrderLine(product.Id, null, product.Name, sku,
-                Math.Clamp(line.Quantity, 1, 20), price, null, null, null, line.VariantId, variantName, thumbnail));
+            lines.Add(new OrderLine(product.Id, null, product.Name, product.Sku,
+                Math.Clamp(line.Quantity, 1, 20), product.BasePrice, null, null, null, thumbnail));
         }
         var order = await orders.CreateOrderAsync(request with
         {

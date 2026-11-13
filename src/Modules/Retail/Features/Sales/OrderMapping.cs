@@ -8,7 +8,7 @@ internal static class OrderMapping
         order.FulfillmentMethod, order.LeadSource, order.Status, order.PaymentStatus, order.PaymentMethod, order.PaymentRequired,
         order.PaymentWaivedAtUtc, order.PaymentWaivedByUserAccountId, order.PaymentWaiverReason, order.Subtotal, order.DeliveryFee,
         order.Total, order.RefundedAmount, order.Notes, order.CreatedAtUtc, order.UpdatedAtUtc, order.RowVersion,
-        order.Items.Select(item => new OrderItemView(item.Id, item.ProductId, item.VariantId, item.VariantName,
+        order.Items.Select(item => new OrderItemView(item.Id, item.ProductId,
             item.AssemblyId, item.StockItemId, item.Name, item.Sku, item.ThumbnailStorageKeySnapshot,
             item.Quantity, item.UnitPrice, item.LineTotal, item.DiscountAmount, item.DirectExpenseAmount,
             item.DirectExpenseNote, item.NetProfit,

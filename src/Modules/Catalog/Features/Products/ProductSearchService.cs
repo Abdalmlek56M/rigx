@@ -116,54 +116,43 @@ public sealed class ProductSearchService(
                 var groupName = filterGroup.Key.GroupName;
                 var name = filterGroup.Key.Name;
                 query = query.Where(product => product.Specifications.Any(specification =>
-                    (specification.VariantId == null || specification.Variant!.IsActive) &&
                     specification.GroupName == groupName &&
                     specification.Name == name &&
                     values.Contains(specification.Value)));
             }
         }
 
-        var priced = query.Select(product => new
-        {
-            Product = product,
-            FromPrice = product.Variants
-                .Where(variant => variant.IsActive && variant.Price != null)
-                .Select(variant => variant.Price)
-                .Min() ?? product.BasePrice
-        });
         if (minimumPrice is not null)
-            priced = priced.Where(item => item.FromPrice >= minimumPrice);
+            query = query.Where(product => product.BasePrice >= minimumPrice);
         if (maximumPrice is not null)
-            priced = priced.Where(item => item.FromPrice <= maximumPrice);
+            query = query.Where(product => product.BasePrice <= maximumPrice);
 
-        var total = await priced.CountAsync(cancellationToken);
+        var total = await query.CountAsync(cancellationToken);
         page = total == 0 ? 1 : Math.Min(page, (int)Math.Ceiling(total / (double)pageSize));
-        priced = sort switch
+        query = sort switch
         {
-            CatalogProductSort.Oldest => priced.OrderBy(item => item.Product.CreatedAtUtc).ThenBy(item => item.Product.Name),
-            CatalogProductSort.PriceAscending => priced.OrderBy(item => item.FromPrice).ThenBy(item => item.Product.Name),
-            CatalogProductSort.PriceDescending => priced.OrderByDescending(item => item.FromPrice).ThenBy(item => item.Product.Name),
-            CatalogProductSort.NameAscending => priced.OrderBy(item => item.Product.Name).ThenBy(item => item.FromPrice),
-            CatalogProductSort.NameDescending => priced.OrderByDescending(item => item.Product.Name).ThenBy(item => item.FromPrice),
-            _ => priced.OrderByDescending(item => item.Product.CreatedAtUtc).ThenBy(item => item.Product.Name)
+            CatalogProductSort.Oldest => query.OrderBy(product => product.CreatedAtUtc).ThenBy(product => product.Name),
+            CatalogProductSort.PriceAscending => query.OrderBy(product => product.BasePrice).ThenBy(product => product.Name),
+            CatalogProductSort.PriceDescending => query.OrderByDescending(product => product.BasePrice).ThenBy(product => product.Name),
+            CatalogProductSort.NameAscending => query.OrderBy(product => product.Name).ThenBy(product => product.BasePrice),
+            CatalogProductSort.NameDescending => query.OrderByDescending(product => product.Name).ThenBy(product => product.BasePrice),
+            _ => query.OrderByDescending(product => product.CreatedAtUtc).ThenBy(product => product.Name)
         };
-        var items = await priced
+        var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(item => new ProductSummaryView(
-                item.Product.Id,
-                item.Product.Name,
-                item.Product.Slug,
-                item.Product.Sku,
-                item.Product.BasePrice,
-                item.FromPrice,
-                item.Product.Status,
-                item.Product.Condition,
-                item.Product.Category.Name,
-                item.Product.Category.Slug,
-                item.Product.Brand != null ? item.Product.Brand.Name : null,
-                item.Product.Specifications
-                    .Where(specification => specification.VariantId == null)
+            .Select(product => new ProductSummaryView(
+                product.Id,
+                product.Name,
+                product.Slug,
+                product.Sku,
+                product.BasePrice,
+                product.Status,
+                product.Condition,
+                product.Category.Name,
+                product.Category.Slug,
+                product.Brand != null ? product.Brand.Name : null,
+                product.Specifications
                     .OrderBy(specification => specification.SortOrder)
                     .ThenBy(specification => specification.Name)
                     .Take(3)
@@ -172,7 +161,7 @@ public sealed class ProductSearchService(
                         specification.Name,
                         specification.Value))
                     .ToList(),
-                item.Product.Images.Where(image => image.IsPrimary).Select(image => image.ThumbnailStorageKey).FirstOrDefault()))
+                product.Images.Where(image => image.IsPrimary).Select(image => image.ThumbnailStorageKey).FirstOrDefault()))
             .ToListAsync(cancellationToken);
 
         return new ProductPageView(items, page, pageSize, total);
@@ -190,8 +179,7 @@ public sealed class ProductSearchService(
             .Where(specification =>
                 specification.Product.Status == CatalogProductStatus.Published &&
                 effectiveCategoryIds.Contains(specification.Product.CategoryId) &&
-                (specification.Product.BrandId == null || specification.Product.Brand!.IsActive) &&
-                (specification.VariantId == null || specification.Variant!.IsActive))
+                (specification.Product.BrandId == null || specification.Product.Brand!.IsActive))
             .Select(specification => new
             {
                 specification.GroupName,
@@ -231,7 +219,7 @@ public sealed class ProductSearchService(
             .SingleOrDefaultAsync(cancellationToken)
             ?? throw new CatalogNotFoundException("Product was not found.");
 
-        return await ProductDetailQuery.LoadAsync(db, product.Id, cancellationToken, includeInactiveVariants: false);
+        return await ProductDetailQuery.LoadAsync(db, product.Id, cancellationToken);
     }
 
     private static (string GroupName, string Name, string Value) ParseSpecificationFilter(string value)

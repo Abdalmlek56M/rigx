@@ -38,8 +38,6 @@ public sealed class OrderItem
     public Guid OrderId { get; set; }
     public Guid? UnitId { get; set; }
     public Guid? ProductId { get; set; }
-    public Guid? VariantId { get; set; }
-    public string? VariantName { get; set; }
     public string? ThumbnailStorageKeySnapshot { get; set; }
     public Guid? AssemblyId { get; set; }
     public Guid? StockItemId { get; set; }
