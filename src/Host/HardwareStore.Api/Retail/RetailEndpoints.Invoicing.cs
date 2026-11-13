@@ -40,9 +40,9 @@ public static partial class RetailEndpoints
 
     /// <summary>Shareable price quote: no invoice number and no customer data.</summary>
     private static async Task<IResult> QuoteAsync(QuoteRequest request, HttpContext context, QuoteService quotes, StoreSettingsService settings,
-        CancellationToken ct)
+        BuilderCatalogLoader builderCatalogs, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(new QuoteDocument(await quotes.QuoteAsync(request, ct), InvoiceDocuments.Branding(await settings.GetAdminAsync(ct))));
+        return Results.Ok(new QuoteDocument(await quotes.QuoteAsync(request, await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct), ct), InvoiceDocuments.Branding(await settings.GetAdminAsync(ct))));
     }
 }

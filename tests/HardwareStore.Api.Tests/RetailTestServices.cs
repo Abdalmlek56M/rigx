@@ -48,8 +48,9 @@ public static class RetailSales
     public static readonly string[] OnlineMethods = [OrderPaymentMethod.CashOnDelivery, OrderPaymentMethod.InstaPay, OrderPaymentMethod.Wallet];
 
     /// <summary>Delivery fee 50, upfront 20% of the subtotal, every online payment method enabled.</summary>
-    public static CheckoutPolicy Policy(Guid? userId = null, string[]? methods = null, decimal fee = 50m, string? deliveryTime = null) =>
-        new(userId, "3", new ShippingRate(fee, deliveryTime), subtotal => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m);
+    public static CheckoutPolicy Policy(Guid? userId = null, string[]? methods = null, decimal fee = 50m, string? deliveryTime = null,
+        BuildPriceRule? buildPrice = null) =>
+        new(userId, "3", new ShippingRate(fee, deliveryTime), subtotal => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m, buildPrice);
 
     public static OrderLineRequest StockLine(Guid stockItemId, int quantity = 1, decimal? salePrice = null, string? priceOption = null) =>
         new(stockItemId, null, quantity, priceOption, salePrice);

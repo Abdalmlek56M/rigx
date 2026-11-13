@@ -112,7 +112,7 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
 
     private static async Task<List<OrderItem>> PriceAsync(RetailDbContext db, PosSaleRequest request, CancellationToken cancellationToken)
     {
-        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Store, cancellationToken);
+        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Store, null, cancellationToken);
         OrderDrafting.ApplyOrderDiscount(items, request.Discount);
         return items;
     }

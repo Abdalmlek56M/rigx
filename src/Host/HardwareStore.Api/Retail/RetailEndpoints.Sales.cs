@@ -167,7 +167,8 @@ public static partial class RetailEndpoints
     /// guest checkout is on; fee, upfront part, enabled methods and the minimum come from the store settings.
     /// </summary>
     private static async Task<IResult> CreateCustomerOrderAsync(CheckoutRequest request, HttpContext context, OrderService orders,
-        StoreSettingsService settings, ContentPolicyService policies, IdentityEmailOutboxWriter outbox, OrderLinks links, CancellationToken ct)
+        StoreSettingsService settings, ContentPolicyService policies, IdentityEmailOutboxWriter outbox, OrderLinks links,
+        BuilderCatalogLoader builderCatalogs, CancellationToken ct)
     {
         var signedIn = context.TryGetUserId(out var accountId);
         var store = await settings.GetAdminAsync(ct);
@@ -193,7 +194,8 @@ public static partial class RetailEndpoints
         if (store.Payment.InstaPayEnabled) methods.Add(OrderPaymentMethod.InstaPay);
         if (store.Payment.WalletEnabled) methods.Add(OrderPaymentMethod.Wallet);
         var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, shipping,
-            subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount);
+            subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount,
+            await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct));
         var order = await orders.CreateOnlineAsync(request, policy, ct);
         await OrderEmails.QueueAsync(outbox, links, order, OrderEmailMessage.Received, ct);
         return Results.Ok(order);

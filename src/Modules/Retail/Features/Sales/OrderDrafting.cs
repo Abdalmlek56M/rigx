@@ -5,34 +5,34 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>Prices order lines from stock items and builds and starts a new order; shared by checkout and POS.</summary>
 internal static class OrderDrafting
 {
-    public const string PriceAlone = "Alone";
-    public const string PriceWithBoard = "WithBoard";
-
     /// <summary>
-    /// Online: only published items/builds at their shown price. Store: hidden items too, a free sale price per line
+    /// Online: only published items/builds at their shown price; the in-build price only for a builder build that qualifies
+    /// (<see cref="OrderRules.EnsureBuildPrice"/>). Store: hidden items too, any price option, a free sale price per line
     /// (below the shown price it is recorded as the line discount) and split build sales.
     /// </summary>
     public static async Task<List<OrderItem>> PriceLinesAsync(RetailDbContext db, IReadOnlyList<OrderLineRequest>? lines, string channel,
-        CancellationToken cancellationToken)
+        BuildPriceRule? buildPrice, CancellationToken cancellationToken)
     {
         if (lines is null || lines.Count is < 1 or > OrderRules.MaxLines)
             throw new RetailException(400, $"An order needs between 1 and {OrderRules.MaxLines} lines.");
         var store = channel == OrderChannel.Store;
         var items = new List<OrderItem>();
+        var inBuildCategories = new List<Guid?>();
         foreach (var line in lines)
         {
             if ((line.StockItemId is null) == (line.AssemblyId is null))
                 throw new RetailException(400, "Each order line needs either a stock item or a build.");
             if (line.AssemblyId is Guid assemblyId) items.AddRange(await PriceBuildAsync(db, assemblyId, line, store, cancellationToken));
-            else items.Add(await PriceStockItemAsync(db, line.StockItemId!.Value, line, store, cancellationToken));
+            else items.Add(await PriceStockItemAsync(db, line.StockItemId!.Value, line, store, inBuildCategories, cancellationToken));
         }
+        if (!store && inBuildCategories.Count > 0) OrderRules.EnsureBuildPrice(inBuildCategories, buildPrice);
         if (items.Where(item => item.UnitId is not null).GroupBy(item => item.UnitId).Any(group => group.Count() > 1))
             throw new RetailException(400, "A part is listed twice.");
         return items;
     }
 
     private static async Task<OrderItem> PriceStockItemAsync(RetailDbContext db, Guid stockItemId, OrderLineRequest line, bool store,
-        CancellationToken cancellationToken)
+        List<Guid?> inBuildCategories, CancellationToken cancellationToken)
     {
         if (line.Quantity is < 1 or > OrderRules.MaxLines) throw new RetailException(400, "Line quantity must be between 1 and 50.");
         var query = db.StockItems.AsNoTracking().Where(item => item.Id == stockItemId);
@@ -47,10 +47,12 @@ internal static class OrderDrafting
         var prices = StockItemRules.Prices(row.Item.Price, row.Item.WithBoardExtra, row.Item.AloneExtra);
         var shown = line.PriceOption?.Trim() switch
         {
-            null or "" or PriceAlone => prices.Alone,
-            PriceWithBoard => prices.WithBoard,
-            _ => throw new RetailException(400, "Price option must be Alone or WithBoard.")
+            null or "" or OrderPriceOption.Alone => prices.Alone,
+            OrderPriceOption.WithBoard => prices.WithBoard,
+            OrderPriceOption.InBuild => prices.InBuild,
+            _ => throw new RetailException(400, "Price option must be Alone, WithBoard or InBuild.")
         };
+        if (line.PriceOption?.Trim() == OrderPriceOption.InBuild) inBuildCategories.Add(row.Item.CategoryId);
         return Line(row.Item.ModelName, row.Item.Code, row.Item.Photos.FirstOrDefault()?.ThumbnailStorageKey, line.Quantity, shown,
             store ? line.SalePrice : null, stockItemId, null, null);
     }

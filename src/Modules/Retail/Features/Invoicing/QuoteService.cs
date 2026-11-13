@@ -8,10 +8,10 @@ namespace HardwareStore.Modules.Retail;
 /// </summary>
 public sealed class QuoteService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    public async Task<QuoteView> QuoteAsync(QuoteRequest request, CancellationToken cancellationToken = default)
+    public async Task<QuoteView> QuoteAsync(QuoteRequest request, BuildPriceRule? buildPrice, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Online, cancellationToken);
+        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Online, buildPrice, cancellationToken);
         var stockIds = items.Where(item => item.AssemblyId is null).Select(item => item.StockItemId!.Value).Distinct().ToList();
         var conditions = await db.StockItems.AsNoTracking().Where(item => stockIds.Contains(item.Id)).ToDictionaryAsync(item => item.Id, item => item.Condition, cancellationToken);
         var buildIds = items.Where(item => item.AssemblyId is not null).Select(item => item.AssemblyId!.Value).ToList();

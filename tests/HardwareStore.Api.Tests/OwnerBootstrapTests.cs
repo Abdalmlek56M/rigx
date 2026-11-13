@@ -4,6 +4,7 @@ using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Identity.Persistence;
+using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Storefront;
 using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
@@ -163,12 +164,14 @@ public sealed class OwnerBootstrapPostgreSqlFixture : IAsyncLifetime
         await using var storefront = database.CreateStorefrontContext();
         await using var purchasing = database.CreatePurchasingContext();
         await using var retail = database.CreateRetailContext();
+        await using var pcBuilder = database.CreatePcBuilderContext();
         await identity.Database.MigrateAsync();
         await audit.Database.MigrateAsync();
         await catalog.Database.MigrateAsync();
         await storefront.Database.MigrateAsync();
         await purchasing.Database.MigrateAsync();
         await retail.Database.MigrateAsync();
+        await pcBuilder.Database.MigrateAsync();
         return database;
     }
 
@@ -196,6 +199,9 @@ public sealed class OwnerBootstrapDatabase(string connectionString)
 
     public RetailDbContext CreateRetailContext() =>
         new(new DbContextOptionsBuilder<RetailDbContext>().UseNpgsql(connectionString).Options);
+
+    public PcBuilderDbContext CreatePcBuilderContext() =>
+        new(new DbContextOptionsBuilder<PcBuilderDbContext>().UseNpgsql(connectionString).Options);
 
     public RetailTestServices CreateRetailServices(TimeProvider? time = null) =>
         RetailTestServices.Create(new TestRetailContextFactory(connectionString), time ?? TimeProvider.System);

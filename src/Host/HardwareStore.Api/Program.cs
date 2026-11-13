@@ -94,6 +94,9 @@ builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgs
 builder.Services.AddScoped<AdminAnalyticsService>();
 builder.Services.AddScoped<PurchaseReceiptService>();
 builder.Services.AddScoped<RequestPurchaseConversion>();
+builder.Services.AddScoped<BuilderCatalogLoader>();
+builder.Services.AddScoped<BuilderService>();
+builder.Services.AddScoped<SavedBuildService>();
 builder.Services.AddHealthChecks()
     .AddCheck("live", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"])
     .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
@@ -163,7 +166,7 @@ app.MapContentMediaEndpoints();
 app.MapContentVideoEndpoints();
 app.MapReviewEndpoints();
 app.MapAdminAnalyticsEndpoints();
-app.MapPcBuilderEndpoints();
+app.MapBuilderEndpoints();
 app.MapRetailEndpoints();
 app.MapIdentityAdministrationEndpoints();
 app.MapCatalogEndpoints();

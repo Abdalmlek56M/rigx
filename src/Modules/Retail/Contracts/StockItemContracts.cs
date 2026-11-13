@@ -33,3 +33,11 @@ public sealed record StoreItemQuery(string? Search = null, IReadOnlyList<Guid>? 
 public sealed record StoreConditionCounts(int New, int Used);
 public sealed record StoreItemPage(IReadOnlyList<StoreItemCard> Items, int Page, int PageSize, int Total, StoreConditionCounts Counts);
 public sealed record ModelNameSuggestion(string ModelName, Guid? CategoryId, Guid? ProductId, int ItemCount);
+
+// PC builder (public). Published items only; never cost, serial or internal note.
+public sealed record BuilderItemView(Guid StockItemId, string Code, string ModelName, string Condition, Guid? CategoryId,
+    string? WarrantyLabel, StockItemPrices Prices, int Available, string? ThumbnailStorageKey, IReadOnlyDictionary<string, string> Specs);
+public sealed record BuilderItemPage(IReadOnlyList<BuilderItemView> Items, int Page, int PageSize, int Total);
+/// <summary>A part of an existing build and the same model from free stock (null when none is free).</summary>
+public sealed record BuildPartMatch(string ModelName, string Condition, Guid? CategoryId, BuilderItemView? Match);
+public sealed record BuildMatchView(string Code, string Title, string? Usage, IReadOnlyList<BuildPartMatch> Parts);

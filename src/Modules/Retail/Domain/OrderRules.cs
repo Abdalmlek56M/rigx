@@ -34,6 +34,17 @@ public static class OrderRules
     public const int MaxLines = 50;
     public const int MaxReservationHours = 720;
 
+    /// <summary>
+    /// Online, the in-build price is for a PC built in the builder: the in-build lines must include a processor and a
+    /// motherboard (owner decision, 13 Nov 2026). Without them every part is sold at its "alone" price.
+    /// </summary>
+    public static void EnsureBuildPrice(IReadOnlyCollection<Guid?> inBuildCategoryIds, BuildPriceRule? rule)
+    {
+        var categories = inBuildCategoryIds.OfType<Guid>().ToList();
+        if (rule is null || !categories.Any(rule.CpuCategoryIds.Contains) || !categories.Any(rule.BoardCategoryIds.Contains))
+            throw new RetailException(400, "The in-build price needs a processor and a motherboard in the same build.");
+    }
+
     public static string Required(string? value, int maxLength, string label)
     {
         var text = Optional(value, maxLength, label);

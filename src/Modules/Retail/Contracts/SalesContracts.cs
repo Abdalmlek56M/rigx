@@ -2,8 +2,16 @@ namespace HardwareStore.Modules.Retail;
 
 public sealed record OrderCustomer(string? Name, string? Phone, bool PhoneHasWhatsApp = false, string? Email = null);
 
+/// <summary>Which of a stock item's prices an order line uses.</summary>
+public static class OrderPriceOption
+{
+    public const string Alone = "Alone";
+    public const string WithBoard = "WithBoard";
+    public const string InBuild = "InBuild";
+}
+
 /// <summary>
-/// One order line: a stock item (quantity, price option "Alone"/"WithBoard") or a build. POS lines may set the sale price,
+/// One order line: a stock item (quantity, price option "Alone"/"WithBoard"/"InBuild") or a build. POS lines may set the sale price,
 /// and a split build sale lists the parts it sells (each with its own sale price).
 /// </summary>
 public sealed record OrderLineRequest(Guid? StockItemId, Guid? AssemblyId, int Quantity = 1, string? PriceOption = null,
@@ -18,9 +26,15 @@ public sealed record CheckoutRequest(OrderCustomer? Customer, string? Fulfillmen
 /// <summary>Shipping fee and promised delivery time for a governorate (from the shipping settings, read in Host).</summary>
 public sealed record ShippingRate(decimal Fee, string? DeliveryTime);
 
+/// <summary>
+/// Categories (with their descendants) of the builder's processor and motherboard slots, read from Catalog in Host.
+/// Online in-build prices need one item from each (<see cref="OrderRules.EnsureBuildPrice"/>).
+/// </summary>
+public sealed record BuildPriceRule(IReadOnlySet<Guid> CpuCategoryIds, IReadOnlySet<Guid> BoardCategoryIds);
+
 /// <summary>What the store settings decide for a checkout (read in Host): shipping, upfront rule, enabled methods, terms version.</summary>
 public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, ShippingRate Shipping,
-    Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder);
+    Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder, BuildPriceRule? BuildPrice = null);
 
 /// <summary>Reservation defaults from the store settings, applied when an order is confirmed.</summary>
 public sealed record ReservationPolicy(int Hours, bool AutoRelease);

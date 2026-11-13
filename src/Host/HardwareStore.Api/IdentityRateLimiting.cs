@@ -14,6 +14,7 @@ public static class IdentityRateLimitPolicies
     public const string Checkout = "order-checkout";
     public const string OrderTracking = "order-tracking";
     public const string WarrantyLookup = "warranty-lookup";
+    public const string BuilderSave = "builder-save";
 }
 
 public static class IdentityRateLimiting
@@ -32,6 +33,7 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Checkout, 10, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.OrderTracking, 60, TimeSpan.FromMinutes(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.WarrantyLookup, 20, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.BuilderSave, 20, TimeSpan.FromMinutes(10));
 
             options.OnRejected = async (rejection, cancellationToken) =>
             {
@@ -84,7 +86,7 @@ public static class IdentityRateLimiting
     {
         IdentityRateLimitPolicies.EmailChangeConfirm or IdentityRateLimitPolicies.EmailCodeVerify => "600",
         IdentityRateLimitPolicies.CatalogSuggest or IdentityRateLimitPolicies.OrderTracking => "60",
-        IdentityRateLimitPolicies.Checkout or IdentityRateLimitPolicies.WarrantyLookup => "600",
+        IdentityRateLimitPolicies.Checkout or IdentityRateLimitPolicies.WarrantyLookup or IdentityRateLimitPolicies.BuilderSave => "600",
         _ => "3600"
     };
 
@@ -98,6 +100,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.CatalogSuggest => "Catalog.Search.RateLimited",
         IdentityRateLimitPolicies.Checkout => "Sales.Checkout.RateLimited",
         IdentityRateLimitPolicies.WarrantyLookup => "Sales.WarrantyLookup.RateLimited",
+        IdentityRateLimitPolicies.BuilderSave => "Builder.Save.RateLimited",
         IdentityRateLimitPolicies.OrderTracking => "Sales.Tracking.RateLimited",
         _ => "Identity.RateLimited"
     };
