@@ -15,7 +15,6 @@ public enum FirstOwnerBootstrapFailure
 {
     None,
     InvalidInput,
-    PasswordPolicy,
     AlreadyInitialized,
     IdentityCollision,
     Failed
@@ -35,8 +34,7 @@ public sealed class FirstOwnerBootstrapException : Exception
 public sealed record FirstOwnerBootstrapRequest(
     string Username,
     string Email,
-    string FullName,
-    string Password);
+    string FullName);
 
 public sealed record FirstOwnerBootstrapResult(Guid UserAccountId);
 
@@ -44,15 +42,14 @@ public sealed record FirstOwnerBootstrapResult(Guid UserAccountId);
 /// One-time, local first-owner bootstrap.
 ///
 /// This service is deliberately not exposed through a public endpoint. It is
-/// invoked only by the explicit <c>--bootstrap-owner</c> command, requires an
-/// operator-supplied password, runs once, and records the success audit row in
-/// the same database transaction as the Owner role/account/permissions.
+/// invoked only by the explicit <c>--bootstrap-owner</c> command, runs once, and records
+/// the success audit row in the same database transaction as the Owner role/account/permissions.
+/// The Owner then signs in with an email code (or Google) like everyone else.
 /// </summary>
 public sealed class FirstOwnerBootstrapService(
     IDbContextFactory<IdentityDbContext> identityFactory,
     IDbContextFactory<SecurityAuditDbContext> auditFactory,
     ISecurityAuditWriter auditWriter,
-    IPasswordHashingService passwordHashing,
     TimeProvider timeProvider,
     TimeZoneInfo businessTimeZone,
     ILogger<FirstOwnerBootstrapService> logger)
@@ -150,10 +147,7 @@ public sealed class FirstOwnerBootstrapService(
                 AuthorizationVersion = 1,
                 CreatedAtUtc = now
             };
-            account.PasswordHash = passwordHashing.HashPassword(account, request.Password);
             db.UserAccounts.Add(account);
-            await new UserAccountLoginIdentifierSynchronizer(db)
-                .SetAsync(account, normalized.Username, normalized.Email, cancellationToken);
             db.UserRoles.Add(new UserRole
             {
                 UserAccountId = account.Id,
@@ -218,8 +212,7 @@ public sealed class FirstOwnerBootstrapService(
         var fullName = NormalizeOriginal(request.FullName);
         if (username is null || username.Length > 128 ||
             email is null || email.Length > 255 || !new EmailAddressAttribute().IsValid(email) ||
-            fullName is null || fullName.Length > 255 ||
-            string.IsNullOrWhiteSpace(request.Password))
+            fullName is null || fullName.Length > 255)
         {
             return null;
         }
@@ -228,11 +221,6 @@ public sealed class FirstOwnerBootstrapService(
         var normalizedEmail = IdentityLoginService.NormalizeIdentifier(email);
         if (normalizedUsername.Length > 128 || normalizedEmail.Length > 255)
             return null;
-
-        if (new PasswordPolicyValidator().Validate(request.Password) != PasswordPolicyFailure.None)
-            throw new FirstOwnerBootstrapException(
-                FirstOwnerBootstrapFailure.PasswordPolicy,
-                "Owner password does not satisfy the active password policy.");
 
         return new NormalizedOwner(username, normalizedUsername, email, normalizedEmail, fullName);
     }

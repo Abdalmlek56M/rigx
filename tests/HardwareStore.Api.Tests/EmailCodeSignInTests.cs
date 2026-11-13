@@ -1,12 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace HardwareStore.Api.Tests;
@@ -123,11 +121,7 @@ public sealed class EmailCodeSignInTests(OwnerBootstrapPostgreSqlFixture fixture
     public async Task Success_audit_failure_creates_no_session()
     {
         var database = await fixture.CreateDatabaseAsync();
-        await using var factory = new IdentityLoginApiFactory(database.ConnectionString, configureTestServices: services =>
-        {
-            services.RemoveAll<ISecurityAuditWriter>();
-            services.AddScoped<ISecurityAuditWriter, FailSuccessfulLoginAuditWriter>();
-        });
+        await using var factory = new IdentityLoginApiFactory(database.ConnectionString, failSuccessAudit: true);
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
         (await TestSignIn.PostJsonAsync(client, "/api/v1/identity/email-code/request", new { email = "audit@example.test" })).Dispose();
         var code = await TestSignIn.LatestCodeAsync(factory.Services, "audit@example.test");

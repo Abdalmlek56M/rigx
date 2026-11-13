@@ -23,7 +23,7 @@ dotnet ef migrations add <Name> --project src/Modules/<Module> --startup-project
 ```
 
 ## First owner account
-One-time interactive command (see `src/Host/HardwareStore.Api/OwnerBootstrapCommand.cs`): run the API with `--bootstrap-owner` and `OwnerBootstrap:Enabled=true`.
+One-time interactive command (see `src/Host/HardwareStore.Api/OwnerBootstrapCommand.cs`): run the API with `--bootstrap-owner` and `OwnerBootstrap:Enabled=true`. It asks for username, email and full name only; the owner then signs in with a 6-digit code sent to that email (or Google once configured). There are no passwords.
 
 ## Tests
 ```bash

@@ -124,7 +124,7 @@ public sealed class DatabaseTicketStore(
 
     public async Task<AuthenticationTicket?> RetrieveAsync(string key)
     {
-        if (!TryHash(key, out var keyHash))
+        if (!TryHashSessionKey(key, out var keyHash))
             return null;
 
         await using var db = await contextFactory.CreateDbContextAsync();
@@ -168,7 +168,7 @@ public sealed class DatabaseTicketStore(
 
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
-        if (!TryHash(key, out var keyHash))
+        if (!TryHashSessionKey(key, out var keyHash))
             return;
 
         var accountId = ReadAccountId(ticket.Principal);
@@ -211,7 +211,7 @@ public sealed class DatabaseTicketStore(
 
     public async Task RemoveAsync(string key)
     {
-        if (!TryHash(key, out var keyHash))
+        if (!TryHashSessionKey(key, out var keyHash))
             return;
 
         await using var db = await contextFactory.CreateDbContextAsync();
@@ -309,7 +309,8 @@ public sealed class DatabaseTicketStore(
     private static bool IsUniqueViolation(DbUpdateException exception) =>
         exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
-    private static bool TryHash(string? key, out byte[] hash)
+    /// <summary>Hashes a browser session key (32 random bytes, base64url); false for anything else.</summary>
+    public static bool TryHashSessionKey(string? key, out byte[] hash)
     {
         hash = [];
         if (string.IsNullOrWhiteSpace(key))

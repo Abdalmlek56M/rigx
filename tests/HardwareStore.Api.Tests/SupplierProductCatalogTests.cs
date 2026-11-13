@@ -204,7 +204,6 @@ public sealed class SupplierProductCatalogPostgreSqlTests(SupplierDirectoryPostg
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier("catalog-actor@example.test"),
             IsEmailVerified = true,
             IsActive = true,
-            PasswordHash = "not-used",
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
         db.UserAccounts.Add(account);

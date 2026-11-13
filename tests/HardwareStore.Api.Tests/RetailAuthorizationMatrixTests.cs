@@ -4,11 +4,9 @@ using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Retail;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace HardwareStore.Api.Tests;
@@ -17,8 +15,6 @@ namespace HardwareStore.Api.Tests;
 public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixture fixture)
     : IClassFixture<OwnerBootstrapPostgreSqlFixture>
 {
-    private const string Password = "a sufficiently long matrix password";
-
     [Fact]
     public async Task Finance_report_reader_cannot_write_agreements_or_post_settlements()
     {
@@ -26,7 +22,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         await CreateUserAsync(database, "finance-reader", ["Finance.ViewReports"]);
         await using var factory = CreateFactory(database.ConnectionString);
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
-        await LoginAsync(client, "finance-reader");
+        await LoginAsync(client, factory, "finance-reader");
 
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/admin/retail/partner/earnings")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/admin/retail/partner/allocations")).StatusCode);
@@ -42,7 +38,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         await CreateUserAsync(database, "build-editor", ["Catalog.ManageProducts"]);
         await using var factory = CreateFactory(database.ConnectionString);
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
-        await LoginAsync(client, "build-editor");
+        await LoginAsync(client, factory, "build-editor");
 
         using var response = await PostAsync(client, "/api/v1/admin/retail/assemblies", new { name = "", unitIds = Array.Empty<Guid>() });
 
@@ -68,7 +64,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         var customerId = await CreateUserAsync(database, "inventory-viewer", ["Inventory.View"]);
         await using var factory = CreateFactory(database.ConnectionString);
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
-        await LoginAsync(client, "inventory-viewer");
+        await LoginAsync(client, factory, "inventory-viewer");
 
         var response = await client.GetAsync("/api/v1/admin/retail/units");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -89,7 +85,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
 
         await using var costFactory = CreateFactory(database.ConnectionString);
         using var costClient = costFactory.CreatePreflightedClient(new() { HandleCookies = true });
-        await LoginAsync(costClient, "inventory-viewer");
+        await LoginAsync(costClient, costFactory, "inventory-viewer");
         var withCosts = await (await costClient.GetAsync("/api/v1/admin/retail/units"))
             .Content.ReadFromJsonAsync<List<UnitView>>();
         Assert.Equal(700m, Assert.Single(withCosts!).AcquisitionCost);
@@ -102,50 +98,12 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
             services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
         });
 
-    private static async Task<Guid> CreateUserAsync(OwnerBootstrapDatabase database, string username, IReadOnlyList<string> permissions)
-    {
-        await using var db = database.CreateIdentityContext();
-        var role = new Role { Id = Guid.CreateVersion7(), Code = $"{username}-role", Name = username };
-        db.Roles.Add(role);
-        foreach (var permission in permissions)
-            db.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionCode = permission });
-        var person = await new PersonCodeGenerator(db, TimeProvider.System,
-                TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo"))
-            .CreatePersonAsync(new Person { FullName = username, IsCustomer = true });
-        var account = new UserAccount
-        {
-            Id = Guid.CreateVersion7(), PersonId = person.Id, Username = username,
-            NormalizedUsername = IdentityLoginService.NormalizeIdentifier(username),
-            Email = $"{username}@example.test", NormalizedEmail = IdentityLoginService.NormalizeIdentifier($"{username}@example.test"),
-            IsEmailVerified = true, CreatedAtUtc = DateTimeOffset.UtcNow
-        };
-        account.PasswordHash = new PasswordHasher<UserAccount>(Options.Create(new PasswordHasherOptions()))
-            .HashPassword(account, Password);
-        db.UserAccounts.Add(account);
-        db.UserRoles.Add(new UserRole { UserAccountId = account.Id, RoleId = role.Id });
-        db.UserAccountLoginIdentifiers.Add(new UserAccountLoginIdentifier
-        {
-            NormalizedIdentifier = account.NormalizedUsername, UserAccountId = account.Id
-        });
-        db.UserAccountLoginIdentifiers.Add(new UserAccountLoginIdentifier
-        {
-            NormalizedIdentifier = account.NormalizedEmail, UserAccountId = account.Id
-        });
-        await db.SaveChangesAsync();
-        return account.Id;
-    }
+    private static Task<Guid> CreateUserAsync(OwnerBootstrapDatabase database, string username, string[] permissions) =>
+        EmailCodeSignInTests.CreateAccountAsync(database, $"{username}@example.test", verified: true, active: true,
+            roleCode: $"{username}-role", permissions);
 
-    private static async Task LoginAsync(HttpClient client, string username)
-    {
-        var csrf = await GetCsrfAsync(client);
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/identity/sessions")
-        {
-            Content = JsonContent.Create(new { identifier = username, password = Password })
-        };
-        request.Headers.Add("X-CSRF-TOKEN", csrf);
-        using var response = await client.SendAsync(request);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
+    private static Task LoginAsync(HttpClient client, IdentityLoginApiFactory factory, string username) =>
+        TestSignIn.SignInAsync(client, factory.Services, $"{username}@example.test");
 
     private static async Task<HttpResponseMessage> PostAsync(HttpClient client, string url, object body)
     {

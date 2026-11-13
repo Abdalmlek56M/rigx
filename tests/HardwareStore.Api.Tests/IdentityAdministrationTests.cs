@@ -18,8 +18,7 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
     private static readonly FirstOwnerBootstrapRequest OwnerRequest = new(
         "rigx-owner",
         "owner@example.test",
-        "RIGX Owner",
-        "a sufficiently long owner password");
+        "RIGX Owner");
 
     [Fact]
     public async Task Admin_can_create_a_staff_role_assign_it_and_audit_every_change()
@@ -296,18 +295,12 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
     }
 
     [Fact]
-    public async Task Admin_can_invite_a_user_without_a_password_and_send_a_verification_link()
+    public async Task Admin_invites_staff_by_email_without_password_or_link_token()
     {
         var database = await fixture.CreateDatabaseAsync();
         var ownerId = (await database.CreateService().BootstrapAsync(OwnerRequest)).UserAccountId;
         var dispatcher = new CapturingEmailDispatcher();
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Identity:EmailVerificationBaseUrl"] = "http://localhost:3000/verify-email"
-            })
-            .Build();
-        var admin = database.CreateAdministrationService(dispatcher, configuration);
+        var admin = database.CreateAdministrationService(dispatcher);
         var role = await admin.CreateRoleAsync(
             new CreateAdminIdentityRoleRequest("Support", "Support", []),
             ownerId);
@@ -331,10 +324,11 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
             Assert.False(person.IsCustomer);
             Assert.False(person.IsSupplier);
         }
-        var message = Assert.Single(dispatcher.Verifications);
+        var message = Assert.Single(dispatcher.Invitations);
         Assert.Equal("staff-user@example.test", message.Email);
-        Assert.Contains("token=", message.VerificationUrl.Fragment);
-        Assert.DoesNotContain("staff-user@example.test", message.VerificationUrl.Query);
+        Assert.Equal(["Support"], message.Roles);
+        Assert.Equal(IdentityLinks.Local.SignIn, message.SignInUrl);
+        Assert.Empty(message.SignInUrl.Fragment);
 
         var duplicate = await Assert.ThrowsAsync<IdentityException>(() =>
             admin.CreateUserAsync(
@@ -487,34 +481,14 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
 
 internal sealed class CapturingEmailDispatcher : IIdentityEmailDispatcher
 {
-    public List<EmailVerificationMessage> Verifications { get; } = [];
-    public List<PasswordResetMessage> PasswordResets { get; } = [];
-    public List<IdentitySecurityNotificationMessage> SecurityNotifications { get; } = [];
+    public List<StaffInvitationMessage> Invitations { get; } = [];
 
-    public ValueTask EnqueueVerificationAsync(
+    public ValueTask EnqueueStaffInvitationAsync(
         Guid userAccountId,
-        EmailVerificationMessage message,
+        StaffInvitationMessage message,
         CancellationToken cancellationToken = default)
     {
-        Verifications.Add(message);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask EnqueuePasswordResetAsync(
-        Guid userAccountId,
-        PasswordResetMessage message,
-        CancellationToken cancellationToken = default)
-    {
-        PasswordResets.Add(message);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask EnqueueSecurityNotificationAsync(
-        Guid userAccountId,
-        IdentitySecurityNotificationMessage message,
-        CancellationToken cancellationToken = default)
-    {
-        SecurityNotifications.Add(message);
+        Invitations.Add(message);
         return ValueTask.CompletedTask;
     }
 }

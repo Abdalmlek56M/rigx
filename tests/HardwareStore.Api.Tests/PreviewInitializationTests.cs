@@ -1,7 +1,6 @@
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
-using Microsoft.AspNetCore.Identity;
 using Npgsql;
 using Testcontainers.PostgreSql;
 using Microsoft.Extensions.Hosting;
@@ -75,12 +74,8 @@ public sealed class PreviewInitializationTests
             NormalizedUsername = "OLD-OWNER",
             Email = "old-owner@example.test",
             NormalizedEmail = "OLD-OWNER@EXAMPLE.TEST",
-            PasswordHash = "old-hash",
             IsEmailVerified = false,
             IsActive = false,
-            AccessFailedCount = 7,
-            AccessFailedWindowStartedUtc = DateTimeOffset.UtcNow.AddMinutes(-2),
-            LockoutEndUtc = DateTimeOffset.UtcNow.AddMinutes(3),
             Person = new Person
             {
                 Id = Guid.NewGuid(),
@@ -107,9 +102,6 @@ public sealed class PreviewInitializationTests
         Assert.True(account.Person.IsEmployee);
         Assert.True(account.IsEmailVerified);
         Assert.True(account.IsActive);
-        Assert.Equal(0, account.AccessFailedCount);
-        Assert.Null(account.AccessFailedWindowStartedUtc);
-        Assert.Null(account.LockoutEndUtc);
     }
 
     private static PreviewInitializationService CreateService(
@@ -125,12 +117,10 @@ public sealed class PreviewInitializationTests
                 OwnerEmail = "owner@example.test",
                 OwnerUsername = "preview-owner",
                 OwnerFullName = "Preview Owner",
-                OwnerPassword = "a sufficiently long password",
                 MigrationConnectionString = migrationConnectionString,
                 RuntimeConnectionString = runtimeConnectionString
             },
             new TestHostEnvironment(environmentName),
-            null!,
             TimeProvider.System,
             TimeZoneInfo.Utc,
             null!,
@@ -250,12 +240,10 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
                 OwnerEmail = "owner@example.test",
                 OwnerUsername = "preview-owner",
                 OwnerFullName = "Preview Owner",
-                OwnerPassword = "Rigx-Preview-Owner-2026!",
                 MigrationConnectionString = connectionString,
                 RuntimeConnectionString = connectionString
             },
             new TestHostEnvironment("Development"),
-            new PasswordHashingService(new PasswordHasher<UserAccount>()),
             TimeProvider.System,
             TimeZoneInfo.Utc,
             new FakeCatalogMediaStorage(),

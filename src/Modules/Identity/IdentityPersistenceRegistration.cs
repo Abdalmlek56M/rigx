@@ -34,7 +34,6 @@ public static class IdentityPersistenceRegistration
         services.AddSingleton(timeZone);
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddDbContextFactory<IdentityDbContext>(options => options.UseNpgsql(connectionString));
-        services.AddIdentityPasswordHashing();
         services.AddScoped<IdentityLoginService>();
         services.AddScoped<IdentityCurrentUserService>();
         services.AddScoped<IdentityProfileService>();

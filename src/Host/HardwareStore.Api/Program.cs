@@ -40,7 +40,7 @@ if (!string.IsNullOrWhiteSpace(dataProtectionKeyRingPath))
 builder.Services.AddPermissionAuthorization();
 builder.Services.AddIdentityPersistence(builder.Configuration);
 builder.Services.AddIdentityAuthentication(builder.Configuration, builder.Environment);
-builder.Services.AddCustomerRegistration(builder.Environment, builder.Configuration);
+builder.Services.AddIdentityAccounts(builder.Environment, builder.Configuration);
 builder.Services.AddCatalogModule(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddPurchasingModule(builder.Configuration);
 builder.Services.AddInventoryModule(builder.Configuration);
@@ -60,7 +60,6 @@ if (previewEnabled)
         OwnerEmail = builder.Configuration["Preview:OwnerEmail"] ?? string.Empty,
         OwnerUsername = builder.Configuration["Preview:OwnerUsername"] ?? string.Empty,
         OwnerFullName = builder.Configuration["Preview:OwnerFullName"] ?? string.Empty,
-        OwnerPassword = builder.Configuration["Preview:OwnerPassword"] ?? string.Empty,
         MigrationConnectionString = builder.Configuration.GetConnectionString("Migrations")
             ?? throw new InvalidOperationException(
                 "ConnectionStrings:Migrations is required when Preview is enabled."),
@@ -143,7 +142,6 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready")
 }).AllowAnonymous();
 
-app.MapIdentityLoginEndpoints();
 app.MapEmailCodeSignInEndpoints();
 app.MapStepUpEndpoints();
 app.MapContactEndpoints();
@@ -170,11 +168,6 @@ app.MapInventoryEndpoints();
 app.MapStorefrontEndpoints();
 if (previewEnabled)
     app.MapPreviewInitializationEndpoints();
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
-{
-    app.MapIdentityRegistrationEndpoints();
-    app.MapIdentityAccountLifecycleEndpoints();
-}
 
 app.Run();
 

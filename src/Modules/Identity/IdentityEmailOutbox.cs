@@ -9,36 +9,21 @@ using Microsoft.Extensions.Logging;
 
 namespace HardwareStore.Modules.Identity;
 
+/// <summary>Queues Identity emails that are not written inside a caller's transaction.</summary>
 public interface IIdentityEmailDispatcher
 {
-    ValueTask EnqueueVerificationAsync(
+    ValueTask EnqueueStaffInvitationAsync(
         Guid userAccountId,
-        EmailVerificationMessage message,
-        CancellationToken cancellationToken = default);
-
-    ValueTask EnqueuePasswordResetAsync(
-        Guid userAccountId,
-        PasswordResetMessage message,
-        CancellationToken cancellationToken = default);
-
-    ValueTask EnqueueSecurityNotificationAsync(
-        Guid userAccountId,
-        IdentitySecurityNotificationMessage message,
+        StaffInvitationMessage message,
         CancellationToken cancellationToken = default);
 }
 
-public sealed record OutboxVerificationPayload(string Email, string FullName, string VerificationUrl);
-public sealed record OutboxEmailChangePayload(string NewEmail, string FullName, string VerificationUrl);
-public sealed record OutboxPasswordResetPayload(string Email, string FullName, string ResetUrl);
 public sealed record OutboxEmailCodePayload(string Email, string FullName, string Code, DateTimeOffset ExpiresAtUtc, string Purpose);
-public sealed record OutboxSecurityNotificationPayload(
-    string Email,
-    string FullName,
-    IdentitySecurityNotificationKind Kind,
-    DateTimeOffset OccurredAtUtc);
+public sealed record OutboxStaffInvitationPayload(string Email, string FullName, IReadOnlyList<string> Roles, string SignInUrl);
+public sealed record OutboxEmailChangePayload(string NewEmail, string FullName, string VerificationUrl);
 
 /// <summary>
-/// Durable, encrypted identity email queue. Tokens and action URLs never appear
+/// Durable, encrypted identity email queue. Codes and action URLs never appear
 /// in the database in plaintext and are erased after successful delivery.
 /// </summary>
 public sealed class IdentityEmailOutboxWriter(
@@ -46,11 +31,9 @@ public sealed class IdentityEmailOutboxWriter(
     IDataProtectionProvider dataProtectionProvider,
     TimeProvider timeProvider)
 {
-    public const string VerificationKind = "EmailVerification";
-    public const string PasswordResetKind = "PasswordReset";
-    public const string SecurityNotificationKind = "SecurityNotification";
-    public const string EmailChangeKind = "EmailChangeVerification";
     public const string EmailCodeKind = "EmailCode";
+    public const string StaffInvitationKind = "StaffInvitation";
+    public const string EmailChangeKind = "EmailChangeVerification";
 
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector("HardwareStore.IdentityEmailOutbox.v1");
@@ -87,7 +70,6 @@ public sealed class IdentityEmailOutboxWriter(
         });
     }
 
-
     internal T Unprotect<T>(byte[] protectedPayload)
     {
         var bytes = _protector.Unprotect(protectedPayload);
@@ -98,35 +80,14 @@ public sealed class IdentityEmailOutboxWriter(
 
 public sealed class IdentityEmailOutboxDispatcher(IdentityEmailOutboxWriter writer) : IIdentityEmailDispatcher
 {
-    public ValueTask EnqueueVerificationAsync(
+    public ValueTask EnqueueStaffInvitationAsync(
         Guid userAccountId,
-        EmailVerificationMessage message,
+        StaffInvitationMessage message,
         CancellationToken cancellationToken = default) =>
         new(writer.EnqueueAsync(
-            IdentityEmailOutboxWriter.VerificationKind,
+            IdentityEmailOutboxWriter.StaffInvitationKind,
             userAccountId,
-            new OutboxVerificationPayload(message.Email, message.FullName, message.VerificationUrl.ToString()),
-            cancellationToken));
-
-    public ValueTask EnqueuePasswordResetAsync(
-        Guid userAccountId,
-        PasswordResetMessage message,
-        CancellationToken cancellationToken = default) =>
-        new(writer.EnqueueAsync(
-            IdentityEmailOutboxWriter.PasswordResetKind,
-            userAccountId,
-            new OutboxPasswordResetPayload(message.Email, message.FullName, message.ResetUrl.ToString()),
-            cancellationToken));
-
-    public ValueTask EnqueueSecurityNotificationAsync(
-        Guid userAccountId,
-        IdentitySecurityNotificationMessage message,
-        CancellationToken cancellationToken = default) =>
-        new(writer.EnqueueAsync(
-            IdentityEmailOutboxWriter.SecurityNotificationKind,
-            userAccountId,
-            new OutboxSecurityNotificationPayload(
-                message.Email, message.FullName, message.Kind, message.OccurredAtUtc),
+            new OutboxStaffInvitationPayload(message.Email, message.FullName, message.Roles, message.SignInUrl.ToString()),
             cancellationToken));
 }
 
@@ -244,36 +205,25 @@ public sealed class IdentityEmailOutboxProcessor(
     private Task SendAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken) =>
         row.Kind switch
         {
-            IdentityEmailOutboxWriter.VerificationKind => SendVerificationAsync(row, cancellationToken),
-            IdentityEmailOutboxWriter.PasswordResetKind => SendPasswordResetAsync(row, cancellationToken),
-            IdentityEmailOutboxWriter.SecurityNotificationKind => SendSecurityNotificationAsync(row, cancellationToken),
-            IdentityEmailOutboxWriter.EmailChangeKind => SendEmailChangeAsync(row, cancellationToken),
             IdentityEmailOutboxWriter.EmailCodeKind => SendEmailCodeAsync(row, cancellationToken),
+            IdentityEmailOutboxWriter.StaffInvitationKind => SendStaffInvitationAsync(row, cancellationToken),
+            IdentityEmailOutboxWriter.EmailChangeKind => SendEmailChangeAsync(row, cancellationToken),
             _ => throw new InvalidOperationException("Unknown identity email outbox kind.")
         };
 
-    private Task SendVerificationAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
+    private Task SendEmailCodeAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
     {
-        var payload = writer.Unprotect<OutboxVerificationPayload>(row.ProtectedPayload);
-        return emailProvider.SendEmailVerificationAsync(
-            new EmailVerificationMessage(payload.Email, payload.FullName, new Uri(payload.VerificationUrl)),
+        var payload = writer.Unprotect<OutboxEmailCodePayload>(row.ProtectedPayload);
+        return emailProvider.SendEmailCodeAsync(
+            new EmailCodeMessage(payload.Email, payload.FullName, payload.Code, payload.ExpiresAtUtc, payload.Purpose),
             cancellationToken);
     }
 
-    private Task SendPasswordResetAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
+    private Task SendStaffInvitationAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
     {
-        var payload = writer.Unprotect<OutboxPasswordResetPayload>(row.ProtectedPayload);
-        return emailProvider.SendPasswordResetAsync(
-            new PasswordResetMessage(payload.Email, payload.FullName, new Uri(payload.ResetUrl)),
-            cancellationToken);
-    }
-
-    private Task SendSecurityNotificationAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
-    {
-        var payload = writer.Unprotect<OutboxSecurityNotificationPayload>(row.ProtectedPayload);
-        return emailProvider.SendSecurityNotificationAsync(
-            new IdentitySecurityNotificationMessage(
-                payload.Email, payload.FullName, payload.Kind, payload.OccurredAtUtc),
+        var payload = writer.Unprotect<OutboxStaffInvitationPayload>(row.ProtectedPayload);
+        return emailProvider.SendStaffInvitationAsync(
+            new StaffInvitationMessage(payload.Email, payload.FullName, payload.Roles, new Uri(payload.SignInUrl)),
             cancellationToken);
     }
 
@@ -281,15 +231,7 @@ public sealed class IdentityEmailOutboxProcessor(
     {
         var payload = writer.Unprotect<OutboxEmailChangePayload>(row.ProtectedPayload);
         return emailProvider.SendEmailChangeVerificationAsync(
-            new EmailVerificationMessage(payload.NewEmail, payload.FullName, new Uri(payload.VerificationUrl)),
-            cancellationToken);
-    }
-
-    private Task SendEmailCodeAsync(IdentityEmailOutboxMessage row, CancellationToken cancellationToken)
-    {
-        var payload = writer.Unprotect<OutboxEmailCodePayload>(row.ProtectedPayload);
-        return emailProvider.SendEmailCodeAsync(
-            new EmailCodeMessage(payload.Email, payload.FullName, payload.Code, payload.ExpiresAtUtc, payload.Purpose),
+            new EmailChangeMessage(payload.NewEmail, payload.FullName, new Uri(payload.VerificationUrl)),
             cancellationToken);
     }
 

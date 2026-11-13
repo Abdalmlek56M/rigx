@@ -131,7 +131,6 @@ public sealed class StoreSettingsPostgreSqlTests(SupplierDirectoryPostgreSqlFixt
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier("settings-actor@example.test"),
             IsEmailVerified = true,
             IsActive = true,
-            PasswordHash = "not-used",
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
         db.UserAccounts.Add(account);

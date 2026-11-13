@@ -12,7 +12,7 @@ public sealed class SmtpEmailOptions
     public int Port { get; init; } = 587;
     public bool EnableSsl { get; init; } = true;
     public string? FromAddress { get; init; }
-    public string FromName { get; init; } = "HARDWARE STORE";
+    public string FromName { get; init; } = "RIGX";
     public string? UserName { get; init; }
     public string? Password { get; init; }
     public int TimeoutSeconds { get; init; } = 15;
@@ -42,40 +42,6 @@ public sealed class SmtpEmailOptions
 /// </summary>
 public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
 {
-    public Task SendEmailVerificationAsync(
-        EmailVerificationMessage message,
-        CancellationToken cancellationToken = default) =>
-        SendAsync(
-            message.Email,
-            message.FullName,
-            "Confirm your HARDWARE STORE account",
-            $"""
-            Hello {message.FullName},
-
-            Confirm your email address and choose a password:
-            {message.VerificationUrl}
-
-            This link expires in 24 hours and can be used once. If you did not create this account, ignore this message.
-            """,
-            cancellationToken);
-
-    public Task SendPasswordResetAsync(
-        PasswordResetMessage message,
-        CancellationToken cancellationToken = default) =>
-        SendAsync(
-            message.Email,
-            message.FullName,
-            "Reset your HARDWARE STORE password",
-            $"""
-            Hello {message.FullName},
-
-            Reset your password:
-            {message.ResetUrl}
-
-            This link expires in 30 minutes and can be used once. If you did not request a reset, ignore this message.
-            """,
-            cancellationToken);
-
     public Task SendEmailCodeAsync(
         EmailCodeMessage message,
         CancellationToken cancellationToken = default) =>
@@ -95,27 +61,40 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
             """,
             cancellationToken);
 
-    public Task SendSecurityNotificationAsync(
-        IdentitySecurityNotificationMessage message,
-        CancellationToken cancellationToken = default)
-    {
-        var action = message.Kind == IdentitySecurityNotificationKind.PasswordResetCompleted
-            ? "password reset"
-            : "password change";
-        return SendAsync(
+    public Task SendStaffInvitationAsync(
+        StaffInvitationMessage message,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
             message.Email,
             message.FullName,
-            "HARDWARE STORE account security notice",
+            "You have been added to the RIGX team",
             $"""
             Hello {message.FullName},
 
-            Your HARDWARE STORE {action} completed at {message.OccurredAtUtc:O}.
-            All previous sessions were signed out.
+            You now have access to the RIGX dashboard ({string.Join(", ", message.Roles)}).
+            Sign in here with this email address, using a code sent to your email or your Google account:
+            {message.SignInUrl}
 
-            If you did not make this change, request a password reset immediately.
+            There is no password to set.
             """,
             cancellationToken);
-    }
+
+    public Task SendEmailChangeVerificationAsync(
+        EmailChangeMessage message,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            message.NewEmail,
+            message.FullName,
+            "Confirm your new RIGX email address",
+            $"""
+            Hello {message.FullName},
+
+            Confirm that this is your new sign-in email:
+            {message.ConfirmUrl}
+
+            This link expires in 30 minutes and can be used once. If you did not ask for this, ignore this message.
+            """,
+            cancellationToken);
 
     private async Task SendAsync(
         string recipient,

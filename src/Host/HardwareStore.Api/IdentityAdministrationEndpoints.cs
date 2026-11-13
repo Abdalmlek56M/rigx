@@ -1,5 +1,4 @@
 using HardwareStore.Modules.Identity;
-using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -15,9 +14,6 @@ public static class IdentityAdministrationEndpoints
             .RequirePermission("System.ManageUsers");
         group.MapPost("/users", CreateUserAsync)
             .RequirePermission("System.ManageUsers");
-        group.MapPost("/users/{id:guid}/password-reset", RequestPasswordResetAsync)
-            .RequirePermission("System.ManageUsers")
-            .RequireRateLimiting(IdentityRateLimitPolicies.PasswordResetRequest);
         group.MapPatch("/users/{id:guid}", UpdateUserAsync)
             .RequirePermission("System.ManageUsers");
         group.MapPut("/users/{id:guid}/roles", AssignRolesAsync)
@@ -80,28 +76,6 @@ public static class IdentityAdministrationEndpoints
         var result = await service.CreateUserAsync(request, actorId, cancellationToken);
         IdentityHttp.NoStore(context);
         return Results.Created((string?)null, result);
-    }
-
-    private static async Task<IResult> RequestPasswordResetAsync(
-        Guid id,
-        HttpContext context,
-        IdentityAdministrationService service,
-        IdentityAccountLifecycleService lifecycle,
-        CancellationToken cancellationToken)
-    {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
-        var user = await service.GetUserAsync(id, cancellationToken);
-        if (user is null)
-            return Results.NotFound();
-        context.Response.Headers.CacheControl = "no-store";
-        var result = await lifecycle.RequestPasswordResetAsync(
-            user.Email, context.TraceIdentifier, cancellationToken);
-        return result.Status == IdentityActionStatus.Failed
-            ? Results.Problem(
-                statusCode: StatusCodes.Status503ServiceUnavailable,
-                title: "The request is temporarily unavailable.")
-            : Results.Accepted(value: new { message = "If the account is eligible, instructions will be sent." });
     }
 
     private static async Task<IResult> UpdateUserAsync(

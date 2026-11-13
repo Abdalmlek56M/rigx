@@ -22,7 +22,6 @@ public sealed class PreviewOptions
     public required string OwnerEmail { get; init; }
     public required string OwnerUsername { get; init; }
     public required string OwnerFullName { get; init; }
-    public required string OwnerPassword { get; init; }
     public required string MigrationConnectionString { get; init; }
     public string RuntimeConnectionString { get; init; } = string.Empty;
 }
@@ -36,7 +35,6 @@ public sealed record PreviewInitializationResult(
 public sealed class PreviewInitializationService(
     PreviewOptions options,
     IHostEnvironment environment,
-    IPasswordHashingService passwordHashing,
     TimeProvider timeProvider,
     TimeZoneInfo businessTimeZone,
     ICatalogMediaStorage mediaStorage,
@@ -86,7 +84,6 @@ public sealed class PreviewInitializationService(
         if (string.IsNullOrWhiteSpace(options.OwnerEmail) ||
             string.IsNullOrWhiteSpace(options.OwnerUsername) ||
             string.IsNullOrWhiteSpace(options.OwnerFullName) ||
-            string.IsNullOrWhiteSpace(options.OwnerPassword) ||
             string.IsNullOrWhiteSpace(options.MigrationConnectionString))
             throw new InvalidOperationException("Preview owner and migration settings are required.");
         if (!new EmailAddressAttribute().IsValid(options.OwnerEmail) ||
@@ -122,10 +119,6 @@ public sealed class PreviewInitializationService(
         SecurityAuditDbContext audit,
         CancellationToken cancellationToken)
     {
-        var policy = new PasswordPolicyValidator().Validate(options.OwnerPassword);
-        if (policy != PasswordPolicyFailure.None)
-            throw new InvalidOperationException("Preview owner password does not satisfy the active password policy.");
-
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         var ownerRole = await db.Roles.SingleOrDefaultAsync(role => role.Code == "Owner", cancellationToken);
@@ -192,10 +185,7 @@ public sealed class PreviewInitializationService(
         if (account is not null)
         {
             ApplyConfiguredOwnerProfile(account, configuredUsername, options.OwnerEmail, options.OwnerFullName);
-            account.PasswordHash = passwordHashing.HashPassword(account, options.OwnerPassword);
             account.AuthorizationVersion++;
-            await new UserAccountLoginIdentifierSynchronizer(db)
-                .SetAsync(account, configuredUsername, options.OwnerEmail, cancellationToken);
             await db.AuthSessions
                 .Where(session => session.UserAccountId == account.Id && session.RevokedAtUtc == null)
                 .ExecuteUpdateAsync(setters => setters
@@ -236,10 +226,7 @@ public sealed class PreviewInitializationService(
                 IsActive = true,
                 CreatedAtUtc = now
             };
-            account.PasswordHash = passwordHashing.HashPassword(account, options.OwnerPassword);
             db.UserAccounts.Add(account);
-            await new UserAccountLoginIdentifierSynchronizer(db)
-                .SetAsync(account, configuredUsername, options.OwnerEmail, cancellationToken);
             db.UserRoles.Add(new UserRole { UserAccountId = account.Id, RoleId = ownerRole.Id });
             var state = await db.AuthorizationStates.SingleAsync(cancellationToken);
             state.RbacRevision++;
@@ -282,9 +269,6 @@ public sealed class PreviewInitializationService(
         account.Person.IsEmployee = true;
         account.IsEmailVerified = true;
         account.IsActive = true;
-        account.AccessFailedCount = 0;
-        account.AccessFailedWindowStartedUtc = null;
-        account.LockoutEndUtc = null;
     }
 
     private async Task<(int Categories, int Brands, int Products)> SeedCatalogAsync(

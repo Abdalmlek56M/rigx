@@ -219,7 +219,6 @@ public sealed class PurchaseDraftPostgreSqlTests(SupplierDirectoryPostgreSqlFixt
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier(person.Email),
             IsEmailVerified = true,
             IsActive = true,
-            PasswordHash = "not-used",
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
         db.UserAccounts.Add(account);

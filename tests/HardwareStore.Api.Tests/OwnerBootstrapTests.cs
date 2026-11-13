@@ -7,7 +7,6 @@ using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Storefront;
 using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,8 +23,7 @@ public sealed class OwnerBootstrapPostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
     private static readonly FirstOwnerBootstrapRequest ValidRequest = new(
         "rigx-owner",
         "owner@example.test",
-        "RIGX Owner",
-        "a sufficiently long owner password");
+        "RIGX Owner");
 
     [Fact]
     public async Task Bootstrap_is_atomic_one_time_and_grants_every_catalog_permission()
@@ -51,7 +49,6 @@ public sealed class OwnerBootstrapPostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
             entry => entry.EventType == "Owner.Bootstrapped" && entry.Outcome == "Succeeded");
         Assert.DoesNotContain("owner@example.test", successAudit.SafeMetadata, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("rigx-owner", successAudit.SafeMetadata, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain(ValidRequest.Password, successAudit.SafeMetadata, StringComparison.Ordinal);
 
         var repeat = await CaptureAsync(service);
         Assert.Equal(FirstOwnerBootstrapFailure.AlreadyInitialized, repeat?.Failure);
@@ -82,21 +79,15 @@ public sealed class OwnerBootstrapPostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
     }
 
     [Fact]
-    public void Invalid_input_and_weak_password_are_rejected_before_any_database_work()
+    public void Invalid_input_is_rejected_before_any_database_work()
     {
         var normalized = new FirstOwnerBootstrapRequest(
             " ",
             "not-an-email",
-            "RIGX Owner",
-            "a sufficiently long owner password");
+            "RIGX Owner");
         var inputFailure = Assert.Throws<FirstOwnerBootstrapException>(() =>
             FirstOwnerBootstrapService.ValidateRequest(normalized));
         Assert.Equal(FirstOwnerBootstrapFailure.InvalidInput, inputFailure.Failure);
-
-        var weak = ValidRequest with { Password = "short" };
-        var passwordFailure = Assert.Throws<FirstOwnerBootstrapException>(() =>
-            FirstOwnerBootstrapService.ValidateRequest(weak));
-        Assert.Equal(FirstOwnerBootstrapFailure.PasswordPolicy, passwordFailure.Failure);
     }
 
     private static async Task<FirstOwnerBootstrapException?> CaptureAsync(FirstOwnerBootstrapService service)
@@ -220,15 +211,13 @@ public sealed class OwnerBootstrapDatabase(string connectionString)
             identityFactory,
             auditFactory,
             new SecurityAuditWriter(auditFactory),
-            new PasswordHashingService(new PasswordHasher<UserAccount>()),
             TimeProvider.System,
             TimeZoneInfo.Utc,
             NullLogger<FirstOwnerBootstrapService>.Instance);
     }
 
     public IdentityAdministrationService CreateAdministrationService(
-        IIdentityEmailDispatcher? emailDispatcher = null,
-        IConfiguration? configuration = null)
+        IIdentityEmailDispatcher? emailDispatcher = null)
     {
         var identityFactory = new TestIdentityContextFactory(connectionString);
         var auditFactory = new TestAuditContextFactory(connectionString);
@@ -237,7 +226,6 @@ public sealed class OwnerBootstrapDatabase(string connectionString)
             new SecurityAuditWriter(auditFactory),
             TimeProvider.System,
             emailDispatcher: emailDispatcher,
-            configuration: configuration,
             businessTimeZone: TimeZoneInfo.Utc);
     }
 

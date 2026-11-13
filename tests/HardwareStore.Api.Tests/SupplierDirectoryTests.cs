@@ -288,7 +288,6 @@ public sealed class SupplierDirectoryPostgreSqlTests(SupplierDirectoryPostgreSql
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier("actor@example.test"),
             IsEmailVerified = true,
             IsActive = true,
-            PasswordHash = "not-used",
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
         db.UserAccounts.Add(account);

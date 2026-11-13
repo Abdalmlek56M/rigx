@@ -26,9 +26,9 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         const string tokenUrl = "http://localhost/verify-email#token=SUPER-SECRET-TOKEN";
 
         await writer.EnqueueAsync(
-            IdentityEmailOutboxWriter.VerificationKind,
+            IdentityEmailOutboxWriter.EmailChangeKind,
             accountId,
-            new OutboxVerificationPayload("customer@example.test", "Test Customer", tokenUrl));
+            new OutboxEmailChangePayload("customer@example.test", "Test Customer", tokenUrl));
 
         await using (var db = database.CreateIdentityContext())
         {
@@ -44,8 +44,8 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         var processor = CreateProcessor(database, clock, provider, writer);
         Assert.Equal(1, await processor.ProcessDueAsync(CancellationToken.None));
 
-        var delivered = Assert.Single(provider.Verifications);
-        Assert.Equal(tokenUrl, delivered.VerificationUrl.ToString());
+        var delivered = Assert.Single(provider.EmailChanges);
+        Assert.Equal(tokenUrl, delivered.ConfirmUrl.ToString());
         await using (var db = database.CreateIdentityContext())
         {
             var row = await db.EmailOutbox.SingleAsync();
@@ -58,7 +58,7 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
 
         // A sent row is never processed twice.
         Assert.Equal(0, await processor.ProcessDueAsync(CancellationToken.None));
-        Assert.Single(provider.Verifications);
+        Assert.Single(provider.EmailChanges);
 
         await using var audit = database.CreateAuditContext();
         Assert.True(await audit.SecurityAuditEvents.AnyAsync(entry =>
@@ -74,9 +74,9 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         var provider = new CapturingEmailProvider { Fail = true };
         var writer = CreateWriter(database, clock);
         await writer.EnqueueAsync(
-            IdentityEmailOutboxWriter.PasswordResetKind,
+            IdentityEmailOutboxWriter.StaffInvitationKind,
             null,
-            new OutboxPasswordResetPayload("customer@example.test", "Test Customer", "http://localhost/reset-password#token=ABC"));
+            new OutboxStaffInvitationPayload("customer@example.test", "Test Customer", ["Sales"], "http://localhost/login"));
 
         var processor = CreateProcessor(database, clock, provider, writer);
         Assert.Equal(1, await processor.ProcessDueAsync(CancellationToken.None));
@@ -98,8 +98,8 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         provider.Fail = false;
         Assert.Equal(1, await processor.ProcessDueAsync(CancellationToken.None));
 
-        var delivered = Assert.Single(provider.PasswordResets);
-        Assert.Contains("reset-password", delivered.ResetUrl.ToString(), StringComparison.Ordinal);
+        var delivered = Assert.Single(provider.StaffInvitations);
+        Assert.Equal("http://localhost/login", delivered.SignInUrl.ToString());
         await using (var db = database.CreateIdentityContext())
         {
             var row = await db.EmailOutbox.SingleAsync();
@@ -122,9 +122,9 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         var provider = new CapturingEmailProvider { Fail = true };
         var writer = CreateWriter(database, clock);
         await writer.EnqueueAsync(
-            IdentityEmailOutboxWriter.VerificationKind,
+            IdentityEmailOutboxWriter.EmailChangeKind,
             null,
-            new OutboxVerificationPayload("customer@example.test", "Test Customer", "http://localhost/verify-email#token=ABC"));
+            new OutboxEmailChangePayload("customer@example.test", "Test Customer", "http://localhost/verify-email#token=ABC"));
 
         var processor = CreateProcessor(database, clock, provider, writer);
         for (var attempt = 1; attempt <= 5; attempt++)
@@ -161,9 +161,9 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
             var writer = new IdentityEmailOutboxWriter(
                 new OutboxContextFactory(database.ConnectionString), firstProtection, clock);
             await writer.EnqueueAsync(
-                IdentityEmailOutboxWriter.VerificationKind,
+                IdentityEmailOutboxWriter.EmailChangeKind,
                 null,
-                new OutboxVerificationPayload("customer@example.test", "Test Customer", "http://localhost/verify-email#token=RESTART"));
+                new OutboxEmailChangePayload("customer@example.test", "Test Customer", "http://localhost/verify-email#token=RESTART"));
 
             // Simulate a new application process with a fresh provider that shares the key ring.
             var secondProtection = DataProtectionProvider.Create(
@@ -175,8 +175,8 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
             var processor = CreateProcessor(database, clock, provider, restartedWriter);
 
             Assert.Equal(1, await processor.ProcessDueAsync(CancellationToken.None));
-            var delivered = Assert.Single(provider.Verifications);
-            Assert.Contains("RESTART", delivered.VerificationUrl.ToString(), StringComparison.Ordinal);
+            var delivered = Assert.Single(provider.EmailChanges);
+            Assert.Contains("RESTART", delivered.ConfirmUrl.ToString(), StringComparison.Ordinal);
         }
         finally
         {
@@ -235,42 +235,23 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
     private sealed class CapturingEmailProvider : IEmailProvider
     {
         public bool Fail { get; set; }
-        public List<EmailVerificationMessage> Verifications { get; } = [];
-        public List<PasswordResetMessage> PasswordResets { get; } = [];
+        public List<EmailChangeMessage> EmailChanges { get; } = [];
+        public List<StaffInvitationMessage> StaffInvitations { get; } = [];
         public List<EmailCodeMessage> EmailCodes { get; } = [];
 
-        public Task SendEmailVerificationAsync(
-            EmailVerificationMessage message,
-            CancellationToken cancellationToken = default)
-        {
-            if (Fail) throw new InvalidOperationException("Simulated provider outage.");
-            Verifications.Add(message);
-            return Task.CompletedTask;
-        }
+        public Task SendEmailChangeVerificationAsync(EmailChangeMessage message, CancellationToken cancellationToken = default) =>
+            Capture(EmailChanges, message);
 
-        public Task SendPasswordResetAsync(
-            PasswordResetMessage message,
-            CancellationToken cancellationToken = default)
-        {
-            if (Fail) throw new InvalidOperationException("Simulated provider outage.");
-            PasswordResets.Add(message);
-            return Task.CompletedTask;
-        }
+        public Task SendStaffInvitationAsync(StaffInvitationMessage message, CancellationToken cancellationToken = default) =>
+            Capture(StaffInvitations, message);
 
-        public Task SendSecurityNotificationAsync(
-            IdentitySecurityNotificationMessage message,
-            CancellationToken cancellationToken = default)
-        {
-            if (Fail) throw new InvalidOperationException("Simulated provider outage.");
-            return Task.CompletedTask;
-        }
+        public Task SendEmailCodeAsync(EmailCodeMessage message, CancellationToken cancellationToken = default) =>
+            Capture(EmailCodes, message);
 
-        public Task SendEmailCodeAsync(
-            EmailCodeMessage message,
-            CancellationToken cancellationToken = default)
+        private Task Capture<T>(List<T> sink, T message)
         {
             if (Fail) throw new InvalidOperationException("Simulated provider outage.");
-            EmailCodes.Add(message);
+            sink.Add(message);
             return Task.CompletedTask;
         }
     }

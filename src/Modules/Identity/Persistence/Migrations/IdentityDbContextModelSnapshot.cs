@@ -537,79 +537,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                     b.ToTable("identity_email_outbox", (string)null);
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.IdentityToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Attempts")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("attempts");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<DateTimeOffset>("ExpiresAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at_utc");
-
-                    b.Property<byte[]>("ProtectedCode")
-                        .HasColumnType("bytea")
-                        .HasColumnName("protected_code");
-
-                    b.Property<string>("Purpose")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("purpose");
-
-                    b.Property<DateTimeOffset?>("RevokedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked_at_utc");
-
-                    b.Property<byte[]>("TokenHash")
-                        .IsRequired()
-                        .HasColumnType("bytea")
-                        .HasColumnName("token_hash");
-
-                    b.Property<DateTimeOffset?>("UsedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("used_at_utc");
-
-                    b.Property<Guid>("UserAccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_account_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique()
-                        .HasDatabaseName("ux_identity_tokens_token_hash");
-
-                    b.HasIndex("UserAccountId", "Purpose")
-                        .IsUnique()
-                        .HasDatabaseName("ux_identity_tokens_active_account_purpose")
-                        .HasFilter("used_at_utc IS NULL AND revoked_at_utc IS NULL");
-
-                    b.HasIndex("UserAccountId", "Purpose", "CreatedAtUtc")
-                        .HasDatabaseName("ix_identity_tokens_account_purpose_created");
-
-                    b.ToTable("identity_tokens", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_identity_tokens_expiry_order", "expires_at_utc > created_at_utc");
-
-                            t.HasCheckConstraint("ck_identity_tokens_hash_length", "octet_length(token_hash) = 32");
-
-                            t.HasCheckConstraint("ck_identity_tokens_not_used_and_revoked", "used_at_utc IS NULL OR revoked_at_utc IS NULL");
-
-                            t.HasCheckConstraint("ck_identity_tokens_purpose", "purpose IN ('EmailVerification', 'PasswordReset', 'EmailLoginCode', 'PasswordResetCode')");
-                        });
-                });
-
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.Permission", b =>
                 {
                     b.Property<string>("Code")
@@ -959,16 +886,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<int>("AccessFailedCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("access_failed_count");
-
-                    b.Property<DateTimeOffset?>("AccessFailedWindowStartedUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("access_failed_window_started_utc");
-
                     b.Property<int>("AuthorizationVersion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -1002,10 +919,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_email_verified");
 
-                    b.Property<DateTimeOffset?>("LockoutEndUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lockout_end_utc");
-
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1017,11 +930,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("normalized_username");
-
-                    b.Property<string>("PasswordHash")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("password_hash");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid")
@@ -1055,32 +963,7 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_user_accounts_username");
 
-                    b.ToTable("user_accounts", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_user_accounts_access_failed_count", "access_failed_count >= 0");
-                        });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.UserAccountLoginIdentifier", b =>
-                {
-                    b.Property<string>("NormalizedIdentifier")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("normalized_identifier");
-
-                    b.Property<Guid>("UserAccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_account_id");
-
-                    b.HasKey("NormalizedIdentifier");
-
-                    b.HasIndex("UserAccountId")
-                        .HasDatabaseName("ix_user_account_login_identifiers_user_account_id");
-
-                    b.ToTable("user_account_login_identifiers", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_user_account_login_identifier_length", "length(normalized_identifier) BETWEEN 1 AND 255");
-                        });
+                    b.ToTable("user_accounts", (string)null);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.UserNotification", b =>
@@ -1188,17 +1071,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.IdentityToken", b =>
-                {
-                    b.HasOne("HardwareStore.Modules.Identity.Persistence.UserAccount", "UserAccount")
-                        .WithMany("IdentityTokens")
-                        .HasForeignKey("UserAccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("UserAccount");
-                });
-
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.RolePermission", b =>
                 {
                     b.HasOne("HardwareStore.Modules.Identity.Persistence.Permission", "Permission")
@@ -1227,17 +1099,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.UserAccountLoginIdentifier", b =>
-                {
-                    b.HasOne("HardwareStore.Modules.Identity.Persistence.UserAccount", "UserAccount")
-                        .WithMany("LoginIdentifiers")
-                        .HasForeignKey("UserAccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("UserAccount");
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.UserNotification", b =>
@@ -1287,10 +1148,6 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.UserAccount", b =>
                 {
-                    b.Navigation("IdentityTokens");
-
-                    b.Navigation("LoginIdentifiers");
-
                     b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618

@@ -4,7 +4,6 @@ using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace HardwareStore.Modules.Identity;
@@ -15,9 +14,9 @@ public sealed class IdentityUserAdministrationService(
     IdentityAdministrationSupport support,
     TimeProvider timeProvider,
     TimeZoneInfo businessTimeZone,
-    IIdentityEmailDispatcher? emailDispatcher = null,
-    IConfiguration? configuration = null,
-    ILogger<IdentityUserAdministrationService>? logger = null)
+    IIdentityEmailDispatcher? emailDispatcher,
+    IdentityLinks links,
+    ILogger<IdentityUserAdministrationService>? logger)
 {
     public async Task<AdminIdentityUserPage> GetUsersAsync(
         string? search,
@@ -59,17 +58,23 @@ public sealed class IdentityUserAdministrationService(
         return account is null ? null : MapUser(account);
     }
 
+    /// <summary>
+    /// Invites a staff member by email: the account is created unverified with its roles, and an email
+    /// tells them to sign in with that address (code or Google). There is no password or link token.
+    /// </summary>
     public async Task<AdminIdentityUserInvitationResult> CreateUserAsync(
         CreateAdminIdentityUserRequest request,
         Guid actorUserId,
         CancellationToken cancellationToken = default)
     {
-        var username = IdentityAdministrationSupport.NormalizeRequired(request.Username, 128, "Username");
         var email = IdentityAdministrationSupport.NormalizeRequired(request.Email, 255, "Email");
+        var username = IdentityAdministrationSupport.NormalizeOptional(request.Username, 128, "Username") ?? email;
         var fullName = IdentityAdministrationSupport.NormalizeRequired(request.FullName, 255, "Full name");
         var phoneNumber = IdentityAdministrationSupport.NormalizeOptional(request.PhoneNumber, 32, "Phone number");
         if (!new EmailAddressAttribute().IsValid(email))
             throw new IdentityException(400, "Email is invalid.");
+        if (username.Length > 128)
+            throw new IdentityException(400, "Username is too long.");
         var roleIds = (request.RoleIds ?? []).Distinct().ToArray();
         if (roleIds.Length == 0)
             throw new IdentityException(400, "At least one role is required.");
@@ -77,6 +82,8 @@ public sealed class IdentityUserAdministrationService(
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        UserAccount account;
+        IReadOnlyList<string> roleCodes;
         try
         {
             await IdentityAdministrationSupport.LockAuthorizationStateAsync(db, cancellationToken);
@@ -97,15 +104,9 @@ public sealed class IdentityUserAdministrationService(
 
             var normalizedUsername = IdentityLoginService.NormalizeIdentifier(username);
             var normalizedEmail = IdentityLoginService.NormalizeIdentifier(email);
-            var collision = await db.UserAccounts.AnyAsync(
-                account => account.NormalizedUsername == normalizedUsername ||
-                           account.NormalizedEmail == normalizedEmail,
-                cancellationToken) ||
-                await db.UserAccountLoginIdentifiers.AnyAsync(
-                    identifier => identifier.NormalizedIdentifier == normalizedUsername ||
-                                  identifier.NormalizedIdentifier == normalizedEmail,
-                    cancellationToken);
-            if (collision)
+            if (await db.UserAccounts.AnyAsync(
+                    item => item.NormalizedUsername == normalizedUsername || item.NormalizedEmail == normalizedEmail,
+                    cancellationToken))
                 throw new IdentityException(409, "The username or email is already in use.");
 
             var person = new Person
@@ -120,7 +121,7 @@ public sealed class IdentityUserAdministrationService(
             PersonClassificationPolicy.ApplyForRoles(person, roles.Select(role => role.Code));
             await new PersonCodeGenerator(db, timeProvider, businessTimeZone)
                 .CreatePersonInCurrentTransactionAsync(person, cancellationToken);
-            var account = new UserAccount
+            account = new UserAccount
             {
                 Id = Guid.CreateVersion7(),
                 PersonId = person.Id,
@@ -129,22 +130,16 @@ public sealed class IdentityUserAdministrationService(
                 NormalizedUsername = normalizedUsername,
                 Email = email,
                 NormalizedEmail = normalizedEmail,
-                PasswordHash = null,
                 IsEmailVerified = false,
                 IsActive = true,
                 AuthorizationVersion = 1,
                 CreatedAtUtc = now
             };
             db.UserAccounts.Add(account);
-            await new UserAccountLoginIdentifierSynchronizer(db)
-                .SetAsync(account, username, email, cancellationToken);
             foreach (var role in roles)
                 db.UserRoles.Add(new UserRole { UserAccountId = account.Id, RoleId = role.Id });
-
-            var token = IdentityTokenFactory.Create(
-                account.Id, now, CustomerRegistrationService.EmailVerificationPurpose, TimeSpan.FromHours(24));
-            db.IdentityTokens.Add(token.PersistenceRecord);
             await db.SaveChangesAsync(cancellationToken);
+            roleCodes = roles.Select(role => role.Code).OrderBy(code => code, StringComparer.Ordinal).ToList();
             await support.WriteAuditAsync(
                 db,
                 transaction,
@@ -154,56 +149,44 @@ public sealed class IdentityUserAdministrationService(
                     "User",
                     ActorUserAccountId: actorUserId,
                     SubjectUserAccountId: account.Id,
-                    SafeMetadata: JsonSerializer.Serialize(new
-                    {
-                        roles = roles.Select(role => role.Code).OrderBy(code => code, StringComparer.Ordinal)
-                    })),
+                    SafeMetadata: JsonSerializer.Serialize(new { roles = roleCodes })),
                 cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-
-            var dispatchQueued = false;
-            if (emailDispatcher is not null && configuration is not null)
-            {
-                try
-                {
-                    var baseUrl = configuration["Identity:EmailVerificationBaseUrl"]
-                        ?? "http://localhost:3000/verify-email";
-                    if (Uri.TryCreate(baseUrl, UriKind.Absolute, out var verificationBase))
-                    {
-                        var verificationUrl = new UriBuilder(verificationBase)
-                        {
-                            Fragment = $"token={Uri.EscapeDataString(token.RawToken)}"
-                        }.Uri;
-                        await emailDispatcher.EnqueueVerificationAsync(
-                            account.Id,
-                            new EmailVerificationMessage(account.Email, person.FullName, verificationUrl),
-                            cancellationToken);
-                        dispatchQueued = true;
-                    }
-                    else
-                    {
-                        logger?.LogWarning("Admin invitation email base URL is invalid; the account was created without a dispatched email.");
-                    }
-                }
-                catch (Exception) when (!cancellationToken.IsCancellationRequested)
-                {
-                    logger?.LogWarning("Admin invitation email dispatch failed after the account was created.");
-                }
-            }
-            else
-            {
-                logger?.LogWarning("Admin invitation email dispatcher is unavailable; the account was created without an email.");
-            }
-
-            var user = await GetUserAsync(account.Id, cancellationToken)
-                ?? throw new IdentityException(404, "User was not found.");
-            return new AdminIdentityUserInvitationResult(user, dispatchQueued);
         }
         catch (Exception exception)
         {
             await IdentityAdministrationSupport.SafeRollbackAsync(transaction, cancellationToken);
             await support.TryWriteRejectionAuditAsync(actorUserId, "CreateUser", exception, cancellationToken);
             throw;
+        }
+
+        var dispatchQueued = await TryQueueInvitationAsync(account, fullName, roleCodes, cancellationToken);
+        var user = await GetUserAsync(account.Id, cancellationToken)
+            ?? throw new IdentityException(404, "User was not found.");
+        return new AdminIdentityUserInvitationResult(user, dispatchQueued);
+    }
+
+    /// <summary>The account already exists; a failed queue write is reported, and the invite can simply be re-sent by signing in.</summary>
+    private async Task<bool> TryQueueInvitationAsync(
+        UserAccount account,
+        string fullName,
+        IReadOnlyList<string> roleCodes,
+        CancellationToken cancellationToken)
+    {
+        if (emailDispatcher is null)
+            return false;
+        try
+        {
+            await emailDispatcher.EnqueueStaffInvitationAsync(
+                account.Id,
+                new StaffInvitationMessage(account.Email, fullName, roleCodes, links.SignIn),
+                cancellationToken);
+            return true;
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger?.LogWarning(exception, "Staff invitation email could not be queued after the account was created.");
+            return false;
         }
     }
 
@@ -407,7 +390,6 @@ public sealed class IdentityUserAdministrationService(
         account.Person.PhoneNumber,
         account.IsActive,
         account.IsEmailVerified,
-        account.LockoutEndUtc,
         account.AuthorizationVersion,
         account.UserRoles.Select(userRole => userRole.RoleId).ToList(),
         account.UserRoles.Select(userRole => userRole.Role.Code)

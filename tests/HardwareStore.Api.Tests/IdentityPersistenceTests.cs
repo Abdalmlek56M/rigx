@@ -60,9 +60,9 @@ public sealed class IdentityPersistenceTests
         Assert.Equal(new[]
         {
             "account_restrictions", "auth_sessions", "authorization_state", "customer_addresses", "email_codes",
-            "identity_email_change_requests", "identity_email_outbox", "identity_tokens", "permissions",
+            "identity_email_change_requests", "identity_email_outbox", "permissions",
             "person_code_counters", "persons", "role_permissions", "roles",
-            "user_account_login_identifiers", "user_accounts", "user_notifications", "user_roles"
+            "user_accounts", "user_notifications", "user_roles"
         }, tables);
 
         var designModel = context.GetService<IDesignTimeModel>().Model;
@@ -78,12 +78,8 @@ public sealed class IdentityPersistenceTests
         var accountType = designModel.FindEntityType(typeof(UserAccount))!;
         Assert.Contains(accountType.GetIndexes(), index => index.IsUnique &&
             index.Properties.Select(property => property.Name).SequenceEqual([nameof(UserAccount.PersonId)]));
-        Assert.True(accountType.FindProperty(nameof(UserAccount.PasswordHash))!.IsNullable);
         var emailCodeType = designModel.FindEntityType(typeof(EmailCode))!;
         Assert.Contains(emailCodeType.GetIndexes(), index => index.IsUnique &&
-            index.GetFilter() == "used_at_utc IS NULL AND revoked_at_utc IS NULL");
-        var tokenType = designModel.FindEntityType(typeof(IdentityToken))!;
-        Assert.Contains(tokenType.GetIndexes(), index => index.IsUnique &&
             index.GetFilter() == "used_at_utc IS NULL AND revoked_at_utc IS NULL");
         var allowedCascades = new HashSet<string>(["AccountRestriction", "IdentityEmailChangeRequest", "UserNotification"], StringComparer.Ordinal);
         Assert.All(designModel.GetEntityTypes().SelectMany(entity => entity.GetForeignKeys()), foreignKey =>
@@ -139,7 +135,7 @@ public sealed class PostgreSqlIdentityPersistenceTests(PostgreSqlIdentityFixture
         {
             "persons", "user_accounts", "roles", "permissions", "user_roles",
             "role_permissions", "person_code_counters", "auth_sessions", "authorization_state",
-            "user_account_login_identifiers", "identity_tokens", "security_audit_events",
+            "email_codes", "security_audit_events",
             "customer_addresses", "account_restrictions", "user_notifications",
             "identity_email_outbox", "identity_email_change_requests"
         };
@@ -170,7 +166,7 @@ public sealed class PostgreSqlIdentityPersistenceTests(PostgreSqlIdentityFixture
                 Id = userAccountId, PersonId = person.Id, Username = username,
                 NormalizedUsername = IdentityLoginService.NormalizeIdentifier(username),
                 Email = email, NormalizedEmail = IdentityLoginService.NormalizeIdentifier(email),
-                PasswordHash = "test-hash", CreatedAtUtc = clock.GetUtcNow()
+                CreatedAtUtc = clock.GetUtcNow()
             });
             await context.SaveChangesAsync();
         }
@@ -184,7 +180,7 @@ public sealed class PostgreSqlIdentityPersistenceTests(PostgreSqlIdentityFixture
                 Id = Guid.NewGuid(), PersonId = person.Id, Username = duplicateUsername,
                 NormalizedUsername = IdentityLoginService.NormalizeIdentifier(duplicateUsername),
                 Email = duplicateEmail, NormalizedEmail = IdentityLoginService.NormalizeIdentifier(duplicateEmail),
-                PasswordHash = "test-hash", CreatedAtUtc = clock.GetUtcNow()
+                CreatedAtUtc = clock.GetUtcNow()
             });
             await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
         }
@@ -240,7 +236,7 @@ public sealed class PostgreSqlIdentityPersistenceTests(PostgreSqlIdentityFixture
                 Id = Guid.NewGuid(), PersonId = person.Id, Username = restrictedUsername,
                 NormalizedUsername = IdentityLoginService.NormalizeIdentifier(restrictedUsername),
                 Email = restrictedEmail, NormalizedEmail = IdentityLoginService.NormalizeIdentifier(restrictedEmail),
-                PasswordHash = "test-hash", CreatedAtUtc = clock.GetUtcNow()
+                CreatedAtUtc = clock.GetUtcNow()
             });
             await context.SaveChangesAsync();
         }

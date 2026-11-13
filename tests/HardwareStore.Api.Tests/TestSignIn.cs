@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using HardwareStore.Modules.Identity;
+using HardwareStore.Modules.Identity.Authentication;
+using HardwareStore.Modules.Identity.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -10,8 +13,14 @@ namespace HardwareStore.Api.Tests;
 /// <summary>Signs a test client in the way a real user does: request an email code, read it, enter it.</summary>
 internal static class TestSignIn
 {
+    /// <summary>Signs in through the API. Earlier codes for the address are cleared so the resend cooldown never blocks a test.</summary>
     public static async Task SignInAsync(HttpClient client, IServiceProvider services, string email, bool rememberDevice = false)
     {
+        await using (var db = await services.GetRequiredService<IDbContextFactory<IdentityDbContext>>().CreateDbContextAsync())
+        {
+            var normalized = IdentityLoginService.NormalizeIdentifier(email);
+            await db.EmailCodes.Where(code => code.NormalizedEmail == normalized).ExecuteDeleteAsync();
+        }
         using var request = await PostJsonAsync(client, "/api/v1/identity/email-code/request", new { email });
         Assert.Equal(HttpStatusCode.Accepted, request.StatusCode);
         var code = await LatestCodeAsync(services, email);

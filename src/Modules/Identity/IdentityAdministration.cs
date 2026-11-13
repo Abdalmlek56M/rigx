@@ -1,7 +1,6 @@
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -25,7 +24,7 @@ public sealed class IdentityAdministrationService
         TimeProvider timeProvider,
         ILoggerFactory? loggerFactory = null,
         IIdentityEmailDispatcher? emailDispatcher = null,
-        IConfiguration? configuration = null,
+        IdentityLinks? links = null,
         TimeZoneInfo? businessTimeZone = null)
     {
         var support = new IdentityAdministrationSupport(
@@ -39,7 +38,7 @@ public sealed class IdentityAdministrationService
             timeProvider,
             businessTimeZone ?? TimeZoneInfo.Utc,
             emailDispatcher,
-            configuration,
+            links ?? IdentityLinks.Local,
             loggerFactory?.CreateLogger<IdentityUserAdministrationService>());
         _roles = new IdentityRoleAdministrationService(contextFactory, support, timeProvider);
     }

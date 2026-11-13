@@ -6,7 +6,6 @@ public sealed record AdminIdentityUser(
     string? PhoneNumber,
     bool IsActive,
     bool IsEmailVerified,
-    DateTimeOffset? LockoutEndUtc,
     int AuthorizationVersion,
     IReadOnlyList<Guid> RoleIds,
     IReadOnlyList<string> RoleCodes);

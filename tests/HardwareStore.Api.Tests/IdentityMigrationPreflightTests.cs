@@ -78,12 +78,12 @@ public sealed class PostgreSqlIdentityMigrationPreflightTests(
         await using var db = CreateContext(connectionString);
         var account = await AddLegacyAccountAsync(db, "same@example.test", "same@example.test");
 
-        await db.Database.MigrateAsync();
+        // The login-identifier table existed from M3_2c until passwords were removed (M13).
+        await db.Database.MigrateAsync(M32cMigration);
 
         Assert.Contains(M32cMigration, await db.Database.GetAppliedMigrationsAsync());
-        var identifiers = await db.UserAccountLoginIdentifiers
-            .Where(identifier => identifier.UserAccountId == account.Id)
-            .Select(identifier => identifier.NormalizedIdentifier)
+        var identifiers = await db.Database.SqlQuery<string>(
+                $"SELECT normalized_identifier AS \"Value\" FROM user_account_login_identifiers WHERE user_account_id = {account.Id}")
             .ToListAsync();
         Assert.Equal(new[] { "SAME@EXAMPLE.TEST" }, identifiers);
     }
@@ -116,7 +116,6 @@ public sealed class PostgreSqlIdentityMigrationPreflightTests(
             NormalizedUsername = IdentityLoginService.NormalizeIdentifier(username),
             Email = email,
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier(email),
-            PasswordHash = passwordHash,
             IsEmailVerified = isEmailVerified,
             CreatedAtUtc = DateTimeOffset.UtcNow
         };

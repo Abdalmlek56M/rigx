@@ -5,13 +5,8 @@ using Microsoft.AspNetCore.RateLimiting;
 
 public static class IdentityRateLimitPolicies
 {
-    public const string Login = "identity-login";
-    public const string Registration = "identity-registration";
-    public const string EmailVerification = "identity-email-verification";
-    public const string EmailVerificationResend = "identity-email-verification-resend";
-    public const string PasswordResetRequest = "identity-password-reset-request";
-    public const string PasswordReset = "identity-password-reset";
     public const string EmailChange = "identity-email-change";
+    public const string EmailChangeConfirm = "identity-email-change-confirm";
     public const string EmailCodeRequest = "identity-email-code-request";
     public const string EmailCodeVerify = "identity-email-code-verify";
     public const string Contact = "contact-submit";
@@ -25,13 +20,8 @@ public static class IdentityRateLimiting
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Login, 5, TimeSpan.FromMinutes(1));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Registration, 10, TimeSpan.FromHours(1));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailVerification, 20, TimeSpan.FromMinutes(10));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailVerificationResend, 10, TimeSpan.FromHours(1));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.PasswordResetRequest, 10, TimeSpan.FromHours(1));
-            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.PasswordReset, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailChange, 10, TimeSpan.FromHours(1));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailChangeConfirm, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeRequest, 10, TimeSpan.FromHours(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeVerify, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Contact, 5, TimeSpan.FromMinutes(10));
@@ -86,22 +76,15 @@ public static class IdentityRateLimiting
 
     private static string RetryAfterSeconds(string policyName) => policyName switch
     {
-        IdentityRateLimitPolicies.Login => "60",
-        IdentityRateLimitPolicies.EmailVerification => "600",
-        IdentityRateLimitPolicies.PasswordReset => "600",
-        IdentityRateLimitPolicies.EmailChange => "3600",
+        IdentityRateLimitPolicies.EmailChangeConfirm or IdentityRateLimitPolicies.EmailCodeVerify => "600",
+        IdentityRateLimitPolicies.CatalogSuggest => "60",
         _ => "3600"
     };
 
     private static string EventType(string policyName) => policyName switch
     {
-        IdentityRateLimitPolicies.Login => "Identity.Login.RateLimited",
-        IdentityRateLimitPolicies.Registration => "Identity.Registration.RateLimited",
-        IdentityRateLimitPolicies.EmailVerification => "Identity.EmailVerification.RateLimited",
-        IdentityRateLimitPolicies.EmailVerificationResend => "Identity.EmailVerification.Resend.RateLimited",
-        IdentityRateLimitPolicies.PasswordResetRequest => "Identity.PasswordReset.Request.RateLimited",
-        IdentityRateLimitPolicies.PasswordReset => "Identity.PasswordReset.RateLimited",
         IdentityRateLimitPolicies.EmailChange => "Identity.EmailChange.RateLimited",
+        IdentityRateLimitPolicies.EmailChangeConfirm => "Identity.EmailChange.Confirm.RateLimited",
         IdentityRateLimitPolicies.EmailCodeRequest => "Identity.EmailCode.Request.RateLimited",
         IdentityRateLimitPolicies.EmailCodeVerify => "Identity.EmailCode.Verify.RateLimited",
         IdentityRateLimitPolicies.Contact => "Contact.Submit.RateLimited",

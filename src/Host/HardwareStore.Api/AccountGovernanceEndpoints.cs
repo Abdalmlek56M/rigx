@@ -9,10 +9,11 @@ public static class AccountGovernanceEndpoints
     {
         endpoints.MapPost("/api/v1/identity/email-change/request", RequestEmailChangeAsync)
             .RequireAuthorization()
-            .RequireRateLimiting(IdentityRateLimitPolicies.EmailChange);
+            .RequireRateLimiting(IdentityRateLimitPolicies.EmailChange)
+            .RequireStepUp();
         endpoints.MapPost("/api/v1/identity/email-change/confirm", ConfirmEmailChangeAsync)
             .AllowAnonymous()
-            .RequireRateLimiting(IdentityRateLimitPolicies.EmailVerification);
+            .RequireRateLimiting(IdentityRateLimitPolicies.EmailChangeConfirm);
 
         var notifications = endpoints.MapGroup("/api/v1/notifications").RequireAuthorization();
         notifications.MapGet("", GetNotificationsAsync);

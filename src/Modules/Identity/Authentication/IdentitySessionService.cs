@@ -40,7 +40,7 @@ public sealed class IdentitySessionService
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        if (accountId == Guid.Empty || !IdentityTokenFactory.TryHashRawToken(rawSessionKey, out var keyHash))
+        if (accountId == Guid.Empty || !DatabaseTicketStore.TryHashSessionKey(rawSessionKey, out var keyHash))
             throw InvalidSession();
 
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
@@ -93,7 +93,7 @@ public sealed class IdentitySessionService
     {
         if (accountId == Guid.Empty)
             return [];
-        byte[]? currentHash = IdentityTokenFactory.TryHashRawToken(currentRawSessionKey, out var hash)
+        byte[]? currentHash = DatabaseTicketStore.TryHashSessionKey(currentRawSessionKey, out var hash)
             ? hash
             : null;
         var now = UtcNow();
@@ -155,7 +155,7 @@ public sealed class IdentitySessionService
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        if (!IdentityTokenFactory.TryHashRawToken(currentRawSessionKey, out var currentHash))
+        if (!DatabaseTicketStore.TryHashSessionKey(currentRawSessionKey, out var currentHash))
             throw InvalidSession();
 
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);

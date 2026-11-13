@@ -161,7 +161,6 @@ public sealed class PostgreSqlAuthenticationSessionTests(PostgreSqlIdentityFixtu
             NormalizedUsername = IdentityLoginService.NormalizeIdentifier(username),
             Email = email,
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier(email),
-            PasswordHash = "test-only-placeholder",
             CreatedAtUtc = now
         });
         await db.SaveChangesAsync();
@@ -255,7 +254,6 @@ public sealed class PostgreSqlIdentitySessionManagementTests(PostgreSqlIdentityF
             NormalizedUsername = IdentityLoginService.NormalizeIdentifier(username),
             Email = email,
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier(email),
-            PasswordHash = "test-only-placeholder",
             CreatedAtUtc = DateTimeOffset.UtcNow
         });
         await db.SaveChangesAsync();
@@ -341,7 +339,6 @@ public sealed class PostgreSqlSecurityAuditTests(PostgreSqlIdentityFixture fixtu
             NormalizedUsername = IdentityLoginService.NormalizeIdentifier(username),
             Email = email,
             NormalizedEmail = IdentityLoginService.NormalizeIdentifier(email),
-            PasswordHash = "test-only-placeholder",
             CreatedAtUtc = now
         });
         await db.SaveChangesAsync();
