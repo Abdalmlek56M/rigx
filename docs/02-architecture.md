@@ -19,7 +19,7 @@ PostgreSQL 17       One database, one schema per module
 
 | Module | Owns | Status |
 |---|---|---|
-| Identity | users, sessions, roles/permissions, email OTP, profile, addresses | exists — password login to be removed, Google to be added |
+| Identity | users, sessions, roles/permissions, email code sign-in, Google sign-in (ID token), step-up codes, new-device alerts, profile, addresses | exists — done in 2.1; passwords removed |
 | Catalog | products, variants, category tree, brands, specs, media | exists — split into `Features/Products` (search, management, images) and `Features/Taxonomy` (categories/brands, their images) |
 | Inventory | units (`RX-xxxx`), warehouses, stock states, hidden/visible | exists — units currently live in `Retail/Features/Inventory`; move here |
 | Purchasing | suppliers/sellers, purchase drafts, receipts | exists |
@@ -118,3 +118,4 @@ Rules:
 | 12 | Endpoints stay in Host for now, even single-module ones; the admin dashboard (`AdminAnalyticsService`) stays in Host | every endpoint needs Identity's `RequirePermission`, so moving them would make each module reference Identity; the dashboard reads six modules (catalog, purchasing, identity, content, inventory, audit) and holds no money data, so it is composition, not Financials. Revisit when modules expose `Contracts` (Phase 2) |
 | 13 | Module projects are created when their first feature lands (no empty placeholder projects) | an empty project is dead code; creating one takes a minute |
 | 14 | Gap-audit decisions D1–D8 approved by the owner (13 Nov 2026), see `07-gap-audit.md` §6: RX code per used piece / per new lot; customer sees received→confirmed→preparing→shipped→delivered (+cancelled), "completed" is internal; money accounts (cash/InstaPay/wallet) with opening balances; partner "whole shop" basis = % of monthly net profit after expenses; editable lead-source and warranty-option lists; remove warehouses, supplier bank data, PC-builder templates, variants, video file hosting, in-app notifications (reviews stay); product Q&A is owner-written | needed to model Phase 2 data correctly |
+| 15 | Google uses the ID-token flow (client id only, no secret) | the frontend gets the ID token from Google's button; the server checks signature, issuer, audience and lifetime with `Identity:Google:ClientId` only, so no client secret is stored or rotated |

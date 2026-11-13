@@ -14,7 +14,7 @@ Order matters: we restructure before adding features, so new features land in cl
 ## Phase 1 — Backend restructure (behavior unchanged)
 1. **Common building blocks**
    - [x] `AppException` base + one global ProblemDetails mapping; all 14 module exception types derive from it
-   - [ ] Remove the now-redundant endpoint try/catch blocks (done per area as each module is restructured; Retail, Catalog, Content ✅)
+   - [ ] Remove the now-redundant endpoint try/catch blocks (done per area as each module is restructured; Retail, Catalog, Content, Identity ✅)
    - [ ] Soft delete + trash, audit interceptor (before/after), paging (built with the first feature that needs them: 2.10/2.11)
 2. [x] **Migration runner**: `--migrate` command; `DatabaseMigrator` is the single ordered context list (preview init reuses it; it previously skipped Retail and PcBuilder)
 3. [x] **Endpoints**: decided to keep all endpoints and the admin dashboard in Host for now (architecture decision 12); one shared `HttpContextUserExtensions` replaced 13 copied user-id/permission helpers.
@@ -24,7 +24,7 @@ Order matters: we restructure before adding features, so new features land in cl
 
 ## Phase 2 — Align with owner decisions (backend)
 0. [x] **Gap audit**: `docs/07-gap-audit.md` (13 Nov 2026). 7 structural gaps (S1–S7), per-screen gaps mapped to the steps below, extra backend parts to remove, owner decisions D1–D8. Proposed order of work: §7 of that file.
-1. **Auth**: remove password login/registration/reset; email OTP only + Google OIDC; step-up code for destructive admin actions; session list + "logout all" + new-device email.
+1. [x] **Auth**: remove password login/registration/reset; email OTP only + Google OIDC; step-up code for destructive admin actions; session list + "logout all" + new-device email. Done 13 Nov 2026 (commits 403b106, b553796, 992f3b5, 1becc17, 2d7a2dd, 57a0624; migrations M12–M15). Checkpoint: `docs/checkpoints/2.1-auth.md`.
 2. **Catalog/intake** (split 2.2a/b/c): public codes `RX-`/`BLD-`/`PO-`/`INV-`; storefront sells stock items (used = one page per piece with its own photos, new = lot with quantity); category spec schema (types, filter/compatibility flags, inherited) + category code + menu/builder flags; free-text model + alias suggestions; warranty per item; hidden items; box flag; internal note; min 3 photos to publish; context pricing (in-build / with board / alone); purchase intake (seller record, full-PC intake, trade-in payment, request → purchase).
 3. **Assemblies**: BLD code, usage + budget, description/"مناسبة لـ" + photos, warranty default + per-part override, copies count, sell mode (full / full-or-split), add a new part inline, remove → stock or another build (swap/remove already exist).
 4. **Sales**: guest checkout + structured address; statuses incl. Shipped; reservation timer + expiry policy; courier, waybill, public tracking link; blacklist; POS free price + discount limit, split build sale, split payment, InstaPay; source & usage questions; order emails (received, confirmed); satisfaction score; public "sold before" feed.
