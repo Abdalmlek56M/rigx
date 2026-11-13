@@ -13,8 +13,8 @@ Read first: `docs/01-business.md`, `docs/02-architecture.md`, `docs/04-engineeri
 
 ## Model routing & session flow
 - **Opus (main session):** planning, domain/business code, final review before every commit. Small edits stay inline — a subagent starts cold, so delegate only when the brief is shorter than doing the work.
-- **Sonnet subagent** (`model: sonnet`): writing unit/integration tests and other well-specified code tasks; brief = files, contracts, expected behaviour.
+- **Sonnet subagent** (`model: sonnet`): any clear or straightforward feature code, repetitive edits, and unit/integration tests — whenever Sonnet would produce the same result as Opus. Brief = a short implementation plan: files, contracts, rules, expected behaviour. Opus keeps complex architecture and the final review, and decides case by case when handing off is cheaper than doing it directly.
 - **Haiku subagent** (`model: haiku`): wide file searches, log summaries, docs/roadmap/checkpoint updates from a ready summary.
-- **Sequential writers:** never two agents editing files at once. Order: code (Opus) → tests (Sonnet) → docs (Haiku) → Opus review + tests → commit. Read-only agents may run in parallel.
+- **Sequential writers:** never two agents editing files at once. Order: code (Opus or Sonnet) → tests (Sonnet) → docs (Haiku) → Opus review + tests → commit. Read-only agents may run in parallel.
 - **Checkpoint:** keep `docs/checkpoints/<step>.md` (done / uncommitted / remaining) current at each commit.
 - **Context:** past ~150k tokens mid-step, update the checkpoint and ask the owner to run `/compact`. When a step is done, pushed and its checkpoint updated → stop and tell the owner to open a new session.
