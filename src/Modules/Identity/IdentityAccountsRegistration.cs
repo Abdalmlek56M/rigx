@@ -7,7 +7,7 @@ namespace HardwareStore.Modules.Identity;
 
 public static class IdentityAccountsRegistration
 {
-    /// <summary>Sign-in (email code), step-up, sessions and the Identity email outbox + provider.</summary>
+    /// <summary>Sign-in (email code, Google), step-up, sessions and the Identity email outbox + provider.</summary>
     public static IServiceCollection AddIdentityAccounts(
         this IServiceCollection services,
         IHostEnvironment environment,
@@ -22,6 +22,9 @@ public static class IdentityAccountsRegistration
         services.AddScoped<IdentityAccountProvisioner>();
         services.AddScoped<EmailCodeSignInService>();
         services.AddScoped<StepUpService>();
+        services.AddSingleton(GoogleSignInOptions.FromConfiguration(configuration));
+        services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
+        services.AddScoped<GoogleSignInService>();
 
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {

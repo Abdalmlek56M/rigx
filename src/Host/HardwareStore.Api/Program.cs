@@ -143,6 +143,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 }).AllowAnonymous();
 
 app.MapEmailCodeSignInEndpoints();
+app.MapGoogleSignInEndpoints();
 app.MapStepUpEndpoints();
 app.MapContactEndpoints();
 app.MapArticleVideoEndpoints();

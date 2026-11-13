@@ -212,3 +212,13 @@ public sealed class PersonCodeCounter
     public required string YearMonth { get; set; }
     public int LastValue { get; set; }
 }
+
+/// <summary>An outside sign-in (today only Google) linked to one account. One link per provider per account.</summary>
+public sealed class ExternalLogin
+{
+    public required string Provider { get; set; }
+    public required string Subject { get; set; }
+    public Guid UserAccountId { get; set; }
+    public required string Email { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+}

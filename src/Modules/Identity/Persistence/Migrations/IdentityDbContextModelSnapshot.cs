@@ -412,6 +412,41 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.ExternalLogin", b =>
+                {
+                    b.Property<string>("Provider")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("Subject")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("subject");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("email");
+
+                    b.Property<Guid>("UserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_account_id");
+
+                    b.HasKey("Provider", "Subject");
+
+                    b.HasIndex("UserAccountId", "Provider")
+                        .IsUnique()
+                        .HasDatabaseName("ux_external_logins_account_provider");
+
+                    b.ToTable("external_logins", (string)null);
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.IdentityEmailChangeRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1059,6 +1094,15 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserAccountId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.ExternalLogin", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Identity.Persistence.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

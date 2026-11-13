@@ -60,7 +60,7 @@ public sealed class IdentityPersistenceTests
         Assert.Equal(new[]
         {
             "account_restrictions", "auth_sessions", "authorization_state", "customer_addresses", "email_codes",
-            "identity_email_change_requests", "identity_email_outbox", "permissions",
+            "external_logins", "identity_email_change_requests", "identity_email_outbox", "permissions",
             "person_code_counters", "persons", "role_permissions", "roles",
             "user_accounts", "user_notifications", "user_roles"
         }, tables);
@@ -81,7 +81,7 @@ public sealed class IdentityPersistenceTests
         var emailCodeType = designModel.FindEntityType(typeof(EmailCode))!;
         Assert.Contains(emailCodeType.GetIndexes(), index => index.IsUnique &&
             index.GetFilter() == "used_at_utc IS NULL AND revoked_at_utc IS NULL");
-        var allowedCascades = new HashSet<string>(["AccountRestriction", "IdentityEmailChangeRequest", "UserNotification"], StringComparer.Ordinal);
+        var allowedCascades = new HashSet<string>(["AccountRestriction", "ExternalLogin", "IdentityEmailChangeRequest", "UserNotification"], StringComparer.Ordinal);
         Assert.All(designModel.GetEntityTypes().SelectMany(entity => entity.GetForeignKeys()), foreignKey =>
             Assert.Equal(allowedCascades.Contains(foreignKey.DeclaringEntityType.ClrType.Name)
                 ? DeleteBehavior.Cascade
@@ -135,7 +135,7 @@ public sealed class PostgreSqlIdentityPersistenceTests(PostgreSqlIdentityFixture
         {
             "persons", "user_accounts", "roles", "permissions", "user_roles",
             "role_permissions", "person_code_counters", "auth_sessions", "authorization_state",
-            "email_codes", "security_audit_events",
+            "email_codes", "external_logins", "security_audit_events",
             "customer_addresses", "account_restrictions", "user_notifications",
             "identity_email_outbox", "identity_email_change_requests"
         };

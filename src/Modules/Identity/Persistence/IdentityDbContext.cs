@@ -21,6 +21,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
     public DbSet<AuthorizationState> AuthorizationStates => Set<AuthorizationState>();
     public DbSet<EmailCode> EmailCodes => Set<EmailCode>();
+    public DbSet<ExternalLogin> ExternalLogins => Set<ExternalLogin>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -192,6 +193,19 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        model.Entity<ExternalLogin>(e =>
+        {
+            e.ToTable("external_logins");
+            e.HasKey(x => new { x.Provider, x.Subject });
+            e.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(16);
+            e.Property(x => x.Subject).HasColumnName("subject").HasMaxLength(255);
+            e.Property(x => x.UserAccountId).HasColumnName("user_account_id");
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(255).IsRequired();
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+            e.HasIndex(x => new { x.UserAccountId, x.Provider }).IsUnique()
+                .HasDatabaseName("ux_external_logins_account_provider");
+            e.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserAccountId).OnDelete(DeleteBehavior.Cascade);
+        });
         model.Entity<EmailCode>(e =>
         {
             e.ToTable("email_codes", table =>
