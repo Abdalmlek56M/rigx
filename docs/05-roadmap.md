@@ -9,7 +9,7 @@ Order matters: we restructure before adding features, so new features land in cl
 - [x] New docs (`docs/01–06`), old reports removed
 - [x] Backend builds (0 errors)
 - [x] Baseline: full backend suite **194/194 passed** (3 min, real PostgreSQL) — 13 Nov 2026
-- [ ] Private GitHub repository + push (owner creates the repo)
+- [x] Private GitHub repository (`Abdalmlek56M/rigx`) + push — 13 Nov 2026
 
 ## Phase 1 — Backend restructure (behavior unchanged)
 1. **Common building blocks**
