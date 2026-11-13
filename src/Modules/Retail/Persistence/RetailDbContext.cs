@@ -66,7 +66,11 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
         });
         model.Entity<Assembly>(e =>
         {
-            e.ToTable("assemblies", t => t.HasCheckConstraint("ck_assemblies_price", "sale_price >= 0"));
+            e.ToTable("assemblies", t =>
+            {
+                t.HasCheckConstraint("ck_assemblies_price", "sale_price >= 0");
+                t.HasCheckConstraint("ck_assemblies_copies", "copies >= 1");
+            });
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             e.Property(x => x.Code).HasColumnName("code").HasMaxLength(16).IsRequired();
@@ -76,16 +80,32 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.PublicTitleEn).HasColumnName("public_title_en").HasMaxLength(200);
             e.Property(x => x.SalePrice).HasColumnName("sale_price").HasPrecision(18, 2);
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
+            e.Property(x => x.Usage).HasColumnName("usage").HasMaxLength(16);
+            e.Property(x => x.SellMode).HasColumnName("sell_mode").HasMaxLength(16).IsRequired().HasDefaultValue(AssemblySellMode.Full);
+            e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(64);
+            e.Property(x => x.WarrantyMonths).HasColumnName("warranty_months");
+            e.Property(x => x.Copies).HasColumnName("copies").HasDefaultValue(1);
+            e.Property(x => x.SuitableForAr).HasColumnName("suitable_for_ar").HasMaxLength(AssemblyRules.MaxSuitableForLength);
+            e.Property(x => x.SuitableForEn).HasColumnName("suitable_for_en").HasMaxLength(AssemblyRules.MaxSuitableForLength);
+            StockItemConfiguration.Document(e.Property(x => x.Photos).HasColumnName("photos"), "'[]'::jsonb");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+            e.HasIndex(x => new { x.Status, x.Usage }).HasDatabaseName("ix_assemblies_listing");
             e.HasMany(x => x.Units).WithOne(x => x.Assembly).HasForeignKey(x => x.AssemblyId).OnDelete(DeleteBehavior.Cascade);
         });
         model.Entity<AssemblyUnit>(e =>
         {
-            e.ToTable("assembly_units", t => t.HasCheckConstraint("ck_assembly_units_allocation", "allocation_percent BETWEEN 0 AND 100"));
+            e.ToTable("assembly_units", t =>
+            {
+                t.HasCheckConstraint("ck_assembly_units_allocation", "allocation_percent BETWEEN 0 AND 100");
+                t.HasCheckConstraint("ck_assembly_units_part_price", "part_price >= 0");
+            });
             e.HasKey(x => new { x.AssemblyId, x.UnitId });
             e.Property(x => x.AllocationPercent).HasColumnName("allocation_percent").HasPrecision(5, 2);
+            e.Property(x => x.PartPrice).HasColumnName("part_price").HasPrecision(18, 2);
+            e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(64);
+            e.Property(x => x.WarrantyMonths).HasColumnName("warranty_months");
             e.HasOne(x => x.Unit).WithMany().HasForeignKey(x => x.UnitId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => x.UnitId).IsUnique().HasDatabaseName("ux_assembly_units_unit");
         });

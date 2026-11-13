@@ -7,6 +7,7 @@ namespace HardwareStore.Api.Tests;
 public sealed record RetailTestServices(
     InventoryUnitService Units,
     AssemblyService Assemblies,
+    AssemblyPartService Parts,
     OrderService Orders,
     OrderStatusService OrderStatus,
     OrderPaymentService Payments,
@@ -22,7 +23,7 @@ public sealed record RetailTestServices(
     public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time) => new(
         new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
         new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-        new(factory), new(factory, time), new(factory));
+        new(factory, time), new(factory), new(factory, time), new(factory));
 }
 
 /// <summary>Receipt helpers for tests: build a request without a source and read the received units directly.</summary>

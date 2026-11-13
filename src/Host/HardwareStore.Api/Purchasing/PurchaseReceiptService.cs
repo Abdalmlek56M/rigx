@@ -31,7 +31,7 @@ public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryU
         if (purchase.KeepAsBuild)
         {
             var unitIds = receipt.Items.SelectMany(item => item.Units).Select(unit => unit.Id).ToList();
-            var build = await assemblies.CreateAssemblyAsync(new AssemblyCreateRequest(purchase.BuildName ?? $"PC {purchase.Code}", unitIds), cancellationToken);
+            var build = await assemblies.CreateAssemblyAsync(new AssemblyCreateRequest(purchase.BuildName ?? $"PC {purchase.Code}", unitIds), cancellationToken: cancellationToken);
             assemblyId = build.Id;
         }
         return new PurchaseReceived(await purchases.MarkReceivedAsync(purchase.Id, assemblyId, cancellationToken), receipt);

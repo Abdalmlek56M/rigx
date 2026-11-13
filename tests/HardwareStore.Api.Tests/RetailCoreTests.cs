@@ -779,21 +779,25 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var second = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Second", [psu]));
         Assert.Equal(10m, first.Units.Single(unit => unit.UnitId == fan).AllocationPercent);
 
-        var stale = await Assert.ThrowsAsync<RetailException>(() => retail.Assemblies.RemoveUnitAsync(first.Id, fan, first.RowVersion - 1));
+        var stale = await Assert.ThrowsAsync<RetailException>(() => retail.Parts.RemovePartAsync(first.Id, fan, new AssemblyRemovePartRequest(first.RowVersion - 1)));
         Assert.Equal(409, stale.StatusCode);
-        var removed = await retail.Assemblies.RemoveUnitAsync(first.Id, fan, first.RowVersion);
+        var removed = Assert.Single(await retail.Parts.RemovePartAsync(first.Id, fan, new AssemblyRemovePartRequest(first.RowVersion)));
         Assert.Equal(2, removed.Units.Count);
         Assert.Equal(100m, removed.Units.Sum(unit => unit.AllocationPercent));
         Assert.Equal(66.67m, removed.Units.Single(unit => unit.UnitId == cpu).AllocationPercent);
+        Assert.Equal(UnitStatus.Available, (await retail.Units.ListUnitsAsync(null, null)).Single(unit => unit.Id == fan).Status);
 
-        var sameAssembly = await Assert.ThrowsAsync<RetailException>(() => retail.Assemblies.SwapUnitAsync(
-            new SwapRequest(first.Id, first.Id, gpu, removed.RowVersion, removed.RowVersion)));
+        var sameAssembly = await Assert.ThrowsAsync<RetailException>(() => retail.Parts.RemovePartAsync(first.Id, gpu,
+            new AssemblyRemovePartRequest(removed.RowVersion, first.Id, removed.RowVersion)));
         Assert.Equal(400, sameAssembly.StatusCode);
-        var swapped = await retail.Assemblies.SwapUnitAsync(new SwapRequest(first.Id, second.Id, gpu, removed.RowVersion, second.RowVersion));
-        Assert.Equal(100m, Assert.Single(swapped[0].Units).AllocationPercent);
-        Assert.Equal(33.33m, swapped[1].Units.Single(unit => unit.UnitId == gpu).AllocationPercent);
+        var moved = await retail.Parts.RemovePartAsync(first.Id, gpu, new AssemblyRemovePartRequest(removed.RowVersion, second.Id, second.RowVersion));
+        Assert.Equal(100m, Assert.Single(moved[0].Units).AllocationPercent);
+        Assert.Equal(2, moved[1].Units.Count);
+        Assert.Equal(100m, moved[1].Units.Sum(unit => unit.AllocationPercent));
+        Assert.Equal(75m, moved[1].Units.Single(unit => unit.UnitId == gpu).AllocationPercent);
+        Assert.Equal(25m, moved[1].Units.Single(unit => unit.UnitId == psu).AllocationPercent);
 
-        var disassembled = await retail.Assemblies.DisassembleAsync(second.Id, swapped[1].RowVersion);
+        var disassembled = await retail.Assemblies.DisassembleAsync(second.Id, moved[1].RowVersion);
         Assert.Equal(AssemblyStatus.Disassembled, disassembled.Status);
         Assert.Empty(disassembled.Units);
 

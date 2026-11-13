@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HardwareStore.Modules.Retail;
 
-/// <summary>Table mapping for <see cref="StockItem"/>; specs and photos are stored as jsonb documents.</summary>
+/// <summary>Table mapping for <see cref="StockItem"/>; specs and photos are stored as jsonb documents (<see cref="Document{T}"/>).</summary>
 internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -45,7 +45,8 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         e.HasIndex(x => new { x.IsHidden, x.Condition, x.CategoryId }).HasDatabaseName("ix_stock_items_listing");
     }
 
-    private static void Document<T>(PropertyBuilder<T> property, string defaultSql) where T : class, new()
+    /// <summary>Maps a property to a jsonb document (also used for build photos).</summary>
+    internal static void Document<T>(PropertyBuilder<T> property, string defaultSql) where T : class, new()
     {
         property.HasColumnType("jsonb").IsRequired().HasDefaultValueSql(defaultSql)
             .HasConversion(

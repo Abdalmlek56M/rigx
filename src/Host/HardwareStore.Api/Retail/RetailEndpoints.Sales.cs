@@ -26,7 +26,7 @@ public static partial class RetailEndpoints
         if (!context.TryGetUserId(out _)) return Results.Unauthorized();
         var lines = new List<OrderLine>();
         await using var catalog = await catalogFactory.CreateDbContextAsync(ct);
-        var publishedAssemblies = await assemblies.ListPublishedAssembliesAsync(ct);
+        var publishedAssemblies = await assemblies.ListPublishedAssembliesAsync(null, ct);
         foreach (var line in request.Items ?? [])
         {
             if (line.AssemblyId is not null)
@@ -125,7 +125,7 @@ public static partial class RetailEndpoints
         {
             if (line.AssemblyId is not null)
             {
-                var published = await assemblies.ListPublishedAssembliesAsync(ct);
+                var published = await assemblies.ListPublishedAssembliesAsync(null, ct);
                 var assembly = published.SingleOrDefault(item => item.Id == line.AssemblyId)
                     ?? throw new RetailException(409, "The selected build is no longer available.");
                 string? buildThumbnail = null;

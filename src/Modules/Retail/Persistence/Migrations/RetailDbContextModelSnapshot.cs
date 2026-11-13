@@ -34,6 +34,12 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("code");
 
+                    b.Property<int>("Copies")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("copies");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
@@ -43,6 +49,13 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
+
+                    b.Property<string>("Photos")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("photos")
+                        .HasDefaultValueSql("'[]'::jsonb");
 
                     b.Property<string>("PublicTitleAr")
                         .HasMaxLength(200)
@@ -66,15 +79,47 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("sale_price");
 
+                    b.Property<string>("SellMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("Full")
+                        .HasColumnName("sell_mode");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
+                    b.Property<string>("SuitableForAr")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("suitable_for_ar");
+
+                    b.Property<string>("SuitableForEn")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("suitable_for_en");
+
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at_utc");
+
+                    b.Property<string>("Usage")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("usage");
+
+                    b.Property<string>("WarrantyLabel")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("warranty_label");
+
+                    b.Property<int?>("WarrantyMonths")
+                        .HasColumnType("integer")
+                        .HasColumnName("warranty_months");
 
                     b.HasKey("Id");
 
@@ -82,8 +127,13 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_assemblies_code");
 
+                    b.HasIndex("Status", "Usage")
+                        .HasDatabaseName("ix_assemblies_listing");
+
                     b.ToTable("assemblies", null, t =>
                         {
+                            t.HasCheckConstraint("ck_assemblies_copies", "copies >= 1");
+
                             t.HasCheckConstraint("ck_assemblies_price", "sale_price >= 0");
                         });
                 });
@@ -101,6 +151,20 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(5,2)")
                         .HasColumnName("allocation_percent");
 
+                    b.Property<decimal>("PartPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("part_price");
+
+                    b.Property<string>("WarrantyLabel")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("warranty_label");
+
+                    b.Property<int?>("WarrantyMonths")
+                        .HasColumnType("integer")
+                        .HasColumnName("warranty_months");
+
                     b.HasKey("AssemblyId", "UnitId");
 
                     b.HasIndex("UnitId")
@@ -110,6 +174,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.ToTable("assembly_units", null, t =>
                         {
                             t.HasCheckConstraint("ck_assembly_units_allocation", "allocation_percent BETWEEN 0 AND 100");
+
+                            t.HasCheckConstraint("ck_assembly_units_part_price", "part_price >= 0");
                         });
                 });
 
