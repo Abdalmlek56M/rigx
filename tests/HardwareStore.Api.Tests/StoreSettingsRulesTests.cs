@@ -174,4 +174,40 @@ public sealed class StoreSettingsRulesTests
         Assert.Null(normalized.Options[0].Months);
         Assert.Equal(12, normalized.Options[1].Months);
     }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(720)]
+    public void Sales_reservation_hours_accept_the_range_ends(int hours) =>
+        Assert.Equal(hours, new SalesSettings { ReservationHours = hours }.Normalize().ReservationHours);
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(721)]
+    public void Sales_reservation_hours_outside_the_range_are_rejected(int hours) =>
+        AssertBadRequest(() => new SalesSettings { ReservationHours = hours }.Normalize());
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(100)]
+    [InlineData(12.5)]
+    public void Pos_discount_limit_accepts_zero_to_one_hundred_percent(double percent) =>
+        Assert.Equal((decimal)percent, new SalesSettings { PosMaxDiscountPercent = (decimal)percent }.Normalize().PosMaxDiscountPercent);
+
+    [Fact]
+    public void Pos_discount_limit_outside_zero_to_one_hundred_or_with_extra_decimals_is_rejected()
+    {
+        AssertBadRequest(() => new SalesSettings { PosMaxDiscountPercent = -1m }.Normalize());
+        AssertBadRequest(() => new SalesSettings { PosMaxDiscountPercent = 100.01m }.Normalize());
+        AssertBadRequest(() => new SalesSettings { PosMaxDiscountPercent = 10.005m }.Normalize());
+    }
+
+    [Fact]
+    public void Sales_defaults_match_the_business_rules()
+    {
+        var sales = new SalesSettings().Normalize();
+        Assert.Equal((24, false, 10m), (sales.ReservationHours, sales.ReservationAutoRelease, sales.PosMaxDiscountPercent));
+        Assert.True(sales.SoldFeedEnabled);
+        Assert.False(sales.SoldFeedShowGovernorate);
+    }
 }

@@ -13,6 +13,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderItemComponent> OrderItemComponents => Set<OrderItemComponent>();
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
+    public DbSet<OrderPayment> OrderPayments => Set<OrderPayment>();
+    public DbSet<BlacklistEntry> Blacklist => Set<BlacklistEntry>();
     public DbSet<PartnerAgreement> PartnerAgreements => Set<PartnerAgreement>();
     public DbSet<PartnerEarning> PartnerEarnings => Set<PartnerEarning>();
     public DbSet<PartnerSettlement> PartnerSettlements => Set<PartnerSettlement>();
@@ -117,11 +119,23 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(32).IsRequired();
             e.HasIndex(x => x.Reference).IsUnique().HasDatabaseName("ux_store_orders_reference");
             e.Property(x => x.UserAccountId).HasColumnName("user_account_id");
+            e.Property(x => x.TrackingToken).HasColumnName("tracking_token").HasMaxLength(32).IsRequired();
+            e.HasIndex(x => x.TrackingToken).IsUnique().HasDatabaseName("ux_store_orders_tracking_token");
+            e.Property(x => x.Channel).HasColumnName("channel").HasMaxLength(16).IsRequired();
             e.Property(x => x.CustomerName).HasColumnName("customer_name").HasMaxLength(200).IsRequired();
             e.Property(x => x.PhoneNumber).HasColumnName("phone_number").HasMaxLength(32).IsRequired();
-            e.Property(x => x.AddressText).HasColumnName("address_text").HasMaxLength(1000);
+            e.HasIndex(x => x.PhoneNumber).HasDatabaseName("ix_store_orders_phone");
+            e.Property(x => x.PhoneHasWhatsApp).HasColumnName("phone_has_whatsapp");
+            e.Property(x => x.CustomerEmail).HasColumnName("customer_email").HasMaxLength(256);
+            e.Property(x => x.Governorate).HasColumnName("governorate").HasMaxLength(8);
+            e.Property(x => x.Area).HasColumnName("area").HasMaxLength(120);
+            e.Property(x => x.Street).HasColumnName("street").HasMaxLength(200);
+            e.Property(x => x.Building).HasColumnName("building").HasMaxLength(120);
+            e.Property(x => x.Landmark).HasColumnName("landmark").HasMaxLength(200);
             e.Property(x => x.FulfillmentMethod).HasColumnName("fulfillment_method").HasMaxLength(32).IsRequired();
-            e.Property(x => x.LeadSource).HasColumnName("lead_source").HasMaxLength(16).IsRequired();
+            e.Property(x => x.LeadSource).HasColumnName("lead_source").HasMaxLength(60);
+            e.Property(x => x.Usage).HasColumnName("usage").HasMaxLength(16);
+            e.Property(x => x.UsageNote).HasColumnName("usage_note").HasMaxLength(200);
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
             e.Property(x => x.PaymentStatus).HasColumnName("payment_status").HasMaxLength(24).IsRequired();
             e.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(32).IsRequired();
@@ -132,7 +146,20 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
             e.Property(x => x.DeliveryFee).HasColumnName("delivery_fee").HasPrecision(18, 2);
             e.Property(x => x.Total).HasColumnName("total").HasPrecision(18, 2);
+            e.Property(x => x.UpfrontAmount).HasColumnName("upfront_amount").HasPrecision(18, 2);
+            e.Property(x => x.PaidAmount).HasColumnName("paid_amount").HasPrecision(18, 2);
             e.Property(x => x.RefundedAmount).HasColumnName("refunded_amount").HasPrecision(18, 2);
+            e.Property(x => x.IsBlacklisted).HasColumnName("is_blacklisted");
+            e.Property(x => x.ReservedUntilUtc).HasColumnName("reserved_until_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.ReservationAutoRelease).HasColumnName("reservation_auto_release");
+            e.Property(x => x.ReservationExpiredAtUtc).HasColumnName("reservation_expired_at_utc").HasColumnType("timestamp with time zone");
+            e.HasIndex(x => x.ReservedUntilUtc).HasDatabaseName("ix_store_orders_reserved_until")
+                .HasFilter("reserved_until_utc IS NOT NULL AND reservation_expired_at_utc IS NULL");
+            e.Property(x => x.CourierName).HasColumnName("courier_name").HasMaxLength(120);
+            e.Property(x => x.WaybillNumber).HasColumnName("waybill_number").HasMaxLength(80);
+            e.Property(x => x.SatisfactionScore).HasColumnName("satisfaction_score");
+            e.Property(x => x.SatisfactionComment).HasColumnName("satisfaction_comment").HasMaxLength(500);
+            e.Property(x => x.RatedAtUtc).HasColumnName("rated_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.TermsAcceptedAtUtc).HasColumnName("terms_accepted_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.TermsPolicyVersion).HasColumnName("terms_policy_version").HasMaxLength(64);
             e.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(2000);
@@ -141,6 +168,36 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
             e.HasIndex(x => new { x.Status, x.CreatedAtUtc }).HasDatabaseName("ix_store_orders_status_created");
+            e.HasMany(x => x.Payments).WithOne().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+        });
+        model.Entity<OrderPayment>(e =>
+        {
+            e.ToTable("order_payments", t => t.HasCheckConstraint("ck_order_payments_amount", "amount > 0"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.OrderId).HasColumnName("order_id");
+            e.Property(x => x.Method).HasColumnName("method").HasMaxLength(32).IsRequired();
+            e.Property(x => x.Amount).HasColumnName("amount").HasPrecision(18, 2);
+            e.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
+            e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+        });
+        model.Entity<BlacklistEntry>(e =>
+        {
+            e.ToTable("blacklist_entries");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(200);
+            e.Property(x => x.PhoneNumber).HasColumnName("phone_number").HasMaxLength(32);
+            e.HasIndex(x => x.PhoneNumber).HasDatabaseName("ix_blacklist_entries_phone");
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(256);
+            e.HasIndex(x => x.Email).HasDatabaseName("ix_blacklist_entries_email");
+            e.Property(x => x.AddressKey).HasColumnName("address_key").HasMaxLength(700);
+            e.HasIndex(x => x.AddressKey).HasDatabaseName("ix_blacklist_entries_address");
+            e.Property(x => x.AddressText).HasColumnName("address_text").HasMaxLength(700);
+            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(500).IsRequired();
+            e.Property(x => x.CreatedByUserAccountId).HasColumnName("created_by_user_account_id");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
         });
         model.Entity<OrderItem>(e =>
         {
@@ -149,12 +206,11 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             e.Property(x => x.OrderId).HasColumnName("order_id");
             e.Property(x => x.UnitId).HasColumnName("unit_id");
-            e.Property(x => x.ProductId).HasColumnName("product_id");
             e.Property(x => x.ThumbnailStorageKeySnapshot).HasColumnName("thumbnail_storage_key_snapshot").HasMaxLength(512);
             e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
             e.Property(x => x.StockItemId).HasColumnName("stock_item_id");
             e.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
-            e.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(128);
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(128);
             e.Property(x => x.Quantity).HasColumnName("quantity");
             e.Property(x => x.UnitPrice).HasColumnName("unit_price").HasPrecision(18, 2);
             e.Property(x => x.LineTotal).HasColumnName("line_total").HasPrecision(18, 2);

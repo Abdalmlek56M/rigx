@@ -22,6 +22,7 @@ public static class StorefrontEndpoints
         MapSection<LanguageSettings>(settings);
         MapSection<InvoiceSettings>(settings);
         MapSection<LeadSourceSettings>(settings);
+        MapSection<SalesSettings>(settings);
         MapSection<WarrantyOptionSettings>(settings);
 
         var wishlist = endpoints.MapGroup("/api/v1/wishlist").RequireAuthorization();

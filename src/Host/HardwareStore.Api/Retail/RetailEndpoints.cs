@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
 /// Retail HTTP API. Routes and permissions are listed here; handlers live in one partial file per area
@@ -36,11 +37,19 @@ public static partial class RetailEndpoints
         admin.MapDelete("/assemblies/{id:guid}/photos", RemoveAssemblyPhotoAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapGet("/orders", ListOrdersAsync).RequirePermission("Sales.ViewOrders");
         admin.MapGet("/orders/{id:guid}", GetOrderDetailAsync).RequirePermission("Sales.ViewOrders");
-        admin.MapPost("/orders", CreateManualOrderAsync).RequirePermission("Sales.CreatePOS");
+        admin.MapPost("/pos/preview", PreviewPosSaleAsync).RequirePermission("Sales.CreatePOS");
+        admin.MapPost("/pos/sales", CreatePosSaleAsync).RequirePermission("Sales.CreatePOS");
+        admin.MapGet("/pos/customers", FindPosCustomerAsync).RequirePermission("Sales.CreatePOS");
         admin.MapPost("/orders/{id:guid}/status", UpdateStatusAsync).RequirePermission("Sales.ApproveOrder");
         admin.MapPost("/orders/{id:guid}/complete", CompleteOrderAsync).RequirePermission("Sales.CompleteOrder");
         admin.MapPost("/orders/{id:guid}/payment", UpdatePaymentAsync).RequirePermission("Finance.VerifyPayment");
         admin.MapPost("/orders/{id:guid}/payment/waive", WaivePaymentAsync).RequirePermission("Finance.VerifyPayment");
+        admin.MapPost("/orders/{id:guid}/payments", AddPaymentAsync).RequirePermission("Finance.VerifyPayment");
+        admin.MapPut("/orders/{id:guid}/shipping", SetShippingAsync).RequirePermission("Sales.ApproveOrder");
+        admin.MapPut("/orders/{id:guid}/reservation", SetReservationAsync).RequirePermission("Sales.ApproveOrder");
+        admin.MapGet("/blacklist", ListBlacklistAsync).RequirePermission("Sales.ViewCustomerContact");
+        admin.MapPost("/blacklist", AddBlacklistAsync).RequirePermission("Sales.ApproveOrder");
+        admin.MapDelete("/blacklist/{id:guid}", RemoveBlacklistAsync).RequirePermission("Sales.ApproveOrder");
         admin.MapGet("/returns", ListReturnsAsync).RequirePermission("Sales.ViewOrders");
         admin.MapPost("/returns", CreateReturnAsync).RequirePermission("Sales.ProcessReturn");
         admin.MapPost("/returns/{id:guid}/inspect", InspectReturnAsync).RequirePermission("Sales.ProcessReturn");
@@ -63,7 +72,10 @@ public static partial class RetailEndpoints
         endpoints.MapGet("/api/v1/store/items", ListStoreItemsAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/store/items/{code}", GetStoreItemAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/store/assemblies", ListPublishedAssembliesAsync).AllowAnonymous();
-        endpoints.MapPost("/api/v1/orders", CreateCustomerOrderAsync).RequireAuthorization();
+        endpoints.MapGet("/api/v1/store/sold", ListSoldFeedAsync).AllowAnonymous();
+        endpoints.MapPost("/api/v1/orders", CreateCustomerOrderAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.Checkout);
+        endpoints.MapGet("/api/v1/track/{token}", GetTrackingAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
+        endpoints.MapPost("/api/v1/track/{token}/rating", RateOrderAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
         endpoints.MapGet("/api/v1/orders/mine", ListMyOrdersAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/orders/mine/{id:guid}", GetMyOrderAsync).RequireAuthorization();
         return endpoints;

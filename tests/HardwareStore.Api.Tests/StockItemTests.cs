@@ -151,21 +151,18 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
         var item = Assert.Single((await retail.Units.ReceiveAsync(Receive(NewLine("Case Fan", 3)), Actor)).Items);
 
-        async Task<OrderView> PlaceAsync(int quantity) => await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(null, null, "Case Fan", null, quantity, 100m, StockItemId: item.Id)], LeadSource.Website), null);
+        Task<OrderView> PlaceAsync(int quantity) => retail.PosAsync(RetailSales.Sale([RetailSales.StockLine(item.Id, quantity)]));
 
         var first = await PlaceAsync(2);
         Assert.Equal(item.Id, Assert.Single(first.Items).StockItemId);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(first.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, first.RowVersion), Actor);
+        var confirmed = await retail.StatusAsync(first, OrderStatus.Confirmed);
         Assert.Equal(2, Assert.Single(confirmed.Items).Components.Count);
         Assert.Equal(1, (await retail.StockItems.GetAsync(item.Id, true, true)).AvailableCount);
 
-        var second = await PlaceAsync(2);
-        var error = await Assert.ThrowsAsync<RetailException>(() =>
-            retail.OrderStatus.UpdateStatusAsync(second.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, second.RowVersion), Actor));
-        Assert.Equal(409, error.StatusCode);
-        Assert.Equal(1, (await retail.StockItems.GetAsync(item.Id, true, true)).AvailableCount);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => PlaceAsync(2)));
+        var second = await PlaceAsync(1);
+        Assert.Equal(OrderStatus.Confirmed, (await retail.StatusAsync(second, OrderStatus.Confirmed)).Status);
+        Assert.Equal(0, (await retail.StockItems.GetAsync(item.Id, true, true)).AvailableCount);
     }
 
     [Fact]

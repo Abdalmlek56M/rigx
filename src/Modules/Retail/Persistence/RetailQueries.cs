@@ -18,9 +18,10 @@ internal static class RetailQueries
     public static IQueryable<Assembly> WithUnits(this IQueryable<Assembly> query) =>
         query.Include(a => a.Units).ThenInclude(link => link.Unit).ThenInclude(unit => unit.StockItem);
 
-    /// <summary>Loads orders with items, their stock components and the event history.</summary>
+    /// <summary>Loads orders with items, their stock components, payments and the event history.</summary>
     public static IQueryable<StoreOrder> WithDetails(this IQueryable<StoreOrder> query) =>
-        query.Include(order => order.Items).ThenInclude(item => item.Components).Include(order => order.Events);
+        query.Include(order => order.Items).ThenInclude(item => item.Components).Include(order => order.Events)
+            .Include(order => order.Payments).AsSplitQuery();
 
     /// <summary>Row-locks an order for the rest of the current transaction.</summary>
     public static Task LockOrderAsync(this RetailDbContext db, Guid id, CancellationToken cancellationToken) =>

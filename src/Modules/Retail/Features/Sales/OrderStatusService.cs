@@ -3,14 +3,15 @@ using Microsoft.EntityFrameworkCore;
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>
-/// Order status workflow. Confirm claims stock, cancel releases it, complete posts partner earnings.
+/// Order status workflow. Confirm claims stock and starts the reservation, cancel releases it, complete posts partner earnings.
 /// </summary>
 public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    public async Task<OrderView> UpdateStatusAsync(Guid id, OrderStatusRequest request, Guid actorId, CancellationToken cancellationToken = default)
+    public async Task<OrderView> UpdateStatusAsync(Guid id, OrderStatusRequest request, Guid actorId, ReservationPolicy reservation,
+        CancellationToken cancellationToken = default)
     {
         var next = request.Status?.Trim();
-        if (next is not (OrderStatus.Confirmed or OrderStatus.Preparing or OrderStatus.Ready or OrderStatus.Delivered or OrderStatus.Cancelled))
+        if (next is not (OrderStatus.Confirmed or OrderStatus.Preparing or OrderStatus.Shipped or OrderStatus.Delivered or OrderStatus.Cancelled))
             throw new RetailException(400, next == OrderStatus.Completed
                 ? "Completion requires the dedicated completion action and permission."
                 : "Unsupported order status.");
@@ -24,28 +25,22 @@ public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contex
             if (order.RowVersion != request.RowVersion) throw new RetailException(409, "The order was changed by another user.");
             if (order.Status == next) return OrderMapping.ToView(order);
             if (order.Status is OrderStatus.Cancelled or OrderStatus.Completed) throw new RetailException(409, "A closed order cannot change status.");
-            var allowed = order.Status switch
-            {
-                OrderStatus.New => next is OrderStatus.Confirmed or OrderStatus.Cancelled,
-                OrderStatus.Confirmed => next is OrderStatus.Preparing or OrderStatus.Cancelled,
-                OrderStatus.Preparing => next is OrderStatus.Ready or OrderStatus.Cancelled,
-                OrderStatus.Ready => next is OrderStatus.Delivered or OrderStatus.Cancelled,
-                OrderStatus.Delivered => next is OrderStatus.Cancelled,
-                _ => false
-            };
-            if (!allowed) throw new RetailException(409, $"The order cannot move from {order.Status} to {next}.");
-
+            if (!OrderRules.CanMove(order, next)) throw new RetailException(409, $"The order cannot move from {order.Status} to {next}.");
+            var now = timeProvider.GetUtcNow().ToUniversalTime();
             if (next == OrderStatus.Confirmed)
             {
+                OrderRules.EnsureCanConfirm(order);
                 await OrderStockAllocator.ClaimAsync(db, order, cancellationToken);
+                OrderRules.ValidateReservationHours(reservation.Hours);
+                order.ReservedUntilUtc = now.AddHours(reservation.Hours);
+                order.ReservationAutoRelease = reservation.AutoRelease;
             }
-            if (next == OrderStatus.Cancelled && order.Status is OrderStatus.Confirmed or OrderStatus.Preparing or OrderStatus.Ready or OrderStatus.Delivered)
-            {
+            if (next == OrderStatus.Cancelled && order.Status != OrderStatus.New)
                 await OrderStockAllocator.ReleaseAsync(db, order, cancellationToken);
-            }
             order.Status = next;
-            order.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime(); order.RowVersion++;
-            order.Events.Add(new OrderEvent { Id = Guid.CreateVersion7(), EventType = $"Status:{next}", Notes = request.Notes?.Trim(), ActorUserAccountId = actorId, CreatedAtUtc = order.UpdatedAtUtc });
+            if (!OrderRules.HoldsReservation(next)) order.ReservedUntilUtc = null;
+            order.UpdatedAtUtc = now; order.RowVersion++;
+            order.Events.Add(OrderMapping.Event($"Status:{next}", OrderRules.Optional(request.Notes, 2000, "Notes"), actorId, now));
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return OrderMapping.ToView(order);
@@ -74,7 +69,7 @@ public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contex
             await PartnerEarningsPosting.PostForOrderAsync(db, order, timeProvider, cancellationToken);
             order.Status = OrderStatus.Completed;
             order.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime(); order.RowVersion++;
-            order.Events.Add(new OrderEvent { Id = Guid.CreateVersion7(), EventType = "Status:Completed", Notes = request.Notes?.Trim(), ActorUserAccountId = actorId, CreatedAtUtc = order.UpdatedAtUtc });
+            order.Events.Add(OrderMapping.Event("Status:Completed", request.Notes?.Trim(), actorId, order.UpdatedAtUtc));
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return OrderMapping.ToView(order);

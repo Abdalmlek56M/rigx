@@ -14,6 +14,7 @@ public sealed record StoreSettingsAdminView(
     InvoiceSettings Invoice,
     LeadSourceSettings LeadSources,
     WarrantyOptionSettings WarrantyOptions,
+    SalesSettings Sales,
     long RowVersion);
 
 /// <summary>What the storefront needs: only links shown on the site; no watermark, invoice or warranty-list settings.</summary>

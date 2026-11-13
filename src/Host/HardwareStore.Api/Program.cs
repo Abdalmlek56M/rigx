@@ -47,6 +47,8 @@ builder.Services.AddInventoryModule(builder.Configuration);
 builder.Services.AddStorefrontModule(builder.Configuration);
 builder.Services.AddPcBuilderModule(builder.Configuration);
 builder.Services.AddRetailModule(builder.Configuration);
+builder.Services.AddSingleton(OrderLinks.FromConfiguration(builder.Configuration));
+builder.Services.AddHostedService<ReservationExpiryJob>();
 builder.Services.AddScoped<HardwareStore.Modules.Catalog.IMediaReferenceGuard, RetailMediaReferenceGuard>();
 builder.Services.AddSecurityAuditPersistence(builder.Configuration);
 var previewEnabled = builder.Environment.IsDevelopment() &&

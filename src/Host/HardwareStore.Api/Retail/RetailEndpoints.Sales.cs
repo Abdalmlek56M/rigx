@@ -1,8 +1,7 @@
-using HardwareStore.Modules.Catalog;
+using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 public static partial class RetailEndpoints
 {
@@ -18,42 +17,96 @@ public static partial class RetailEndpoints
         return Results.Ok(await orders.GetAdminOrderDetailAsync(id, context.HasPermission("Inventory.ViewSerials"), ct));
     }
 
-    /// <summary>POS/manual order: prices come from the published catalog or build (Catalog + Retail, so it stays in Host).</summary>
-    private static async Task<IResult> CreateManualOrderAsync(
-        OrderCreateRequest request, HttpContext context, OrderService orders, AssemblyService assemblies,
-        IDbContextFactory<CatalogDbContext> catalogFactory, CancellationToken ct)
-    {
-        if (!context.TryGetUserId(out _)) return Results.Unauthorized();
-        var lines = new List<OrderLine>();
-        await using var catalog = await catalogFactory.CreateDbContextAsync(ct);
-        var publishedAssemblies = await assemblies.ListPublishedAssembliesAsync(null, ct);
-        foreach (var line in request.Items ?? [])
-        {
-            if (line.AssemblyId is not null)
-            {
-                var assembly = publishedAssemblies.SingleOrDefault(item => item.Id == line.AssemblyId)
-                    ?? throw new RetailException(409, "The selected build is not published or available.");
-                lines.Add(new OrderLine(null, assembly.Id, assembly.TitleAr ?? assembly.TitleEn ?? "RIGX build", null, 1, assembly.SalePrice));
-                continue;
-            }
-            if (line.ProductId is null) throw new RetailException(400, "Each order line needs a product or build.");
-            var product = await catalog.Products.AsNoTracking().Include(item => item.Images)
-                .SingleOrDefaultAsync(
-                item => item.Id == line.ProductId && item.Status == CatalogProductStatus.Published, ct)
-                ?? throw new RetailException(409, "The selected product is not published.");
-            var thumbnail = product.Images.OrderByDescending(image => image.IsPrimary)
-                .ThenBy(image => image.SortOrder).Select(image => image.ThumbnailStorageKey).FirstOrDefault();
-            lines.Add(new OrderLine(product.Id, null, product.Name, product.Sku, Math.Clamp(line.Quantity, 1, 20),
-                product.BasePrice, null, null, null, thumbnail));
-        }
-        return Results.Ok(await orders.CreateOrderAsync(
-            request with { Items = lines, LeadSource = request.LeadSource ?? LeadSource.Manual }, null, ct));
-    }
-
-    private static async Task<IResult> UpdateStatusAsync(Guid id, OrderStatusRequest request, HttpContext context, OrderStatusService statuses, CancellationToken ct)
+    /// <summary>Status change; confirming starts the reservation from the store settings and emails the customer (confirmed, shipped).</summary>
+    private static async Task<IResult> UpdateStatusAsync(Guid id, OrderStatusRequest request, HttpContext context, OrderStatusService statuses,
+        StoreSettingsService settings, IdentityEmailOutboxWriter outbox, OrderLinks links, CancellationToken ct)
     {
         if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
-        return Results.Ok(await statuses.UpdateStatusAsync(id, request, actorId, ct));
+        var order = await statuses.UpdateStatusAsync(id, request, actorId, await ReservationPolicyAsync(settings, ct), ct);
+        var stage = order.Status != request.Status?.Trim() ? null : order.Status switch
+        {
+            OrderStatus.Confirmed => OrderEmailMessage.Confirmed,
+            OrderStatus.Shipped => OrderEmailMessage.Shipped,
+            _ => null
+        };
+        if (stage is not null) await OrderEmails.QueueAsync(outbox, links, order, stage, ct);
+        return Results.Ok(order);
+    }
+
+    private static async Task<ReservationPolicy> ReservationPolicyAsync(StoreSettingsService settings, CancellationToken ct)
+    {
+        var sales = (await settings.GetAdminAsync(ct)).Sales;
+        return new ReservationPolicy(sales.ReservationHours, sales.ReservationAutoRelease);
+    }
+
+    private static async Task<IResult> AddPaymentAsync(Guid id, OrderPaymentRequest request, HttpContext context, OrderPaymentService payments, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        return Results.Ok(await payments.AddPaymentAsync(id, request, actorId, ct));
+    }
+
+    /// <summary>Courier and waybill; an empty courier takes the default courier from the shipping settings.</summary>
+    private static async Task<IResult> SetShippingAsync(Guid id, OrderShippingRequest request, HttpContext context,
+        OrderFulfillmentService fulfillment, StoreSettingsService settings, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var courier = string.IsNullOrWhiteSpace(request.CourierName) ? (await settings.GetAdminAsync(ct)).Shipping.CourierName : request.CourierName;
+        return Results.Ok(await fulfillment.SetShippingAsync(id, request with { CourierName = courier }, actorId, ct));
+    }
+
+    private static async Task<IResult> SetReservationAsync(Guid id, OrderReservationRequest request, HttpContext context, OrderFulfillmentService fulfillment, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        return Results.Ok(await fulfillment.SetReservationAsync(id, request, actorId, ct));
+    }
+
+    private static async Task<IResult> ListBlacklistAsync(HttpContext context, BlacklistService blacklist, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await blacklist.ListAsync(ct));
+    }
+
+    private static async Task<IResult> AddBlacklistAsync(BlacklistRequest request, HttpContext context, BlacklistService blacklist, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        return Results.Ok(await blacklist.AddAsync(request, actorId, ct));
+    }
+
+    private static async Task<IResult> RemoveBlacklistAsync(Guid id, BlacklistService blacklist, CancellationToken ct)
+    {
+        await blacklist.RemoveAsync(id, ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<PosPolicy> PosPolicyAsync(HttpContext context, StoreSettingsService settings, CancellationToken ct)
+    {
+        var sales = (await settings.GetAdminAsync(ct)).Sales;
+        return new PosPolicy(sales.PosMaxDiscountPercent, context.HasPermission("Sales.OverrideMinimumPrice"),
+            new ReservationPolicy(sales.ReservationHours, sales.ReservationAutoRelease));
+    }
+
+    private static async Task<IResult> PreviewPosSaleAsync(PosSaleRequest request, HttpContext context, PosService pos, StoreSettingsService settings, CancellationToken ct) =>
+        Results.Ok(await pos.PreviewAsync(request, await PosPolicyAsync(context, settings, ct), context.HasPermission("Inventory.ViewCosts"), ct));
+
+    /// <summary>Store sale: the lead source must come from the settings list.</summary>
+    private static async Task<IResult> CreatePosSaleAsync(PosSaleRequest request, HttpContext context, PosService pos, StoreSettingsService settings, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        await EnsureLeadSourceAsync(settings, request.LeadSource, ct);
+        return Results.Ok(await pos.SellAsync(request, await PosPolicyAsync(context, settings, ct), actorId, ct));
+    }
+
+    private static async Task<IResult> FindPosCustomerAsync(PosService pos, CancellationToken ct, string? phone = null)
+    {
+        var customer = await pos.FindCustomerAsync(phone, ct);
+        return customer is null ? Results.NotFound() : Results.Ok(customer);
+    }
+
+    private static async Task EnsureLeadSourceAsync(StoreSettingsService settings, string? leadSource, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(leadSource)) return;
+        if (!(await settings.GetAdminAsync(ct)).LeadSources.Sources.Contains(leadSource.Trim()))
+            throw new RetailException(400, "Choose the lead source from the list in the store settings.");
     }
 
     private static async Task<IResult> CompleteOrderAsync(Guid id, CompleteOrderRequest request, HttpContext context, OrderStatusService statuses, CancellationToken ct)
@@ -99,16 +152,15 @@ public static partial class RetailEndpoints
     }
 
     /// <summary>
-    /// Customer checkout: requires accepted, published Terms (Storefront) and re-prices every line from the
-    /// published catalog/build (Catalog + Retail), so it stays in Host.
+    /// Website checkout (Storefront settings + published Terms + Retail, so it stays in Host): guests may order when
+    /// guest checkout is on; fee, upfront part, enabled methods and the minimum come from the store settings.
     /// </summary>
-    private static async Task<IResult> CreateCustomerOrderAsync(
-        OrderCreateRequest request, HttpContext context, OrderService orders, AssemblyService assemblies,
-        IDbContextFactory<CatalogDbContext> catalogFactory, ContentPolicyService policies, CancellationToken ct)
+    private static async Task<IResult> CreateCustomerOrderAsync(CheckoutRequest request, HttpContext context, OrderService orders,
+        StoreSettingsService settings, ContentPolicyService policies, IdentityEmailOutboxWriter outbox, OrderLinks links, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var accountId)) return Results.Unauthorized();
-        if (request.TermsAccepted != true)
-            return Results.BadRequest(new { error = "Terms and Privacy consent is required." });
+        var signedIn = context.TryGetUserId(out var accountId);
+        var store = await settings.GetAdminAsync(ct);
+        if (!signedIn && !store.Controls.GuestCheckoutEnabled) return Results.Unauthorized();
         string termsVersion;
         try
         {
@@ -119,43 +171,39 @@ public static partial class RetailEndpoints
         {
             return Results.Problem(statusCode: 409, title: "The Terms policy is not published; ordering is unavailable.");
         }
-        var lines = new List<OrderLine>();
-        await using var catalog = await catalogFactory.CreateDbContextAsync(ct);
-        foreach (var line in request.Items ?? [])
-        {
-            if (line.AssemblyId is not null)
-            {
-                var published = await assemblies.ListPublishedAssembliesAsync(null, ct);
-                var assembly = published.SingleOrDefault(item => item.Id == line.AssemblyId)
-                    ?? throw new RetailException(409, "The selected build is no longer available.");
-                string? buildThumbnail = null;
-                var buildProductId = assembly.Units.FirstOrDefault()?.ProductId;
-                if (buildProductId is not null)
-                    buildThumbnail = await catalog.ProductImages.AsNoTracking()
-                        .Where(image => image.ProductId == buildProductId)
-                        .OrderByDescending(image => image.IsPrimary).ThenBy(image => image.SortOrder)
-                        .Select(image => image.ThumbnailStorageKey).FirstOrDefaultAsync(ct);
-                lines.Add(new OrderLine(null, assembly.Id, assembly.TitleAr ?? assembly.TitleEn ?? "RIGX build", "BUILD", 1,
-                    assembly.SalePrice, null, null, null, buildThumbnail));
-                continue;
-            }
-            if (line.ProductId is null) throw new RetailException(400, "Each order line needs a product or build.");
-            var product = await catalog.Products.AsNoTracking()
-                .Include(item => item.Images)
-                .SingleOrDefaultAsync(item => item.Id == line.ProductId && item.Status == CatalogProductStatus.Published, ct)
-                ?? throw new RetailException(409, "A product in the cart is no longer available.");
-            var thumbnail = product.Images.OrderByDescending(image => image.IsPrimary)
-                .ThenBy(image => image.SortOrder).Select(image => image.ThumbnailStorageKey).FirstOrDefault();
-            lines.Add(new OrderLine(product.Id, null, product.Name, product.Sku,
-                Math.Clamp(line.Quantity, 1, 20), product.BasePrice, null, null, null, thumbnail));
-        }
-        var order = await orders.CreateOrderAsync(request with
-        {
-            Items = lines,
-            TermsAccepted = true,
-            TermsPolicyVersion = termsVersion
-        }, accountId, ct);
+        await EnsureLeadSourceAsync(settings, request.LeadSource, ct);
+        var delivery = request.FulfillmentMethod?.Trim() == OrderFulfillment.Delivery;
+        if (!delivery && !store.Shipping.PickupEnabled) throw new RetailException(400, "Pickup from the store is not available.");
+        var fee = delivery && !string.IsNullOrWhiteSpace(request.Address?.Governorate)
+            ? store.Shipping.QuoteFor(request.Address.Governorate.Trim().ToUpperInvariant()).Fee
+            : 0m;
+        var methods = new List<string>();
+        if (store.Payment.CashOnDeliveryEnabled) methods.Add(OrderPaymentMethod.CashOnDelivery);
+        if (store.Payment.InstaPayEnabled) methods.Add(OrderPaymentMethod.InstaPay);
+        if (store.Payment.WalletEnabled) methods.Add(OrderPaymentMethod.Wallet);
+        var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, fee,
+            subtotal => store.Payment.UpfrontFor(subtotal, fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount);
+        var order = await orders.CreateOnlineAsync(request, policy, ct);
+        await OrderEmails.QueueAsync(outbox, links, order, OrderEmailMessage.Received, ct);
         return Results.Ok(order);
+    }
+
+    private static async Task<IResult> GetTrackingAsync(string token, HttpContext context, OrderTrackingService tracking, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await tracking.GetAsync(token, ct));
+    }
+
+    private static async Task<IResult> RateOrderAsync(string token, OrderRatingRequest request, OrderTrackingService tracking, CancellationToken ct) =>
+        Results.Ok(await tracking.RateAsync(token, request, ct));
+
+    /// <summary>"اتباع قبل كده": off → 404; the governorate shows only when the sales settings allow it.</summary>
+    private static async Task<IResult> ListSoldFeedAsync(SoldFeedService sold, StoreSettingsService settings, CancellationToken ct,
+        string? kind = null, Guid? categoryId = null, int page = 1)
+    {
+        var sales = (await settings.GetAdminAsync(ct)).Sales;
+        if (!sales.SoldFeedEnabled) return Results.NotFound();
+        return Results.Ok(await sold.ListAsync(sales.SoldFeedShowGovernorate, kind, categoryId, page, ct));
     }
 
     private static async Task<IResult> ListMyOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct)

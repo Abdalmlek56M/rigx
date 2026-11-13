@@ -112,6 +112,29 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
             """,
             cancellationToken);
 
+    /// <summary>Customer order emails in Egyptian Arabic (business §2: short, no marketing promises).</summary>
+    public Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default)
+    {
+        var (subject, line) = message.Stage switch
+        {
+            OrderEmailMessage.Confirmed => ($"طلبك {message.Reference} اتأكد", "طلبك اتأكد وبنجهزه دلوقتي."),
+            OrderEmailMessage.Shipped => ($"طلبك {message.Reference} اتشحن",
+                $"طلبك اتشحن مع {message.CourierName ?? "شركة الشحن"}{(message.WaybillNumber is null ? "" : $"، رقم البوليصة {message.WaybillNumber}")}."),
+            _ => ($"استلمنا طلبك {message.Reference}", "استلمنا طلبك، وهنكلمك نأكد كل حاجة قبل ما نجهزه.")
+        };
+        return SendAsync(message.Email, message.FullName, subject,
+            $"""
+            أهلًا {message.FullName}،
+
+            {line}
+
+            تابع طلبك من هنا: {message.TrackingUrl}
+
+            RIGX
+            """,
+            cancellationToken);
+    }
+
     private async Task SendAsync(
         string recipient,
         string recipientName,

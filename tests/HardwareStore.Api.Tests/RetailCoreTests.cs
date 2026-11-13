@@ -14,9 +14,12 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     private static ReceiptLine Line(Guid productId, string name, decimal cost, decimal? standalone = null, decimal? partnerPercent = null) =>
         new(name, "New", 1, cost, standalone ?? 0m, ProductId: productId, PartnerPercentOverride: partnerPercent);
 
-    private static OrderLine OrderLineFor(Guid productId, string name, string sku, int quantity, decimal price,
-        decimal? discount = null, decimal? expense = null) =>
-        new(productId, null, name, sku, quantity, price, discount, expense);
+    private static OrderLineRequest Sale(StockItemAdminView item, decimal price, int quantity = 1) =>
+        RetailSales.StockLine(item.Id, quantity, price);
+
+    /// <summary>A pending store order (pickup, no payment yet) that the test then moves through the workflow.</summary>
+    private static Task<OrderView> NewOrderAsync(RetailTestServices retail, decimal discount = 0m, params OrderLineRequest[] lines) =>
+        retail.PosAsync(RetailSales.Sale(lines, discount: discount));
 
     private async Task<PartnerAgreement> AgreementAsync(RetailTestServices retail, string name, decimal percent, bool lossSharing = false) =>
         await retail.Agreements.UpsertAgreementAsync(new PartnerAgreementRequest(
@@ -24,10 +27,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
 
     private static async Task<OrderView> DeliverAsync(RetailTestServices retail, OrderView order, bool paid = true, bool waived = false)
     {
-        foreach (var status in new[] { OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Ready, OrderStatus.Delivered })
-        {
-            order = await retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(status, null, order.RowVersion), Actor);
-        }
+        var path = order.FulfillmentMethod == OrderFulfillment.Delivery
+            ? new[] { OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Shipped, OrderStatus.Delivered }
+            : [OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Delivered];
+        foreach (var status in path)
+            order = await retail.StatusAsync(order, status);
         if (waived)
             order = await retail.Payments.WaivePaymentAsync(order.Id, new WaivePaymentRequest("Owner-approved waiver", order.RowVersion), Actor);
         else if (paid)
@@ -69,13 +73,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
 
         await AgreementAsync(retail, "Partner A", 10m);
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(null, assembly.Id, "Gaming Build", null, 1, 2200m)], LeadSource.Website), null);
+        var order = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.BuildLine(assembly.Id)]));
         Assert.Equal(OrderStatus.New, order.Status);
+        Assert.Equal(2200m, order.Subtotal);
 
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, "stock checked", order.RowVersion), Actor);
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed, "stock checked");
         Assert.Equal(OrderStatus.Confirmed, confirmed.Status);
         var assembliesAfter = await retail.Assemblies.ListAssembliesAsync();
         Assert.Equal(AssemblyStatus.Sold, assembliesAfter.Single(item => item.Id == assembly.Id).Status);
@@ -105,46 +107,40 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(
-            Guid.NewGuid(), null, [Line(productId, "Only One", 100m)]), Actor);
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Only One", "ONE-1", 3, 150m)], LeadSource.Website), null);
-        var error = await Assert.ThrowsAsync<RetailException>(() =>
-            retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor));
-        Assert.Equal(409, error.StatusCode);
-        Assert.Single(await retail.Units.ListUnitsAsync(UnitStatus.Available, productId), unit => unit.ProductId == productId);
+        var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(Guid.NewGuid(), "Only One", 100m), Line(Guid.NewGuid(), "Plenty", 100m)]), Actor);
+        var (scarce, other) = (items[0], items[1]);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => NewOrderAsync(retail, 0m, Sale(scarce, 150m, 3))));
+
+        var first = await NewOrderAsync(retail, 0m, Sale(scarce, 150m));
+        var second = await NewOrderAsync(retail, 0m, Sale(other, 150m), Sale(scarce, 150m));
+        await retail.StatusAsync(first, OrderStatus.Confirmed);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(second, OrderStatus.Confirmed)));
+        Assert.Equal(1, (await retail.StockItems.GetAsync(other.Id, true, true)).AvailableCount);
     }
 
     [Fact]
-    public async Task Net_profit_uses_all_units_discounts_and_direct_expenses()
+    public async Task Net_profit_uses_all_units_and_the_order_discount()
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [new ReceiptLine("Fan", "New", 3, 100m, 150m, ProductId: productId)]), Actor);
+        var fan = await retail.ReceiveItemAsync(new ReceiptLine("Fan", "New", 3, 100m, 150m));
         await AgreementAsync(retail, "Partner B", 10m);
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Fan", "FAN-1", 3, 150m, 30m, 20m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await NewOrderAsync(retail, 30m, Sale(fan, 150m, 3));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         var item = Assert.Single(confirmed.Items);
         Assert.Equal(3, item.Components.Count);
         Assert.Equal(450m, item.Components.Sum(component => component.RevenueAmount));
         Assert.Equal(300m, item.Components.Sum(component => component.CostAmount));
         Assert.Equal(30m, item.Components.Sum(component => component.DiscountAmount));
-        Assert.Equal(20m, item.Components.Sum(component => component.DirectExpenseAmount));
-        Assert.Equal(100m, item.NetProfit);
+        Assert.Equal(120m, item.NetProfit);
 
         var completed = await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var earnings = await retail.PartnerLedger.ListEarningsAsync("Partner B");
         Assert.Equal(3, earnings.Count);
-        Assert.Equal(100m, earnings.Sum(earning => earning.GrossProfit));
-        Assert.Equal(10m, earnings.Sum(earning => earning.Amount));
+        Assert.Equal(120m, earnings.Sum(earning => earning.GrossProfit));
+        Assert.Equal(12m, earnings.Sum(earning => earning.Amount));
     }
 
     [Fact]
@@ -152,27 +148,20 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Loss Item", 200m), Line(productId, "Loss Item", 200m)]), Actor);
+        var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(Guid.NewGuid(), "Loss Item", 200m), Line(Guid.NewGuid(), "Loss Item 2", 200m)]), Actor);
         await AgreementAsync(retail, "Partner C", 10m);
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Loss Item", "LOSS-1", 1, 150m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await NewOrderAsync(retail, 0m, Sale(items[0], 150m));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var earning = Assert.Single(await retail.PartnerLedger.ListEarningsAsync("Partner C"));
         Assert.Equal(-50m, earning.GrossProfit);
         Assert.Equal(0m, earning.Amount);
 
         await AgreementAsync(retail, "Partner C", 10m, lossSharing: true);
-        var second = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Loss Item", "LOSS-1", 1, 150m)], LeadSource.Website), null);
-        var secondConfirmed = await retail.OrderStatus.UpdateStatusAsync(second.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, second.RowVersion), Actor);
+        var second = await NewOrderAsync(retail, 0m, Sale(items[1], 150m));
+        var secondConfirmed = await retail.StatusAsync(second, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, secondConfirmed));
         var lossEarning = (await retail.PartnerLedger.ListEarningsAsync("Partner C")).Single(item => item.Amount < 0);
         Assert.Equal(-5m, lossEarning.Amount);
@@ -204,11 +193,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         await retail.Assemblies.SetAssemblyPublishedAsync(priced.Id, true, priced.RowVersion);
         await AgreementAsync(retail, "Partner D", 10m);
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(null, priced.Id, "Allocated Build", null, 1, 2000m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.BuildLine(priced.Id)]));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         var components = confirmed.Items.Single().Components;
         Assert.Equal(1400m, components.Single(item => item.UnitId == units[0].Id).RevenueAmount);
         Assert.Equal(600m, components.Single(item => item.UnitId == units[1].Id).RevenueAmount);
@@ -226,14 +212,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Returnable", 100m)]), Actor);
+        var returnable = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Returnable", 100m)]), Actor));
         await AgreementAsync(retail, "Partner E", 10m);
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Returnable", "RET-1", 1, 200m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await NewOrderAsync(retail, 0m, Sale(returnable, 200m));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         var completed = await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var unitId = completed.Items.Single().Components.Single().UnitId;
 
@@ -266,15 +249,12 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+        var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
             [Line(productId, "Unit One", 100m), Line(productId, "Unit Two", 100m)]), Actor);
         await AgreementAsync(retail, "Partner F", 10m);
 
-        var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Unit One", "U-1", 1, 200m)], LeadSource.Website), null);
-        var firstConfirmed = await retail.OrderStatus.UpdateStatusAsync(first.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, first.RowVersion), Actor);
+        var first = await NewOrderAsync(retail, 0m, Sale(items[0], 200m));
+        var firstConfirmed = await retail.StatusAsync(first, OrderStatus.Confirmed);
         var firstCompleted = await CompleteAsync(retail, await DeliverAsync(retail, firstConfirmed));
         await retail.PartnerLedger.SettleAsync(new SettlementRequest("Partner F", 10m, "Cash", null, null), Actor);
         var returnedUnit = firstCompleted.Items.Single().Components.Single().UnitId;
@@ -287,11 +267,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         Assert.Equal(-10m, adjustment.Amount);
         Assert.Equal(-10m, adjustment.RemainingAmount);
 
-        var second = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Unit Two", "U-2", 1, 300m)], LeadSource.Website), null);
-        var secondConfirmed = await retail.OrderStatus.UpdateStatusAsync(second.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, second.RowVersion), Actor);
+        var second = await NewOrderAsync(retail, 0m, Sale(items[1], 300m));
+        var secondConfirmed = await retail.StatusAsync(second, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, secondConfirmed));
 
         var future = (await retail.PartnerLedger.ListEarningsAsync("Partner F")).Single(item => item.Amount == 20m);
@@ -313,15 +290,12 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Complete Me", 100m), Line(productId, "Complete Me", 100m)]), Actor);
+        var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(Guid.NewGuid(), "Complete Me", 100m, 200m), Line(Guid.NewGuid(), "Complete Me Too", 100m, 200m)]), Actor);
+        await retail.PublishAsync(items[1]);
 
-        var required = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Complete Me", "C-1", 1, 200m)], LeadSource.Website), null);
-        var requiredConfirmed = await retail.OrderStatus.UpdateStatusAsync(required.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, required.RowVersion), Actor);
+        var required = await NewOrderAsync(retail, 0m, Sale(items[0], 200m));
+        var requiredConfirmed = await retail.StatusAsync(required, OrderStatus.Confirmed);
         var requiredDelivered = await DeliverAsync(retail, requiredConfirmed, paid: false);
         var blocked = await Assert.ThrowsAsync<RetailException>(() => CompleteAsync(retail, requiredDelivered));
         Assert.Equal(409, blocked.StatusCode);
@@ -329,11 +303,10 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             new PaymentStatusRequest(PaymentStatus.Paid, "cash", requiredDelivered.RowVersion), Actor);
         Assert.Equal(OrderStatus.Completed, (await CompleteAsync(retail, paid)).Status);
 
-        var notRequired = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Complete Me", "C-2", 1, 200m)], LeadSource.Website, PaymentRequired: false), null);
-        var waivedConfirmed = await retail.OrderStatus.UpdateStatusAsync(notRequired.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, notRequired.RowVersion), Actor);
+        // An online pickup order is paid at the store, so payment is not required up front (the waiver is explicit).
+        var notRequired = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.StockLine(items[1].Id)], OrderFulfillment.Pickup));
+        Assert.False(notRequired.PaymentRequired);
+        var waivedConfirmed = await retail.StatusAsync(notRequired, OrderStatus.Confirmed);
         var waivedDelivered = await DeliverAsync(retail, waivedConfirmed, paid: false);
         var missingWaiver = await Assert.ThrowsAsync<RetailException>(() => CompleteAsync(retail, waivedDelivered));
         Assert.Equal(409, missingWaiver.StatusCode);
@@ -380,22 +353,16 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productA = Guid.NewGuid();
-        var productB = Guid.NewGuid();
-        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+        var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
         [
-            Line(productA, "Partner CPU", 100m),
-            Line(productB, "Partner GPU", 200m)
+            Line(Guid.NewGuid(), "Partner CPU", 100m),
+            Line(Guid.NewGuid(), "Partner GPU", 200m)
         ]), Actor);
-        await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner X", units[0].Id, null, null, 100m, false, true));
-        await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner Y", units[1].Id, null, null, 100m, false, true));
+        await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner X", items[0].Units[0].Id, null, null, 100m, false, true));
+        await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner Y", items[1].Units[0].Id, null, null, 100m, false, true));
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productA, "Partner CPU", "PCPU", 1, 300m), OrderLineFor(productB, "Partner GPU", "PGPU", 1, 500m)],
-            LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await NewOrderAsync(retail, 0m, Sale(items[0], 300m), Sale(items[1], 500m));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
 
         var earnings = await retail.PartnerLedger.ListEarningsAsync();
@@ -409,20 +376,17 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        var unit = Assert.Single(await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Split Unit", 100m)]), Actor));
+        var item = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(Guid.NewGuid(), "Split Unit", 100m)]), Actor));
+        var unit = item.Units[0];
         await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner A", unit.Id, null, null, 60m, false, true));
         await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner B", unit.Id, null, null, 40m, false, true));
         var overflow = await Assert.ThrowsAsync<RetailException>(() => retail.Allocations.UpsertAllocationAsync(
             new PartnerAllocationRequest("Partner C", unit.Id, null, null, 10m, false, true)));
         Assert.Equal(400, overflow.StatusCode);
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Split Unit", "SPLIT", 1, 300m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await NewOrderAsync(retail, 0m, Sale(item, 300m));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         var completed = await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var earnings = await retail.PartnerLedger.ListEarningsAsync();
         Assert.Equal(120m, earnings.Single(item => item.PartnerName == "Partner A").Amount);
@@ -493,14 +457,10 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Report Unit", 100m)]), Actor);
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Report Unit", "REP-1", 1, 300m, 10m, 20m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var reportUnit = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(Guid.NewGuid(), "Report Unit", 100m)]), Actor));
+        var order = await NewOrderAsync(retail, 10m, Sale(reportUnit, 300m));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 50m, "Packaging", "Direct", null, order.Id, null, null), Actor);
@@ -510,11 +470,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         Assert.Equal(290m, report.GrossSales);
         Assert.Equal(10m, report.Discounts);
         Assert.Equal(100m, report.CostOfGoods);
-        Assert.Equal(20m, report.ItemDirectExpenses);
-        Assert.Equal(170m, report.NetItemProfit);
+        Assert.Equal(0m, report.ItemDirectExpenses);
+        Assert.Equal(190m, report.NetItemProfit);
         Assert.Equal(50m, report.AdditionalDirectExpenses);
         Assert.Equal(100m, report.GeneralOverhead);
-        Assert.Equal(20m, report.StoreNetResult);
+        Assert.Equal(40m, report.StoreNetResult);
         Assert.Equal(1, report.CompletedOrders);
         Assert.Equal(2, (await retail.Expenses.ListExpensesAsync(today, today)).Count);
         await Assert.ThrowsAsync<RetailException>(() => retail.Expenses.CreateExpenseAsync(
@@ -526,17 +486,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-        [
-            new ReceiptLine("Detail Unit", "New", 1, 100m, 0m, ProductId: productId, SerialNumber: "SERIAL-DETAIL")
-        ]), Actor);
+        var item = await retail.ReceiveItemAsync(new ReceiptLine("Detail Unit", "New", 1, 100m, 300m, SerialNumber: "SERIAL-DETAIL"));
+        await retail.PublishAsync(item);
         var customerId = Guid.NewGuid();
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Detail Unit", "DET-1", 1, 300m)], LeadSource.Website), customerId);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.StockLine(item.Id)]), RetailSales.Policy(customerId));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
 
         var own = await retail.Orders.GetMyOrderAsync(order.Id, customerId);
         Assert.Equal(order.Id, own.Id);
@@ -556,18 +510,14 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Matrix Unit", 100m)]), Actor);
-        var delivery = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(productId, null, "Matrix Unit", "MATRIX-1", 1, 300m, null, null, null,
-                "thumb/key.webp")], LeadSource.Website, TermsAccepted: true,
-            TermsPolicyVersion: "3"), null);
+        var item = await retail.PublishedItemAsync("Matrix Unit", 3, 300m);
+        var line = new[] { RetailSales.StockLine(item.Id) };
+
+        var delivery = await retail.CheckoutAsync(RetailSales.Checkout(line));
         Assert.Equal("Delivery", delivery.FulfillmentMethod);
         Assert.Equal("CashOnDelivery", delivery.PaymentMethod);
         Assert.True(delivery.PaymentRequired);
-        Assert.Equal("thumb/key.webp", delivery.Items[0].ThumbnailStorageKeySnapshot);
+        Assert.Equal($"items/{item.Code}/0-t.webp", delivery.Items[0].ThumbnailStorageKeySnapshot);
         await using (var db = database.CreateRetailContext())
         {
             var stored = await db.Orders.SingleAsync(order => order.Id == delivery.Id);
@@ -575,20 +525,15 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             Assert.Equal("3", stored.TermsPolicyVersion);
         }
 
-        var pickup = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", null, "Handover", "BankTransfer", null,
-            [new OrderLine(productId, null, "Matrix Unit", "MATRIX-1", 1, 300m)], LeadSource.Website), null);
+        var pickup = await retail.CheckoutAsync(RetailSales.Checkout(line, OrderFulfillment.Pickup, OrderPaymentMethod.InstaPay));
         Assert.Equal("Pickup", pickup.FulfillmentMethod);
-        Assert.Equal("ToBeArranged", pickup.PaymentMethod);
+        Assert.Equal("InstaPay", pickup.PaymentMethod);
         Assert.False(pickup.PaymentRequired);
-        Assert.Null(pickup.AddressText);
+        Assert.Null(pickup.Address);
 
-        await Assert.ThrowsAsync<RetailException>(() => retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnHandover", null,
-            [new OrderLine(productId, null, "Matrix Unit", "MATRIX-1", 1, 300m)], LeadSource.Website), null));
-        await Assert.ThrowsAsync<RetailException>(() => retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", null, "Delivery", "CashOnDelivery", null,
-            [new OrderLine(productId, null, "Matrix Unit", "MATRIX-1", 1, 300m)], LeadSource.Website), null));
+        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.CheckoutAsync(RetailSales.Checkout(line, payment: "CashOnHandover"))));
+        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.CheckoutAsync(
+            RetailSales.Checkout(line) with { Address = null })));
     }
 
     [Fact]
@@ -597,14 +542,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
-            [Line(productId, "Reject Me", 100m)]), Actor);
+        var rejectMe = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Reject Me", 100m)]), Actor));
         await AgreementAsync(retail, "Partner G", 10m);
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Reject Me", "R-1", 1, 200m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
+        var order = await NewOrderAsync(retail, 0m, Sale(rejectMe, 200m));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         var completed = await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var unitId = completed.Items.Single().Components.Single().UnitId;
         var entity = await retail.Returns.CreateReturnAsync(new ReturnCreateRequest(
@@ -622,22 +564,17 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Concurrency receipt",
-            [Line(productId, "Single Unit", 100m)]), Actor);
+        var single = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), "Concurrency receipt",
+            [Line(productId, "Single Unit", 100m)]), Actor));
 
-        var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer A", "01000000001", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Single Unit", "CONC-1", 1, 300m)], LeadSource.Website), null);
-        var second = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer B", "01000000002", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Single Unit", "CONC-1", 1, 300m)], LeadSource.Website), null);
+        var first = await NewOrderAsync(retail, 0m, Sale(single, 300m));
+        var second = await NewOrderAsync(retail, 0m, Sale(single, 300m));
 
         async Task<bool> TryConfirm(OrderView order)
         {
             try
             {
-                await retail.OrderStatus.UpdateStatusAsync(order.Id,
-                    new OrderStatusRequest(OrderStatus.Confirmed, "concurrent", order.RowVersion), Actor);
+                await retail.StatusAsync(order, OrderStatus.Confirmed, "concurrent");
                 return true;
             }
             catch (RetailException exception) when (exception.StatusCode == 409)
@@ -660,19 +597,13 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Two units",
-            [Line(productId, "Unit A", 100m), Line(productId, "Unit B", 100m)]), Actor);
+        var lot = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), "Two units",
+            [new ReceiptLine("Unit", "New", 2, 100m, 0m, ProductId: productId)]), Actor));
 
-        var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer A", "01000000001", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Unit", "CONC-2", 1, 300m)], LeadSource.Website), null);
-        var second = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer B", "01000000002", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(productId, "Unit", "CONC-2", 1, 300m)], LeadSource.Website), null);
+        var first = await NewOrderAsync(retail, 0m, Sale(lot, 300m));
+        var second = await NewOrderAsync(retail, 0m, Sale(lot, 300m));
 
-        var outcomes = await Task.WhenAll(
-            retail.OrderStatus.UpdateStatusAsync(first.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, first.RowVersion), Actor),
-            retail.OrderStatus.UpdateStatusAsync(second.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, second.RowVersion), Actor));
+        var outcomes = await Task.WhenAll(retail.StatusAsync(first, OrderStatus.Confirmed), retail.StatusAsync(second, OrderStatus.Confirmed));
 
         Assert.All(outcomes, order => Assert.Equal(OrderStatus.Confirmed, order.Status));
         await using var db = database.CreateRetailContext();
@@ -693,19 +624,14 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             new AssemblyUpdateRequest("Concurrent Build", "بناء", "Concurrent Build", 1200m, assembly.RowVersion));
         await retail.Assemblies.SetAssemblyPublishedAsync(priced.Id, true, priced.RowVersion);
 
-        var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer A", "01000000001", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(null, assembly.Id, "Concurrent Build", null, 1, 1200m)], LeadSource.Website), null);
-        var second = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer B", "01000000002", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(null, assembly.Id, "Concurrent Build", null, 1, 1200m)], LeadSource.Website), null);
+        var first = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.BuildLine(assembly.Id)], phone: "01000000001"));
+        var second = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.BuildLine(assembly.Id)], phone: "01000000002"));
 
         async Task<bool> TryConfirm(OrderView order)
         {
             try
             {
-                await retail.OrderStatus.UpdateStatusAsync(order.Id,
-                    new OrderStatusRequest(OrderStatus.Confirmed, "concurrent", order.RowVersion), Actor);
+                await retail.StatusAsync(order, OrderStatus.Confirmed, "concurrent");
                 return true;
             }
             catch (RetailException exception) when (exception.StatusCode == 409)
@@ -728,25 +654,20 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var cpuId = Guid.NewGuid();
-        var boardId = Guid.NewGuid();
-        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Cancel build",
+        var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), "Cancel build",
         [
-            Line(cpuId, "Cancel CPU", 400m),
-            Line(boardId, "Cancel Board", 300m)
+            Line(Guid.NewGuid(), "Cancel CPU", 400m),
+            Line(Guid.NewGuid(), "Cancel Board", 300m)
         ]), Actor);
+        var units = items.SelectMany(item => item.Units).ToList();
         var assembly = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Cancel Build", units.Select(unit => unit.Id).ToList()));
         var priced = await retail.Assemblies.UpdateAssemblyAsync(assembly.Id,
             new AssemblyUpdateRequest("Cancel Build", "بناء", "Cancel Build", 1200m, assembly.RowVersion));
         await retail.Assemblies.SetAssemblyPublishedAsync(priced.Id, true, priced.RowVersion);
 
-        var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [new OrderLine(null, assembly.Id, "Cancel Build", null, 1, 1200m)], LeadSource.Website), null);
-        var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor);
-        var cancelled = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Cancelled, "customer request", confirmed.RowVersion), Actor);
+        var order = await retail.CheckoutAsync(RetailSales.Checkout([RetailSales.BuildLine(assembly.Id)]));
+        var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
+        var cancelled = await retail.StatusAsync(confirmed, OrderStatus.Cancelled, "customer request");
         Assert.Equal(OrderStatus.Cancelled, cancelled.Status);
 
         await using var db = database.CreateRetailContext();
@@ -755,11 +676,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             unit => Assert.Equal(UnitStatus.InAssembly, unit.Status));
         Assert.Equal(AssemblyStatus.Published, (await db.Assemblies.SingleAsync(item => item.Id == assembly.Id)).Status);
 
-        var standalone = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
-            "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
-            [OrderLineFor(cpuId, "Cancel CPU", "CAN-CPU", 1, 300m)], LeadSource.Website), null);
-        await Assert.ThrowsAsync<RetailException>(() => retail.OrderStatus.UpdateStatusAsync(standalone.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, standalone.RowVersion), Actor));
+        // The parts stay inside the build, so they cannot be sold on their own.
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => NewOrderAsync(retail, 0m, Sale(items[0], 300m))));
     }
 
     [Fact]

@@ -36,6 +36,7 @@ public sealed class IdentityEmailOutboxWriter(
     public const string StaffInvitationKind = "StaffInvitation";
     public const string EmailChangeKind = "EmailChangeVerification";
     public const string NewDeviceSignInKind = "NewDeviceSignIn";
+    public const string OrderUpdateKind = "OrderUpdate";
 
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector("HardwareStore.IdentityEmailOutbox.v1");
@@ -211,6 +212,8 @@ public sealed class IdentityEmailOutboxProcessor(
             IdentityEmailOutboxWriter.StaffInvitationKind => SendStaffInvitationAsync(row, cancellationToken),
             IdentityEmailOutboxWriter.EmailChangeKind => SendEmailChangeAsync(row, cancellationToken),
             IdentityEmailOutboxWriter.NewDeviceSignInKind => SendNewDeviceSignInAsync(row, cancellationToken),
+            IdentityEmailOutboxWriter.OrderUpdateKind => emailProvider.SendOrderUpdateAsync(
+                writer.Unprotect<OrderEmailMessage>(row.ProtectedPayload), cancellationToken),
             _ => throw new InvalidOperationException("Unknown identity email outbox kind.")
         };
 

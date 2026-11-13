@@ -624,6 +624,13 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasDefaultValue(1L)
                         .HasColumnName("row_version");
 
+                    b.Property<string>("Sales")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("sales")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
                     b.Property<string>("Shipping")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

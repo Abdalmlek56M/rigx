@@ -136,3 +136,28 @@ public sealed record WarrantyOptionSettings : IStoreSettingsSection<WarrantyOpti
         };
     }
 }
+
+/// <summary>
+/// Orders and POS: how long a confirmed order holds its stock and what happens after (owner decision, 13 Nov 2026:
+/// 24 hours, notify only), the POS discount limit for staff without the price-override permission, and the public
+/// "اتباع قبل كده" page (governorate shown only when switched on).
+/// </summary>
+public sealed record SalesSettings : IStoreSettingsSection<SalesSettings>
+{
+    public static string Key => "sales";
+    public static SalesSettings Read(StoreSettings settings) => settings.Sales;
+    public static void Write(StoreSettings settings, SalesSettings value) => settings.Sales = value;
+
+    public int ReservationHours { get; init; } = 24;
+    public bool ReservationAutoRelease { get; init; }
+    public decimal PosMaxDiscountPercent { get; init; } = 10m;
+    public bool SoldFeedEnabled { get; init; } = true;
+    public bool SoldFeedShowGovernorate { get; init; }
+
+    public SalesSettings Normalize()
+    {
+        if (PosMaxDiscountPercent is < 0 or > 100 || decimal.Round(PosMaxDiscountPercent, 2) != PosMaxDiscountPercent)
+            throw new StorefrontException(400, "POS discount limit must be between 0 and 100 with at most 2 decimals.");
+        return this with { ReservationHours = SettingsValues.Range(ReservationHours, 1, 720, "Reservation hours") };
+    }
+}

@@ -3,96 +3,42 @@ using Microsoft.EntityFrameworkCore;
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>
-/// Orders: creation (fulfillment/payment rules, line validation) and order reads for admin and customers.
+/// Website checkout (guest or signed in) and order reads for admin and customers.
 /// </summary>
 public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    public async Task<OrderView> CreateOrderAsync(OrderCreateRequest request, Guid? userAccountId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Creates a <c>New</c> order from the cart: lines are re-priced from published items/builds, the fee and upfront part
+    /// come from the store settings (<paramref name="policy"/>), and a blacklisted customer's order is flagged.
+    /// </summary>
+    public async Task<OrderView> CreateOnlineAsync(CheckoutRequest request, CheckoutPolicy policy, CancellationToken cancellationToken = default)
     {
-        var items = request.Items ?? [];
-        if (items.Count is < 1 or > 50) throw new RetailException(400, "An order needs between 1 and 50 lines.");
-        if (string.IsNullOrWhiteSpace(request.CustomerName) || string.IsNullOrWhiteSpace(request.PhoneNumber))
-            throw new RetailException(400, "Customer name and phone are required.");
-        var fulfillment = request.FulfillmentMethod?.Trim() switch
-        {
-            "Delivery" => OrderFulfillment.Delivery,
-            "Pickup" or "Handover" => OrderFulfillment.Pickup,
-            _ => throw new RetailException(400, "Fulfillment must be Delivery or Pickup by arrangement.")
-        };
-        string paymentMethod;
-        bool paymentRequired;
-        if (fulfillment == OrderFulfillment.Delivery)
-        {
-            if (string.IsNullOrWhiteSpace(request.AddressText))
-                throw new RetailException(400, "A delivery address is required.");
-            var method = request.PaymentMethod?.Trim();
-            if (method is not (OrderPaymentMethod.CashOnDelivery or OrderPaymentMethod.BankTransfer or OrderPaymentMethod.MobileWalletTransfer))
-                throw new RetailException(400, "Delivery payment must be Cash on Delivery, Bank Transfer, or Mobile Wallet transfer.");
-            paymentMethod = method;
-            paymentRequired = true;
-        }
-        else
-        {
-            paymentMethod = OrderPaymentMethod.ToBeArranged;
-            paymentRequired = false;
-        }
+        if (request.TermsAccepted != true) throw new RetailException(400, "Terms and Privacy consent is required.");
+        var fulfillment = OrderRules.Fulfillment(request.FulfillmentMethod);
+        var address = OrderRules.Address(request.Address, fulfillment);
+        var method = OrderRules.PaymentMethod(request.PaymentMethod, OrderChannel.Online);
+        if (!policy.PaymentMethods.Contains(method)) throw new RetailException(400, "This payment method is not available.");
+        var (usage, usageNote) = OrderUsage.Parse(request.Usage, request.UsageNote);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var now = timeProvider.GetUtcNow().ToUniversalTime();
-            var order = new StoreOrder
-            {
-                Id = Guid.CreateVersion7(),
-                Reference = $"RIGX-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
-                UserAccountId = userAccountId,
-                CustomerName = request.CustomerName.Trim(),
-                PhoneNumber = request.PhoneNumber.Trim(),
-                AddressText = fulfillment == OrderFulfillment.Delivery ? request.AddressText?.Trim() : null,
-                FulfillmentMethod = fulfillment,
-                LeadSource = request.LeadSource is LeadSource.Phone or LeadSource.Social or LeadSource.Manual ? request.LeadSource! : LeadSource.Website,
-                Status = OrderStatus.New,
-                PaymentStatus = PaymentStatus.Unpaid,
-                PaymentMethod = paymentMethod,
-                PaymentRequired = paymentRequired,
-                TermsAcceptedAtUtc = request.TermsAccepted == true ? now : null,
-                TermsPolicyVersion = request.TermsAccepted == true ? request.TermsPolicyVersion?.Trim() : null,
-                Notes = request.Notes?.Trim(),
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now
-            };
-            foreach (var line in items)
-            {
-                if (string.IsNullOrWhiteSpace(line.Name) || line.Quantity is < 1 or > 50 || line.UnitPrice < 0)
-                    throw new RetailException(400, "Order line quantity or price is invalid.");
-                var lineTotal = Math.Round(line.UnitPrice * line.Quantity, 2);
-                var discount = Math.Round(line.DiscountAmount ?? 0m, 2);
-                var expense = Math.Round(line.DirectExpenseAmount ?? 0m, 2);
-                if (discount < 0 || discount > lineTotal)
-                    throw new RetailException(400, "A line discount must be between 0 and the line total.");
-                if (expense < 0)
-                    throw new RetailException(400, "A line direct expense cannot be negative.");
-                order.Items.Add(new OrderItem
-                {
-                    Id = Guid.CreateVersion7(), Name = line.Name.Trim(), Sku = line.Sku?.Trim(),
-                    ProductId = line.ProductId,
-                    ThumbnailStorageKeySnapshot = line.ThumbnailStorageKeySnapshot,
-                    AssemblyId = line.AssemblyId,
-                    StockItemId = line.StockItemId,
-                    Quantity = line.Quantity, UnitPrice = line.UnitPrice, LineTotal = lineTotal,
-                    DiscountAmount = discount, DirectExpenseAmount = expense,
-                    DirectExpenseNote = line.DirectExpenseNote?.Trim()
-                });
-            }
-            order.Subtotal = order.Items.Sum(item => item.LineTotal - item.DiscountAmount);
-            order.Total = order.Subtotal + order.DeliveryFee;
-            order.Events.Add(new OrderEvent { Id = Guid.CreateVersion7(), EventType = "OrderCreated", Notes = request.LeadSource ?? LeadSource.Website, CreatedAtUtc = now, ActorUserAccountId = userAccountId });
-            db.Orders.Add(order);
-            await db.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return OrderMapping.ToView(order);
-        }
-        catch { await transaction.RollbackQuietlyAsync(); throw; }
+        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Online, cancellationToken);
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Online, items, policy.DeliveryFee, now);
+        if (order.Subtotal < policy.MinimumOrder) throw new RetailException(400, $"The minimum order is {policy.MinimumOrder:0.##} EGP.");
+        order.UserAccountId = policy.UserAccountId;
+        order.PaymentMethod = method;
+        order.PaymentRequired = fulfillment == OrderFulfillment.Delivery;
+        order.UpfrontAmount = fulfillment == OrderFulfillment.Delivery ? policy.UpfrontFor(order.Subtotal) : 0m;
+        order.LeadSource = OrderRules.Optional(request.LeadSource, 60, "Lead source");
+        order.Usage = usage;
+        order.UsageNote = usageNote;
+        order.Notes = OrderRules.Optional(request.Notes, 2000, "Notes");
+        order.TermsAcceptedAtUtc = now;
+        order.TermsPolicyVersion = policy.TermsPolicyVersion;
+        order.IsBlacklisted = await BlacklistService.MatchesAsync(db, order, cancellationToken);
+        order.Events.Add(OrderMapping.Event("OrderCreated", OrderChannel.Online, policy.UserAccountId, now));
+        db.Orders.Add(order);
+        await db.SaveChangesAsync(cancellationToken);
+        return OrderMapping.ToView(order);
     }
 
     public async Task<IReadOnlyList<OrderView>> ListOrdersAsync(string? status, bool includeContact = true, CancellationToken cancellationToken = default)

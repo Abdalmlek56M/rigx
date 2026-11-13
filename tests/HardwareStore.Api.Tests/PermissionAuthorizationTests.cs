@@ -154,7 +154,7 @@ public sealed class PermissionAuthorizationTests
             .Where(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/v1/admin/storefront/settings", StringComparison.Ordinal) == true)
             .ToArray();
 
-        Assert.Equal(13, endpoints.Length);
+        Assert.Equal(14, endpoints.Length);
         Assert.All(endpoints, endpoint =>
             Assert.NotNull(endpoint.Metadata.GetMetadata<IAuthorizeData>()));
     }

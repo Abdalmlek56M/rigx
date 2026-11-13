@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Retail;
 using Microsoft.EntityFrameworkCore;
+using Xunit;
 
 namespace HardwareStore.Api.Tests;
 
@@ -18,12 +19,86 @@ public sealed record RetailTestServices(
     ExpenseService Expenses,
     BusinessReportService Reports,
     StockItemAdminService StockItems,
-    StoreItemService Store)
+    StoreItemService Store,
+    OrderFulfillmentService Fulfillment,
+    OrderTrackingService Tracking,
+    BlacklistService Blacklist,
+    PosService Pos,
+    SoldFeedService SoldFeed)
 {
     public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time) => new(
         new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
         new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-        new(factory, time), new(factory), new(factory, time), new(factory));
+        new(factory, time), new(factory), new(factory, time), new(factory),
+        new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory));
+}
+
+/// <summary>Order-side helpers: default policies, a published item, and one-line checkout/POS requests.</summary>
+public static class RetailSales
+{
+    public static readonly ReservationPolicy Reservation = new(24, false);
+    public static readonly PosPolicy PosUnlimited = new(10m, true, Reservation);
+    public static readonly PosPolicy PosLimited = new(10m, false, Reservation);
+    public static readonly OrderCustomer Customer = new("Customer", "01000000000");
+    public static readonly OrderAddress Cairo = new("C", "Nasr City", "Abbas St", "Bldg 4", null);
+    public static readonly string[] OnlineMethods = [OrderPaymentMethod.CashOnDelivery, OrderPaymentMethod.InstaPay, OrderPaymentMethod.Wallet];
+
+    /// <summary>Delivery fee 50, upfront 20% of the subtotal, every online payment method enabled.</summary>
+    public static CheckoutPolicy Policy(Guid? userId = null, string[]? methods = null, decimal fee = 50m) =>
+        new(userId, "3", fee, subtotal => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m);
+
+    public static OrderLineRequest StockLine(Guid stockItemId, int quantity = 1, decimal? salePrice = null, string? priceOption = null) =>
+        new(stockItemId, null, quantity, priceOption, salePrice);
+
+    public static OrderLineRequest BuildLine(Guid assemblyId, decimal? salePrice = null, IReadOnlyList<SplitPartRequest>? parts = null) =>
+        new(null, assemblyId, 1, null, salePrice, parts);
+
+    public static CheckoutRequest Checkout(IReadOnlyList<OrderLineRequest> lines, string fulfillment = OrderFulfillment.Delivery,
+        string payment = OrderPaymentMethod.CashOnDelivery, string phone = "01000000000", string? email = null,
+        OrderAddress? address = null, bool? terms = true) =>
+        new(new OrderCustomer("Customer", phone, false, email), fulfillment,
+            fulfillment == OrderFulfillment.Delivery ? address ?? Cairo : null, payment, lines, TermsAccepted: terms);
+
+    public static PosSaleRequest Sale(IReadOnlyList<OrderLineRequest> lines, bool confirm = false, decimal discount = 0m,
+        string fulfillment = OrderFulfillment.Pickup, decimal fee = 0m, IReadOnlyList<PosPaymentRequest>? payments = null,
+        string phone = "01000000000") =>
+        new(new OrderCustomer("Customer", phone), fulfillment, fulfillment == OrderFulfillment.Delivery ? Cairo : null, lines,
+            discount, fee, payments, Confirm: confirm);
+
+    /// <summary>Receives a "New" lot of <paramref name="quantity"/> units and gives it three photos so the website sells it.</summary>
+    public static async Task<StockItemAdminView> PublishedItemAsync(this RetailTestServices retail, string model, int quantity,
+        decimal price, decimal cost = 100m)
+    {
+        var item = await ReceiveItemAsync(retail, new ReceiptLine(model, "New", quantity, cost, price));
+        await retail.PublishAsync(item);
+        return item;
+    }
+
+    public static async Task PublishAsync(this RetailTestServices retail, StockItemAdminView item)
+    {
+        for (var index = 0; index < 3; index++)
+            await retail.StockItems.AddPhotoAsync(item.Id, new StockItemPhoto($"items/{item.Code}/{index}.webp", $"items/{item.Code}/{index}-t.webp"));
+    }
+
+    public static async Task<StockItemAdminView> ReceiveItemAsync(this RetailTestServices retail, ReceiptLine line) =>
+        Assert.Single((await retail.Units.ReceiveAsync(RetailReceipts.Receipt(Guid.NewGuid(), null, [line]), Guid.NewGuid())).Items);
+
+    public static Task<OrderView> CheckoutAsync(this RetailTestServices retail, CheckoutRequest request, CheckoutPolicy? policy = null) =>
+        retail.Orders.CreateOnlineAsync(request, policy ?? Policy());
+
+    public static Task<OrderView> PosAsync(this RetailTestServices retail, PosSaleRequest request, PosPolicy? policy = null) =>
+        retail.Pos.SellAsync(request, policy ?? PosUnlimited, Guid.NewGuid());
+
+    public static Task<OrderView> StatusAsync(this RetailTestServices retail, OrderView order, string status, string? notes = null) =>
+        retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(status, notes, order.RowVersion), Guid.NewGuid(), Reservation);
+
+    public static async Task<OrderView> StatusesAsync(this RetailTestServices retail, OrderView order, params string[] statuses)
+    {
+        foreach (var status in statuses) order = await retail.StatusAsync(order, status);
+        return order;
+    }
+
+    public static async Task<int> StatusCodeAsync(Func<Task> action) => (await Assert.ThrowsAsync<RetailException>(action)).StatusCode;
 }
 
 /// <summary>Receipt helpers for tests: build a request without a source and read the received units directly.</summary>
@@ -36,4 +111,7 @@ public static class RetailReceipts
 
     public static async Task<List<StockUnitView>> ReceiveUnitsAsync(this RetailTestServices retail, ReceiveRequest request, Guid actorId) =>
         (await retail.Units.ReceiveAsync(request, actorId)).Items.SelectMany(item => item.Units).ToList();
+
+    public static async Task<List<StockItemAdminView>> ReceiveItemsAsync(this RetailTestServices retail, ReceiveRequest request, Guid actorId) =>
+        (await retail.Units.ReceiveAsync(request, actorId)).Items.ToList();
 }

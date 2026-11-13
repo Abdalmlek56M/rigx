@@ -4,6 +4,7 @@ using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
 using static HardwareStore.Api.Tests.RetailReceipts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,11 +91,64 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         Assert.Equal(700m, Assert.Single(withCosts!).AcquisitionCost);
     }
 
+    [Fact]
+    public async Task Sales_routes_follow_their_permissions_and_the_manual_order_route_is_gone()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "pos-seller", ["Sales.CreatePOS"]);
+        await CreateUserAsync(database, "order-approver", ["Sales.ApproveOrder"]);
+        await using var factory = CreateFactory(database.ConnectionString);
+        var orderUrl = $"/api/v1/admin/retail/orders/{Guid.NewGuid()}";
+
+        using var seller = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(seller, factory, "pos-seller");
+        Assert.Equal(HttpStatusCode.NotFound, (await seller.GetAsync("/api/v1/admin/retail/pos/customers?phone=01000000000")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(seller, "/api/v1/admin/retail/pos/preview", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(seller, "/api/v1/admin/retail/pos/sales", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await seller.GetAsync("/api/v1/admin/retail/blacklist")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(seller, "/api/v1/admin/retail/blacklist", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(seller, $"{orderUrl}/payments", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(seller, HttpMethod.Put, $"{orderUrl}/shipping", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(seller, HttpMethod.Put, $"{orderUrl}/reservation", new { })).StatusCode);
+        Assert.Contains((await PostAsync(seller, "/api/v1/admin/retail/orders", new { })).StatusCode,
+            new[] { HttpStatusCode.NotFound, HttpStatusCode.MethodNotAllowed });
+
+        using var approver = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(approver, factory, "order-approver");
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(approver, "/api/v1/admin/retail/pos/sales", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await approver.GetAsync("/api/v1/admin/retail/blacklist")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(approver, "/api/v1/admin/retail/blacklist", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(approver, HttpMethod.Delete, $"/api/v1/admin/retail/blacklist/{Guid.NewGuid()}", null)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Tracking_and_the_sold_feed_are_public_and_unknown_tokens_are_not_found()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await using var factory = CreateFactory(database.ConnectionString);
+        using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
+
+        var feed = await client.GetAsync("/api/v1/store/sold");
+        Assert.Equal(HttpStatusCode.OK, feed.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/v1/track/unknown-token")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(client, "/api/v1/track/unknown-token/rating", new { score = 5 })).StatusCode);
+    }
+
+    private static async Task<HttpResponseMessage> SendAsync(HttpClient client, HttpMethod method, string url, object? body)
+    {
+        var csrf = await GetCsrfAsync(client);
+        using var request = new HttpRequestMessage(method, url) { Content = body is null ? null : JsonContent.Create(body) };
+        request.Headers.Add("X-CSRF-TOKEN", csrf);
+        return await client.SendAsync(request);
+    }
+
     private static IdentityLoginApiFactory CreateFactory(string connectionString) =>
         new(connectionString, configureTestServices: services =>
         {
             services.RemoveAll<IDbContextFactory<RetailDbContext>>();
             services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
+            services.RemoveAll<IDbContextFactory<StorefrontDbContext>>();
+            services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(connectionString));
         });
 
     private static Task<Guid> CreateUserAsync(OwnerBootstrapDatabase database, string username, string[] permissions) =>

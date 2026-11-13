@@ -29,6 +29,7 @@ internal static class StoreSettingsConfiguration
             Section(entity, item => item.Language, "language");
             Section(entity, item => item.Invoice, "invoice");
             Section(entity, item => item.LeadSources, "lead_sources");
+            Section(entity, item => item.Sales, "sales");
             Section(entity, item => item.WarrantyOptions, "warranty_options");
             entity.Property(item => item.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");

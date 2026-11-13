@@ -20,6 +20,11 @@ public static class RetailRegistration
         services.AddScoped<OrderService>();
         services.AddScoped<OrderStatusService>();
         services.AddScoped<OrderPaymentService>();
+        services.AddScoped<OrderFulfillmentService>();
+        services.AddScoped<OrderTrackingService>();
+        services.AddScoped<BlacklistService>();
+        services.AddScoped<PosService>();
+        services.AddScoped<SoldFeedService>();
         services.AddScoped<ReturnService>();
         services.AddScoped<PartnerAgreementService>();
         services.AddScoped<PartnerAllocationService>();

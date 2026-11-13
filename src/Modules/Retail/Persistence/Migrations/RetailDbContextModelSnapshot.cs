@@ -179,6 +179,65 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.BlacklistEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AddressKey")
+                        .HasMaxLength(700)
+                        .HasColumnType("character varying(700)")
+                        .HasColumnName("address_key");
+
+                    b.Property<string>("AddressText")
+                        .HasMaxLength(700)
+                        .HasColumnType("character varying(700)")
+                        .HasColumnName("address_text");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid>("CreatedByUserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_account_id");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("phone_number");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddressKey")
+                        .HasDatabaseName("ix_blacklist_entries_address");
+
+                    b.HasIndex("Email")
+                        .HasDatabaseName("ix_blacklist_entries_email");
+
+                    b.HasIndex("PhoneNumber")
+                        .HasDatabaseName("ix_blacklist_entries_phone");
+
+                    b.ToTable("blacklist_entries", (string)null);
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.InventoryUnit", b =>
                 {
                     b.Property<Guid>("Id")
@@ -336,6 +395,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assembly_id");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("code");
+
                     b.Property<decimal>("DirectExpenseAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
@@ -371,18 +435,9 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
-                    b.Property<Guid?>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
-
-                    b.Property<string>("Sku")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("sku");
 
                     b.Property<Guid?>("StockItemId")
                         .HasColumnType("uuid")
@@ -467,6 +522,50 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.ToTable("order_item_components", null, t =>
                         {
                             t.HasCheckConstraint("ck_order_item_components_allocation", "allocation_percent BETWEEN 0 AND 100");
+                        });
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.OrderPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorUserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_account_id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("order_payments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_order_payments_amount", "amount > 0");
                         });
                 });
 
@@ -1176,14 +1275,35 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AddressText")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("address_text");
+                    b.Property<string>("Area")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("area");
+
+                    b.Property<string>("Building")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("building");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("channel");
+
+                    b.Property<string>("CourierName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("courier_name");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
+
+                    b.Property<string>("CustomerEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("customer_email");
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
@@ -1202,21 +1322,39 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("fulfillment_method");
 
+                    b.Property<string>("Governorate")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("governorate");
+
                     b.Property<string>("InternalNotes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("internal_notes");
 
+                    b.Property<bool>("IsBlacklisted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_blacklisted");
+
+                    b.Property<string>("Landmark")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("landmark");
+
                     b.Property<string>("LeadSource")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("lead_source");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("notes");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("paid_amount");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
@@ -1249,11 +1387,19 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("payment_waiver_reason");
 
+                    b.Property<bool>("PhoneHasWhatsApp")
+                        .HasColumnType("boolean")
+                        .HasColumnName("phone_has_whatsapp");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("phone_number");
+
+                    b.Property<DateTimeOffset?>("RatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rated_at_utc");
 
                     b.Property<string>("Reference")
                         .IsRequired()
@@ -1266,6 +1412,18 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("refunded_amount");
 
+                    b.Property<bool>("ReservationAutoRelease")
+                        .HasColumnType("boolean")
+                        .HasColumnName("reservation_auto_release");
+
+                    b.Property<DateTimeOffset?>("ReservationExpiredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reservation_expired_at_utc");
+
+                    b.Property<DateTimeOffset?>("ReservedUntilUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reserved_until_utc");
+
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
@@ -1273,11 +1431,25 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasDefaultValue(1L)
                         .HasColumnName("row_version");
 
+                    b.Property<string>("SatisfactionComment")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("satisfaction_comment");
+
+                    b.Property<int?>("SatisfactionScore")
+                        .HasColumnType("integer")
+                        .HasColumnName("satisfaction_score");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
                         .HasColumnName("status");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("street");
 
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 2)
@@ -1298,19 +1470,56 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("total");
 
+                    b.Property<string>("TrackingToken")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("tracking_token");
+
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at_utc");
+
+                    b.Property<decimal>("UpfrontAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("upfront_amount");
+
+                    b.Property<string>("Usage")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("usage");
+
+                    b.Property<string>("UsageNote")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("usage_note");
 
                     b.Property<Guid?>("UserAccountId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_account_id");
 
+                    b.Property<string>("WaybillNumber")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("waybill_number");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("PhoneNumber")
+                        .HasDatabaseName("ix_store_orders_phone");
 
                     b.HasIndex("Reference")
                         .IsUnique()
                         .HasDatabaseName("ux_store_orders_reference");
+
+                    b.HasIndex("ReservedUntilUtc")
+                        .HasDatabaseName("ix_store_orders_reserved_until")
+                        .HasFilter("reserved_until_utc IS NOT NULL AND reservation_expired_at_utc IS NULL");
+
+                    b.HasIndex("TrackingToken")
+                        .IsUnique()
+                        .HasDatabaseName("ux_store_orders_tracking_token");
 
                     b.HasIndex("Status", "CreatedAtUtc")
                         .HasDatabaseName("ix_store_orders_status_created");
@@ -1379,6 +1588,15 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Navigation("OrderItem");
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.OrderPayment", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.StoreOrder", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.Assembly", b =>
                 {
                     b.Navigation("Units");
@@ -1399,6 +1617,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Navigation("Events");
 
                     b.Navigation("Items");
+
+                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }

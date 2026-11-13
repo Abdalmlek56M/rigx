@@ -21,6 +21,7 @@ public sealed class StoreSettings
     public InvoiceSettings Invoice { get; set; } = new();
     public LeadSourceSettings LeadSources { get; set; } = new();
     public WarrantyOptionSettings WarrantyOptions { get; set; } = new();
+    public SalesSettings Sales { get; set; } = new();
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public long RowVersion { get; set; } = 1;

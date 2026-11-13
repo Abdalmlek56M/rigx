@@ -11,6 +11,8 @@ public static class IdentityRateLimitPolicies
     public const string EmailCodeVerify = "identity-email-code-verify";
     public const string Contact = "contact-submit";
     public const string CatalogSuggest = "catalog-suggest";
+    public const string Checkout = "order-checkout";
+    public const string OrderTracking = "order-tracking";
 }
 
 public static class IdentityRateLimiting
@@ -26,6 +28,8 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeVerify, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Contact, 5, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CatalogSuggest, 120, TimeSpan.FromMinutes(1));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Checkout, 10, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.OrderTracking, 60, TimeSpan.FromMinutes(1));
 
             options.OnRejected = async (rejection, cancellationToken) =>
             {
@@ -77,7 +81,8 @@ public static class IdentityRateLimiting
     private static string RetryAfterSeconds(string policyName) => policyName switch
     {
         IdentityRateLimitPolicies.EmailChangeConfirm or IdentityRateLimitPolicies.EmailCodeVerify => "600",
-        IdentityRateLimitPolicies.CatalogSuggest => "60",
+        IdentityRateLimitPolicies.CatalogSuggest or IdentityRateLimitPolicies.OrderTracking => "60",
+        IdentityRateLimitPolicies.Checkout => "600",
         _ => "3600"
     };
 
@@ -89,6 +94,8 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.EmailCodeVerify => "Identity.EmailCode.Verify.RateLimited",
         IdentityRateLimitPolicies.Contact => "Contact.Submit.RateLimited",
         IdentityRateLimitPolicies.CatalogSuggest => "Catalog.Search.RateLimited",
+        IdentityRateLimitPolicies.Checkout => "Sales.Checkout.RateLimited",
+        IdentityRateLimitPolicies.OrderTracking => "Sales.Tracking.RateLimited",
         _ => "Identity.RateLimited"
     };
 }
