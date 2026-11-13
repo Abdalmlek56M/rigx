@@ -12,11 +12,11 @@ How to read: **Missing** = the design needs it and the backend has nothing. **Pa
 
 | # | Gap | Design | Backend today | Step |
 |---|---|---|---|---|
-| S1 | **Every stock item has a public code `RX-xxxx`** (and builds `BLD-xx`, purchases `PO-xxxx`, invoices `INV-YYYY-NNNN`) | used on product page, cart, invoice, sticker, warranty lookup, search ("RTX 3060 أو RX-0142") | units/assemblies/drafts/orders have only GUIDs; orders have `RIGX-yyyyMMdd-random` | 2.2 |
-| S2 | **The storefront sells stock items, not catalog products.** A used item is its own page (real photos of that unit, its warranty, "متاح: قطعة واحدة"); a new item is one listing with a quantity | catalog, product page, cart, builder all show RX items with condition + warranty per item | storefront lists `CatalogProduct` (one price per product, `Condition` on the product); `InventoryUnit` is admin-only and never shown | 2.2 |
+| S1 ✓ | **Every stock item has a public code `RX-xxxx`** (and builds `BLD-xx`, purchases `PO-xxxx`, invoices `INV-YYYY-NNNN`) | used on product page, cart, invoice, sticker, warranty lookup, search ("RTX 3060 أو RX-0142") | units/assemblies/drafts/orders have only GUIDs; orders have `RIGX-yyyyMMdd-random` | 2.2 |
+| S2 ✓ | **The storefront sells stock items, not catalog products.** A used item is its own page (real photos of that unit, its warranty, "متاح: قطعة واحدة"); a new item is one listing with a quantity | catalog, product page, cart, builder all show RX items with condition + warranty per item | storefront lists `CatalogProduct` (one price per product, `Condition` on the product); `InventoryUnit` is admin-only and never shown | 2.2 ✓ (INV with 2.6) |
 | S3 | **Guest checkout** ("مش لازم تعمل حساب") with a structured Egyptian address | name, phone, "same number on WhatsApp", governorate, area, street, building/floor/flat, landmark, notes | `POST /api/v1/orders` requires login; order stores one `AddressText` | 2.4 |
 | S4 ✓ | **Login = Google or 6-digit email code only**, same login for customers and staff, staff invited by email | X-Login, ADM-Users ("مفيش باسوردات") | ~~password login/registration/reset~~ removed; email code + Google ✓ | 2.1 ✓ |
-| S5 | **Category specification schema** drives filters *and* builder compatibility (socket, power W, integrated GPU…) and is inherited down the tree | ADM-Categories, D-Admin ("بتستخدم في الفلاتر والتوافق"), D-Builder | specs are free text per product; categories have no spec definitions, no code (CPU/GPU), no "show in menu / in builder" flags | 2.2 |
+| S5 ✓ | **Category specification schema** drives filters *and* builder compatibility (socket, power W, integrated GPU…) and is inherited down the tree | ADM-Categories, D-Admin ("بتستخدم في الفلاتر والتوافق"), D-Builder | specs are free text per product; categories have no spec definitions, no code (CPU/GPU), no "show in menu / in builder" flags | 2.2 |
 | S6 | **Business audit log with before/after + restore**, immutable | ADM-Audit, ADM-Users mini-log, every "بتتسجل في سجل النشاط" note | only security events (login, sessions, restrictions) | 2.11 |
 | S7 | **Trash (30-day restore) for everything deletable** | ADM-System | only content media and addresses have `IsDeleted` | 2.10 |
 
@@ -81,9 +81,9 @@ How to read: **Missing** = the design needs it and the backend has nothing. **Pa
 |---|---|
 | Password login, registration, password reset, admin password reset | remove in 2.1 ✓ (owner decision 3) |
 | Warehouses (`Inventory` module, multi-warehouse CRUD) | design has one pickup location → remove, or keep hidden until a branch exists (**D7**) |
-| Supplier profiles with bank/tax/IBAN, supplier product catalog | design's seller is a simple person/trader/company record → fold into the purchase "seller" record (**D7**) |
+| Supplier profiles with bank/tax/IBAN, supplier product catalog | folded into the seller record in 2.2 ✓ (**D7**) |
 | PC-builder templates with fixed options | replaced by the free builder (2.13) + ready builds (assemblies) → remove in 2.13 |
-| Catalog product variants | design lists each model/capacity as its own item → remove in 2.2 unless a variant case appears (**D7**) |
+| Catalog product variants | removed in 2.2 ✓ (**D7**) |
 | Uploaded video hosting (`ContentVideoAsset` files + streaming) | design uses YouTube links only → keep YouTube, drop file hosting (**D7**) |
 | In-app notifications (`UserNotification`) | not in the design (email + WhatsApp only) → remove or keep for staff (**D7**) |
 | Homepage layout JSON (rails, hidden items) | design only orders homepage sections from settings → removed in 2.17 ✓ (section order + visibility in store controls) |
@@ -108,7 +108,7 @@ How to read: **Missing** = the design needs it and the backend has nothing. **Pa
 
 1. **2.1 Auth** (S4) ✓ done — unblocks guest/customer flows and staff invites.
 2. **2.17 Settings v2** ✓ done — shipping groups, deposit, payments, links, templates, watermark, invoice settings are read by later steps.
-3. **2.2 Catalog & intake** (S1, S2, S5) — RX codes, stock-item listings, category spec schema, intake form. The biggest step; split into 2.2a codes + listing model, 2.2b category specs, 2.2c purchase/intake.
+3. **2.2 Catalog & intake** (S1, S2, S5) ✓ done 13 Nov 2026 — RX codes, stock-item listings, category spec schema, intake form. The biggest step; split into 2.2a codes + listing model, 2.2b category specs, 2.2c purchase/intake.
 4. **2.3 Assemblies**, **2.4 Sales/POS/orders** (S3), **2.7 Shipping**, **2.5 Warranty**, **2.6 Invoicing**.
 5. **2.12 Requests inbox**, **2.13 Builder v2**, **2.14 Partners v2**, **2.15 Money & dashboard**, **2.16 Content v2**, **2.18 Customers admin**.
 6. **2.10 System**, **2.11 Audit** (S6, S7) — can start any time after 2.1; the audit interceptor is better early so later steps are logged.
