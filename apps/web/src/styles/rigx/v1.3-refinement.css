@@ -1,0 +1,245 @@
+/* RIGX Complete UI Preview V1.3 — calm premium surfaces, clearer customer value */
+
+/* Bring the ambient lighting down: depth first, glow only as an accent. */
+body {
+  background:
+    radial-gradient(ellipse 58rem 42rem at 12% 4%, rgba(38, 78, 113, .19), transparent 72%),
+    radial-gradient(ellipse 52rem 44rem at 92% 37%, rgba(32, 83, 127, .16), transparent 72%),
+    radial-gradient(ellipse 36rem 30rem at 48% 86%, rgba(17, 49, 78, .13), transparent 74%),
+    linear-gradient(180deg, #081321 0%, #0b1726 42%, #070e19 100%);
+}
+.ambient { opacity: .48 !important; filter: blur(88px); }
+.ambient-one { background: radial-gradient(circle, rgba(255, 103, 42, .085), transparent 70%) !important; }
+.ambient-two { background: radial-gradient(circle, rgba(53, 126, 184, .19), transparent 72%) !important; }
+.ambient-three { background: radial-gradient(circle, rgba(40, 94, 140, .11), transparent 72%) !important; }
+.pcb-overlay { opacity: .42 !important; }
+.edge-light { opacity: .48; box-shadow: 0 0 16px rgba(60, 130, 186, .09), 0 0 12px rgba(255, 85, 0, .055); }
+
+/* Remove redundant hero layers and give the hero its own breathing room. */
+#view-home .hero-grid { gap: 18px; min-height: 424px; }
+#view-home .hero-main {
+  min-height: 424px;
+  padding: clamp(24px, 2.6vw, 38px);
+  gap: clamp(12px, 1.4vw, 24px);
+  background: linear-gradient(118deg, rgba(7, 16, 29, .98), rgba(12, 28, 45, .96) 52%, rgba(19, 39, 59, .95));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .27), inset 0 1px 0 rgba(210, 230, 248, .06);
+}
+#view-home .hero-main:before {
+  background:
+    radial-gradient(ellipse at 25% 52%, rgba(255, 85, 0, .105), transparent 44%),
+    radial-gradient(ellipse at 78% 8%, rgba(59, 135, 190, .22), transparent 44%),
+    radial-gradient(ellipse at 64% 92%, rgba(37, 95, 145, .15), transparent 46%);
+}
+#view-home .hero-main:after { opacity: .42; }
+#view-home .hero-orbit { opacity: .54; }
+#view-home .orbit-a { border-color: rgba(255, 126, 72, .16); box-shadow: none; }
+#view-home .orbit-b { border-color: rgba(103, 167, 211, .14); }
+#view-home .hero-scan { opacity: .34; filter: blur(4px); box-shadow: 0 0 10px rgba(255, 85, 0, .22); }
+#view-home .hero-copy { max-width: 470px; }
+#view-home .hero-copy h1 { margin: 13px 0 12px; font-size: clamp(35px, 3.65vw, 50px); line-height: 1.2; }
+#view-home .hero-copy h1 em { text-shadow: 0 0 13px rgba(255, 85, 0, .10); }
+#view-home .hero-copy p { max-width: 410px; font-size: 12px; line-height: 1.9; color: #b6c5d4; margin-bottom: 19px; }
+#view-home .hero-ctas { gap: 11px; }
+#view-home .btn-primary { box-shadow: 0 5px 16px rgba(255, 85, 0, .14), inset 0 1px 0 rgba(255, 255, 255, .19); }
+#view-home .btn-primary:hover { box-shadow: 0 7px 19px rgba(255, 85, 0, .20); }
+#view-home .btn-ghost { background: rgba(25, 43, 62, .64); border-color: rgba(132, 168, 198, .22); }
+#view-home .btn-ghost svg { width: 15px; height: 15px; color: #9cc8e8; }
+#view-home .hero-product { min-width: 0; position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; }
+#view-home .hero-product-top { display: flex; justify-content: space-between; gap: 12px; color: #8fa5ba; font: 700 8px var(--font-latin); letter-spacing: 1.1px; margin: 0 8px 5px; }
+#view-home .live-indicator { color: #8fb3d1; }
+#view-home .hero-gpu-stage { position: relative; isolation: isolate; width: 100%; aspect-ratio: 2 / 1; display: grid; place-items: center; }
+#view-home .hero-gpu-stage:before {
+  content: ""; position: absolute; z-index: -1; inset: 10% 4% 4%; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(68, 151, 211, .18), rgba(255, 105, 45, .075) 42%, transparent 72%);
+  filter: blur(24px); opacity: .8;
+}
+#view-home .hero-gpu {
+  position: relative; z-index: 1; display: block; width: 112%; max-width: 690px; height: 100%; max-height: none;
+  object-fit: contain; object-position: center; transform: translateY(1%) rotate(-1deg) scale(1.01);
+  filter: drop-shadow(0 15px 20px rgba(0, 0, 0, .42)) drop-shadow(0 0 16px rgba(57, 145, 205, .12));
+  transition: transform .55s var(--ease), filter .55s var(--ease);
+}
+#view-home .hero-product:hover .hero-gpu {
+  transform: translateY(-1%) rotate(-.2deg) scale(1.035);
+  filter: drop-shadow(0 20px 24px rgba(0, 0, 0, .45)) drop-shadow(0 0 20px rgba(58, 157, 218, .19));
+}
+.gpu-rgb-halo { position: absolute; z-index: 0; inset: 16% 10% 12%; border-radius: 50%; background: conic-gradient(from 30deg, transparent 0 16%, rgba(63, 184, 255, .16) 23%, transparent 34%, rgba(255, 93, 52, .13) 50%, transparent 66%, rgba(168, 90, 255, .13) 80%, transparent 91%); filter: blur(17px); opacity: .26; transition: opacity .4s; }
+#view-home .hero-product:hover .gpu-rgb-halo { opacity: .62; }
+.gpu-fan-effects { position: absolute; z-index: 2; inset: 0; pointer-events: none; overflow: hidden; }
+.gpu-fan-effects i {
+  position: absolute; top: 47%; width: 19%; aspect-ratio: 1; border-radius: 50%;
+  background: conic-gradient(from 15deg, transparent 0 18%, rgba(69, 193, 255, .20) 22%, transparent 35%, rgba(210, 89, 255, .16) 48%, transparent 61%, rgba(255, 132, 65, .17) 74%, transparent 88%);
+  -webkit-mask: radial-gradient(circle, transparent 47%, #000 52% 72%, transparent 79%);
+  mask: radial-gradient(circle, transparent 47%, #000 52% 72%, transparent 79%);
+  opacity: 0; transition: opacity .32s;
+}
+.gpu-fan-effects i:nth-child(1) { left: 24%; }
+.gpu-fan-effects i:nth-child(2) { left: 48.5%; }
+.gpu-fan-effects i:nth-child(3) { left: 72%; }
+#view-home .hero-product:hover .gpu-fan-effects i { opacity: .58; animation: fan-light-sweep 2.4s linear infinite; }
+#view-home .hero-product:hover .gpu-fan-effects i:nth-child(2) { animation-duration: 2.9s; }
+#view-home .hero-product:hover .gpu-fan-effects i:nth-child(3) { animation-duration: 2.6s; }
+@keyframes fan-light-sweep { to { transform: rotate(360deg); } }
+#view-home .hero-product-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid rgba(130, 176, 210, .12); padding: 9px 10px 0; margin: 0 8px; color: #8fa5ba; font-size: 8px; }
+#view-home .hero-product-caption span:last-child { font: 700 8px var(--font-latin); letter-spacing: .45px; color: #c2d4e3; }
+#view-home .hero-corner { opacity: .25; }
+
+/* Side promos remain available but less glossy and visually quieter. */
+#view-home .side-promo { box-shadow: 0 12px 28px rgba(0,0,0,.18), inset 0 1px 0 rgba(220,238,252,.045); }
+#view-home .side-promo:hover { box-shadow: 0 14px 30px rgba(0,0,0,.23), 0 0 13px rgba(255,85,0,.055); transform: translateY(-2px); }
+#view-home .side-promo:before { opacity: .55; }
+
+/* Benefits now communicate real service value; all four use a consistent icon family. */
+#view-home .ticker-benefits {
+  gap: 8px; padding: 9px; margin-top: 15px; border-radius: 16px;
+  background: linear-gradient(110deg, rgba(10, 24, 39, .96), rgba(20, 39, 58, .93) 48%, rgba(8, 20, 34, .96));
+  border-color: rgba(109, 153, 188, .19); box-shadow: 0 13px 30px rgba(0,0,0,.17), inset 0 1px 0 rgba(210,230,248,.055);
+}
+#view-home .benefit-card {
+  --benefit-accent: #a7c9e3;
+  min-height: 72px; padding: 10px 13px; gap: 12px;
+  border-color: rgba(124, 166, 198, .14);
+  background: linear-gradient(145deg, rgba(28, 49, 69, .66), rgba(10, 23, 38, .82));
+  box-shadow: inset 0 1px 0 rgba(226,240,252,.045), 0 5px 14px rgba(0,0,0,.12);
+}
+#view-home .benefit-support { --benefit-accent: #a8d8f4; }
+#view-home .benefit-aftersales { --benefit-accent: #9bc6e1; }
+#view-home .benefit-warranty { --benefit-accent: #ffb17c; }
+#view-home .benefit-clarity { --benefit-accent: #b1c9de; }
+#view-home .benefit-card:hover {
+  transform: translateY(-2px); border-color: color-mix(in srgb, var(--benefit-accent) 38%, transparent);
+  background: linear-gradient(145deg, rgba(36, 61, 83, .75), rgba(13, 28, 44, .88));
+  box-shadow: 0 8px 17px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.075);
+}
+#view-home .benefit-symbol { width: 42px; height: 42px; flex-basis: 42px; border-radius: 11px; box-shadow: none; }
+#view-home .benefit-symbol svg { width: 20px; height: 20px; }
+#view-home .benefit-card:hover .benefit-symbol { transform: translateY(-1px) rotate(-4deg) scale(1.035); filter: none; }
+#view-home .ticker-benefits b { color: #edf4fa; font-size: 11px; }
+#view-home .ticker-benefits small { color: #9dafc0; font-size: 9px; }
+
+/* Product imagery and cards: controlled highlight, no loud outer neon. */
+.product-card { transition: transform .24s var(--ease), border-color .24s, box-shadow .24s; }
+.product-card:hover { transform: translateY(-3px); border-color: rgba(122, 168, 202, .28); box-shadow: 0 14px 29px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.075); }
+.product-image-stage { cursor: pointer; }
+.product-image-stage img { transition: transform .42s var(--ease), filter .42s; }
+.product-image-stage:hover img { transform: scale(1.045); filter: drop-shadow(0 9px 16px rgba(0,0,0,.26)); }
+.product-title-button { border: 0; background: transparent; padding: 0; color: inherit; font: inherit; font-weight: 700; text-align: inherit; cursor: pointer; }
+.product-title-button:hover { color: #f5a77b; }
+.image-open-hint { position:absolute; inset-inline-start:12px; bottom:12px; z-index:4; padding:6px 9px; border:1px solid rgba(149,184,211,.20); border-radius:8px; color:#c3d5e4; background:rgba(7,17,29,.70); font-size:8px; opacity:0; transform:translateY(4px); transition:opacity .2s,transform .2s; }
+.product-image-stage:hover .image-open-hint,.product-image-stage:focus-within .image-open-hint { opacity:1; transform:translateY(0); }
+.product-share-btn:hover { box-shadow: 0 0 12px rgba(87,166,219,.10); }
+.product-add-btn { box-shadow: 0 4px 12px rgba(255,85,0,.10), inset 0 1px 0 rgba(255,255,255,.15); }
+.product-add-btn:hover { box-shadow: 0 6px 15px rgba(255,85,0,.18); }
+
+/* Contact entry points. The floating action is an in-preview contact panel, not a fake WhatsApp link. */
+.header-contact-btn { display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 11px;border:1px solid rgba(133,174,204,.20);border-radius:10px;background:rgba(29,51,72,.44);color:#c8d8e6;font-size:10px;font-weight:700;white-space:nowrap;transition:background .2s,border-color .2s,transform .2s; }
+.header-contact-btn svg { width:16px;height:16px;color:#a8d4ee; }
+.header-contact-btn:hover { background:rgba(39,67,92,.68);border-color:rgba(142,190,222,.38);transform:translateY(-1px); }
+body[data-view="admin"] .header-contact-btn { display:none; }
+
+/* Product detail experience with FAQ and contextual recommendations. */
+.preview-modal { width:min(820px, calc(100vw - 30px)); }
+.product-detail-layout { display:grid;grid-template-columns:minmax(220px,.85fr) minmax(0,1.15fr);gap:20px;align-items:center;margin:16px 0 21px; }
+.product-detail-image { min-height:205px;border:1px solid rgba(132,174,205,.18);border-radius:15px;background:radial-gradient(circle at 50% 40%,rgba(63,124,169,.20),rgba(14,29,46,.82) 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:13px;gap:7px; }
+.product-detail-image img { width:100%;height:175px;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.29)); }
+.product-detail-image span { font-size:8px;color:#92a9bd; }
+.product-detail-copy h2 { color:#f4f7fb;font-size:23px;line-height:1.35;margin:7px 0; }
+.product-detail-copy>p { color:#b1c0d0;font-size:11px;line-height:1.9;margin:0 0 13px; }
+.product-detail-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:16px; }
+.product-detail-actions .btn-primary,.product-detail-actions .btn-ghost { height:40px; }
+.detail-section-heading { margin:12px 0 10px; }
+.detail-section-heading h3 { color:#f0f5fa;font-size:15px;margin:5px 0 3px; }
+.detail-section-heading p { color:#91a6ba;font-size:9px;margin:0; }
+.product-faq-section,.related-section { border-top:1px solid rgba(128,170,201,.14);padding-top:11px;margin-top:14px; }
+.product-faq-list { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+.product-faq-item { border:1px solid rgba(123,164,194,.16);border-radius:10px;background:linear-gradient(145deg,rgba(29,50,70,.62),rgba(8,20,34,.84));padding:0 11px; }
+.product-faq-item summary { position:relative;cursor:pointer;list-style:none;padding:11px 20px 11px 2px;color:#e4edf5;font-size:10px;font-weight:700; }
+.product-faq-item summary::-webkit-details-marker { display:none; }
+.product-faq-item summary:after { content:"＋";position:absolute;right:0;top:50%;transform:translateY(-50%);color:#a9cde7;font-size:13px; }
+.product-faq-item[open] summary:after { content:"−";color:#ffb17c; }
+.product-faq-item p { margin:0;padding:0 0 11px;color:#aabac9;font-size:9px;line-height:1.8; }
+.related-products { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px; }
+.related-product { display:flex;align-items:center;gap:7px;min-width:0;padding:8px;border:1px solid rgba(126,168,198,.15);border-radius:10px;background:rgba(18,37,55,.72); }
+.related-open { display:flex;align-items:center;gap:7px;flex:1;min-width:0;border:0;background:transparent;text-align:right;padding:0; }
+.related-open img { width:48px;height:43px;object-fit:contain;flex:none; }
+.related-open span { display:flex;flex-direction:column;gap:3px;min-width:0; }
+.related-open b { color:#e7eff6;font-size:8px;line-height:1.5; }
+.related-open small { color:#92a8bb;font-size:7px; }
+.related-add { flex:none;width:27px;height:27px;border:1px solid rgba(255,153,103,.28);border-radius:8px;background:rgba(255,85,0,.09);color:#ffb17c;font-size:15px; }
+
+/* Contact modal */
+.contact-intro { color:#b4c4d3;font-size:11px;line-height:1.9;margin:8px 0 15px; }
+.contact-service-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:15px; }
+.contact-service { display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:12px;border:1px solid rgba(127,169,200,.17);border-radius:11px;background:linear-gradient(145deg,rgba(30,53,74,.70),rgba(9,21,36,.88));text-align:right;transition:border-color .2s,background .2s,transform .2s; }
+.contact-service>span { display:grid;place-items:center;width:29px;height:29px;border:1px solid rgba(130,184,220,.25);border-radius:8px;color:#aad4ef;background:rgba(80,143,187,.09);font-size:15px; }
+.contact-service b { color:#ecf3f8;font-size:10px; }
+.contact-service small { color:#97adbf;font-size:8px; }
+.contact-service:hover,.contact-service.active { border-color:rgba(255,145,93,.42);background:linear-gradient(145deg,rgba(43,65,85,.82),rgba(15,29,44,.92));transform:translateY(-2px); }
+.contact-service.active>span { color:#ffb17c;border-color:rgba(255,145,93,.38);background:rgba(255,115,50,.09); }
+.contact-field-label { display:block;color:#c6d4e0;font-size:10px;margin:0 0 6px; }
+#contactMessage { display:block;width:100%;resize:vertical;min-height:100px;padding:11px;border:1px solid rgba(128,172,204,.20);border-radius:10px;background:rgba(5,15,27,.72);color:#e8f0f6;font:11px var(--font-arabic);line-height:1.8; }
+#contactMessage::placeholder { color:#70869b; }
+.contact-modal-actions { display:flex;align-items:center;gap:11px;margin-top:12px;flex-wrap:wrap; }
+.contact-modal-actions .btn-primary { height:40px; }
+.contact-modal-actions small { color:#8ea4b8;font-size:8px; }
+
+/* Medium and narrow viewports */
+@media(max-width:1120px) { .header-contact-btn span { display:none; }.header-contact-btn { width:36px;padding:0;justify-content:center; } }
+@media(max-width:900px) {
+  #view-home .hero-grid { min-height:0; }
+  #view-home .hero-main { min-height:0; }
+  #view-home .hero-product-caption { font-size:7px; }
+  .product-detail-layout { grid-template-columns:minmax(150px,.75fr) minmax(0,1.25fr);gap:13px; }
+  .product-detail-image { min-height:170px; }
+  .product-detail-image img { height:145px; }
+}
+@media(max-width:640px) {
+  #view-home .hero-main { padding:20px 16px;gap:12px; }
+  #view-home .hero-copy h1 { font-size:32px;margin:8px 0 9px; }
+  #view-home .hero-copy p { font-size:10px;line-height:1.8;margin-bottom:12px; }
+  #view-home .hero-product-top { margin-inline:2px;font-size:7px; }
+  #view-home .hero-gpu-stage { max-width:100%; }
+  #view-home .hero-gpu { width:100%; }
+  #view-home .hero-product-caption { margin-inline:2px;padding-top:6px; }
+  #view-home .ticker-benefits { grid-template-columns:1fr 1fr;gap:7px;padding:8px; }
+  #view-home .benefit-card { min-height:66px;padding:8px;gap:7px; }
+  #view-home .benefit-symbol { width:32px;height:32px;flex-basis:32px; }
+  #view-home .benefit-symbol svg { width:17px;height:17px; }
+  #view-home .ticker-benefits b { font-size:9px; }
+  #view-home .ticker-benefits small { font-size:7px;white-space:normal; }
+  .header-contact-btn { display:none; }
+  .product-detail-layout { grid-template-columns:1fr; }
+  .product-detail-image { min-height:150px; }
+  .product-detail-image img { height:125px; }
+  .product-detail-copy h2 { font-size:18px; }
+  .product-faq-list { grid-template-columns:1fr; }
+  .related-products { grid-template-columns:1fr; }
+  .contact-service-grid { grid-template-columns:1fr; }
+  .contact-service { display:grid;grid-template-columns:34px 1fr;align-items:center;column-gap:9px; }
+  .contact-service>span { grid-row:span 2; }
+  .contact-modal-actions { align-items:flex-start;flex-direction:column; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #view-home .hero-gpu,#view-home .benefit-card,.benefit-symbol,.gpu-fan-effects i,.header-contact-btn { transition:none!important;animation:none!important; }
+  #view-home .hero-product:hover .gpu-fan-effects i { animation:none!important; }
+}
+
+@media(max-width:640px) {
+  /* The desktop-specific hero grid has higher selector specificity; explicitly stack it on phones. */
+  #view-home .hero-main {
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:9px;
+    padding:21px 17px 15px;
+    min-height:0;
+  }
+  #view-home .hero-copy { order:1;max-width:none;width:100%; }
+  #view-home .hero-copy h1 { max-width:100%;font-size:31px;line-height:1.22; }
+  #view-home .hero-copy p { max-width:100%;font-size:10px;line-height:1.85; }
+  #view-home .hero-product { order:2;width:100%;min-height:0;margin-top:1px; }
+  #view-home .hero-product-top { margin:0 2px 2px;font-size:6.5px; }
+  #view-home .hero-gpu-stage { width:100%;max-width:430px;aspect-ratio:2 / 1;margin-inline:auto; }
+  #view-home .hero-gpu { width:100%;height:100%;max-width:none;transform:none; }
+  #view-home .hero-product-caption { margin:0 2px;padding-top:6px;font-size:7px; }
+}

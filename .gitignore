@@ -1,0 +1,37 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+!.env.preview.example
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/
+
+# Node / Next.js
+**/node_modules/
+**/.next/
+**/coverage/
+**/playwright-report/
+**/test-results/
+.playwright-browsers/
+npm-debug.log*
+
+# Local data and temporary output
+.backups/
+.dotnet-home/
+.packages/
+.template-hive/
+*.tmp
+
+# Archives and generated review output (never versioned)
+*.zip
+*.zip.sha256
+archive/
+docs/review/
+**/TestResults/
+*.log
+.opencode/

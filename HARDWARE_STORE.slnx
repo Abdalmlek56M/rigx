@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/Common/">
+    <Project Path="src/Common/Common.Domain/Common.Domain.csproj" />
+    <Project Path="src/Common/Common.Application/Common.Application.csproj" />
+    <Project Path="src/Common/Common.Infrastructure/Common.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Modules/">
+    <Project Path="src/Modules/Identity/HardwareStore.Modules.Identity.csproj" />
+    <Project Path="src/Modules/Catalog/HardwareStore.Modules.Catalog.csproj" />
+    <Project Path="src/Modules/Inventory/HardwareStore.Modules.Inventory.csproj" />
+    <Project Path="src/Modules/Purchasing/HardwareStore.Modules.Purchasing.csproj" />
+    <Project Path="src/Modules/Storefront/HardwareStore.Modules.Storefront.csproj" />
+    <Project Path="src/Modules/Sales/HardwareStore.Modules.Sales.csproj" />
+    <Project Path="src/Modules/Invoicing/HardwareStore.Modules.Invoicing.csproj" />
+    <Project Path="src/Modules/Financials/HardwareStore.Modules.Financials.csproj" />
+    <Project Path="src/Modules/PcBuilder/HardwareStore.Modules.PcBuilder.csproj" />
+    <Project Path="src/Modules/Retail/HardwareStore.Modules.Retail.csproj" />
+    <Project Path="src/Modules/Auditing/HardwareStore.Modules.Auditing.csproj" />
+  </Folder>
+  <Folder Name="/Host/">
+    <Project Path="src/Host/HardwareStore.Api/HardwareStore.Api.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/HardwareStore.Api.Tests/HardwareStore.Api.Tests.csproj" />
+  </Folder>
+</Solution>

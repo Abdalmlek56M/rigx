@@ -1,0 +1,20 @@
+root = true
+
+[*.cs]
+charset = utf-8
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+insert_final_newline = true
+dotnet_sort_system_directives_first = true
+
+[*.{json,js,mjs,ts,tsx,css,yml,yaml,xml}]
+charset = utf-8
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+
+[*.md]
+charset = utf-8
+trim_trailing_whitespace = false
+insert_final_newline = true

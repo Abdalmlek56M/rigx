@@ -1,0 +1,76 @@
+/* RIGX Complete UI Preview V1.4 — customer service value and restrained hardware showcase */
+
+/* A real-looking still product render: no pretend fan rotation and no synthetic RGB rings. */
+#view-home .hero-gpu-stage { isolation:isolate; }
+#view-home .hero-gpu-stage:before { content:""; position:absolute; inset:16% 8% 7%; z-index:-1; border-radius:50%; background:radial-gradient(ellipse,rgba(69,133,180,.13),rgba(14,31,49,.03) 58%,transparent 75%); filter:blur(25px); }
+#view-home .hero-gpu { width:108%;max-width:710px;object-fit:contain;transform:translateY(1%) scale(1.005);filter:drop-shadow(0 18px 23px rgba(0,0,0,.48)) drop-shadow(0 0 10px rgba(73,139,184,.07));transition:transform .38s var(--ease),filter .38s; }
+#view-home .hero-product:hover .hero-gpu { transform:translateY(-.5%) scale(1.012);filter:drop-shadow(0 20px 25px rgba(0,0,0,.5)) drop-shadow(0 0 12px rgba(73,139,184,.09)); }
+.gpu-rgb-halo,.gpu-fan-effects { display:none!important; }
+#view-home .hero-product-top { color:#8ea9bf; }
+#view-home .hero-product-top>span:first-child { letter-spacing:1.15px; }
+#view-home .hero-product-caption { color:#8ea5b9; }
+#view-home .hero-copy h1 { max-width:560px; }
+#view-home .hero-copy p { color:#bdcbd8;max-width:430px; }
+
+/* Two useful customer ads: free consultation and sourcing a requested item. */
+.home-service-promos { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px; }
+.service-promo-card { min-height:164px;position:relative;display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:16px;padding:22px 24px;border-radius:19px;isolation:isolate;transition:transform .24s var(--ease),border-color .24s,box-shadow .24s; }
+.service-promo-card:before { content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.86; }
+.consultation-promo:before { background:radial-gradient(ellipse at 4% 45%,rgba(79,151,202,.20),transparent 55%),linear-gradient(115deg,rgba(20,43,64,.48),transparent 70%); }
+.sourcing-promo:before { background:radial-gradient(ellipse at 4% 45%,rgba(238,132,78,.13),transparent 55%),linear-gradient(115deg,rgba(36,43,54,.42),transparent 70%); }
+.service-promo-card:hover { transform:translateY(-2px);border-color:rgba(129,179,213,.34);box-shadow:0 16px 32px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.07); }
+.service-promo-icon { width:58px;height:58px;display:grid;place-items:center;border:1px solid rgba(132,183,218,.28);border-radius:15px;background:linear-gradient(145deg,rgba(61,117,157,.18),rgba(8,22,37,.56));color:#a9d6f1;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .25s var(--ease),border-color .25s,background .25s; }
+.service-promo-icon svg { width:28px;height:28px; }
+.consultation-promo .service-promo-icon { color:#9bd0ef; }
+.sourcing-promo .service-promo-icon { color:#ffb17c;border-color:rgba(255,158,105,.27);background:linear-gradient(145deg,rgba(181,91,48,.13),rgba(8,22,37,.56)); }
+.service-promo-card:hover .service-promo-icon { transform:translateY(-2px);border-color:rgba(151,204,236,.48); }
+.service-promo-copy { min-width:0;position:relative;z-index:1; }
+.service-promo-copy .eyebrow { font-size:8px;letter-spacing:1.25px;color:#9dc7e2; }
+.sourcing-promo .service-promo-copy .eyebrow { color:#ffb17c; }
+.service-promo-copy h3 { color:#f0f5f9;font-size:17px;line-height:1.45;margin:7px 0 5px;font-weight:700; }
+.service-promo-copy p { color:#aebfd0;font-size:10px;line-height:1.9;margin:0;max-width:580px; }
+.service-promo-link { display:inline-flex;align-items:center;gap:9px;margin-top:12px;padding:0;border:0;background:transparent;color:#b8dcf1;font-size:10px;font-weight:700;transition:color .2s,gap .2s; }
+.sourcing-promo .service-promo-link { color:#ffc096; }
+.service-promo-link b { font-size:16px;line-height:1; }
+.service-promo-link:hover { color:#fff;gap:13px; }
+.service-promo-mark { position:absolute;inset-inline-end:17px;top:13px;color:rgba(180,211,232,.12);font:700 10px var(--font-latin);letter-spacing:1px; }
+
+/* Benefit strip: common service language and recognizable icon colours. */
+#view-home .benefit-delivery { --benefit-accent:#9bc8e4; }
+#view-home .benefit-support { --benefit-accent:#a8d8f4; }
+#view-home .benefit-aftersales { --benefit-accent:#9bc6e1; }
+#view-home .benefit-warranty { --benefit-accent:#ffb17c; }
+#view-home .ticker-benefits b { font-size:11px; }
+#view-home .ticker-benefits small { font-size:9px; }
+#view-home .benefit-delivery .benefit-symbol { color:#a8d8f4; }
+#view-home .benefit-warranty .benefit-symbol { color:#ffb17c; }
+
+/* Contact dialog topic-specific copy. */
+.contact-topic-note { display:flex;align-items:center;gap:9px;margin:10px 0 13px;padding:10px 12px;border:1px solid rgba(130,177,208,.20);border-radius:10px;background:linear-gradient(100deg,rgba(34,69,96,.34),rgba(9,22,36,.46));color:#c9d8e5;font-size:9px;line-height:1.8; }
+.contact-topic-note svg { width:17px;height:17px;flex:none;color:#a9d6f1; }
+
+@media(max-width:900px) {
+  .home-service-promos { gap:10px; }
+  .service-promo-card { grid-template-columns:52px minmax(0,1fr);gap:12px;padding:17px;min-height:158px; }
+  .service-promo-icon { width:48px;height:48px;border-radius:12px; }
+  .service-promo-icon svg { width:23px;height:23px; }
+  .service-promo-copy h3 { font-size:14px; }
+}
+@media(max-width:640px) {
+  .home-service-promos { grid-template-columns:1fr;gap:9px;margin-top:11px; }
+  .service-promo-card { min-height:136px;grid-template-columns:48px minmax(0,1fr);padding:15px 14px;gap:11px;border-radius:15px; }
+  .service-promo-copy .eyebrow { font-size:7px; }
+  .service-promo-copy h3 { font-size:13px;margin:5px 0 4px; }
+  .service-promo-copy p { font-size:9px;line-height:1.8; }
+  .service-promo-link { margin-top:8px;font-size:9px; }
+  .service-promo-mark { top:9px;inset-inline-end:11px;font-size:8px; }
+  #view-home .hero-gpu { width:100%;max-width:430px;transform:none;filter:drop-shadow(0 12px 16px rgba(0,0,0,.38)); }
+  #view-home .hero-product:hover .hero-gpu { transform:none;filter:drop-shadow(0 12px 16px rgba(0,0,0,.38)); }
+  #view-home .benefit-card { min-height:66px; }
+  #view-home .ticker-benefits b { font-size:9px; }
+  #view-home .ticker-benefits small { font-size:8px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .service-promo-card,.service-promo-icon,.service-promo-link,#view-home .hero-gpu { transition:none!important; }
+  .service-promo-card:hover,#view-home .hero-product:hover .hero-gpu { transform:none!important; }
+}

@@ -1,0 +1,86 @@
+name: hardware-store-preview
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    ports:
+      - "127.0.0.1:${PREVIEW_DB_PORT:-5435}:5432"
+    volumes:
+      - preview_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Host/HardwareStore.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=hardware_store_app;Password=${APP_DB_PASSWORD}
+      ConnectionStrings__Migrations: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      DataProtection__KeyRingPath: /home/app/.local/share/HardwareStore/DataProtection/Preview
+      Catalog__MediaRoot: /app/App_Data/catalog-media
+      Identity__EmailVerificationBaseUrl: http://127.0.0.1:${PREVIEW_WEB_PORT:-3005}/verify-email
+      Identity__PasswordResetBaseUrl: http://127.0.0.1:${PREVIEW_WEB_PORT:-3005}/reset-password
+      Preview__Enabled: "true"
+      Preview__BootstrapKey: ${PREVIEW_BOOTSTRAP_KEY}
+      Preview__OwnerEmail: ${PREVIEW_OWNER_EMAIL}
+      Preview__OwnerUsername: ${PREVIEW_OWNER_USERNAME}
+      Preview__OwnerFullName: ${PREVIEW_OWNER_FULL_NAME}
+      Preview__OwnerPassword: ${PREVIEW_OWNER_PASSWORD}
+    ports:
+      - "127.0.0.1:${PREVIEW_API_PORT:-8085}:8080"
+    volumes:
+      - preview_data_protection:/home/app/.local/share/HardwareStore/DataProtection/Preview
+      - preview_catalog_media:/app/App_Data/catalog-media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.preview
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      API_ORIGIN: http://api:8080
+      NEXT_PUBLIC_PREVIEW_MODE: "true"
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://127.0.0.1:3005}
+      NEXT_PUBLIC_STORE_WHATSAPP_NUMBER: ${STORE_WHATSAPP_NUMBER:-}
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:${PREVIEW_WEB_PORT:-3005}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+
+volumes:
+  preview_postgres_data:
+  preview_data_protection:
+  preview_catalog_media:
