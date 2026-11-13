@@ -21,15 +21,18 @@ public static class IdentityAdministrationEndpoints
         group.MapPatch("/users/{id:guid}", UpdateUserAsync)
             .RequirePermission("System.ManageUsers");
         group.MapPut("/users/{id:guid}/roles", AssignRolesAsync)
-            .RequirePermission("System.ManageUsers");
+            .RequirePermission("System.ManageUsers")
+            .RequireStepUp();
         group.MapGet("/roles", GetRolesAsync)
             .RequirePermission("System.ManageUsers");
         group.MapGet("/permissions", GetPermissionsAsync)
             .RequirePermission("System.ManageUsers");
         group.MapPost("/roles", CreateRoleAsync)
-            .RequirePermission("System.ManageUsers");
+            .RequirePermission("System.ManageUsers")
+            .RequireStepUp();
         group.MapPut("/roles/{id:guid}/permissions", UpdateRolePermissionsAsync)
-            .RequirePermission("System.ManageUsers");
+            .RequirePermission("System.ManageUsers")
+            .RequireStepUp();
         return endpoints;
     }
 

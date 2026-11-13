@@ -366,6 +366,7 @@ public static class CustomerRegistrationServices
         services.AddScoped<EmailCodeService>();
         services.AddScoped<IdentityAccountProvisioner>();
         services.AddScoped<EmailCodeSignInService>();
+        services.AddScoped<StepUpService>();
 
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {

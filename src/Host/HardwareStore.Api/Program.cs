@@ -145,6 +145,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapIdentityLoginEndpoints();
 app.MapEmailCodeSignInEndpoints();
+app.MapStepUpEndpoints();
 app.MapContactEndpoints();
 app.MapArticleVideoEndpoints();
 app.MapIdentityCurrentUserEndpoints();

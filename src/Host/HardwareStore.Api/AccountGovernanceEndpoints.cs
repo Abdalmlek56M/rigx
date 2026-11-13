@@ -23,7 +23,8 @@ public static class AccountGovernanceEndpoints
         admin.MapGet("/users/{id:guid}/restrictions", ListRestrictionsAsync)
             .RequirePermission("System.ManageUsers");
         admin.MapPost("/users/{id:guid}/restrictions", ApplyRestrictionAsync)
-            .RequirePermission("System.ManageUsers");
+            .RequirePermission("System.ManageUsers")
+            .RequireStepUp();
         admin.MapPost("/restrictions/{id:guid}/reinstate", ReinstateAsync)
             .RequirePermission("System.ManageUsers");
         return endpoints;
