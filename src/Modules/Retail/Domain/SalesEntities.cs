@@ -123,6 +123,9 @@ public sealed class OrderItemComponent
     public decimal DirectExpenseAmount { get; set; }
     public decimal CostAmount { get; set; }
     public decimal NetProfit { get; set; }
+    /// <summary>Warranty of this unit as sold (taken when stock was claimed); null label = no warranty.</summary>
+    public string? WarrantyLabel { get; set; }
+    public int? WarrantyMonths { get; set; }
     public OrderItem OrderItem { get; set; } = null!;
 }
 

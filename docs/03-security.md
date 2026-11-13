@@ -14,6 +14,7 @@
 - Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`).
 - Double-sale prevention: row locks at order confirmation (PostgreSQL concurrency tests).
 - Public DTOs exclude cost/supplier/serial/partner/private data.
+- Warranty lookup: anonymous, rate-limited 20 / 10 min per IP (`warranty-lookup`); phone masked to last 3 digits; no name, serial or prices.
 - Dependency audit (12 Nov 2026): 0 known vulnerable NuGet packages.
 
 ## Rules every change must keep
@@ -38,4 +39,4 @@
 | Off-host encrypted backups + restore drill | High | 2/5 |
 | Migration runner outside dev-only "preview" mode | High | 0/1 |
 | External penetration test before launch | High | 5 |
-| Rate limits for new public endpoints (notify-me, warranty lookup, tracking) | Normal | 2 |
+| Rate limits for new public endpoints (notify-me, warranty lookup, tracking): partly closed, notify-me left (2.8) | Normal | 2 |

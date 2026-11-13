@@ -29,3 +29,5 @@ public static class OrderPaymentMethod
     /// <summary>Order paid with more than one method (POS).</summary>
     public const string Split = "Split";
 }
+/// <summary>Computed warranty state (never stored): Void when voided, Expired once the end date passed.</summary>
+public static class WarrantyStatus { public const string Active = "Active"; public const string Expired = "Expired"; public const string Void = "Void"; }

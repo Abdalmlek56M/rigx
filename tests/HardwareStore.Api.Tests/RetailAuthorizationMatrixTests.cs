@@ -106,6 +106,8 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(seller, "/api/v1/admin/retail/pos/preview", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(seller, "/api/v1/admin/retail/pos/sales", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await seller.GetAsync("/api/v1/admin/retail/blacklist")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await seller.GetAsync("/api/v1/admin/retail/warranties")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(seller, $"/api/v1/admin/retail/warranties/{Guid.NewGuid()}/void", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(seller, "/api/v1/admin/retail/blacklist", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(seller, $"{orderUrl}/payments", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(seller, HttpMethod.Put, $"{orderUrl}/shipping", new { })).StatusCode);
@@ -119,6 +121,32 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         Assert.Equal(HttpStatusCode.Forbidden, (await approver.GetAsync("/api/v1/admin/retail/blacklist")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(approver, "/api/v1/admin/retail/blacklist", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(approver, HttpMethod.Delete, $"/api/v1/admin/retail/blacklist/{Guid.NewGuid()}", null)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Warranty_routes_follow_their_permissions_and_the_lookup_is_public()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "order-viewer", ["Sales.ViewOrders"]);
+        await CreateUserAsync(database, "return-clerk", ["Sales.ProcessReturn"]);
+        await using var factory = CreateFactory(database.ConnectionString);
+        var voidUrl = $"/api/v1/admin/retail/warranties/{Guid.NewGuid()}/void";
+
+        using var anonymous = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        Assert.Equal(HttpStatusCode.BadRequest, (await anonymous.GetAsync("/api/v1/warranty/lookup")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await anonymous.GetAsync("/api/v1/warranty/lookup?q=RX-0001")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/warranties/mine")).StatusCode);
+
+        using var viewer = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(viewer, factory, "order-viewer");
+        Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/v1/admin/retail/warranties")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/v1/warranties/mine")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(viewer, voidUrl, new { })).StatusCode);
+
+        using var clerk = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(clerk, factory, "return-clerk");
+        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.GetAsync("/api/v1/admin/retail/warranties")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(clerk, voidUrl, new { reason = "Sticker removed", rowVersion = 1 })).StatusCode);
     }
 
     [Fact]

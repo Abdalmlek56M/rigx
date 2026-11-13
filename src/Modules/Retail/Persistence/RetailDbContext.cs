@@ -23,6 +23,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<PartnerAllocationEvent> PartnerAllocationEvents => Set<PartnerAllocationEvent>();
     public DbSet<RetailExpense> Expenses => Set<RetailExpense>();
     public DbSet<OrderReturn> OrderReturns => Set<OrderReturn>();
+    public DbSet<Warranty> Warranties => Set<Warranty>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -236,6 +237,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.DirectExpenseAmount).HasColumnName("direct_expense_amount").HasPrecision(18, 2);
             e.Property(x => x.CostAmount).HasColumnName("cost_amount").HasPrecision(18, 2);
             e.Property(x => x.NetProfit).HasColumnName("net_profit").HasPrecision(18, 2);
+            e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(64);
+            e.Property(x => x.WarrantyMonths).HasColumnName("warranty_months");
         });
         model.Entity<OrderEvent>(e =>
         {
@@ -389,6 +392,38 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.InspectedByUserAccountId).HasColumnName("inspected_by_user_account_id");
             e.Property(x => x.InspectedAtUtc).HasColumnName("inspected_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.CreatedByUserAccountId).HasColumnName("created_by_user_account_id");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+        });
+        model.Entity<Warranty>(e =>
+        {
+            e.ToTable("warranties");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.OrderId).HasColumnName("order_id");
+            e.HasIndex(x => x.OrderId).HasDatabaseName("ix_warranties_order");
+            e.Property(x => x.OrderItemId).HasColumnName("order_item_id");
+            e.Property(x => x.UnitId).HasColumnName("unit_id");
+            e.HasIndex(x => new { x.OrderItemId, x.UnitId }).IsUnique().HasDatabaseName("ux_warranties_item_unit");
+            e.Property(x => x.StockItemId).HasColumnName("stock_item_id");
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(16).IsRequired();
+            e.HasIndex(x => x.Code).HasDatabaseName("ix_warranties_code");
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
+            e.Property(x => x.Condition).HasColumnName("condition").HasMaxLength(16).IsRequired();
+            e.Property(x => x.SerialNumber).HasColumnName("serial_number").HasMaxLength(128);
+            e.HasIndex(x => x.SerialNumber).HasDatabaseName("ix_warranties_serial");
+            e.Property(x => x.BuildCode).HasColumnName("build_code").HasMaxLength(16);
+            e.Property(x => x.Label).HasColumnName("label").HasMaxLength(64).IsRequired();
+            e.Property(x => x.Months).HasColumnName("months");
+            e.Property(x => x.StartsAtUtc).HasColumnName("starts_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.EndsAtUtc).HasColumnName("ends_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.PhoneNumber).HasColumnName("phone_number").HasMaxLength(32).IsRequired();
+            e.HasIndex(x => x.PhoneNumber).HasDatabaseName("ix_warranties_phone");
+            e.Property(x => x.UserAccountId).HasColumnName("user_account_id");
+            e.HasIndex(x => x.UserAccountId).HasDatabaseName("ix_warranties_user");
+            e.Property(x => x.VoidedAtUtc).HasColumnName("voided_at_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.VoidReason).HasColumnName("void_reason").HasMaxLength(500);
+            e.Property(x => x.VoidedByUserAccountId).HasColumnName("voided_by_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
         });

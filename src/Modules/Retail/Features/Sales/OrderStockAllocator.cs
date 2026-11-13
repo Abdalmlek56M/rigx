@@ -37,7 +37,8 @@ internal static class OrderStockAllocator
             throw new RetailException(409, "The build allocation is incomplete.");
         var links = assembly.Units.OrderBy(link => link.UnitId).ToList();
         var percents = links.Select(link => link.AllocationPercent).ToList();
-        AddComponents(item, links.Select(link => link.Unit).ToList(), percents);
+        AddComponents(item, links.Select(link => link.Unit).ToList(), percents,
+            links.Select(link => AssemblyRules.EffectiveWarranty(link, assembly, link.Unit.StockItem)).ToList());
         if (assembly.Copies > 1) await RefillCopyAsync(db, assembly, links, cancellationToken);
         else assembly.Status = AssemblyStatus.Sold;
         assembly.RowVersion++;
@@ -82,7 +83,7 @@ internal static class OrderStockAllocator
         {
             var link = assembly.Units.SingleOrDefault(entry => entry.UnitId == item.UnitId)
                 ?? throw new RetailException(409, "A selected part is no longer in the build.");
-            AddComponents(item, [link.Unit], [100m]);
+            AddComponents(item, [link.Unit], [100m], [AssemblyRules.EffectiveWarranty(link, assembly, link.Unit.StockItem)]);
         }
         foreach (var link in assembly.Units.ToList())
         {
@@ -103,16 +104,18 @@ internal static class OrderStockAllocator
                 $"SELECT id AS \"Value\" FROM inventory_units WHERE stock_item_id = {stockItemId} AND status = 'Available' ORDER BY received_at_utc LIMIT {item.Quantity} FOR UPDATE SKIP LOCKED")
             .ToListAsync(cancellationToken);
         var available = lockedIds.Count == item.Quantity
-            ? await db.Units.Where(unit => lockedIds.Contains(unit.Id) && unit.Status == UnitStatus.Available).ToListAsync(cancellationToken)
+            ? await db.Units.Include(unit => unit.StockItem).Where(unit => lockedIds.Contains(unit.Id) && unit.Status == UnitStatus.Available).ToListAsync(cancellationToken)
             : [];
         if (available.Count != item.Quantity)
             throw new RetailException(409, "Not enough available stock to confirm this order.");
-        AddComponents(item, available, AllocationMath.EqualPercentages(available.Count));
+        AddComponents(item, available, AllocationMath.EqualPercentages(available.Count),
+            available.Select(unit => (unit.StockItem.WarrantyLabel, unit.StockItem.WarrantyMonths)).ToList());
         item.UnitId = available[0].Id;
     }
 
-    /// <summary>Records what each unit earned (revenue, discount, direct expense split by share) and marks it Sold.</summary>
-    private static void AddComponents(OrderItem item, IReadOnlyList<InventoryUnit> units, IReadOnlyList<decimal> percents)
+    /// <summary>Records what each unit earned (revenue, discount, direct expense split by share) and its warranty as sold, and marks it Sold.</summary>
+    private static void AddComponents(OrderItem item, IReadOnlyList<InventoryUnit> units, IReadOnlyList<decimal> percents,
+        IReadOnlyList<(string? Label, int? Months)> warranties)
     {
         var revenues = AllocationMath.AllocateAmount(item.LineTotal, percents);
         var discounts = AllocationMath.AllocateAmount(item.DiscountAmount, percents);
@@ -124,7 +127,7 @@ internal static class OrderStockAllocator
             {
                 Id = Guid.CreateVersion7(), OrderItemId = item.Id, UnitId = unit.Id, AllocationPercent = percents[index],
                 RevenueAmount = revenues[index], DiscountAmount = discounts[index], DirectExpenseAmount = expenses[index],
-                CostAmount = unit.AcquisitionCost,
+                CostAmount = unit.AcquisitionCost, WarrantyLabel = warranties[index].Label, WarrantyMonths = warranties[index].Months,
                 NetProfit = AllocationMath.Net(revenues[index], discounts[index], expenses[index], unit.AcquisitionCost)
             });
             unit.Status = UnitStatus.Sold; unit.RowVersion++;

@@ -17,7 +17,8 @@ public sealed class OrderRulesTests
 
     [Theory]
     [InlineData("0100 000 0000", "01000000000")]
-    [InlineData("+20 (100) 000-0000", "201000000000")]
+    [InlineData("+20 (100) 000-0000", "01000000000")]
+    [InlineData("0020 100 000 0000", "01000000000")]
     [InlineData("١٢٣٤٥٦٧٨", "")]
     public void Phone_keeps_ascii_digits_only(string input, string expected)
     {

@@ -24,13 +24,14 @@ public sealed record RetailTestServices(
     OrderTrackingService Tracking,
     BlacklistService Blacklist,
     PosService Pos,
-    SoldFeedService SoldFeed)
+    SoldFeedService SoldFeed,
+    WarrantyService Warranties)
 {
     public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time) => new(
         new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
         new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
         new(factory, time), new(factory), new(factory, time), new(factory),
-        new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory));
+        new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory), new(factory, time));
 }
 
 /// <summary>Order-side helpers: default policies, a published item, and one-line checkout/POS requests.</summary>
