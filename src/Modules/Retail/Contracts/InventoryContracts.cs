@@ -1,9 +1,17 @@
 namespace HardwareStore.Modules.Retail;
 
-public sealed record ReceiptLine(Guid? ProductId, Guid? VariantId, string Name, string? Sku, string Condition, string? SerialNumber, decimal AcquisitionCost, int Quantity, decimal? PartnerPercentOverride, string? WarrantyNote, decimal? StandalonePrice = null, string? SourceName = null, string? Brand = null, string? Model = null, string? Category = null, string? Description = null, string? ExternalCode = null, string? SpecificationsJson = null, string? PurchaseKind = null, string? SourceType = null, DateOnly? PurchaseDate = null, string? ImageStorageKeysJson = null);
-public sealed record ReceiveRequest(Guid PurchaseDraftId, string? Notes, IReadOnlyList<ReceiptLine> Lines);
-public sealed record UnitView(Guid Id, Guid? ProductId, string Name, string? Sku, string? Brand, string? Model, string? Category,
-    string? Description, string? ExternalCode, string? SpecificationsJson, string Condition, string? InspectionCondition,
-    string? SerialNumber, string? SourceName, string? SourceType, string? PurchaseKind, DateOnly? PurchaseDate,
-    decimal? AcquisitionCost, decimal? StandalonePrice, decimal? PartnerPercentOverride, string Status, Guid? AssemblyId,
-    DateTimeOffset ReceivedAtUtc);
+/// <summary>
+/// One received line. A used line of N pieces becomes N items of one unit; a new line becomes one lot of N units
+/// (<see cref="StockItemRules.UnitsPerItem"/>). <paramref name="SerialNumber"/> is kept only for a single piece.
+/// </summary>
+public sealed record ReceiptLine(string ModelName, string Condition, int Quantity, decimal AcquisitionCost, decimal Price,
+    Guid? CategoryId = null, Guid? ProductId = null, decimal? WithBoardExtra = null, decimal? AloneExtra = null,
+    string? SerialNumber = null, decimal? PartnerPercentOverride = null, string? WarrantyLabel = null, int? WarrantyMonths = null,
+    bool HasBox = false, bool IsHidden = false, string? InternalNote = null, IReadOnlyDictionary<string, string>? Specs = null);
+public sealed record ReceiptSource(string? SourceName, string? SourceType, string? PurchaseKind, DateOnly? PurchaseDate);
+public sealed record ReceiveRequest(Guid PurchaseDraftId, string? Notes, ReceiptSource Source, IReadOnlyList<ReceiptLine> Lines);
+public sealed record UnitView(Guid Id, Guid StockItemId, string StockItemCode, Guid? ProductId, string Name, string Condition,
+    string? InspectionCondition, string? SerialNumber, string? SourceName, string? SourceType, string? PurchaseKind, DateOnly? PurchaseDate,
+    decimal? AcquisitionCost, decimal? PartnerPercentOverride, string Status, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc);
+/// <summary>Items created by one receipt, in line order (one entry per created item).</summary>
+public sealed record ReceiptResult(Guid ReceiptId, IReadOnlyList<StockItemAdminView> Items);

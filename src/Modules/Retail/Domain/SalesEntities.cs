@@ -42,6 +42,7 @@ public sealed class OrderItem
     public string? VariantName { get; set; }
     public string? ThumbnailStorageKeySnapshot { get; set; }
     public Guid? AssemblyId { get; set; }
+    public Guid? StockItemId { get; set; }
     public required string Name { get; set; }
     public string? Sku { get; set; }
     public int Quantity { get; set; }

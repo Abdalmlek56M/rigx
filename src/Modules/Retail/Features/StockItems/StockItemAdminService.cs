@@ -1,0 +1,157 @@
+using HardwareStore.Common.Domain;
+using Microsoft.EntityFrameworkCore;
+
+namespace HardwareStore.Modules.Retail;
+
+/// <summary>Back-office stock items: search and paging, editing, hiding, photos and model-name suggestions.</summary>
+public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+{
+    private const int MaxPageSize = 100;
+    private const int MaxVisibilityIds = 200;
+    private const int MinSuggestionKeyLength = 2;
+    private const int MaxSuggestions = 10;
+    private const int SuggestionCandidates = 1000;
+
+    public async Task<StockItemAdminPage> ListAsync(StockItemQuery query, bool includeCosts, bool includeSerials, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var items = db.StockItems.AsNoTracking().Matching(query.Search, includeSerials);
+        if (!string.IsNullOrWhiteSpace(query.Condition))
+        {
+            var condition = StockCondition.Parse(query.Condition);
+            items = items.Where(item => item.Condition == condition);
+        }
+        if (query.CategoryId is Guid categoryId) items = items.Where(item => item.CategoryId == categoryId);
+        if (query.Hidden is bool hidden) items = items.Where(item => item.IsHidden == hidden);
+        if (query.InStock is bool inStock)
+            items = items.Where(item => item.Units.Any(unit => unit.Status == UnitStatus.Available) == inStock);
+        var page = Math.Max(1, query.Page);
+        var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        var total = await items.CountAsync(cancellationToken);
+        var rows = await items.Include(item => item.Units).OrderByDescending(item => item.CreatedAtUtc).ThenByDescending(item => item.Id)
+            .Skip((page - 1) * pageSize).Take(pageSize).AsSplitQuery().ToListAsync(cancellationToken);
+        var now = timeProvider.GetUtcNow();
+        return new StockItemAdminPage(rows.Select(item => StockItemMapping.ToAdminView(item, now, includeCosts, includeSerials)).ToList(),
+            page, pageSize, total);
+    }
+
+    public async Task<StockItemAdminView> GetAsync(Guid id, bool includeCosts, bool includeSerials, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.StockItems.AsNoTracking().Include(row => row.Units)
+            .SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
+        return StockItemMapping.ToAdminView(item, timeProvider.GetUtcNow(), includeCosts, includeSerials);
+    }
+
+    public async Task<StockItemAdminView> UpdateAsync(Guid id, StockItemUpdate request, bool includeCosts = false,
+        bool includeSerials = false, CancellationToken cancellationToken = default)
+    {
+        var modelName = StockItemRules.CleanModelName(request.ModelName);
+        StockItemRules.ValidatePrices(request.Price, request.WithBoardExtra, request.AloneExtra);
+        StockItemRules.ValidateWarranty(request.WarrantyLabel, request.WarrantyMonths);
+        var specs = StockItemRules.CleanSpecs(request.Specs);
+        var note = StockItemRules.CleanNote(request.InternalNote);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.StockItems.Include(row => row.Units)
+            .SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
+        if (item.RowVersion != request.RowVersion) throw ChangedByAnotherUser();
+        item.ModelName = modelName;
+        item.ModelKey = ModelName.Key(modelName);
+        item.CategoryId = request.CategoryId;
+        item.ProductId = request.ProductId;
+        item.Price = request.Price;
+        item.WithBoardExtra = request.WithBoardExtra;
+        item.AloneExtra = request.AloneExtra;
+        item.WarrantyLabel = string.IsNullOrWhiteSpace(request.WarrantyLabel) ? null : request.WarrantyLabel.Trim();
+        item.WarrantyMonths = item.WarrantyLabel is null ? null : request.WarrantyMonths;
+        item.HasBox = request.HasBox;
+        item.IsHidden = request.IsHidden;
+        item.InternalNote = note;
+        item.Specs = specs;
+        foreach (var unit in item.Units.Where(unit => unit.ProductId != request.ProductId))
+        {
+            unit.ProductId = request.ProductId;
+            unit.RowVersion++;
+        }
+        Touch(item);
+        await SaveAsync(db, cancellationToken);
+        return StockItemMapping.ToAdminView(item, timeProvider.GetUtcNow(), includeCosts, includeSerials);
+    }
+
+    public async Task<int> SetVisibilityAsync(StockVisibilityRequest request, CancellationToken cancellationToken = default)
+    {
+        var ids = request.Ids.Distinct().ToList();
+        if (ids.Count is < 1 or > MaxVisibilityIds)
+            throw new RetailException(400, $"Choose between 1 and {MaxVisibilityIds} items.");
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var items = await db.StockItems.Where(item => ids.Contains(item.Id)).ToListAsync(cancellationToken);
+        if (items.Count != ids.Count) throw new RetailException(404, "Some items were not found.");
+        foreach (var item in items)
+        {
+            item.IsHidden = request.Hidden;
+            Touch(item);
+        }
+        await SaveAsync(db, cancellationToken);
+        return items.Count;
+    }
+
+    public async Task<IReadOnlyList<StockItemPhoto>> AddPhotoAsync(Guid id, StockItemPhoto photo, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.StockItems.SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
+        if (item.Photos.Count >= StockItemRules.MaxPhotos)
+            throw new RetailException(409, $"An item can have at most {StockItemRules.MaxPhotos} photos.");
+        item.Photos = [.. item.Photos, photo];
+        Touch(item);
+        await SaveAsync(db, cancellationToken);
+        return item.Photos;
+    }
+
+    /// <summary>Removes the photo from the item and returns it, so the caller can delete the stored files.</summary>
+    public async Task<StockItemPhoto> RemovePhotoAsync(Guid id, string storageKey, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.StockItems.SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
+        var photo = item.Photos.FirstOrDefault(entry => entry.StorageKey == storageKey)
+            ?? throw new RetailException(404, "The photo was not found.");
+        item.Photos = item.Photos.Where(entry => entry != photo).ToList();
+        Touch(item);
+        await SaveAsync(db, cancellationToken);
+        return photo;
+    }
+
+    /// <summary>Model names already in stock that match what the owner is typing, spellings grouped by model key.</summary>
+    public async Task<IReadOnlyList<ModelNameSuggestion>> SuggestModelsAsync(string? text, Guid? categoryId, CancellationToken cancellationToken = default)
+    {
+        var key = ModelName.Key(text ?? string.Empty);
+        if (key.Length < MinSuggestionKeyLength) return [];
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var items = db.StockItems.AsNoTracking().Where(item => item.ModelKey.Contains(key));
+        if (categoryId is Guid category) items = items.Where(item => item.CategoryId == category);
+        var candidates = await items.OrderByDescending(item => item.CreatedAtUtc).Take(SuggestionCandidates)
+            .Select(item => new { item.ModelKey, item.ModelName, item.CategoryId, item.ProductId }).ToListAsync(cancellationToken);
+        return candidates.GroupBy(item => item.ModelKey)
+            .Select(group => new ModelNameSuggestion(
+                group.GroupBy(item => item.ModelName).OrderByDescending(spelling => spelling.Count()).First().Key,
+                group.Select(item => item.CategoryId).FirstOrDefault(value => value is not null),
+                group.Select(item => item.ProductId).FirstOrDefault(value => value is not null),
+                group.Count()))
+            .OrderByDescending(suggestion => suggestion.ItemCount).ThenBy(suggestion => suggestion.ModelName, StringComparer.Ordinal)
+            .Take(MaxSuggestions).ToList();
+    }
+
+    private void Touch(StockItem item)
+    {
+        item.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
+        item.RowVersion++;
+    }
+
+    private static async Task SaveAsync(RetailDbContext db, CancellationToken cancellationToken)
+    {
+        try { await db.SaveChangesAsync(cancellationToken); }
+        catch (DbUpdateConcurrencyException) { throw ChangedByAnotherUser(); }
+    }
+
+    private static RetailException ItemNotFound() => new(404, "The item was not found.");
+    private static RetailException ChangedByAnotherUser() => new(409, "The item was changed by another user.");
+}

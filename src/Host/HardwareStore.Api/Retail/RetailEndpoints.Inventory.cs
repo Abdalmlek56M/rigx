@@ -1,4 +1,3 @@
-using System.Text.Json;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
@@ -16,8 +15,8 @@ public static partial class RetailEndpoints
     }
 
     /// <summary>
-    /// Receives a purchase draft into stock. Orchestrates three modules (Purchasing draft, Catalog prices/images,
-    /// Retail units), so it stays in Host per architecture decision 11.
+    /// Receives a purchase draft into stock. Orchestrates three modules (Purchasing draft, Catalog prices,
+    /// Retail stock items), so it stays in Host per architecture decision 11.
     /// </summary>
     private static async Task<IResult> ReceiveFromDraftAsync(
         Guid draftId, ReceiveNotes request, HttpContext context, InventoryUnitService inventory,
@@ -35,13 +34,6 @@ public static partial class RetailEndpoints
             .Where(product => productIds.Contains(product.Id))
             .Select(product => new { product.Id, product.BasePrice })
             .ToDictionaryAsync(item => item.Id, item => item.BasePrice, ct);
-        var images = await catalog.ProductImages.AsNoTracking()
-            .Where(image => productIds.Contains(image.ProductId))
-            .OrderByDescending(image => image.IsPrimary).ThenBy(image => image.SortOrder)
-            .Select(image => new { image.ProductId, image.StorageKey, image.ThumbnailStorageKey, image.OriginalStorageKey })
-            .ToListAsync(ct);
-        var imageKeys = images.GroupBy(image => image.ProductId)
-            .ToDictionary(group => group.Key, group => JsonSerializer.Serialize(group.First()));
         var sourceName = draft.SupplierId is Guid supplierId
             ? await purchasing.SupplierProfiles.AsNoTracking().Where(supplier => supplier.Id == supplierId)
                 .Select(supplier => supplier.CompanyName).SingleOrDefaultAsync(ct)
@@ -50,16 +42,14 @@ public static partial class RetailEndpoints
         var lines = draft.Items.Select(item =>
         {
             var productId = item.ProductId == Guid.Empty ? (Guid?)null : item.ProductId;
-            var standalone = productId is not null && prices.TryGetValue(productId.Value, out var price) ? price : (decimal?)null;
-            var imageJson = productId is not null && imageKeys.TryGetValue(productId.Value, out var json) ? json : null;
-            return new ReceiptLine(productId, item.VariantId, item.ItemName, item.Sku, item.Condition ?? "New", null,
-                item.UnitPrice, item.Quantity, null, null, standalone, sourceName, item.Brand, item.Model, item.Category,
-                item.Description, item.ExternalCode, item.SpecificationsJson, draft.PurchaseKind, draft.SourceType,
-                draft.PurchaseDate, imageJson);
+            var price = productId is not null && prices.TryGetValue(productId.Value, out var basePrice) ? basePrice : 0m;
+            var condition = item.Condition == StockCondition.New ? StockCondition.New : StockCondition.Used;
+            return new ReceiptLine(string.IsNullOrWhiteSpace(item.Model) ? item.ItemName : item.Model, condition, item.Quantity, item.UnitPrice, price, ProductId: productId);
         }).ToList();
-        var units = await inventory.ReceiveAsync(new ReceiveRequest(draftId, request.Notes, lines), actorId, ct);
+        var source = new ReceiptSource(sourceName, draft.SourceType, draft.PurchaseKind, draft.PurchaseDate);
+        var receipt = await inventory.ReceiveAsync(new ReceiveRequest(draftId, request.Notes, source, lines), actorId, ct);
         await purchasing.PurchaseDrafts.Where(item => item.Id == draftId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(item => item.Status, PurchaseDraftStatus.Received), ct);
-        return Results.Ok(units);
+        return Results.Ok(receipt);
     }
 }

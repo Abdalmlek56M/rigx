@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -26,12 +27,12 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
         try
         {
             var now = timeProvider.GetUtcNow().ToUniversalTime();
-            var assembly = new Assembly { Id = Guid.CreateVersion7(), Name = request.Name.Trim(), Status = AssemblyStatus.Draft, CreatedAtUtc = now, UpdatedAtUtc = now };
-            var claimed = await db.Units
+            var assembly = new Assembly { Id = Guid.CreateVersion7(), Code = await db.NextCodeAsync(CodeSequence.Assembly, PublicCode.Build, cancellationToken), Name = request.Name.Trim(), Status = AssemblyStatus.Draft, CreatedAtUtc = now, UpdatedAtUtc = now };
+            var claimed = await db.Units.Include(unit => unit.StockItem)
                 .Where(unit => unitIds.Contains(unit.Id) && unit.Status == UnitStatus.Available)
                 .ToListAsync(cancellationToken);
             if (claimed.Count != unitIds.Count) throw new RetailException(409, "Some selected units are no longer available.");
-            var allocations = AllocationMath.DefaultAllocations(claimed.Select(unit => unit.StandalonePrice ?? 0m).ToList());
+            var allocations = AllocationMath.DefaultAllocations(claimed.Select(unit => AlonePrice(unit.StockItem)).ToList());
             for (var index = 0; index < claimed.Count; index++)
             {
                 var unit = claimed[index];
@@ -186,17 +187,19 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = await db.Assemblies.AsNoTracking().WithUnits()
             .Where(a => a.Status == AssemblyStatus.Published).OrderByDescending(a => a.UpdatedAtUtc).ToListAsync(cancellationToken);
-        return rows.Select(a => new AssemblyPublicView(a.Id, a.PublicTitleAr, a.PublicTitleEn, a.SalePrice,
-            a.Units.Select(link => new PublicUnitView(link.Unit.ProductId, link.Unit.Name, link.Unit.Sku, link.Unit.Condition)).ToList())).ToList();
+        return rows.Select(a => new AssemblyPublicView(a.Id, a.Code, a.PublicTitleAr, a.PublicTitleEn, a.SalePrice,
+            a.Units.Select(link => new PublicUnitView(link.Unit.ProductId, link.Unit.Name, link.Unit.StockItem.Code, link.Unit.Condition)).ToList())).ToList();
     }
+
+    private static decimal AlonePrice(StockItem item) => StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra).Alone;
 
     private static AssemblyView MapAssembly(Assembly assembly, bool includeCosts = true)
     {
-        var units = assembly.Units.Select(link => new AssemblyUnitView(link.UnitId, link.Unit.Name, link.Unit.Sku,
+        var units = assembly.Units.Select(link => new AssemblyUnitView(link.UnitId, link.Unit.Name, link.Unit.StockItem.Code,
             link.Unit.Condition, includeCosts ? link.Unit.AcquisitionCost : null,
-            includeCosts ? link.Unit.StandalonePrice : null, link.AllocationPercent,
+            includeCosts ? AlonePrice(link.Unit.StockItem) : null, link.AllocationPercent,
             includeCosts ? decimal.Round(assembly.SalePrice * link.AllocationPercent / 100m, 2) : null)).ToList();
-        return new AssemblyView(assembly.Id, assembly.Name, assembly.PublicTitleAr, assembly.PublicTitleEn,
+        return new AssemblyView(assembly.Id, assembly.Code, assembly.Name, assembly.PublicTitleAr, assembly.PublicTitleEn,
             assembly.SalePrice, assembly.Status, units,
             includeCosts ? decimal.Round(units.Sum(unit => unit.AcquisitionCost ?? 0m), 2) : null,
             includeCosts ? decimal.Round(units.Sum(unit => unit.AllocatedAmount ?? 0m), 2) : null, assembly.RowVersion);

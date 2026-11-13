@@ -12,6 +12,13 @@ public static partial class RetailEndpoints
     {
         var admin = endpoints.MapGroup("/api/v1/admin/retail");
         admin.MapGet("/units", ListUnitsAsync).RequirePermission("Inventory.View");
+        admin.MapGet("/stock-items", ListStockItemsAsync).RequirePermission("Inventory.View");
+        admin.MapGet("/stock-items/{id:guid}", GetStockItemAsync).RequirePermission("Inventory.View");
+        admin.MapPut("/stock-items/{id:guid}", UpdateStockItemAsync).RequirePermission("Inventory.StockAdjust");
+        admin.MapPost("/stock-items/visibility", SetStockVisibilityAsync).RequirePermission("Inventory.StockAdjust");
+        admin.MapPost("/stock-items/{id:guid}/photos", AddStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
+        admin.MapDelete("/stock-items/{id:guid}/photos", RemoveStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
+        admin.MapGet("/models/suggest", SuggestModelsAsync).RequirePermission("Inventory.View");
         admin.MapPost("/receipts/from-draft/{draftId:guid}", ReceiveFromDraftAsync).RequirePermission("Purchasing.ReceiveGoods");
         admin.MapGet("/assemblies", ListAssembliesAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies", CreateAssemblyAsync).RequirePermission("Catalog.ManageProducts");
@@ -48,6 +55,8 @@ public static partial class RetailEndpoints
         admin.MapPost("/partner/agreements", UpsertAgreementAsync).RequirePermission("Finance.ManagePartnerAgreements");
         admin.MapPost("/partner/settlements", SettleAsync).RequirePermission("Finance.PostPartnerSettlements");
 
+        endpoints.MapGet("/api/v1/store/items", ListStoreItemsAsync).AllowAnonymous();
+        endpoints.MapGet("/api/v1/store/items/{code}", GetStoreItemAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/store/assemblies", ListPublishedAssembliesAsync).AllowAnonymous();
         endpoints.MapPost("/api/v1/orders", CreateCustomerOrderAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/orders/mine", ListMyOrdersAsync).RequireAuthorization();

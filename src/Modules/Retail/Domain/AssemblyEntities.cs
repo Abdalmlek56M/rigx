@@ -3,6 +3,7 @@ namespace HardwareStore.Modules.Retail;
 public sealed class Assembly
 {
     public Guid Id { get; set; }
+    public required string Code { get; set; }
     public required string Name { get; set; }
     public string? PublicTitleAr { get; set; }
     public string? PublicTitleEn { get; set; }

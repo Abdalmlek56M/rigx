@@ -19,7 +19,7 @@ internal static class PartnerEarningsPosting
         var allocations = await db.PartnerUnitAllocations.AsNoTracking()
             .Where(item => item.IsActive).ToListAsync(cancellationToken);
         var unitIds = order.Items.SelectMany(item => item.Components).Select(component => component.UnitId).Distinct().ToList();
-        var units = await db.Units.AsNoTracking().Where(unit => unitIds.Contains(unit.Id))
+        var units = await db.Units.AsNoTracking().Include(unit => unit.StockItem).Where(unit => unitIds.Contains(unit.Id))
             .ToDictionaryAsync(unit => unit.Id, cancellationToken);
         var existing = (await db.PartnerEarnings.AsNoTracking()
                 .Where(earning => earning.OrderId == order.Id)
@@ -57,9 +57,9 @@ internal static class PartnerEarningsPosting
                 var scoped = allocations.Where(allocation => allocation.UnitId == component.UnitId).ToList();
                 if (scoped.Count == 0 && unit.ProductId is not null)
                     scoped = allocations.Where(allocation => allocation.UnitId == null && allocation.ProductId == unit.ProductId).ToList();
-                if (scoped.Count == 0 && !string.IsNullOrWhiteSpace(unit.Category))
+                if (scoped.Count == 0 && !string.IsNullOrWhiteSpace(unit.StockItem.PartnerCategoryScope))
                     scoped = allocations.Where(allocation => allocation.UnitId == null && allocation.ProductId == null &&
-                        allocation.Category == unit.Category).ToList();
+                        allocation.Category == unit.StockItem.PartnerCategoryScope).ToList();
                 if (scoped.Count > 0)
                 {
                     if (scoped.Sum(allocation => allocation.Percent) > 100.01m)

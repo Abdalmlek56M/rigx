@@ -114,11 +114,11 @@ public sealed class PartnerAllocationService(IDbContextFactory<RetailDbContext> 
         {
             var unit = await db.Units.AsNoTracking()
                 .Where(item => item.Id == unitId)
-                .Select(item => new { item.ProductId, item.Category })
+                .Select(item => new { item.ProductId, Category = item.StockItem.CategoryId })
                 .SingleOrDefaultAsync(cancellationToken)
                 ?? throw new RetailException(404, "Inventory unit was not found.");
             resolvedProduct = unit.ProductId;
-            resolvedCategory = unit.Category;
+            resolvedCategory = unit.Category?.ToString();
             if (allocations.Any(item => item.UnitId == unitId)) source = "Unit";
         }
         if (source == "None" && resolvedProduct is not null && allocations.Any(item => item.UnitId == null && item.ProductId == resolvedProduct))

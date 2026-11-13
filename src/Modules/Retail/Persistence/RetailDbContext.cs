@@ -4,6 +4,7 @@ namespace HardwareStore.Modules.Retail;
 
 public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) : DbContext(options)
 {
+    public DbSet<StockItem> StockItems => Set<StockItem>();
     public DbSet<InventoryUnit> Units => Set<InventoryUnit>();
     public DbSet<PurchaseReceipt> Receipts => Set<PurchaseReceipt>();
     public DbSet<Assembly> Assemblies => Set<Assembly>();
@@ -23,32 +24,23 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.ApplyConfiguration(new StockItemConfiguration());
         model.Entity<InventoryUnit>(e =>
         {
             e.ToTable("inventory_units", t => t.HasCheckConstraint("ck_inventory_units_cost", "acquisition_cost >= 0"));
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.StockItemId).HasColumnName("stock_item_id");
             e.Property(x => x.ProductId).HasColumnName("product_id");
-            e.Property(x => x.VariantId).HasColumnName("variant_id");
-            e.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(128);
             e.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
-            e.Property(x => x.Brand).HasColumnName("brand").HasMaxLength(160);
-            e.Property(x => x.Model).HasColumnName("model").HasMaxLength(160);
-            e.Property(x => x.Category).HasColumnName("category").HasMaxLength(160);
             e.Property(x => x.Condition).HasColumnName("condition").HasMaxLength(16).IsRequired();
             e.Property(x => x.InspectionCondition).HasColumnName("inspection_condition").HasMaxLength(16);
             e.Property(x => x.SerialNumber).HasColumnName("serial_number").HasMaxLength(128);
-            e.Property(x => x.WarrantyNote).HasColumnName("warranty_note").HasMaxLength(500);
             e.Property(x => x.SourceName).HasColumnName("source_name").HasMaxLength(200);
             e.Property(x => x.SourceType).HasColumnName("source_type").HasMaxLength(32);
             e.Property(x => x.PurchaseKind).HasColumnName("purchase_kind").HasMaxLength(32);
             e.Property(x => x.PurchaseDate).HasColumnName("purchase_date").HasColumnType("date");
-            e.Property(x => x.Description).HasColumnName("description").HasMaxLength(2000);
-            e.Property(x => x.ExternalCode).HasColumnName("external_code").HasMaxLength(128);
-            e.Property(x => x.SpecificationsJson).HasColumnName("specifications_json");
-            e.Property(x => x.ImageStorageKeysJson).HasColumnName("image_storage_keys_json");
             e.Property(x => x.AcquisitionCost).HasColumnName("acquisition_cost").HasPrecision(18, 2);
-            e.Property(x => x.StandalonePrice).HasColumnName("standalone_price").HasPrecision(18, 2);
             e.Property(x => x.PartnerPercentOverride).HasColumnName("partner_percent_override").HasPrecision(5, 2);
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(24).IsRequired();
             e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
@@ -58,6 +50,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
             e.HasIndex(x => new { x.Status, x.ProductId }).HasDatabaseName("ix_inventory_units_status_product");
             e.HasIndex(x => x.SerialNumber).HasDatabaseName("ix_inventory_units_serial");
+            e.HasIndex(x => x.StockItemId).HasDatabaseName("ix_inventory_units_stock_item");
+            e.HasOne(x => x.StockItem).WithMany(x => x.Units).HasForeignKey(x => x.StockItemId).OnDelete(DeleteBehavior.Restrict);
         });
         model.Entity<PurchaseReceipt>(e =>
         {
@@ -75,6 +69,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.ToTable("assemblies", t => t.HasCheckConstraint("ck_assemblies_price", "sale_price >= 0"));
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(16).IsRequired();
+            e.HasIndex(x => x.Code).IsUnique().HasDatabaseName("ux_assemblies_code");
             e.Property(x => x.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
             e.Property(x => x.PublicTitleAr).HasColumnName("public_title_ar").HasMaxLength(200);
             e.Property(x => x.PublicTitleEn).HasColumnName("public_title_en").HasMaxLength(200);
@@ -138,6 +134,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.VariantName).HasColumnName("variant_name").HasMaxLength(200);
             e.Property(x => x.ThumbnailStorageKeySnapshot).HasColumnName("thumbnail_storage_key_snapshot").HasMaxLength(512);
             e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
+            e.Property(x => x.StockItemId).HasColumnName("stock_item_id");
             e.Property(x => x.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
             e.Property(x => x.Sku).HasColumnName("sku").HasMaxLength(128);
             e.Property(x => x.Quantity).HasColumnName("quantity");

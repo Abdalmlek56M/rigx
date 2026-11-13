@@ -336,7 +336,7 @@ public static class CatalogEndpoints
             "sort", "Sort must be newest, oldest, price-asc, price-desc, name-asc, or name-desc.")
     };
 
-    private static async Task<(CatalogImageUpload? Upload, IResult? Result)> ReadSingleImageAsync(
+    internal static async Task<(CatalogImageUpload? Upload, IResult? Result)> ReadSingleImageAsync(
         HttpContext context,
         CatalogMediaOptions options,
         CancellationToken cancellationToken)

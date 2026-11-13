@@ -32,6 +32,18 @@ public sealed class TaxonomyService(
         return CategoryHierarchy.BuildTree(categories);
     }
 
+    /// <summary>A category plus every active descendant, for filters that include sub-categories.</summary>
+    public async Task<IReadOnlyList<Guid>> GetCategoryWithDescendantIdsAsync(
+        Guid categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var effectiveIds = await CategoryHierarchy.GetEffectiveIdsAsync(db, cancellationToken);
+        return effectiveIds.Contains(categoryId)
+            ? await CategoryHierarchy.GetDescendantIdsAsync(db, categoryId, effectiveIds, cancellationToken)
+            : [categoryId];
+    }
+
     public async Task<IReadOnlyList<BrandView>> GetActiveBrandsAsync(
         CancellationToken cancellationToken = default)
     {

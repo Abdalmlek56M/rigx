@@ -13,6 +13,8 @@ public static class RetailRegistration
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
         services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<InventoryUnitService>();
+        services.AddScoped<StockItemAdminService>();
+        services.AddScoped<StoreItemService>();
         services.AddScoped<AssemblyService>();
         services.AddScoped<OrderService>();
         services.AddScoped<OrderStatusService>();

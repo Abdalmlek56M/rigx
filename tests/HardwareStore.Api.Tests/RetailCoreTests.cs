@@ -1,4 +1,5 @@
 using HardwareStore.Modules.Retail;
+using static HardwareStore.Api.Tests.RetailReceipts;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -10,8 +11,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
 {
     private static readonly Guid Actor = Guid.NewGuid();
 
-    private static ReceiptLine Line(Guid productId, string name, string sku, decimal cost, decimal? standalone = null, decimal? partnerPercent = null) =>
-        new(productId, null, name, sku, "New", null, cost, 1, partnerPercent, null, standalone);
+    private static ReceiptLine Line(Guid productId, string name, decimal cost, decimal? standalone = null, decimal? partnerPercent = null) =>
+        new(name, "New", 1, cost, standalone ?? 0m, ProductId: productId, PartnerPercentOverride: partnerPercent);
 
     private static OrderLine OrderLineFor(Guid productId, string name, string sku, int quantity, decimal price,
         decimal? discount = null, decimal? expense = null) =>
@@ -45,11 +46,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var productCpu = Guid.NewGuid();
         var productMb = Guid.NewGuid();
 
-        var units = await retail.Units.ReceiveAsync(new ReceiveRequest(
+        var units = await retail.ReceiveUnitsAsync(Receipt(
             Guid.NewGuid(), "Initial receipt",
             [
-                Line(productCpu, "Test CPU", "CPU-T1", 1000m, 1000m),
-                Line(productMb, "Test Motherboard", "MB-T1", 500m, 500m)
+                Line(productCpu, "Test CPU", 1000m, 1000m),
+                Line(productMb, "Test Motherboard", 500m, 500m)
             ]), Actor);
         Assert.Equal(2, units.Count);
         Assert.All(units, unit => Assert.Equal(UnitStatus.Available, unit.Status));
@@ -105,8 +106,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(
-            Guid.NewGuid(), null, [Line(productId, "Only One", "ONE-1", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(
+            Guid.NewGuid(), null, [Line(productId, "Only One", 100m)]), Actor);
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
             [OrderLineFor(productId, "Only One", "ONE-1", 3, 150m)], LeadSource.Website), null);
@@ -122,8 +123,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [new ReceiptLine(productId, null, "Fan", "FAN-1", "New", null, 100m, 3, null, null, 150m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [new ReceiptLine("Fan", "New", 3, 100m, 150m, ProductId: productId)]), Actor);
         await AgreementAsync(retail, "Partner B", 10m);
 
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
@@ -152,8 +153,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Loss Item", "LOSS-1", 200m), Line(productId, "Loss Item", "LOSS-1", 200m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Loss Item", 200m), Line(productId, "Loss Item", 200m)]), Actor);
         await AgreementAsync(retail, "Partner C", 10m);
 
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
@@ -184,8 +185,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var retail = database.CreateRetailServices();
         var productCpu = Guid.NewGuid();
         var productGpu = Guid.NewGuid();
-        var units = await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productCpu, "CPU", "CPU-A", 1000m, 1000m), Line(productGpu, "GPU", "GPU-A", 500m, 500m)]), Actor);
+        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productCpu, "CPU", 1000m, 1000m), Line(productGpu, "GPU", 500m, 500m)]), Actor);
         var assembly = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Allocated Build", units.Select(unit => unit.Id).ToList()));
 
         var invalid = await Assert.ThrowsAsync<RetailException>(() => retail.Assemblies.SetAssemblyAllocationsAsync(assembly.Id,
@@ -225,8 +226,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Returnable", "RET-1", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Returnable", 100m)]), Actor);
         await AgreementAsync(retail, "Partner E", 10m);
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
@@ -265,8 +266,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Unit One", "U-1", 100m), Line(productId, "Unit Two", "U-2", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Unit One", 100m), Line(productId, "Unit Two", 100m)]), Actor);
         await AgreementAsync(retail, "Partner F", 10m);
 
         var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
@@ -313,8 +314,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Complete Me", "C-1", 100m), Line(productId, "Complete Me", "C-2", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Complete Me", 100m), Line(productId, "Complete Me", 100m)]), Actor);
 
         var required = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
@@ -352,20 +353,11 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
         var date = new DateOnly(2026, 11, 1);
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-        [
-            new ReceiptLine(productId, null, "Snapshot CPU", "CPU-SNAP", "Open Box", "SN-SECRET", 900m, 1, 7.5m, "14 days",
-                1200m, "QA Supplier", "AMD", "Ryzen 7", "CPU", "Snapshot description", "EXT-1", "{\"cores\":8}",
-                "Component", "Supplier", date, "[{\"storageKey\":\"secure/key.webp\"}]")
-        ]), Actor);
+        await retail.ReceiveUnitsAsync(new ReceiveRequest(Guid.NewGuid(), null,
+            new ReceiptSource("QA Supplier", "Supplier", "Component", date),
+            [new ReceiptLine("Snapshot CPU", "Used", 1, 900m, 1200m, ProductId: productId, SerialNumber: "SN-SECRET", PartnerPercentOverride: 7.5m)]), Actor);
 
         var full = Assert.Single(await retail.Units.ListUnitsAsync(null, productId, true, true));
-        Assert.Equal("AMD", full.Brand);
-        Assert.Equal("Ryzen 7", full.Model);
-        Assert.Equal("CPU", full.Category);
-        Assert.Equal("Snapshot description", full.Description);
-        Assert.Equal("EXT-1", full.ExternalCode);
-        Assert.Equal("{\"cores\":8}", full.SpecificationsJson);
         Assert.Equal("Component", full.PurchaseKind);
         Assert.Equal("Supplier", full.SourceType);
         Assert.Equal(date, full.PurchaseDate);
@@ -375,13 +367,12 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
 
         var limited = Assert.Single(await retail.Units.ListUnitsAsync(null, productId, false, false));
         Assert.Null(limited.AcquisitionCost);
-        Assert.Null(limited.StandalonePrice);
         Assert.Null(limited.PartnerPercentOverride);
         Assert.Null(limited.SourceName);
         Assert.Null(limited.SourceType);
         Assert.Null(limited.SerialNumber);
         Assert.Equal("Snapshot CPU", limited.Name);
-        Assert.Equal("Open Box", limited.Condition);
+        Assert.Equal("Used", limited.Condition);
     }
 
     [Fact]
@@ -391,10 +382,10 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var retail = database.CreateRetailServices();
         var productA = Guid.NewGuid();
         var productB = Guid.NewGuid();
-        var units = await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
+        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
         [
-            Line(productA, "Partner CPU", "PCPU", 100m),
-            Line(productB, "Partner GPU", "PGPU", 200m)
+            Line(productA, "Partner CPU", 100m),
+            Line(productB, "Partner GPU", 200m)
         ]), Actor);
         await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner X", units[0].Id, null, null, 100m, false, true));
         await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner Y", units[1].Id, null, null, 100m, false, true));
@@ -419,8 +410,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        var unit = Assert.Single(await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Split Unit", "SPLIT", 100m)]), Actor));
+        var unit = Assert.Single(await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Split Unit", 100m)]), Actor));
         await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner A", unit.Id, null, null, 60m, false, true));
         await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest("Partner B", unit.Id, null, null, 40m, false, true));
         var overflow = await Assert.ThrowsAsync<RetailException>(() => retail.Allocations.UpsertAllocationAsync(
@@ -455,8 +446,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        var unit = Assert.Single(await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Allocation Unit", "ALLOC-1", 100m)]), Actor));
+        var unit = Assert.Single(await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Allocation Unit", 100m)]), Actor));
         var productWide = await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest(
             "Partner P", null, productId, null, 40m, false, true), Actor);
         var unitLevel = await retail.Allocations.UpsertAllocationAsync(new PartnerAllocationRequest(
@@ -503,8 +494,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Report Unit", "REP-1", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Report Unit", 100m)]), Actor);
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
             [OrderLineFor(productId, "Report Unit", "REP-1", 1, 300m, 10m, 20m)], LeadSource.Website), null);
@@ -536,9 +527,9 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
         [
-            new ReceiptLine(productId, null, "Detail Unit", "DET-1", "New", "SERIAL-DETAIL", 100m, 1, null, null)
+            new ReceiptLine("Detail Unit", "New", 1, 100m, 0m, ProductId: productId, SerialNumber: "SERIAL-DETAIL")
         ]), Actor);
         var customerId = Guid.NewGuid();
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
@@ -566,8 +557,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Matrix Unit", "MATRIX-1", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Matrix Unit", 100m)]), Actor);
         var delivery = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
             [new OrderLine(productId, null, "Matrix Unit", "MATRIX-1", 1, 300m, null, null, null,
@@ -607,8 +598,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-            [Line(productId, "Reject Me", "R-1", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
+            [Line(productId, "Reject Me", 100m)]), Actor);
         await AgreementAsync(retail, "Partner G", 10m);
         var order = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer", "01000000000", "Cairo", "Delivery", "CashOnDelivery", null,
@@ -632,8 +623,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), "Concurrency receipt",
-            [Line(productId, "Single Unit", "CONC-1", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Concurrency receipt",
+            [Line(productId, "Single Unit", 100m)]), Actor);
 
         var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer A", "01000000001", "Cairo", "Delivery", "CashOnDelivery", null,
@@ -670,8 +661,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), "Two units",
-            [Line(productId, "Unit A", "CONC-2A", 100m), Line(productId, "Unit B", "CONC-2B", 100m)]), Actor);
+        await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Two units",
+            [Line(productId, "Unit A", 100m), Line(productId, "Unit B", 100m)]), Actor);
 
         var first = await retail.Orders.CreateOrderAsync(new OrderCreateRequest(
             "Customer A", "01000000001", "Cairo", "Delivery", "CashOnDelivery", null,
@@ -696,8 +687,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        var units = await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), "Assembly units",
-            [Line(productId, "Assembly CPU", "ASM-1", 400m), Line(productId, "Assembly Board", "ASM-2", 300m)]), Actor);
+        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Assembly units",
+            [Line(productId, "Assembly CPU", 400m), Line(productId, "Assembly Board", 300m)]), Actor);
         var assembly = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Concurrent Build", units.Select(unit => unit.Id).ToList()));
         var priced = await retail.Assemblies.UpdateAssemblyAsync(assembly.Id,
             new AssemblyUpdateRequest("Concurrent Build", "بناء", "Concurrent Build", 1200m, assembly.RowVersion));
@@ -740,10 +731,10 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var retail = database.CreateRetailServices();
         var cpuId = Guid.NewGuid();
         var boardId = Guid.NewGuid();
-        var units = await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), "Cancel build",
+        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), "Cancel build",
         [
-            Line(cpuId, "Cancel CPU", "CAN-CPU", 400m),
-            Line(boardId, "Cancel Board", "CAN-MB", 300m)
+            Line(cpuId, "Cancel CPU", 400m),
+            Line(boardId, "Cancel Board", 300m)
         ]), Actor);
         var assembly = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Cancel Build", units.Select(unit => unit.Id).ToList()));
         var priced = await retail.Assemblies.UpdateAssemblyAsync(assembly.Id,
@@ -777,12 +768,12 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
-        var units = await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
+        var units = await retail.ReceiveUnitsAsync(Receipt(Guid.NewGuid(), null,
         [
-            Line(Guid.NewGuid(), "Edit CPU", "EDIT-CPU", 500m, 600m),
-            Line(Guid.NewGuid(), "Edit GPU", "EDIT-GPU", 200m, 300m),
-            Line(Guid.NewGuid(), "Edit Fan", "EDIT-FAN", 50m, 100m),
-            Line(Guid.NewGuid(), "Edit PSU", "EDIT-PSU", 80m, 100m)
+            Line(Guid.NewGuid(), "Edit CPU", 500m, 600m),
+            Line(Guid.NewGuid(), "Edit GPU", 200m, 300m),
+            Line(Guid.NewGuid(), "Edit Fan", 50m, 100m),
+            Line(Guid.NewGuid(), "Edit PSU", 80m, 100m)
         ]), Actor);
         var (cpu, gpu, fan, psu) = (units[0].Id, units[1].Id, units[2].Id, units[3].Id);
         var first = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("First", [cpu, gpu, fan]));

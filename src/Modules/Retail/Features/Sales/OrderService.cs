@@ -78,6 +78,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
                     ProductId = line.ProductId, VariantId = line.VariantId, VariantName = line.VariantName?.Trim(),
                     ThumbnailStorageKeySnapshot = line.ThumbnailStorageKeySnapshot,
                     AssemblyId = line.AssemblyId,
+                    StockItemId = line.StockItemId,
                     Quantity = line.Quantity, UnitPrice = line.UnitPrice, LineTotal = lineTotal,
                     DiscountAmount = discount, DirectExpenseAmount = expense,
                     DirectExpenseNote = line.DirectExpenseNote?.Trim()
@@ -129,7 +130,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
             ?? throw new RetailException(404, "Order was not found.");
         var unitIds = order.Items.SelectMany(item => item.Components).Select(component => component.UnitId).Distinct().ToList();
         var units = await db.Units.AsNoTracking().Where(unit => unitIds.Contains(unit.Id))
-            .Select(unit => new AdminOrderUnitView(unit.Id, unit.ProductId, unit.Name, unit.Sku, unit.Condition,
+            .Select(unit => new AdminOrderUnitView(unit.Id, unit.ProductId, unit.Name, unit.StockItem.Code, unit.Condition,
                 unit.InspectionCondition, includeSerials ? unit.SerialNumber : null, unit.Status))
             .ToListAsync(cancellationToken);
         return new AdminOrderDetailView(OrderMapping.ToView(order, true), units);

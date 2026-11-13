@@ -28,6 +28,12 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("code");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
@@ -71,6 +77,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("updated_at_utc");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_assemblies_code");
 
                     b.ToTable("assemblies", null, t =>
                         {
@@ -118,16 +128,6 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assembly_id");
 
-                    b.Property<string>("Brand")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("brand");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("category");
-
                     b.Property<string>("Condition")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -138,29 +138,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("ExternalCode")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("external_code");
-
-                    b.Property<string>("ImageStorageKeysJson")
-                        .HasColumnType("text")
-                        .HasColumnName("image_storage_keys_json");
-
                     b.Property<string>("InspectionCondition")
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
                         .HasColumnName("inspection_condition");
-
-                    b.Property<string>("Model")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("model");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -206,11 +187,6 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("serial_number");
 
-                    b.Property<string>("Sku")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("sku");
-
                     b.Property<string>("SourceName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -221,34 +197,23 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("source_type");
 
-                    b.Property<string>("SpecificationsJson")
-                        .HasColumnType("text")
-                        .HasColumnName("specifications_json");
-
-                    b.Property<decimal?>("StandalonePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("standalone_price");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)")
                         .HasColumnName("status");
 
-                    b.Property<Guid?>("VariantId")
+                    b.Property<Guid>("StockItemId")
                         .HasColumnType("uuid")
-                        .HasColumnName("variant_id");
-
-                    b.Property<string>("WarrantyNote")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("warranty_note");
+                        .HasColumnName("stock_item_id");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SerialNumber")
                         .HasDatabaseName("ix_inventory_units_serial");
+
+                    b.HasIndex("StockItemId")
+                        .HasDatabaseName("ix_inventory_units_stock_item");
 
                     b.HasIndex("Status", "ProductId")
                         .HasDatabaseName("ix_inventory_units_status_product");
@@ -352,6 +317,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("sku");
+
+                    b.Property<Guid?>("StockItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("stock_item_id");
 
                     b.Property<string>("ThumbnailStorageKeySnapshot")
                         .HasMaxLength(512)
@@ -1014,6 +983,136 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.StockItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("AloneExtra")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("alone_extra");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Condition")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("condition");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("HasBox")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_box");
+
+                    b.Property<string>("InternalNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("internal_note");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_hidden");
+
+                    b.Property<string>("ModelKey")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("model_key");
+
+                    b.Property<string>("ModelName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("model_name");
+
+                    b.Property<int>("PhotoCount")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("integer")
+                        .HasColumnName("photo_count")
+                        .HasComputedColumnSql("jsonb_array_length(photos)", true);
+
+                    b.Property<string>("Photos")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("photos")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("row_version");
+
+                    b.Property<string>("Specs")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("specs")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<string>("WarrantyLabel")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("warranty_label");
+
+                    b.Property<int?>("WarrantyMonths")
+                        .HasColumnType("integer")
+                        .HasColumnName("warranty_months");
+
+                    b.Property<decimal?>("WithBoardExtra")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("with_board_extra");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_stock_items_code");
+
+                    b.HasIndex("ModelKey")
+                        .HasDatabaseName("ix_stock_items_model_key");
+
+                    b.HasIndex("IsHidden", "Condition", "CategoryId")
+                        .HasDatabaseName("ix_stock_items_listing");
+
+                    b.ToTable("stock_items", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_stock_items_condition", "condition IN ('New','Used')");
+
+                            t.HasCheckConstraint("ck_stock_items_price", "price >= 0");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.StoreOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1181,6 +1280,17 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.InventoryUnit", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.StockItem", "StockItem")
+                        .WithMany("Units")
+                        .HasForeignKey("StockItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("StockItem");
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.OrderEvent", b =>
                 {
                     b.HasOne("HardwareStore.Modules.Retail.StoreOrder", null)
@@ -1220,6 +1330,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
             modelBuilder.Entity("HardwareStore.Modules.Retail.OrderItem", b =>
                 {
                     b.Navigation("Components");
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.StockItem", b =>
+                {
+                    b.Navigation("Units");
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.StoreOrder", b =>

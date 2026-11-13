@@ -4,6 +4,7 @@ using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Retail;
+using static HardwareStore.Api.Tests.RetailReceipts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -55,12 +56,10 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
-        await retail.Units.ReceiveAsync(new ReceiveRequest(Guid.NewGuid(), null,
-        [
-            new ReceiptLine(productId, null, "Matrix GPU", "MATRIX-1", "New", "SERIAL-SECRET", 700m, 1, 8m, null,
-                1200m, "Secret Supplier", "Brand", "Model", "GPU", null, null, null, "Component", "Supplier",
-                new DateOnly(2026, 11, 1), "[{\"storageKey\":\"matrix/key.webp\"}]")
-        ]), Guid.NewGuid());
+        await retail.ReceiveUnitsAsync(new ReceiveRequest(Guid.NewGuid(), null,
+            new ReceiptSource("Secret Supplier", "Supplier", "Component", new DateOnly(2026, 11, 1)),
+            [new ReceiptLine("Matrix GPU", "New", 1, 700m, 1200m, ProductId: productId, SerialNumber: "SERIAL-SECRET", PartnerPercentOverride: 8m)]),
+            Guid.NewGuid());
         var customerId = await CreateUserAsync(database, "inventory-viewer", ["Inventory.View"]);
         await using var factory = CreateFactory(database.ConnectionString);
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });

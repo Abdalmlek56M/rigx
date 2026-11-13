@@ -48,39 +48,48 @@ internal static class OrderStockAllocator
                 assembly.Status = AssemblyStatus.Sold;
                 continue;
             }
-            if (item.ProductId is null)
-                throw new RetailException(409, "A stock line is missing its product reference.");
-            var lockedIds = await db.Database.SqlQuery<Guid>(
-                $"SELECT id AS \"Value\" FROM inventory_units WHERE product_id = {item.ProductId.Value} AND status = 'Available' ORDER BY received_at_utc LIMIT {item.Quantity} FOR UPDATE SKIP LOCKED")
-                .ToListAsync(cancellationToken);
-            if (lockedIds.Count != item.Quantity)
-                throw new RetailException(409, "Not enough available stock to confirm this order.");
-            var available = await db.Units
-                .Where(unit => lockedIds.Contains(unit.Id) && unit.Status == UnitStatus.Available)
-                .ToListAsync(cancellationToken);
-            if (available.Count != item.Quantity)
-                throw new RetailException(409, "Not enough available stock to confirm this order.");
-            var percents = AllocationMath.EqualPercentages(available.Count);
-            var lineRevenues = AllocationMath.AllocateAmount(item.LineTotal, percents);
-            var lineDiscounts = AllocationMath.AllocateAmount(item.DiscountAmount, percents);
-            var lineExpenses = AllocationMath.AllocateAmount(item.DirectExpenseAmount, percents);
-            for (var index = 0; index < available.Count; index++)
-            {
-                var unit = available[index];
-                item.Components.Add(new OrderItemComponent
-                {
-                    Id = Guid.CreateVersion7(), OrderItemId = item.Id, UnitId = unit.Id,
-                    AllocationPercent = percents[index],
-                    RevenueAmount = lineRevenues[index], DiscountAmount = lineDiscounts[index],
-                    DirectExpenseAmount = lineExpenses[index], CostAmount = unit.AcquisitionCost,
-                    NetProfit = AllocationMath.Net(lineRevenues[index], lineDiscounts[index], lineExpenses[index], unit.AcquisitionCost)
-                });
-                unit.Status = UnitStatus.Sold; unit.RowVersion++;
-            }
-            item.UnitId = available[0].Id;
-            item.UnitCostSnapshot = decimal.Round(item.Components.Sum(component => component.CostAmount), 2);
-            item.NetProfit = decimal.Round(item.Components.Sum(component => component.NetProfit), 2);
+            await ClaimStockLineAsync(db, item, cancellationToken);
         }
+    }
+
+    /// <summary>Claims the oldest available units of a stock item (its lot) or, for product lines, of a product.</summary>
+    private static async Task ClaimStockLineAsync(RetailDbContext db, OrderItem item, CancellationToken cancellationToken)
+    {
+        if (item.StockItemId is null && item.ProductId is null)
+            throw new RetailException(409, "A stock line is missing its item reference.");
+        var lockQuery = item.StockItemId is Guid stockItemId
+            ? db.Database.SqlQuery<Guid>(
+                $"SELECT id AS \"Value\" FROM inventory_units WHERE stock_item_id = {stockItemId} AND status = 'Available' ORDER BY received_at_utc LIMIT {item.Quantity} FOR UPDATE SKIP LOCKED")
+            : db.Database.SqlQuery<Guid>(
+                $"SELECT id AS \"Value\" FROM inventory_units WHERE product_id = {item.ProductId!.Value} AND status = 'Available' ORDER BY received_at_utc LIMIT {item.Quantity} FOR UPDATE SKIP LOCKED");
+        var lockedIds = await lockQuery.ToListAsync(cancellationToken);
+        if (lockedIds.Count != item.Quantity)
+            throw new RetailException(409, "Not enough available stock to confirm this order.");
+        var available = await db.Units
+            .Where(unit => lockedIds.Contains(unit.Id) && unit.Status == UnitStatus.Available)
+            .ToListAsync(cancellationToken);
+        if (available.Count != item.Quantity)
+            throw new RetailException(409, "Not enough available stock to confirm this order.");
+        var percents = AllocationMath.EqualPercentages(available.Count);
+        var lineRevenues = AllocationMath.AllocateAmount(item.LineTotal, percents);
+        var lineDiscounts = AllocationMath.AllocateAmount(item.DiscountAmount, percents);
+        var lineExpenses = AllocationMath.AllocateAmount(item.DirectExpenseAmount, percents);
+        for (var index = 0; index < available.Count; index++)
+        {
+            var unit = available[index];
+            item.Components.Add(new OrderItemComponent
+            {
+                Id = Guid.CreateVersion7(), OrderItemId = item.Id, UnitId = unit.Id,
+                AllocationPercent = percents[index],
+                RevenueAmount = lineRevenues[index], DiscountAmount = lineDiscounts[index],
+                DirectExpenseAmount = lineExpenses[index], CostAmount = unit.AcquisitionCost,
+                NetProfit = AllocationMath.Net(lineRevenues[index], lineDiscounts[index], lineExpenses[index], unit.AcquisitionCost)
+            });
+            unit.Status = UnitStatus.Sold; unit.RowVersion++;
+        }
+        item.UnitId = available[0].Id;
+        item.UnitCostSnapshot = decimal.Round(item.Components.Sum(component => component.CostAmount), 2);
+        item.NetProfit = decimal.Round(item.Components.Sum(component => component.NetProfit), 2);
     }
 
     /// <summary>Returns claimed units on cancellation: build parts go back to the build, single parts to stock.</summary>
