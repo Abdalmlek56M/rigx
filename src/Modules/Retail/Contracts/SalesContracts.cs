@@ -15,8 +15,11 @@ public sealed record CheckoutRequest(OrderCustomer? Customer, string? Fulfillmen
     IReadOnlyList<OrderLineRequest>? Items, string? Notes = null, string? Usage = null, string? UsageNote = null,
     string? LeadSource = null, bool? TermsAccepted = null);
 
-/// <summary>What the store settings decide for a checkout (read in Host): fee, upfront rule, enabled methods, terms version.</summary>
-public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, decimal DeliveryFee,
+/// <summary>Shipping fee and promised delivery time for a governorate (from the shipping settings, read in Host).</summary>
+public sealed record ShippingRate(decimal Fee, string? DeliveryTime);
+
+/// <summary>What the store settings decide for a checkout (read in Host): shipping, upfront rule, enabled methods, terms version.</summary>
+public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, ShippingRate Shipping,
     Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder);
 
 /// <summary>Reservation defaults from the store settings, applied when an order is confirmed.</summary>
@@ -43,7 +46,8 @@ public sealed record OrderView(Guid Id, string Reference, string TrackingToken, 
     string PhoneNumber, bool PhoneHasWhatsApp, string? CustomerEmail, OrderAddress? Address, string FulfillmentMethod, string? LeadSource,
     string? Usage, string? UsageNote, string Status, string PaymentStatus, string PaymentMethod, bool PaymentRequired,
     DateTimeOffset? PaymentWaivedAtUtc, Guid? PaymentWaivedByUserAccountId, string? PaymentWaiverReason, decimal Subtotal,
-    decimal DeliveryFee, decimal Total, decimal UpfrontAmount, decimal PaidAmount, decimal Remaining, decimal RefundedAmount,
+    decimal DeliveryFee, string? DeliveryTime, decimal Total, decimal UpfrontAmount, decimal UpfrontDue, decimal PaidAmount, decimal Remaining,
+    decimal RefundedAmount,
     bool IsBlacklisted, DateTimeOffset? ReservedUntilUtc, bool ReservationAutoRelease, DateTimeOffset? ReservationExpiredAtUtc,
     string? CourierName, string? WaybillNumber, int? SatisfactionScore, string? SatisfactionComment, string? Notes,
     DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long RowVersion, IReadOnlyList<OrderItemView> Items,
@@ -56,7 +60,7 @@ public sealed record BlacklistView(Guid Id, string? Name, string? PhoneNumber, s
 /// <summary>Public tracking page (/t/{token}): no login, no customer name or phone.</summary>
 public sealed record TrackingView(string Reference, string Status, string FulfillmentMethod, IReadOnlyList<TrackingStep> Timeline,
     string? CourierName, string? WaybillNumber, string? Area, string? Street, IReadOnlyList<TrackingItem> Items, decimal Total,
-    decimal Remaining, bool CanRate, int? SatisfactionScore);
+    decimal Remaining, decimal UpfrontDue, string? DeliveryTime, bool CanRate, int? SatisfactionScore);
 public sealed record TrackingStep(string Status, DateTimeOffset At);
 public sealed record TrackingItem(string Name, string? Code, int Quantity);
 

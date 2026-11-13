@@ -1,3 +1,4 @@
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 
@@ -17,20 +18,29 @@ public static class InvoiceDocuments
         settings.Invoice.ShowWarrantyQr, settings.Invoice.TermsLine, settings.ContactLinks.Links.Where(link => link.ShowOnInvoice).ToList(),
         settings.StoreInfo.PickupAddress);
 
+    /// <summary>Category names for the parts of an invoice (the part type), keyed by category id.</summary>
+    public static async Task<IReadOnlyDictionary<Guid, string>> CategoryNamesAsync(TaxonomyService taxonomy, CancellationToken cancellationToken) =>
+        (await taxonomy.GetCategoriesAsync(cancellationToken)).ToDictionary(category => category.Id, category => category.Name);
+
     /// <summary>
     /// Without <paramref name="includeContact"/> the phone is masked and the address removed; without <paramref name="includeSerials"/>
     /// the serial numbers are removed (the public link is the customer's own document and shows everything).
     /// </summary>
-    public static InvoiceDocument Build(InvoiceView invoice, StoreSettingsAdminView settings, OrderLinks links, bool includeContact = true,
+    public static InvoiceDocument Build(InvoiceView invoice, StoreSettingsAdminView settings, OrderLinks links,
+        IReadOnlyDictionary<Guid, string> categoryNames, bool includeContact = true,
         bool includeSerials = true)
     {
         var shown = invoice with
         {
             PhoneNumber = includeContact ? invoice.PhoneNumber : WarrantyRules.MaskPhone(invoice.PhoneNumber),
             Address = includeContact ? invoice.Address : null,
-            Lines = includeSerials ? invoice.Lines : invoice.Lines.Select(line => line with
+            Lines = invoice.Lines.Select(line => line with
             {
-                Parts = line.Parts.Select(part => part with { SerialNumber = null }).ToList()
+                Parts = line.Parts.Select(part => part with
+                {
+                    SerialNumber = includeSerials ? part.SerialNumber : null,
+                    Category = part.CategoryId is Guid id && categoryNames.TryGetValue(id, out var name) ? name : null
+                }).ToList()
             }).ToList()
         };
         var branding = Branding(settings);

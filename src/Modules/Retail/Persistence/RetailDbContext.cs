@@ -148,6 +148,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.PaymentWaiverReason).HasColumnName("payment_waiver_reason").HasMaxLength(500);
             e.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
             e.Property(x => x.DeliveryFee).HasColumnName("delivery_fee").HasPrecision(18, 2);
+            e.Property(x => x.DeliveryTime).HasColumnName("delivery_time").HasMaxLength(60);
             e.Property(x => x.Total).HasColumnName("total").HasPrecision(18, 2);
             e.Property(x => x.UpfrontAmount).HasColumnName("upfront_amount").HasPrecision(18, 2);
             e.Property(x => x.PaidAmount).HasColumnName("paid_amount").HasPrecision(18, 2);

@@ -163,7 +163,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         delivery = await retail.StatusAsync(delivery, OrderStatus.Shipped);
         delivery = await retail.StatusAsync(delivery, OrderStatus.Delivered);
         Assert.Equal(OrderStatus.Delivered, delivery.Status);
-        Assert.Equal(["OrderCreated", "Status:Confirmed", "Status:Preparing", "Status:Shipped", "Status:Delivered"],
+        Assert.Equal(["OrderCreated", "Status:Confirmed", "Payment:InstaPay", "Status:Preparing", "Status:Shipped", "Status:Delivered"],
             delivery.Events.OrderBy(entry => entry.CreatedAtUtc).Select(entry => entry.EventType));
 
         var pickup = await retail.CheckoutAsync(Checkout([StockLine(item.Id)], OrderFulfillment.Pickup));
@@ -182,7 +182,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(order, "Ready")));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(order, OrderStatus.Completed)));
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.OrderStatus.UpdateStatusAsync(
-            order.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion + 5), Actor, Reservation, new InvoicePolicy("INV", null))));
+            order.Id, new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion + 5), Actor, Reservation, new InvoicePolicy("INV", null, RetailSales.BusinessZone))));
 
         var cancelled = await retail.StatusAsync(order, OrderStatus.Cancelled);
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.StatusAsync(cancelled, OrderStatus.Confirmed)));
@@ -198,7 +198,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Null(order.ReservedUntilUtc);
 
         var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(48, true), new InvoicePolicy("INV", null));
+            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(48, true), new InvoicePolicy("INV", null, RetailSales.BusinessZone));
         AssertNear(clock.GetUtcNow().AddHours(48), confirmed.ReservedUntilUtc);
         Assert.True(confirmed.ReservationAutoRelease);
         Assert.Equal(1, await AvailableAsync(retail, item));
@@ -244,7 +244,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         var item = await retail.PublishedItemAsync("Release GPU", 3, 500m);
         var order = await retail.CheckoutAsync(Checkout([StockLine(item.Id, 2)]));
         var confirmed = await retail.OrderStatus.UpdateStatusAsync(order.Id,
-            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(1, true), new InvoicePolicy("INV", null));
+            new OrderStatusRequest(OrderStatus.Confirmed, null, order.RowVersion), Actor, new ReservationPolicy(1, true), new InvoicePolicy("INV", null, RetailSales.BusinessZone));
         Assert.Equal(1, await AvailableAsync(retail, item));
 
         clock.Advance(TimeSpan.FromMinutes(61));
@@ -433,7 +433,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Equal(("Bosta", "WB-77", "Nasr City", "Abbas St"), (view.CourierName, view.WaybillNumber, view.Area, view.Street));
         Assert.Equal((item.Code, 1), (view.Items[0].Code, view.Items[0].Quantity));
         Assert.Equal(550m, view.Total);
-        Assert.Equal(550m, view.Remaining);
+        Assert.Equal((450m, 0m), (view.Remaining, view.UpfrontDue));
 
         var json = JsonSerializer.Serialize(view).ToLowerInvariant();
         foreach (var secret in new[] { "mohamed", "secret", "01099887766", "example.test", "tracktoken", order.TrackingToken.ToLowerInvariant() })
@@ -524,7 +524,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Equal(403, await RetailSales.StatusCodeAsync(() => retail.PosAsync(
             Sale([StockLine(gpu.Id, 1, 950m)], discount: 60m), PosLimited)));
         Assert.Equal(403, await RetailSales.StatusCodeAsync(() => retail.PosAsync(Sale(Lines(), discount: 1m),
-            new PosPolicy(0m, false, Reservation))));
+            new PosPolicy(0m, false, Reservation, StandardShipping))));
 
         var unlimited = await retail.PosAsync(Sale(Lines(), discount: 900m), PosUnlimited);
         Assert.Equal(600m, unlimited.Subtotal);
@@ -568,7 +568,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Null(pending.ReservedUntilUtc);
         Assert.Equal(3, await AvailableAsync(retail, item));
 
-        var confirmed = await retail.PosAsync(Sale([StockLine(item.Id, 2)], confirm: true), new PosPolicy(10m, true, new ReservationPolicy(6, true)));
+        var confirmed = await retail.PosAsync(Sale([StockLine(item.Id, 2)], confirm: true), new PosPolicy(10m, true, new ReservationPolicy(6, true), StandardShipping));
         Assert.Equal(OrderStatus.Confirmed, confirmed.Status);
         AssertNear(clock.GetUtcNow().AddHours(6), confirmed.ReservedUntilUtc);
         Assert.True(confirmed.ReservationAutoRelease);
@@ -580,6 +580,75 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Equal(OrderStatus.Confirmed, (await retail.StatusAsync(pending, OrderStatus.Confirmed)).Status);
         Assert.Equal(0, await AvailableAsync(retail, item));
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.PosAsync(Sale([StockLine(item.Id)], confirm: true))));
+    }
+
+    [Fact]
+    public async Task Online_delivery_order_keeps_the_delivery_time_and_shows_the_upfront_due_to_staff_and_customer()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Time GPU", 3, 1000m);
+
+        var order = await retail.CheckoutAsync(Checkout([StockLine(item.Id)]), Policy(deliveryTime: "خلال 2-3 أيام"));
+        var tracking = await retail.Tracking.GetAsync(order.TrackingToken);
+
+        Assert.Equal(("خلال 2-3 أيام", 200m, 200m), (order.DeliveryTime, order.UpfrontAmount, order.UpfrontDue));
+        Assert.Equal(("خلال 2-3 أيام", 200m), (tracking.DeliveryTime, tracking.UpfrontDue));
+
+        var pickup = await retail.CheckoutAsync(Checkout([StockLine(item.Id)], OrderFulfillment.Pickup), Policy(deliveryTime: "خلال 2-3 أيام"));
+        Assert.Equal((null, 0m), (pickup.DeliveryTime, pickup.UpfrontDue));
+        Assert.Null((await retail.Tracking.GetAsync(pickup.TrackingToken)).DeliveryTime);
+
+        var paid = await retail.Payments.AddPaymentAsync(order.Id, new OrderPaymentRequest(OrderPaymentMethod.InstaPay, 200m, null, order.RowVersion), Actor);
+        Assert.Equal(0m, paid.UpfrontDue);
+        Assert.Equal(0m, (await retail.Tracking.GetAsync(order.TrackingToken)).UpfrontDue);
+    }
+
+    [Fact]
+    public async Task A_delivery_order_cannot_be_prepared_before_its_upfront_payment_is_collected()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Upfront GPU", 4, 1000m);
+
+        var order = await retail.CheckoutAsync(Checkout([StockLine(item.Id)]));
+        var confirmed = await retail.StatusWithoutPaymentAsync(order, OrderStatus.Confirmed);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.StatusWithoutPaymentAsync(confirmed, OrderStatus.Preparing)));
+
+        var partial = await retail.Payments.AddPaymentAsync(order.Id,
+            new OrderPaymentRequest(OrderPaymentMethod.InstaPay, 150m, null, confirmed.RowVersion), Actor);
+        Assert.Equal(50m, partial.UpfrontDue);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.StatusWithoutPaymentAsync(partial, OrderStatus.Preparing)));
+
+        var paid = await retail.Payments.AddPaymentAsync(order.Id,
+            new OrderPaymentRequest(OrderPaymentMethod.InstaPay, partial.UpfrontDue, null, partial.RowVersion), Actor);
+        Assert.Equal(OrderStatus.Preparing, (await retail.StatusWithoutPaymentAsync(paid, OrderStatus.Preparing)).Status);
+
+        var waivedOrder = await retail.StatusWithoutPaymentAsync(await retail.CheckoutAsync(Checkout([StockLine(item.Id)])), OrderStatus.Confirmed);
+        var waived = await retail.Payments.WaivePaymentAsync(waivedOrder.Id, new WaivePaymentRequest("Owner-approved", waivedOrder.RowVersion), Actor);
+        Assert.Equal(OrderStatus.Preparing, (await retail.StatusWithoutPaymentAsync(waived, OrderStatus.Preparing)).Status);
+
+        var pickup = await retail.CheckoutAsync(Checkout([StockLine(item.Id)], OrderFulfillment.Pickup));
+        var pickupConfirmed = await retail.StatusWithoutPaymentAsync(pickup, OrderStatus.Confirmed);
+        Assert.Equal(OrderStatus.Preparing, (await retail.StatusWithoutPaymentAsync(pickupConfirmed, OrderStatus.Preparing)).Status);
+    }
+
+    [Fact]
+    public async Task Pos_delivery_takes_the_fee_and_time_from_the_shipping_settings_unless_staff_type_a_fee()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.ReceiveItemAsync(new ReceiptLine("Rate Sale GPU", "New", 5, 500m, 1000m));
+        var lines = new[] { StockLine(item.Id) };
+
+        var preview = await retail.Pos.PreviewAsync(Sale(lines, fulfillment: OrderFulfillment.Delivery, fee: null), PosUnlimited, includeCosts: false);
+        Assert.Equal((80m, 1080m), (preview.DeliveryFee, preview.Total));
+
+        var fromSettings = await retail.PosAsync(Sale(lines, fulfillment: OrderFulfillment.Delivery, fee: null));
+        Assert.Equal((80m, "خلال 2-3 أيام", 1080m), (fromSettings.DeliveryFee, fromSettings.DeliveryTime, fromSettings.Total));
+
+        var typed = await retail.PosAsync(Sale(lines, fulfillment: OrderFulfillment.Delivery, fee: 0m));
+        Assert.Equal((0m, "خلال 2-3 أيام"), (typed.DeliveryFee, typed.DeliveryTime));
+
+        var pickup = await retail.PosAsync(Sale(lines, fee: null));
+        Assert.Equal((0m, (string?)null), (pickup.DeliveryFee, pickup.DeliveryTime));
     }
 
     [Fact]

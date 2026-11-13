@@ -8,7 +8,7 @@ internal static class OrderMapping
         order.PhoneHasWhatsApp, includeContact ? order.CustomerEmail : null, includeContact ? AddressOf(order) : null,
         order.FulfillmentMethod, order.LeadSource, order.Usage, order.UsageNote, order.Status, order.PaymentStatus, order.PaymentMethod,
         order.PaymentRequired, order.PaymentWaivedAtUtc, order.PaymentWaivedByUserAccountId, order.PaymentWaiverReason, order.Subtotal,
-        order.DeliveryFee, order.Total, order.UpfrontAmount, order.PaidAmount, OrderRules.Remaining(order), order.RefundedAmount,
+        order.DeliveryFee, order.DeliveryTime, order.Total, order.UpfrontAmount, OrderRules.UpfrontDue(order), order.PaidAmount, OrderRules.Remaining(order), order.RefundedAmount,
         order.IsBlacklisted, order.ReservedUntilUtc, order.ReservationAutoRelease, order.ReservationExpiredAtUtc, order.CourierName,
         order.WaybillNumber, order.SatisfactionScore, order.SatisfactionComment, order.Notes, order.CreatedAtUtc, order.UpdatedAtUtc,
         order.RowVersion,

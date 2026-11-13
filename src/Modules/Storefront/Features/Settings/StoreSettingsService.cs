@@ -40,6 +40,12 @@ public sealed class StoreSettingsService(
         return new CheckoutQuoteView(shipping.Fee, shipping.DeliveryTime, upfront.Shipping, upfront.Deposit, upfront.Total);
     }
 
+    public async Task<ShippingRatesView> GetShippingRatesAsync(CancellationToken cancellationToken = default)
+    {
+        var (row, _) = await LoadAsync(cancellationToken);
+        return new ShippingRatesView(row.Shipping.PickupEnabled, row.StoreInfo.PickupAddress, row.Shipping.Rates());
+    }
+
     public async Task<StoreSettingsAdminView> UpdateSectionAsync<T>(
         T? value, long rowVersion, Guid actorUserId, CancellationToken cancellationToken = default)
         where T : class, IStoreSettingsSection<T>

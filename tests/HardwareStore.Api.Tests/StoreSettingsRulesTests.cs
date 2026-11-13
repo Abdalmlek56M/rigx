@@ -18,6 +18,25 @@ public sealed class StoreSettingsRulesTests
     private static PaymentSettings Payment(Func<PaymentSettings, PaymentSettings> change) => change(new PaymentSettings());
 
     [Fact]
+    public void Rates_cover_all_27_governorates_with_the_group_fee_or_the_default()
+    {
+        var shipping = new ShippingSettings
+        {
+            DefaultFee = 120m,
+            DefaultDeliveryTime = "default",
+            Groups = [new() { Name = "A", Fee = 50m, DeliveryTime = "fast", Governorates = ["C"] }, new() { Name = "B", Fee = 70m, Governorates = ["GZ"] }]
+        };
+
+        var rates = shipping.Rates();
+
+        Assert.Equal(27, rates.Count);
+        Assert.Equal(rates.Count, rates.Select(rate => rate.Code).Distinct().Count());
+        Assert.Equal(new GovernorateShippingRate("C", "القاهرة", 50m, "fast"), rates.Single(rate => rate.Code == "C"));
+        Assert.Equal(new GovernorateShippingRate("GZ", "الجيزة", 70m, "default"), rates.Single(rate => rate.Code == "GZ"));
+        Assert.Equal(new GovernorateShippingRate("ASN", "أسوان", 120m, "default"), rates.Single(rate => rate.Code == "ASN"));
+    }
+
+    [Fact]
     public void Contact_numbers_keep_digits_and_urls_must_be_absolute_http()
     {
         var normalized = Links(

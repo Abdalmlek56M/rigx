@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
@@ -43,6 +44,8 @@ public sealed class InvoicePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
             {
                 services.RemoveAll<IDbContextFactory<RetailDbContext>>();
                 services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(database.ConnectionString));
+                services.RemoveAll<IDbContextFactory<CatalogDbContext>>();
+                services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(database.ConnectionString));
                 services.RemoveAll<IDbContextFactory<StorefrontDbContext>>();
                 services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(database.ConnectionString));
             }));
@@ -216,6 +219,30 @@ public sealed class InvoicePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
         Assert.False(string.IsNullOrWhiteSpace(document.Branding.StoreName));
         Assert.EndsWith($"/i/{token}", document.InvoiceUrl);
         Assert.Contains(Uri.EscapeDataString(invoice.Number), document.WarrantyLookupUrl);
+    }
+
+    [Fact]
+    public async Task Invoice_parts_show_their_part_type_from_the_catalog_category()
+    {
+        await using var env = await Env.StartAsync(fixture);
+        CategoryView category;
+        await using (var scope = env.Factory.Services.CreateAsyncScope())
+            category = await scope.ServiceProvider.GetRequiredService<TaxonomyService>().SaveCategoryAsync(null,
+                new CategoryInput("كروت شاشة", $"gpu-{Guid.NewGuid():N}"[..12], null, null, null, 0, true, null));
+        var item = await env.Retail.ReceiveItemAsync(new ReceiptLine("Typed GPU", "New", 2, 100m, 500m, category.Id));
+        await env.Retail.PublishAsync(item);
+        var plain = await env.SellableAsync("Plain GPU");
+        var order = await env.DeliverAsync(await env.Retail.CheckoutAsync(
+            Checkout([StockLine(item.Id), StockLine(plain.Id)], OrderFulfillment.Pickup), Policy()));
+        var token = (await env.InvoiceOfAsync(order)).Invoice.AccessToken;
+
+        var document = await Env.GetAsync<InvoiceDocument>(env.Anonymous, $"/api/v1/invoices/{token}");
+
+        var parts = document.Invoice.Lines.SelectMany(line => line.Parts).ToList();
+        var typed = Assert.Single(parts, part => part.Code == item.Code);
+        Assert.Equal((category.Id, "كروت شاشة"), (typed.CategoryId, typed.Category));
+        var untyped = Assert.Single(parts, part => part.Code == plain.Code);
+        Assert.Equal(((Guid?)null, (string?)null), (untyped.CategoryId, untyped.Category));
     }
 
     [Fact]

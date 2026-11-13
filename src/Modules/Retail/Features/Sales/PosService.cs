@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -29,7 +30,8 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         try { OrderRules.EnsureDiscountAllowed(linesTotal, discount, policy.MaxDiscountPercent, policy.UnlimitedDiscount); }
         catch (RetailException exception) { warnings.Add(exception.Message); }
         var subtotal = linesTotal - discount;
-        var fee = OrderRules.Fulfillment(request.FulfillmentMethod) == OrderFulfillment.Delivery ? request.DeliveryFee : 0m;
+        var fulfillment = OrderRules.Fulfillment(request.FulfillmentMethod);
+        var fee = ShippingOf(request, fulfillment, policy).Fee;
         var costTotal = lines.Sum(line => line.Cost ?? 0m);
         return new PosPreview(lines, linesTotal, discount, subtotal, fee, subtotal + fee, includeCosts ? costTotal : null,
             includeCosts ? subtotal - costTotal : null, warnings, await ReturningPartsAsync(db, items, cancellationToken));
@@ -40,8 +42,7 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var fulfillment = OrderRules.Fulfillment(request.FulfillmentMethod);
         var address = OrderRules.Address(request.Address, fulfillment);
         var (usage, usageNote) = OrderUsage.Parse(request.Usage, request.UsageNote);
-        if (request.DeliveryFee < 0 || decimal.Round(request.DeliveryFee, 2) != request.DeliveryFee)
-            throw new RetailException(400, "The shipping fee must be zero or more.");
+        var shipping = ShippingOf(request, fulfillment, policy);
         var payments = (request.Payments ?? [])
             .Select(payment => (Method: OrderRules.PaymentMethod(payment.Method, OrderChannel.Store), payment.Amount)).ToList();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -52,7 +53,7 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
             OrderRules.EnsureDiscountAllowed(items.Sum(item => item.LineTotal), items.Sum(item => item.DiscountAmount),
                 policy.MaxDiscountPercent, policy.UnlimitedDiscount);
             var now = timeProvider.GetUtcNow().ToUniversalTime();
-            var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Store, items, request.DeliveryFee, now);
+            var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Store, items, shipping, now);
             order.PaymentMethod = payments.Select(payment => payment.Method).Distinct().Count() switch
             {
                 0 => OrderPaymentMethod.Cash,
@@ -93,6 +94,20 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var latest = await orders.OrderByDescending(order => order.CreatedAtUtc).FirstOrDefaultAsync(cancellationToken);
         return latest is null ? null : new PosCustomerView(latest.CustomerName, latest.PhoneNumber, latest.PhoneHasWhatsApp,
             latest.CustomerEmail, OrderMapping.AddressOf(latest), await orders.CountAsync(cancellationToken));
+    }
+
+    /// <summary>
+    /// The fee typed by staff wins; otherwise the fee of the address governorate in the shipping settings (the delivery time always comes
+    /// from there). Until a governorate is chosen (preview) the rate is empty; selling needs a valid address anyway.
+    /// </summary>
+    private static ShippingRate ShippingOf(PosSaleRequest request, string fulfillment, PosPolicy policy)
+    {
+        if (fulfillment != OrderFulfillment.Delivery) return new ShippingRate(0m, null);
+        if (request.DeliveryFee is decimal typed && (typed < 0m || decimal.Round(typed, 2) != typed))
+            throw new RetailException(400, "The shipping fee must be zero or more.");
+        var governorate = request.Address?.Governorate?.Trim().ToUpperInvariant();
+        var rate = EgyptGovernorates.IsKnown(governorate) ? policy.ShippingFor(governorate!) : new ShippingRate(0m, null);
+        return request.DeliveryFee is decimal fee ? rate with { Fee = fee } : rate;
     }
 
     private static async Task<List<OrderItem>> PriceAsync(RetailDbContext db, PosSaleRequest request, CancellationToken cancellationToken)

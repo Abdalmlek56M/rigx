@@ -17,6 +17,7 @@
 - Warranty lookup: anonymous, rate-limited 20 / 10 min per IP (`warranty-lookup`); phone masked to last 3 digits; no name, serial or prices.
 - Invoice link `GET /api/v1/invoices/{token}`: anonymous, 32-byte unguessable token (the only access control), rate-limited (order-tracking policy), `no-store`. Returns the full customer document by design (name, phone, address, lines, serials, prices).
 - Quote `POST /api/v1/store/quote`: anonymous, rate-limited, no customer data, no invoice number.
+- Shipping rates `GET /api/v1/storefront/shipping-rates`: anonymous, public shipping settings only (pickup address, governorate fees and delivery times), no customer data.
 - Dependency audit (12 Nov 2026): 0 known vulnerable NuGet packages.
 
 ## Rules every change must keep

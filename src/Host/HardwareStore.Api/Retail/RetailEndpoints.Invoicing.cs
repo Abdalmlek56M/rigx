@@ -1,3 +1,4 @@
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
@@ -7,10 +8,11 @@ public static partial class RetailEndpoints
 {
     /// <summary>Public invoice page (/i/{token}): the customer's own document, opened by an unguessable link.</summary>
     private static async Task<IResult> GetInvoiceByTokenAsync(string token, HttpContext context, InvoiceService invoices, StoreSettingsService settings,
-        OrderLinks links, CancellationToken ct)
+        TaxonomyService taxonomy, OrderLinks links, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(InvoiceDocuments.Build(await invoices.GetByTokenAsync(token, ct), await settings.GetAdminAsync(ct), links));
+        return Results.Ok(InvoiceDocuments.Build(await invoices.GetByTokenAsync(token, ct), await settings.GetAdminAsync(ct), links,
+            await InvoiceDocuments.CategoryNamesAsync(taxonomy, ct)));
     }
 
     private static async Task<IResult> ListMyInvoicesAsync(HttpContext context, InvoiceService invoices, CancellationToken ct)
@@ -22,10 +24,11 @@ public static partial class RetailEndpoints
 
     /// <summary>Staff view of an order's invoice: phone masked, address and serials hidden without the matching permissions.</summary>
     private static async Task<IResult> GetOrderInvoiceAsync(Guid id, HttpContext context, InvoiceService invoices, StoreSettingsService settings,
-        OrderLinks links, CancellationToken ct)
+        TaxonomyService taxonomy, OrderLinks links, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(InvoiceDocuments.Build(await invoices.GetForOrderAsync(id, ct), await settings.GetAdminAsync(ct), links,
+            await InvoiceDocuments.CategoryNamesAsync(taxonomy, ct),
             context.HasPermission("Sales.ViewCustomerContact"), context.HasPermission("Inventory.ViewSerials")));
     }
 

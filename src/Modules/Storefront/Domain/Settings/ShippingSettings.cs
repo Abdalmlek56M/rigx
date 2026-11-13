@@ -28,6 +28,13 @@ public sealed record ShippingSettings : IStoreSettingsSection<ShippingSettings>
             : new ShippingQuote(group.Fee, group.DeliveryTime ?? DefaultDeliveryTime);
     }
 
+    /// <summary>Every governorate with its fee and delivery time, for the public shipping page and the checkout dropdown.</summary>
+    public IReadOnlyList<GovernorateShippingRate> Rates() => EgyptGovernorates.NamesByCode.Select(entry =>
+    {
+        var quote = QuoteFor(entry.Key);
+        return new GovernorateShippingRate(entry.Key, entry.Value, quote.Fee, quote.DeliveryTime);
+    }).ToList();
+
     public ShippingSettings Normalize()
     {
         var groups = (Groups ?? []).Select(group => group.Normalize()).ToArray();
@@ -67,3 +74,5 @@ public sealed record ShippingGroup
 }
 
 public sealed record ShippingQuote(decimal Fee, string? DeliveryTime);
+
+public sealed record GovernorateShippingRate(string Code, string Name, decimal Fee, string? DeliveryTime);

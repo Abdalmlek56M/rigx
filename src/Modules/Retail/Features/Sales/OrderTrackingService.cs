@@ -50,7 +50,7 @@ public sealed class OrderTrackingService(IDbContextFactory<RetailDbContext> cont
         return new TrackingView(order.Reference, order.Status == OrderStatus.Completed ? OrderStatus.Delivered : order.Status,
             order.FulfillmentMethod, steps, order.CourierName, order.WaybillNumber, order.Area, order.Street,
             order.Items.Select(item => new TrackingItem(item.Name, item.Code, item.Quantity)).ToList(), order.Total,
-            OrderRules.Remaining(order), CanRate(order), order.SatisfactionScore);
+            OrderRules.Remaining(order), OrderRules.UpfrontDue(order), order.DeliveryTime, CanRate(order), order.SatisfactionScore);
     }
 
     private static RetailException NotFound() => new(404, "The order was not found.");

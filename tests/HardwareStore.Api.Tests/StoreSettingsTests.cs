@@ -88,6 +88,34 @@ public sealed class StoreSettingsPostgreSqlTests(StoreAdminPostgreSqlFixture fix
     }
 
     [Fact]
+    public async Task Shipping_rates_list_every_governorate_with_its_group_or_default_fee_and_the_pickup_address()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var service = database.CreateStoreSettingsService();
+        var actorId = await CreateActorAsync(database);
+        var initial = await service.GetAdminAsync();
+        var withShipping = await service.UpdateSectionAsync(
+            new ShippingSettings
+            {
+                DefaultFee = 120m,
+                DefaultDeliveryTime = "خلال 4-5 أيام",
+                Groups = [new() { Name = "القاهرة الكبرى", Fee = 80m, DeliveryTime = "خلال 2-3 أيام", Governorates = ["C", "GZ"] }]
+            },
+            initial.RowVersion,
+            actorId);
+        await service.UpdateSectionAsync(
+            new StoreInfoSettings { Name = "RIGX", PickupAddress = "شارع التحرير" }, withShipping.RowVersion, actorId);
+
+        var rates = await service.GetShippingRatesAsync();
+
+        Assert.True(rates.PickupEnabled);
+        Assert.Equal("شارع التحرير", rates.PickupAddress);
+        Assert.Equal(27, rates.Governorates.Count);
+        Assert.Equal(new GovernorateShippingRate("GZ", "الجيزة", 80m, "خلال 2-3 أيام"), rates.Governorates.Single(rate => rate.Code == "GZ"));
+        Assert.Equal(new GovernorateShippingRate("LX", "الأقصر", 120m, "خلال 4-5 أيام"), rates.Governorates.Single(rate => rate.Code == "LX"));
+    }
+
+    [Fact]
     public async Task Checkout_quote_applies_shipping_group_default_pickup_and_deposit()
     {
         var database = await fixture.CreateDatabaseAsync();

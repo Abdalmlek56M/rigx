@@ -115,7 +115,7 @@ public sealed class InvoiceService(IDbContextFactory<RetailDbContext> contextFac
             var unit = units[component.UnitId];
             warranties.TryGetValue((item.Id, component.UnitId), out var warranty);
             return new InvoicePartView(unit.StockItem.Code, unit.Name, unit.Condition, unit.SerialNumber, warranty?.Label ?? component.WarrantyLabel,
-                warranty?.EndsAtUtc, warranty is null ? null : WarrantyRules.Status(warranty, now));
+                warranty?.EndsAtUtc, warranty is null ? null : WarrantyRules.Status(warranty, now), unit.StockItem.CategoryId, null);
         }).OrderBy(part => part.Code).ToList();
         // A whole build line stores the BLD code as its Code; a part sold alone stores its RX code and points to the build by AssemblyId.
         var buildCode = item.AssemblyId is Guid assemblyId && buildCodes.TryGetValue(assemblyId, out var code) ? code : null;

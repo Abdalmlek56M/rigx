@@ -1,11 +1,11 @@
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>What the store settings and the signed-in staff member decide when an invoice is issued (read in Host).</summary>
-public sealed record InvoicePolicy(string NumberPrefix, string? SellerName);
+public sealed record InvoicePolicy(string NumberPrefix, string? SellerName, TimeZoneInfo TimeZone);
 
 /// <summary>One sold unit on the invoice with its warranty (label falls back to the sold label when no warranty record exists).</summary>
 public sealed record InvoicePartView(string Code, string Name, string Condition, string? SerialNumber, string? WarrantyLabel,
-    DateTimeOffset? WarrantyEndsAtUtc, string? WarrantyStatus);
+    DateTimeOffset? WarrantyEndsAtUtc, string? WarrantyStatus, Guid? CategoryId, string? Category);
 
 /// <summary>
 /// One order line. Code is the RX or BLD code of the line (a whole build line carries the BLD code, a stock line or a part

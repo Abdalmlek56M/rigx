@@ -58,10 +58,13 @@ public sealed class InvoiceRulesTests
         Assert.Equal(expected, InvoiceRules.Status(orderStatus));
 
     [Fact]
-    public void YearOf_uses_the_utc_year()
+    public void YearOf_uses_the_business_time_zone_year()
     {
-        Assert.Equal(2026, InvoiceRules.YearOf(new DateTimeOffset(2026, 12, 31, 23, 30, 0, TimeSpan.Zero)));
-        Assert.Equal(2026, InvoiceRules.YearOf(new DateTimeOffset(2027, 1, 1, 1, 0, 0, TimeSpan.FromHours(2))));
+        var cairo = RetailSales.BusinessZone;
+        // Winter: Cairo is UTC+2, so 22:30 UTC on 31 December is already 00:30 on 1 January.
+        Assert.Equal(2027, InvoiceRules.YearOf(new DateTimeOffset(2026, 12, 31, 22, 30, 0, TimeSpan.Zero), cairo));
+        Assert.Equal(2026, InvoiceRules.YearOf(new DateTimeOffset(2026, 12, 31, 21, 0, 0, TimeSpan.Zero), cairo));
+        Assert.Equal(2026, InvoiceRules.YearOf(new DateTimeOffset(2026, 12, 31, 22, 30, 0, TimeSpan.Zero), TimeZoneInfo.Utc));
     }
 
     [Fact]

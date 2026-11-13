@@ -35,6 +35,8 @@ public sealed class StoreOrder
     public string? PaymentWaiverReason { get; set; }
     public decimal Subtotal { get; set; }
     public decimal DeliveryFee { get; set; }
+    /// <summary>Delivery time promised by the shipping settings when the order was placed; null for pickup or when none was set.</summary>
+    public string? DeliveryTime { get; set; }
     public decimal Total { get; set; }
     /// <summary>Shipping (+ deposit) asked before the order is prepared; zero for pickup.</summary>
     public decimal UpfrontAmount { get; set; }

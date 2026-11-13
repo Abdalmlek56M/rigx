@@ -35,6 +35,7 @@ public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contex
                 order.ReservedUntilUtc = now.AddHours(reservation.Hours);
                 order.ReservationAutoRelease = reservation.AutoRelease;
             }
+            if (next == OrderStatus.Preparing) OrderRules.EnsureUpfrontPaid(order);
             if (next == OrderStatus.Delivered)
             {
                 await WarrantyRegistry.IssueForOrderAsync(db, order, now, cancellationToken);

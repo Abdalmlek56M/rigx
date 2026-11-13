@@ -6,14 +6,39 @@ namespace HardwareStore.Api.Tests;
 public sealed class OrderRulesTests
 {
     private static StoreOrder Order(string status = OrderStatus.New, string fulfillment = OrderFulfillment.Delivery,
-        string payment = PaymentStatus.Unpaid, decimal total = 1000m, decimal paid = 0m, bool blacklisted = false) =>
+        string payment = PaymentStatus.Unpaid, decimal total = 1000m, decimal paid = 0m, bool blacklisted = false, decimal upfront = 0m) =>
         new()
         {
             Reference = "R", TrackingToken = "T", CustomerName = "C", PhoneNumber = "01000000000", Status = status,
-            PaymentStatus = payment, FulfillmentMethod = fulfillment, Total = total, PaidAmount = paid, IsBlacklisted = blacklisted
+            PaymentStatus = payment, FulfillmentMethod = fulfillment, Total = total, PaidAmount = paid, IsBlacklisted = blacklisted, UpfrontAmount = upfront
         };
 
     private static void AssertBadRequest(Action action) => Assert.Equal(400, Assert.Throws<RetailException>(action).StatusCode);
+
+    [Theory]
+    [InlineData(PaymentStatus.Unpaid, 0, 150, 150)]
+    [InlineData(PaymentStatus.Unpaid, 100, 150, 50)]
+    [InlineData(PaymentStatus.Unpaid, 150, 150, 0)]
+    [InlineData(PaymentStatus.Unpaid, 400, 150, 0)]
+    [InlineData(PaymentStatus.Paid, 1000, 150, 0)]
+    [InlineData(PaymentStatus.Waived, 0, 150, 0)]
+    [InlineData(PaymentStatus.Unpaid, 0, 0, 0)]
+    public void Upfront_due_is_what_is_left_of_the_upfront_amount_and_zero_when_paid_or_waived(string payment, double paid, double upfront, double expected) =>
+        Assert.Equal((decimal)expected, OrderRules.UpfrontDue(Order(payment: payment, paid: (decimal)paid, upfront: (decimal)upfront)));
+
+    [Fact]
+    public void Preparing_is_blocked_until_the_upfront_payment_is_collected()
+    {
+        Assert.Equal(409, Assert.Throws<RetailException>(() => OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed, upfront: 150m))).StatusCode);
+        Assert.Equal(409, Assert.Throws<RetailException>(() =>
+            OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed, payment: PaymentStatus.Unpaid, paid: 149.99m, upfront: 150m))).StatusCode);
+
+        OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed, payment: PaymentStatus.Unpaid, paid: 150m, upfront: 150m));
+        OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed, payment: PaymentStatus.Paid, upfront: 150m));
+        OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed, payment: PaymentStatus.Waived, upfront: 150m));
+        OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed, OrderFulfillment.Pickup));
+        OrderRules.EnsureUpfrontPaid(Order(OrderStatus.Confirmed));
+    }
 
     [Theory]
     [InlineData("0100 000 0000", "01000000000")]

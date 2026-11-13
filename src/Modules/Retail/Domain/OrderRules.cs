@@ -141,6 +141,16 @@ public static class OrderRules
     public static decimal Remaining(StoreOrder order) =>
         order.PaymentStatus is PaymentStatus.Paid or PaymentStatus.Waived ? 0m : Math.Max(0m, order.Total - order.PaidAmount);
 
+    /// <summary>What the customer still owes before the order is prepared (shipping and deposit); zero once paid or waived.</summary>
+    public static decimal UpfrontDue(StoreOrder order) =>
+        order.PaymentStatus is PaymentStatus.Paid or PaymentStatus.Waived ? 0m : Math.Max(0m, order.UpfrontAmount - order.PaidAmount);
+
+    public static void EnsureUpfrontPaid(StoreOrder order)
+    {
+        if (UpfrontDue(order) > 0m)
+            throw new RetailException(409, "Collect the upfront payment (shipping and deposit) before preparing the order.");
+    }
+
     public static void ValidatePayment(decimal amount)
     {
         if (amount <= 0 || decimal.Round(amount, 2) != amount)

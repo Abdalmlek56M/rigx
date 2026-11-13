@@ -8,6 +8,7 @@ public static class StorefrontEndpoints
     {
         endpoints.MapGet("/api/v1/storefront/settings", GetPublicSettingsAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/storefront/checkout-quote", QuoteCheckoutAsync).AllowAnonymous();
+        endpoints.MapGet("/api/v1/storefront/shipping-rates", GetShippingRatesAsync).AllowAnonymous();
 
         var settings = endpoints.MapGroup("/api/v1/admin/storefront/settings");
         settings.MapGet("", GetAdminSettingsAsync).RequirePermission(SettingsPermission);
@@ -121,6 +122,9 @@ public static class StorefrontEndpoints
         decimal subtotal = 0,
         bool pickup = false) =>
         Results.Ok(await settings.QuoteCheckoutAsync(governorate, subtotal, pickup, cancellationToken));
+
+    private static async Task<IResult> GetShippingRatesAsync(StoreSettingsService settings, CancellationToken cancellationToken) =>
+        Results.Ok(await settings.GetShippingRatesAsync(cancellationToken));
 
     private static async Task<IResult> GetAdminSettingsAsync(
         HttpContext context,

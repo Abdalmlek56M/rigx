@@ -27,8 +27,8 @@ public static partial class InvoiceRules
 
     public static string NewAccessToken() => OrderRules.NewToken(TokenBytes);
 
-    /// <summary>The year the sequence restarts in (UTC year of the issue time).</summary>
-    public static int YearOf(DateTimeOffset issuedAtUtc) => issuedAtUtc.UtcDateTime.Year;
+    /// <summary>The year the sequence restarts in (the year of the issue time in the business time zone, not UTC).</summary>
+    public static int YearOf(DateTimeOffset issuedAtUtc, TimeZoneInfo timeZone) => TimeZoneInfo.ConvertTime(issuedAtUtc, timeZone).Year;
 
     [GeneratedRegex(@"^[A-Z]{2,6}-\d{4}-\d{4,9}$", RegexOptions.CultureInvariant)]
     private static partial Regex NumberPattern();

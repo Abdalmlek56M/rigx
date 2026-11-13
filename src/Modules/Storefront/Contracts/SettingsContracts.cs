@@ -39,3 +39,6 @@ public sealed record CheckoutQuoteView(
     decimal UpfrontShipping,
     decimal Deposit,
     decimal UpfrontTotal);
+
+/// <summary>"الشحن لكل المحافظات": pickup availability and the fee and delivery time of every governorate.</summary>
+public sealed record ShippingRatesView(bool PickupEnabled, string? PickupAddress, IReadOnlyList<GovernorateShippingRate> Governorates);

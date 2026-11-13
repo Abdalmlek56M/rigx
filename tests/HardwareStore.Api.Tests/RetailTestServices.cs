@@ -38,15 +38,18 @@ public sealed record RetailTestServices(
 public static class RetailSales
 {
     public static readonly ReservationPolicy Reservation = new(24, false);
-    public static readonly PosPolicy PosUnlimited = new(10m, true, Reservation);
-    public static readonly PosPolicy PosLimited = new(10m, false, Reservation);
+    public static readonly TimeZoneInfo BusinessZone = TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
+    /// <summary>Shipping settings in the tests: 80 EGP "خلال 2-3 أيام" for every governorate.</summary>
+    public static readonly Func<string, ShippingRate> StandardShipping = _ => new ShippingRate(80m, "خلال 2-3 أيام");
+    public static readonly PosPolicy PosUnlimited = new(10m, true, Reservation, StandardShipping);
+    public static readonly PosPolicy PosLimited = new(10m, false, Reservation, StandardShipping);
     public static readonly OrderCustomer Customer = new("Customer", "01000000000");
     public static readonly OrderAddress Cairo = new("C", "Nasr City", "Abbas St", "Bldg 4", null);
     public static readonly string[] OnlineMethods = [OrderPaymentMethod.CashOnDelivery, OrderPaymentMethod.InstaPay, OrderPaymentMethod.Wallet];
 
     /// <summary>Delivery fee 50, upfront 20% of the subtotal, every online payment method enabled.</summary>
-    public static CheckoutPolicy Policy(Guid? userId = null, string[]? methods = null, decimal fee = 50m) =>
-        new(userId, "3", fee, subtotal => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m);
+    public static CheckoutPolicy Policy(Guid? userId = null, string[]? methods = null, decimal fee = 50m, string? deliveryTime = null) =>
+        new(userId, "3", new ShippingRate(fee, deliveryTime), subtotal => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m);
 
     public static OrderLineRequest StockLine(Guid stockItemId, int quantity = 1, decimal? salePrice = null, string? priceOption = null) =>
         new(stockItemId, null, quantity, priceOption, salePrice);
@@ -61,7 +64,7 @@ public static class RetailSales
             fulfillment == OrderFulfillment.Delivery ? address ?? Cairo : null, payment, lines, TermsAccepted: terms);
 
     public static PosSaleRequest Sale(IReadOnlyList<OrderLineRequest> lines, bool confirm = false, decimal discount = 0m,
-        string fulfillment = OrderFulfillment.Pickup, decimal fee = 0m, IReadOnlyList<PosPaymentRequest>? payments = null,
+        string fulfillment = OrderFulfillment.Pickup, decimal? fee = 0m, IReadOnlyList<PosPaymentRequest>? payments = null,
         string phone = "01000000000") =>
         new(new OrderCustomer("Customer", phone), fulfillment, fulfillment == OrderFulfillment.Delivery ? Cairo : null, lines,
             discount, fee, payments, Confirm: confirm);
@@ -90,8 +93,18 @@ public static class RetailSales
     public static Task<OrderView> PosAsync(this RetailTestServices retail, PosSaleRequest request, PosPolicy? policy = null) =>
         retail.Pos.SellAsync(request, policy ?? PosUnlimited, Guid.NewGuid());
 
-    public static Task<OrderView> StatusAsync(this RetailTestServices retail, OrderView order, string status, string? notes = null) =>
-        retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(status, notes, order.RowVersion), Guid.NewGuid(), Reservation, new InvoicePolicy("INV", null));
+    /// <summary>Moves the order; before "Preparing" it first collects the upfront payment the rule asks for.</summary>
+    public static async Task<OrderView> StatusAsync(this RetailTestServices retail, OrderView order, string status, string? notes = null)
+    {
+        if (status == OrderStatus.Preparing && order.UpfrontDue > 0m)
+            order = await retail.Payments.AddPaymentAsync(order.Id,
+                new OrderPaymentRequest(OrderPaymentMethod.InstaPay, order.UpfrontDue, null, order.RowVersion), Guid.NewGuid());
+        return await retail.StatusWithoutPaymentAsync(order, status, notes);
+    }
+
+    public static Task<OrderView> StatusWithoutPaymentAsync(this RetailTestServices retail, OrderView order, string status, string? notes = null) =>
+        retail.OrderStatus.UpdateStatusAsync(order.Id, new OrderStatusRequest(status, notes, order.RowVersion), Guid.NewGuid(), Reservation,
+            new InvoicePolicy("INV", null, BusinessZone));
 
     public static async Task<OrderView> StatusesAsync(this RetailTestServices retail, OrderView order, params string[] statuses)
     {

@@ -82,7 +82,7 @@ public sealed class PermissionAuthorizationTests
         await using var factory = new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program>();
         using var client = factory.CreateClient(); // Starts the TestServer before its dynamic EndpointDataSource is resolved.
         var endpoints = factory.Services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>().Endpoints;
-        foreach (var path in new[] { "/health/live", "/health/ready", "/api/v1/storefront/settings", "/api/v1/storefront/checkout-quote" })
+        foreach (var path in new[] { "/health/live", "/health/ready", "/api/v1/storefront/settings", "/api/v1/storefront/checkout-quote", "/api/v1/storefront/shipping-rates" })
         {
             var endpoint = Assert.Single(endpoints, endpoint =>
                 endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint route &&

@@ -13,7 +13,7 @@ internal static class InvoiceRegistry
         CancellationToken cancellationToken)
     {
         if (await db.Invoices.AnyAsync(invoice => invoice.OrderId == order.Id, cancellationToken)) return;
-        var year = InvoiceRules.YearOf(now);
+        var year = InvoiceRules.YearOf(now, policy.TimeZone);
         await db.Database.ExecuteSqlRawAsync(
             "INSERT INTO invoice_counters (year, last_number) VALUES ({0}, 1) ON CONFLICT (year) DO UPDATE SET last_number = invoice_counters.last_number + 1",
             new object[] { year }, cancellationToken);

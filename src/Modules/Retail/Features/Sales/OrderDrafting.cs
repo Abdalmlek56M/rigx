@@ -108,7 +108,7 @@ internal static class OrderDrafting
 
     /// <summary>Starts an order with its customer, lines and totals; the caller sets channel-specific fields.</summary>
     public static StoreOrder NewOrder(OrderCustomer? customer, string fulfillment, OrderAddress? address, string channel,
-        List<OrderItem> items, decimal deliveryFee, DateTimeOffset now)
+        List<OrderItem> items, ShippingRate shipping, DateTimeOffset now)
     {
         var order = new StoreOrder
         {
@@ -130,7 +130,9 @@ internal static class OrderDrafting
         };
         foreach (var item in items) order.Items.Add(item);
         order.Subtotal = items.Sum(item => item.LineTotal - item.DiscountAmount);
-        order.DeliveryFee = fulfillment == OrderFulfillment.Delivery ? deliveryFee : 0m;
+        var delivery = fulfillment == OrderFulfillment.Delivery;
+        order.DeliveryFee = delivery ? shipping.Fee : 0m;
+        order.DeliveryTime = delivery ? OrderRules.Optional(shipping.DeliveryTime, 60, "Delivery time") : null;
         order.Total = order.Subtotal + order.DeliveryFee;
         return order;
     }

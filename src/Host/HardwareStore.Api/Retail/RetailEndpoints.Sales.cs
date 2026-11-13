@@ -23,13 +23,13 @@ public static partial class RetailEndpoints
     /// </summary>
     private static async Task<IResult> UpdateStatusAsync(Guid id, OrderStatusRequest request, HttpContext context, OrderStatusService statuses,
         StoreSettingsService settings, IdentityProfileService profiles, InvoiceService invoices, IdentityEmailOutboxWriter outbox,
-        OrderLinks links, CancellationToken ct)
+        OrderLinks links, TimeZoneInfo businessTimeZone, CancellationToken ct)
     {
         if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
         var store = await settings.GetAdminAsync(ct);
         var seller = request.Status?.Trim() == OrderStatus.Delivered ? await profiles.GetFullNameAsync(actorId, ct) : null;
         var order = await statuses.UpdateStatusAsync(id, request, actorId, new ReservationPolicy(store.Sales.ReservationHours, store.Sales.ReservationAutoRelease),
-            new InvoicePolicy(store.Invoice.NumberPrefix, seller), ct);
+            new InvoicePolicy(store.Invoice.NumberPrefix, seller, businessTimeZone), ct);
         // Same row version = the order was already in that status, so nothing changed and no email goes out again.
         if (order.Status != request.Status?.Trim() || order.RowVersion == request.RowVersion) return Results.Ok(order);
         if (order.Status == OrderStatus.Delivered) await OrderEmails.QueueInvoiceAsync(outbox, links, order, invoices, ct);
@@ -84,9 +84,16 @@ public static partial class RetailEndpoints
 
     private static async Task<PosPolicy> PosPolicyAsync(HttpContext context, StoreSettingsService settings, CancellationToken ct)
     {
-        var sales = (await settings.GetAdminAsync(ct)).Sales;
+        var store = await settings.GetAdminAsync(ct);
+        var (sales, shipping) = (store.Sales, store.Shipping);
         return new PosPolicy(sales.PosMaxDiscountPercent, context.HasPermission("Sales.OverrideMinimumPrice"),
-            new ReservationPolicy(sales.ReservationHours, sales.ReservationAutoRelease));
+            new ReservationPolicy(sales.ReservationHours, sales.ReservationAutoRelease), code => ShippingRateOf(shipping, code));
+    }
+
+    private static ShippingRate ShippingRateOf(ShippingSettings shipping, string governorateCode)
+    {
+        var quote = shipping.QuoteFor(governorateCode.Trim().ToUpperInvariant());
+        return new ShippingRate(quote.Fee, quote.DeliveryTime);
     }
 
     private static async Task<IResult> PreviewPosSaleAsync(PosSaleRequest request, HttpContext context, PosService pos, StoreSettingsService settings, CancellationToken ct) =>
@@ -178,15 +185,15 @@ public static partial class RetailEndpoints
         await EnsureLeadSourceAsync(settings, request.LeadSource, ct);
         var delivery = request.FulfillmentMethod?.Trim() == OrderFulfillment.Delivery;
         if (!delivery && !store.Shipping.PickupEnabled) throw new RetailException(400, "Pickup from the store is not available.");
-        var fee = delivery && !string.IsNullOrWhiteSpace(request.Address?.Governorate)
-            ? store.Shipping.QuoteFor(request.Address.Governorate.Trim().ToUpperInvariant()).Fee
-            : 0m;
+        var shipping = delivery && !string.IsNullOrWhiteSpace(request.Address?.Governorate)
+            ? ShippingRateOf(store.Shipping, request.Address.Governorate)
+            : new ShippingRate(0m, null);
         var methods = new List<string>();
         if (store.Payment.CashOnDeliveryEnabled) methods.Add(OrderPaymentMethod.CashOnDelivery);
         if (store.Payment.InstaPayEnabled) methods.Add(OrderPaymentMethod.InstaPay);
         if (store.Payment.WalletEnabled) methods.Add(OrderPaymentMethod.Wallet);
-        var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, fee,
-            subtotal => store.Payment.UpfrontFor(subtotal, fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount);
+        var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, shipping,
+            subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount);
         var order = await orders.CreateOnlineAsync(request, policy, ct);
         await OrderEmails.QueueAsync(outbox, links, order, OrderEmailMessage.Received, ct);
         return Results.Ok(order);

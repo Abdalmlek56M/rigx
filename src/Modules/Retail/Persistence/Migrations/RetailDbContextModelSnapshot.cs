@@ -1400,6 +1400,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("delivery_fee");
 
+                    b.Property<string>("DeliveryTime")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("delivery_time");
+
                     b.Property<string>("FulfillmentMethod")
                         .IsRequired()
                         .HasMaxLength(32)
