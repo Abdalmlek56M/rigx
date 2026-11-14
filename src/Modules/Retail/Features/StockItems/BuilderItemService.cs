@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -9,7 +10,7 @@ public sealed class BuilderItemService(IDbContextFactory<RetailDbContext> contex
     private const int MaxPageSize = 60;
 
     /// <summary>Options of a builder slot: available first, then the cheapest in-build price, then the newest.</summary>
-    public async Task<BuilderItemPage> ListOptionsAsync(IReadOnlyCollection<Guid> categoryIds, string? condition, string? search, int page,
+    public async Task<PagedResult<BuilderItemView>> ListOptionsAsync(IReadOnlyCollection<Guid> categoryIds, string? condition, string? search, int page,
         int pageSize, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -21,13 +22,12 @@ public sealed class BuilderItemService(IDbContextFactory<RetailDbContext> contex
             items = items.Where(item => item.Condition == parsed);
         }
         var total = await items.CountAsync(cancellationToken);
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+        (page, pageSize) = PageRequest.Of(page, pageSize, MaxPageSize);
         var rows = await items
             .Select(item => new { Item = item, Available = item.Units.Count(unit => unit.Status == UnitStatus.Available) })
             .OrderByDescending(row => row.Available > 0).ThenBy(row => row.Item.Price).ThenByDescending(row => row.Item.CreatedAtUtc)
             .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
-        return new BuilderItemPage(rows.Select(row => View(row.Item, row.Available)).ToList(), page, pageSize, total);
+        return new PagedResult<BuilderItemView>(rows.Select(row => View(row.Item, row.Available)).ToList(), page, pageSize, total);
     }
 
     /// <summary>The published items with these codes; a code that is missing or not published is simply absent.</summary>

@@ -1,6 +1,8 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>The signed-in user's devices: list them and sign out one, the others, or all.</summary>
 public static class IdentitySessionEndpoints
@@ -16,72 +18,69 @@ public static class IdentitySessionEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> GetSessionsAsync(
+    private static async Task<Ok<IReadOnlyList<IdentitySessionView>>> GetSessionsAsync(
         HttpContext context,
         IdentitySessionService sessions,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var currentKey);
-        return Results.Ok(await sessions.ListAsync(accountId, currentKey, cancellationToken));
+        return TypedResults.Ok(await sessions.ListAsync(accountId, currentKey, cancellationToken));
     }
 
-    private static async Task<IResult> LogoutCurrentAsync(
+    private static async Task<NoContent> LogoutCurrentAsync(
         HttpContext context,
         IdentitySessionService sessions,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId) ||
-            !DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var sessionKey))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
+        if (!DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var sessionKey))
+            throw new UnauthenticatedException();
 
         await sessions.RevokeCurrentAsync(accountId, sessionKey, context.TraceIdentifier, cancellationToken);
         await IdentityHttp.SignOutCookieAsync(context, loggerFactory);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> RevokeSessionAsync(
+    private static async Task<NoContent> RevokeSessionAsync(
         Guid id,
         HttpContext context,
         IdentitySessionService sessions,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await sessions.RevokeSessionAsync(accountId, id, context.TraceIdentifier, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> LogoutOtherSessionsAsync(
+    private static async Task<NoContent> LogoutOtherSessionsAsync(
         HttpContext context,
         IdentitySessionService sessions,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId) ||
-            !DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var currentKey))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
+        if (!DatabaseTicketStore.TryGetCurrentRequestSessionKey(context, out var currentKey))
+            throw new UnauthenticatedException();
         await sessions.RevokeOtherSessionsAsync(accountId, currentKey, context.TraceIdentifier, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> LogoutAllAsync(
+    private static async Task<NoContent> LogoutAllAsync(
         HttpContext context,
         IdentitySessionService sessions,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await sessions.RevokeAllAsync(accountId, context.TraceIdentifier, cancellationToken);
         await IdentityHttp.SignOutCookieAsync(context, loggerFactory);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 }
 

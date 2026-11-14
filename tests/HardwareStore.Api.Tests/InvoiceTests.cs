@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Retail;
@@ -321,7 +322,7 @@ public sealed class InvoicePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
 
         var invoice = (await env.InvoiceOfAsync(order)).Invoice;
         Assert.Equal((Number(1), InvoiceStatus.Void), (invoice.Number, invoice.Status));
-        var listed = Assert.Single((await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices")).Items);
+        var listed = Assert.Single((await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices")).Items);
         Assert.Equal(InvoiceStatus.Void, listed.Status);
     }
 
@@ -368,12 +369,12 @@ public sealed class InvoicePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
         var (_, first) = await env.DeliveredAsync("Search GPU 1", phone: "01012345678");
         var (_, second) = await env.DeliveredAsync("Search GPU 2", phone: "01155555555");
 
-        var all = await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices");
-        var byNumber = await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices?q={Number(1).ToLowerInvariant()}");
-        var byReference = await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices?q={second.Reference}");
-        var byPhone = await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices?q=0101%20234%205678");
-        var none = await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices?q=01999999999");
-        var beyond = await Env.GetAsync<InvoiceAdminPage>(env.Staff, $"{AdminRoot}/invoices?page=9");
+        var all = await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices");
+        var byNumber = await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices?q={Number(1).ToLowerInvariant()}");
+        var byReference = await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices?q={second.Reference}");
+        var byPhone = await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices?q=0101%20234%205678");
+        var none = await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices?q=01999999999");
+        var beyond = await Env.GetAsync<PagedResult<InvoiceSummaryView>>(env.Staff, $"{AdminRoot}/invoices?page=9");
 
         Assert.Equal([Number(2), Number(1)], all.Items.Select(item => item.Number));
         Assert.Equal((1, 50, 2), (all.Page, all.PageSize, all.Total));

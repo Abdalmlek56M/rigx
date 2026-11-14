@@ -2,6 +2,7 @@ using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class StorefrontEndpoints
 {
@@ -50,105 +51,98 @@ public static class StorefrontEndpoints
         group.MapPut("/" + T.Key, handler).RequirePermission(SettingsPermission);
     }
 
-    private static async Task<IResult> ListWishlistAsync(
+    private static async Task<Ok<IReadOnlyList<WishlistItemView>>> ListWishlistAsync(
         HttpContext context,
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await wishlist.ListAsync(accountId, cancellationToken));
+        return TypedResults.Ok(await wishlist.ListAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> AddWishlistAsync(
+    private static async Task<NoContent> AddWishlistAsync(
         Guid productId,
         HttpContext context,
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await wishlist.AddAsync(accountId, productId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> RemoveWishlistAsync(
+    private static async Task<NoContent> RemoveWishlistAsync(
         Guid productId,
         HttpContext context,
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await wishlist.RemoveAsync(accountId, productId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> ClearWishlistAsync(
+    private static async Task<NoContent> ClearWishlistAsync(
         HttpContext context,
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await wishlist.ClearAsync(accountId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> MergeWishlistAsync(
+    private static async Task<Ok<IReadOnlyList<WishlistItemView>>> MergeWishlistAsync(
         WishlistMergeRequest request,
         HttpContext context,
         WishlistService wishlist,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await wishlist.MergeAsync(
             accountId,
             request.ProductIds ?? [],
             cancellationToken);
-        return Results.Ok(await wishlist.ListAsync(accountId, cancellationToken));
+        return TypedResults.Ok(await wishlist.ListAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> GetPublicSettingsAsync(
+    private static async Task<Ok<StoreSettingsPublicView>> GetPublicSettingsAsync(
         HttpContext context,
         StoreSettingsService settings,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await settings.GetPublicAsync(cancellationToken));
+        return TypedResults.Ok(await settings.GetPublicAsync(cancellationToken));
     }
 
-    private static async Task<IResult> QuoteCheckoutAsync(
+    private static async Task<Ok<CheckoutQuoteView>> QuoteCheckoutAsync(
         StoreSettingsService settings,
         CancellationToken cancellationToken,
         string? governorate = null,
         decimal subtotal = 0,
         bool pickup = false) =>
-        Results.Ok(await settings.QuoteCheckoutAsync(governorate, subtotal, pickup, cancellationToken));
+        TypedResults.Ok(await settings.QuoteCheckoutAsync(governorate, subtotal, pickup, cancellationToken));
 
-    private static async Task<IResult> GetShippingRatesAsync(StoreSettingsService settings, CancellationToken cancellationToken) =>
-        Results.Ok(await settings.GetShippingRatesAsync(cancellationToken));
+    private static async Task<Ok<ShippingRatesView>> GetShippingRatesAsync(StoreSettingsService settings, CancellationToken cancellationToken) =>
+        TypedResults.Ok(await settings.GetShippingRatesAsync(cancellationToken));
 
-    private static async Task<IResult> GetAdminSettingsAsync(
+    private static async Task<Ok<StoreSettingsAdminView>> GetAdminSettingsAsync(
         HttpContext context,
         StoreSettingsService settings,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await settings.GetAdminAsync(cancellationToken));
+        return TypedResults.Ok(await settings.GetAdminAsync(cancellationToken));
     }
 
     /// <summary>The logo is stored under a new key every time; the previous file is deleted only after the row points at the new one.</summary>
-    private static async Task<IResult> SetLogoAsync(string kind, HttpContext context, StoreSettingsService settings,
+    private static async Task<Ok<StoreSettingsAdminView>> SetLogoAsync(string kind, HttpContext context, StoreSettingsService settings,
         ICatalogMediaStorage storage, CatalogMediaOptions options, CancellationToken cancellationToken)
     {
         StoreLogoKind.Require(kind);
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        var (upload, problem) = await CatalogEndpoints.ReadSingleImageAsync(context, options, cancellationToken);
-        if (upload is null) return problem!;
+        var actorId = context.RequireUserId();
+        var upload = await CatalogEndpoints.ReadSingleImageAsync(context, options, cancellationToken);
         var key = await storage.SaveSettingsLogoAsync(kind, upload, cancellationToken);
         StoreLogoChange change;
         try { change = await settings.SetLogoAsync(kind, key, actorId, cancellationToken); }
@@ -156,38 +150,36 @@ public static class StorefrontEndpoints
         return await FinishLogoChangeAsync(change, storage, cancellationToken);
     }
 
-    private static async Task<IResult> RemoveLogoAsync(string kind, HttpContext context, StoreSettingsService settings,
+    private static async Task<Ok<StoreSettingsAdminView>> RemoveLogoAsync(string kind, HttpContext context, StoreSettingsService settings,
         ICatalogMediaStorage storage, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         return await FinishLogoChangeAsync(await settings.SetLogoAsync(kind, null, actorId, cancellationToken), storage, cancellationToken);
     }
 
-    private static async Task<IResult> FinishLogoChangeAsync(StoreLogoChange change, ICatalogMediaStorage storage,
+    private static async Task<Ok<StoreSettingsAdminView>> FinishLogoChangeAsync(StoreLogoChange change, ICatalogMediaStorage storage,
         CancellationToken cancellationToken)
     {
         if (change.PreviousKey is not null)
             await storage.DeleteStorageKeyAsync(change.PreviousKey, cancellationToken);
-        return Results.Ok(change.Settings);
+        return TypedResults.Ok(change.Settings);
     }
 
-    private static IResult ReapplyWatermark(WatermarkReapplyJob job)
+    private static Accepted ReapplyWatermark(WatermarkReapplyJob job)
     {
         job.Signal();
-        return Results.Accepted();
+        return TypedResults.Accepted((string?)null);
     }
 
-    private static async Task<IResult> UpdateSectionAsync<T>(
+    private static async Task<Ok<StoreSettingsAdminView>> UpdateSectionAsync<T>(
         StoreSettingsSectionUpdate<T> request,
         HttpContext context,
         StoreSettingsService settings,
         CancellationToken cancellationToken)
         where T : class, IStoreSettingsSection<T>
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await settings.UpdateSectionAsync(request.Value, request.RowVersion, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await settings.UpdateSectionAsync(request.Value, request.RowVersion, actorId, cancellationToken));
     }
 }
 

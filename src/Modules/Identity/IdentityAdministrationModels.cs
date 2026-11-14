@@ -10,12 +10,6 @@ public sealed record AdminIdentityUser(
     IReadOnlyList<Guid> RoleIds,
     IReadOnlyList<string> RoleCodes);
 
-public sealed record AdminIdentityUserPage(
-    IReadOnlyList<AdminIdentityUser> Items,
-    int Page,
-    int PageSize,
-    int TotalCount);
-
 public sealed record AdminIdentityRole(
     Guid Id,
     string Code,

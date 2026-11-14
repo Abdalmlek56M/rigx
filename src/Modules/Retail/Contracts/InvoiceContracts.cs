@@ -21,8 +21,6 @@ public sealed record InvoiceView(string Number, string Kind, string Status, Date
 
 public sealed record InvoiceSummaryView(string Number, string Kind, string Status, DateTimeOffset IssuedAtUtc, string OrderReference,
     decimal Total, string AccessToken);
-public sealed record InvoiceAdminPage(IReadOnlyList<InvoiceSummaryView> Items, int Page, int PageSize, int Total);
-
 /// <summary>Shareable price quote request: published items and builds only.</summary>
 public sealed record QuoteRequest(IReadOnlyList<OrderLineRequest>? Items);
 

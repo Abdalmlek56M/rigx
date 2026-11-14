@@ -1,7 +1,9 @@
 using System.Text.Json;
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// "Sign in with Google" and the profile's login methods (X-Login, X-Profile). The frontend gets a
@@ -26,7 +28,7 @@ public static class GoogleSignInEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> SignInAsync(
+    private static async Task<Ok<SignInResponse>> SignInAsync(
         GoogleSignInRequest request,
         GoogleSignInService google,
         ISecurityAuditWriter auditWriter,
@@ -43,47 +45,42 @@ public static class GoogleSignInEndpoints
                 CorrelationId: context.TraceIdentifier,
                 SafeMetadata: JsonSerializer.Serialize(new { method = "Google", reason = result.AuditReason })),
                 cancellationToken);
-            return Results.Json(new { error = "Google sign-in is unavailable for this account. Use an email code." },
-                statusCode: StatusCodes.Status401Unauthorized);
+            throw new UnauthenticatedException("Google sign-in is unavailable for this account. Use an email code.");
         }
 
         await IdentitySignIn.CompleteAsync(context, result.Principal!, result.UserAccountId!.Value,
             request.RememberDevice, "Google", auditWriter, cancellationToken);
-        return Results.Ok(new { sessionScope = "Full", isNewAccount = result.IsNewAccount });
+        return TypedResults.Ok(SignInResponse.Full(result.IsNewAccount));
     }
 
-    private static async Task<IResult> GetAsync(HttpContext context, GoogleSignInService google, CancellationToken cancellationToken)
+    private static async Task<Ok<LoginMethodsView>> GetAsync(HttpContext context, GoogleSignInService google, CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        return context.TryGetUserId(out var accountId)
-            ? Results.Ok(await google.GetLoginMethodsAsync(accountId, cancellationToken))
-            : Results.Unauthorized();
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await google.GetLoginMethodsAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> LinkAsync(
+    private static async Task<Ok<LoginMethodsView>> LinkAsync(
         GoogleLinkRequest request, HttpContext context, GoogleSignInService google, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await google.LinkAsync(accountId, request.IdToken, cancellationToken);
-        return Results.Ok(await google.GetLoginMethodsAsync(accountId, cancellationToken));
+        return TypedResults.Ok(await google.GetLoginMethodsAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> UnlinkAsync(HttpContext context, GoogleSignInService google, CancellationToken cancellationToken)
+    private static async Task<NoContent> UnlinkAsync(HttpContext context, GoogleSignInService google, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await google.UnlinkAsync(accountId, accountId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> AdminUnlinkAsync(
+    private static async Task<NoContent> AdminUnlinkAsync(
         Guid id, HttpContext context, GoogleSignInService google, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await google.UnlinkAsync(id, actorId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
     public sealed record GoogleSignInRequest(string? IdToken, bool RememberDevice);

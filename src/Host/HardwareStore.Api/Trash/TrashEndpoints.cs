@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>The trash page: list, restore (<c>System.Trash</c>) and purge now (owner-only <c>System.Purge</c> with a fresh code).</summary>
 public static class TrashEndpoints
@@ -16,24 +17,24 @@ public static class TrashEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ListAsync(HttpContext context, TrashService trash, CancellationToken cancellationToken,
+    private static async Task<Ok<IReadOnlyList<TrashEntry>>> ListAsync(HttpContext context, TrashService trash, CancellationToken cancellationToken,
         string? kind = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await trash.ListAsync(kind, cancellationToken));
+        return TypedResults.Ok(await trash.ListAsync(kind, cancellationToken));
     }
 
-    private static async Task<IResult> RestoreAsync(string kind, Guid id, HttpContext context, TrashService trash, CancellationToken cancellationToken)
+    private static async Task<NoContent> RestoreAsync(string kind, Guid id, HttpContext context, TrashService trash, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await trash.RestoreAsync(kind, id, actorId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> PurgeAsync(string kind, Guid id, HttpContext context, TrashService trash, CancellationToken cancellationToken)
+    private static async Task<NoContent> PurgeAsync(string kind, Guid id, HttpContext context, TrashService trash, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await trash.PurgeAsync(kind, id, actorId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 }

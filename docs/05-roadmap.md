@@ -14,7 +14,7 @@ Order matters: we restructure before adding features, so new features land in cl
 ## Phase 1 — Backend restructure (behavior unchanged)
 1. **Common building blocks**
    - [x] `AppException` base + one global ProblemDetails mapping; all 14 module exception types derive from it
-   - [ ] Remove the now-redundant endpoint try/catch blocks (done per area as each module is restructured; Retail, Catalog, Content, Identity ✅)
+   - [x] Remove the now-redundant endpoint try/catch blocks (Retail, Catalog, Content, Identity; the rest in Phase 3 ✅)
    - [ ] Soft delete + trash ✓ (2.10), audit interceptor (before/after) ✓ (2.11), paging → Phase 3 (API contract)
 2. [x] **Migration runner**: `--migrate` command; `DatabaseMigrator` is the single ordered context list (preview init reuses it; it previously skipped Retail and PcBuilder)
 3. [x] **Endpoints**: decided to keep all endpoints and the admin dashboard in Host for now (architecture decision 12); one shared `HttpContextUserExtensions` replaced 13 copied user-id/permission helpers.
@@ -44,9 +44,9 @@ Order matters: we restructure before adding features, so new features land in cl
 17. [x] **Settings v2**: store info, social links table, shipping groups, payment + deposit, watermark, store controls, WhatsApp templates, reviews, language, invoice settings, lead-source and warranty-option lists (D5/D6); homepage layout JSON replaced by section order in store controls; public checkout quote (shipping fee + upfront/deposit). Done 13 Nov 2026 (migration M16). Logo uploads (store + watermark) ✓ (2.9). Checkpoint: `docs/checkpoints/2.17-settings.md`.
 18. [x] **Customers admin**: customer 360 view, merge accounts, extend warranty, read-only "view as customer". Done 14 Nov 2026 (migrations M37 Identity, M38 Retail): customer = account whose roles are only `Customer`; list `GET /api/v1/admin/customers` (search, 25 per page, order count, total spent, last order); 360 `GET /api/v1/admin/customers/{id}` (profile, login methods, restrictions, active sessions, note, governorate, stats, lead source, usage, orders incl. guest/POS by phone, warranties, requests, blacklisted flag); note, login code, Google unlink, sign out everywhere; read-only "view as customer" `GET /{id}/view-as` (audited `Customer.ViewedAs`); merge with step-up `POST /{id}/merge` (orders, warranties, requests and saved builds move first, then addresses and the Google link; source closed and sessions revoked; every step idempotent); warranty extension `POST /api/v1/admin/retail/warranties/{id}/extend` (append-only `warranty_extensions`); customer `GET /api/v1/account/requests`. Suspend and blacklist reuse the existing endpoints. Permissions `Customers.View` / `Customers.Manage`. Checkpoint: `docs/checkpoints/2.18-customers.md`.
 
-## Phase 3 — API contract
-- OpenAPI covering every endpoint, consistent error shape, paging/filter conventions.
-- Generated TypeScript client package for the frontend.
+## Phase 3 — API contract ✅ (14 Nov 2026)
+- [x] OpenAPI covering every endpoint, consistent error shape, paging/filter conventions. Done 14 Nov 2026: OpenAPI 3.1 at `/openapi/v1.json` (Development), 247 paths / 302 operations, all with typed success bodies (`TypedResults`), `default` ProblemDetails, area tags, permission + step-up notes; ProblemDetails for every error (CSRF, sign-in failures with `attemptsLeft`, empty 401/403/404/429); `RequireUserId()` replaced 111 hand-written 401 branches; last endpoint try/catch blocks removed (Offers, Reviews, ContentMedia, Inventory, Catalog media) — closes Phase 1 item 1; ~17 page records → `PagedResult<T>`, `PageRequest.Of` replaces the copied clamping. Contract file `packages/api-client/openapi.v1.json` checked by `ApiContractTests`.
+- [x] Generated TypeScript client package for the frontend: `packages/api-client` (`@rigx/api-client`): types generated from the contract (`openapi-typescript`, not committed), `openapi-fetch` client with cookie credentials, automatic CSRF token, `unwrap` → `ApiError` (ProblemDetails, field errors), `STEP_UP_HEADER`; strict typecheck + wrapper tests. Checkpoint: `docs/checkpoints/3-api-contract.md`.
 
 ## Phase 4 — Frontend (Next.js, from the approved canvas)
 1. Foundation: tokens, fonts, RTL/EN, layout, header (search, EN, account, cart drawer), footer, floating contact, back-to-top.

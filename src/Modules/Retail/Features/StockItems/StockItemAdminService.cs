@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -6,13 +7,12 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>Back-office stock items: search and paging, editing, hiding, photos and model-name suggestions.</summary>
 public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    private const int MaxPageSize = 100;
     private const int MaxVisibilityIds = 200;
     private const int MinSuggestionKeyLength = 2;
     private const int MaxSuggestions = 10;
     private const int SuggestionCandidates = 1000;
 
-    public async Task<StockItemAdminPage> ListAsync(StockItemQuery query, bool includeCosts, bool includeSerials, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<StockItemAdminView>> ListAsync(StockItemQuery query, bool includeCosts, bool includeSerials, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var items = db.StockItems.AsNoTracking().Matching(query.Search, includeSerials);
@@ -25,13 +25,12 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         if (query.Hidden is bool hidden) items = items.Where(item => item.IsHidden == hidden);
         if (query.InStock is bool inStock)
             items = items.Where(item => item.Units.Any(unit => unit.Status == UnitStatus.Available) == inStock);
-        var page = Math.Max(1, query.Page);
-        var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        var (page, pageSize) = PageRequest.Of(query.Page, query.PageSize);
         var total = await items.CountAsync(cancellationToken);
         var rows = await items.Include(item => item.Units).OrderByDescending(item => item.CreatedAtUtc).ThenByDescending(item => item.Id)
             .Skip((page - 1) * pageSize).Take(pageSize).AsSplitQuery().ToListAsync(cancellationToken);
         var now = timeProvider.GetUtcNow();
-        return new StockItemAdminPage(rows.Select(item => StockItemMapping.ToAdminView(item, now, includeCosts, includeSerials)).ToList(),
+        return new PagedResult<StockItemAdminView>(rows.Select(item => StockItemMapping.ToAdminView(item, now, includeCosts, includeSerials)).ToList(),
             page, pageSize, total);
     }
 

@@ -132,12 +132,6 @@ public sealed record ProductDetailView(
     IReadOnlyList<ProductSpecificationView> Specifications,
     IReadOnlyList<ProductImageView> Images);
 
-public sealed record ProductPageView(
-    IReadOnlyList<ProductSummaryView> Items,
-    int Page,
-    int PageSize,
-    int TotalCount);
-
 public sealed record ProductSuggestionView(
     Guid Id,
     string Name,

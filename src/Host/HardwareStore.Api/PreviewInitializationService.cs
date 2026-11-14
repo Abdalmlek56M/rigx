@@ -2,6 +2,7 @@ using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Text;
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
@@ -10,6 +11,7 @@ using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Inventory;
 using HardwareStore.Modules.Storefront;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SkiaSharp;
@@ -552,7 +554,7 @@ public static class PreviewInitializationEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> InitializeAsync(
+    private static async Task<Ok<PreviewInitializationResult>> InitializeAsync(
         HttpContext context,
         PreviewInitializationService service,
         CancellationToken cancellationToken)
@@ -560,15 +562,15 @@ public static class PreviewInitializationEndpoints
         var key = context.Request.Headers["X-Preview-Bootstrap-Key"].ToString();
         try
         {
-            return Results.Ok(await service.InitializeAsync(key, cancellationToken));
+            return TypedResults.Ok(await service.InitializeAsync(key, cancellationToken));
         }
         catch (UnauthorizedAccessException)
         {
-            return Results.Unauthorized();
+            throw new UnauthenticatedException();
         }
         catch (InvalidOperationException exception)
         {
-            return Results.Problem(statusCode: StatusCodes.Status409Conflict, title: exception.Message);
+            throw new ApiProblemException(StatusCodes.Status409Conflict, exception.Message);
         }
     }
 }

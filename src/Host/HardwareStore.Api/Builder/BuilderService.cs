@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
@@ -22,13 +23,13 @@ public sealed class BuilderService(BuilderCatalogLoader catalogs, BuilderItemSer
     }
 
     /// <summary>Items of one slot with the problems each would cause next to the parts already chosen; sold-out items stay in the list.</summary>
-    public async Task<BuilderOptionPage> OptionsAsync(string? slotName, IReadOnlyList<BuilderPartInput>? parts, string? condition, string? search,
+    public async Task<PagedResult<BuilderOptionView>> OptionsAsync(string? slotName, IReadOnlyList<BuilderPartInput>? parts, string? condition, string? search,
         int page, CancellationToken cancellationToken)
     {
         var slot = BuilderSlot.Parse(slotName);
         var catalog = await catalogs.LoadAsync(cancellationToken);
         var categoryIds = catalog.CategoryIdsOf(slot);
-        if (categoryIds.Count == 0) return new BuilderOptionPage([], 1, OptionPageSize, 0);
+        if (categoryIds.Count == 0) return new PagedResult<BuilderOptionView>([], 1, OptionPageSize, 0);
         var (found, _) = await ResolveAsync(catalog, parts, cancellationToken);
         var others = found.Select(entry => entry.Part).Where(part => part.Slot != slot).ToList();
         var baseline = BuilderRules.Evaluate(others, catalog.CompatibilityKeys).Issues;
@@ -39,7 +40,7 @@ public sealed class BuilderService(BuilderCatalogLoader catalogs, BuilderItemSer
             var issues = check.Issues.Where(issue => IsCausedBy(issue, slot, baseline)).ToList();
             return new BuilderOptionView(item, issues, !issues.Any(issue => issue.Level == BuilderIssueLevel.Conflict), item.Available > 0);
         }).ToList();
-        return new BuilderOptionPage(options, list.Page, list.PageSize, list.Total);
+        return new PagedResult<BuilderOptionView>(options, list.Page, list.PageSize, list.Total);
     }
 
     /// <summary>"Edit this build": the same models from free stock as a new selection; parts that cannot be matched are listed.</summary>

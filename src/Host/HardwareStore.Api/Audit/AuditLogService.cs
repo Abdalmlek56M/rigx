@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity;
@@ -8,8 +9,6 @@ public sealed record AuditEntryResponse(Guid Id, DateTimeOffset OccurredAtUtc, s
     string? ActorIp, string? Device, string? CorrelationId, string Module, string Entity, string EntityId, string Action,
     IReadOnlyList<AuditFieldChange> Changes, Guid? RestoredFromEntryId, bool CanRestore);
 
-public sealed record AuditPageResponse(IReadOnlyList<AuditEntryResponse> Items, int Page, int PageSize, int Total);
-
 /// <summary>
 /// The business audit log across modules: the Auditing module owns the rows, Identity names the actors and each module
 /// registers the kinds whose earlier values can be put back (<see cref="IAuditRestoreTarget"/>); Host composes them.
@@ -17,14 +16,14 @@ public sealed record AuditPageResponse(IReadOnlyList<AuditEntryResponse> Items, 
 public sealed class AuditLogService(AuditEntryStore store, UserDisplayNames names, IEnumerable<IAuditRestoreTarget> targets,
     TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
-    public async Task<AuditPageResponse> QueryAsync(Guid? actorUserId, string? module, string? entity, string? entityId, string? action,
+    public async Task<PagedResult<AuditEntryResponse>> QueryAsync(Guid? actorUserId, string? module, string? entity, string? entityId, string? action,
         DateOnly? from, DateOnly? to, int page, int pageSize, CancellationToken cancellationToken)
     {
         AuditRules.ValidateQuery(page, pageSize, action);
         var (start, end) = ExportRules.Range(from, to, BusinessDay.Today(timeProvider, businessZone));
         var (fromUtc, toUtc) = BusinessDay.Range(start, end, businessZone);
         var result = await store.QueryAsync(new AuditEntryFilter(actorUserId, module, entity, entityId, action, fromUtc, toUtc, page, pageSize), cancellationToken);
-        return new AuditPageResponse(await ToResponsesAsync(result.Items, cancellationToken), result.Page, result.PageSize, result.Total);
+        return new PagedResult<AuditEntryResponse>(await ToResponsesAsync(result.Items, cancellationToken), result.Page, result.PageSize, result.Total);
     }
 
     public async Task<AuditEntryResponse> GetAsync(Guid id, CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Storefront;
@@ -10,7 +11,6 @@ public sealed class CustomerRequestService(
     TimeProvider timeProvider,
     TimeZoneInfo businessTimeZone)
 {
-    private const int MaxPageSize = 100;
     private static readonly TimeSpan DuplicateWindow = TimeSpan.FromMinutes(10);
 
     /// <summary>
@@ -73,8 +73,7 @@ public sealed class CustomerRequestService(
         if (!string.IsNullOrWhiteSpace(query.Type)) rows = rows.Where(item => item.Type == query.Type.Trim());
         if (!string.IsNullOrWhiteSpace(query.Status)) rows = rows.Where(item => item.Status == query.Status.Trim());
         if (!string.IsNullOrWhiteSpace(query.Search)) rows = Matching(rows, query.Search);
-        var page = Math.Max(1, query.Page);
-        var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        var (page, pageSize) = PageRequest.Of(query.Page, query.PageSize);
         var total = await rows.CountAsync(cancellationToken);
         var items = await rows.OrderByDescending(item => item.CreatedAtUtc).ThenByDescending(item => item.Id)
             .Skip((page - 1) * pageSize).Take(pageSize)

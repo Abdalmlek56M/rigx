@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
@@ -18,15 +19,14 @@ public sealed class IdentityUserAdministrationService(
     IdentityLinks links,
     ILogger<IdentityUserAdministrationService>? logger)
 {
-    public async Task<AdminIdentityUserPage> GetUsersAsync(
+    public async Task<PagedResult<AdminIdentityUser>> GetUsersAsync(
         string? search,
         bool? isActive,
         int page,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 100);
+        (page, pageSize) = PageRequest.Of(page, pageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var query = BuildUserQuery(db, search, isActive);
         var total = await query.CountAsync(cancellationToken);
@@ -38,7 +38,7 @@ public sealed class IdentityUserAdministrationService(
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-        return new AdminIdentityUserPage(
+        return new PagedResult<AdminIdentityUser>(
             accounts.Select(MapUser).ToList(),
             page,
             pageSize,

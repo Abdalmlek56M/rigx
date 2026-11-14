@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Retail;
@@ -163,9 +164,9 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
         await env.Retail.PosAsync(Sale([StockLine(soldOut.Id)], confirm: true));
         await env.ItemAsync("BOARD", "Draft Board", 300m, socket: "AM5", publish: false);
 
-        var all = await ReadAsync<BuilderOptionPage>(await TestSignIn.PostJsonAsync(env.Anonymous, $"{Root}/options",
+        var all = await ReadAsync<PagedResult<BuilderOptionView>>(await TestSignIn.PostJsonAsync(env.Anonymous, $"{Root}/options",
             new { slot = "board", parts = Parts(cpu) }));
-        var onlyUsed = await ReadAsync<BuilderOptionPage>(await TestSignIn.PostJsonAsync(env.Anonymous, $"{Root}/options",
+        var onlyUsed = await ReadAsync<PagedResult<BuilderOptionView>>(await TestSignIn.PostJsonAsync(env.Anonymous, $"{Root}/options",
             new { slot = "BOARD", parts = Parts(cpu), condition = "Used" }));
 
         Assert.Equal(4, all.Total);

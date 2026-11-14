@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using System.Text.Json;
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>Sign-in with a 6-digit email code (X-Login): request a code, then enter it.</summary>
 public static class EmailCodeSignInEndpoints
@@ -18,7 +20,7 @@ public static class EmailCodeSignInEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> RequestAsync(
+    private static async Task<Accepted<EmailCodeTicketView>> RequestAsync(
         EmailCodeRequest request,
         EmailCodeSignInService signIn,
         TimeProvider timeProvider,
@@ -27,10 +29,10 @@ public static class EmailCodeSignInEndpoints
     {
         IdentityHttp.NoStore(context);
         var ticket = await signIn.RequestAsync(request.Email, cancellationToken);
-        return Results.Accepted(value: EmailCodeTicketView.From(ticket, timeProvider));
+        return TypedResults.Accepted((string?)null, EmailCodeTicketView.From(ticket, timeProvider));
     }
 
-    private static async Task<IResult> VerifyAsync(
+    private static async Task<Ok<SignInResponse>> VerifyAsync(
         EmailCodeVerifyRequest request,
         EmailCodeSignInService signIn,
         ISecurityAuditWriter auditWriter,
@@ -47,20 +49,25 @@ public static class EmailCodeSignInEndpoints
                 CorrelationId: context.TraceIdentifier,
                 SafeMetadata: JsonSerializer.Serialize(new { method = "EmailCode", reason = result.AuditReason })),
                 cancellationToken);
-            return result.Status == EmailCodeSignInStatus.InvalidCode
-                ? Results.Json(new { error = "The code is wrong or expired.", attemptsLeft = result.AttemptsLeft },
-                    statusCode: StatusCodes.Status401Unauthorized)
-                : Results.Json(new { error = "Sign-in is unavailable for this account." },
-                    statusCode: StatusCodes.Status401Unauthorized);
+            throw result.Status == EmailCodeSignInStatus.InvalidCode
+                ? new UnauthenticatedException("The code is wrong or expired.",
+                    new Dictionary<string, object?> { ["attemptsLeft"] = result.AttemptsLeft })
+                : new UnauthenticatedException("Sign-in is unavailable for this account.");
         }
 
         await IdentitySignIn.CompleteAsync(context, result.Principal!, result.UserAccountId!.Value,
             request.RememberDevice, "EmailCode", auditWriter, cancellationToken);
-        return Results.Ok(new { sessionScope = "Full", isNewAccount = result.IsNewAccount });
+        return TypedResults.Ok(SignInResponse.Full(result.IsNewAccount));
     }
 
     public sealed record EmailCodeRequest(string? Email);
     public sealed record EmailCodeVerifyRequest(string? Email, string? Code, bool RememberDevice);
+}
+
+/// <summary>Body of a successful sign-in (email code or Google): the cookie session is a full one.</summary>
+public sealed record SignInResponse(string SessionScope, bool IsNewAccount)
+{
+    public static SignInResponse Full(bool isNewAccount) => new("Full", isNewAccount);
 }
 
 /// <summary>Seconds until the code expires and until "resend" is allowed (the UI's countdown).</summary>

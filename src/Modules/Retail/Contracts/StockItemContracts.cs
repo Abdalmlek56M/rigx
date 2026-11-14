@@ -10,7 +10,6 @@ public sealed record StockItemAdminView(Guid Id, string Code, string Condition, 
     IReadOnlyList<StockUnitView> Units);
 public sealed record StockItemQuery(string? Search = null, Guid? CategoryId = null, string? Condition = null, bool? Hidden = null,
     bool? InStock = null, int Page = 1, int PageSize = 50);
-public sealed record StockItemAdminPage(IReadOnlyList<StockItemAdminView> Items, int Page, int PageSize, int Total);
 /// <summary>Warranty is resolved from the settings list by the caller before it reaches Retail.</summary>
 public sealed record StockItemUpdate(string? ModelName, Guid? CategoryId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,
     decimal? AloneExtra, string? WarrantyLabel, int? WarrantyMonths, bool HasBox, bool IsHidden, string? InternalNote,
@@ -42,7 +41,6 @@ public sealed record AvailableModelItem(string ModelKey, string Code, string Mod
 // PC builder (public). Published items only; never cost, serial or internal note.
 public sealed record BuilderItemView(Guid StockItemId, string Code, string ModelName, string Condition, Guid? CategoryId,
     string? WarrantyLabel, StockItemPrices Prices, int Available, string? ThumbnailStorageKey, IReadOnlyDictionary<string, string> Specs);
-public sealed record BuilderItemPage(IReadOnlyList<BuilderItemView> Items, int Page, int PageSize, int Total);
 /// <summary>A part of an existing build and the same model from free stock (null when none is free).</summary>
 public sealed record BuildPartMatch(string ModelName, string Condition, Guid? CategoryId, BuilderItemView? Match);
 public sealed record BuildMatchView(string Code, string Title, string? Usage, IReadOnlyList<BuildPartMatch> Parts);

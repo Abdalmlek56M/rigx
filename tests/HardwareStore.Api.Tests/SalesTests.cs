@@ -884,8 +884,9 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         var itemCard = feed.Items[1];
         Assert.Equal(("Feed Fan", item.Code, "New"), (itemCard.Title, itemCard.Code, itemCard.Condition));
         Assert.All(feed.Items, entry => Assert.Null(entry.Governorate));
+        Assert.Equal(2, feed.Total);
         var json = JsonSerializer.Serialize(feed).ToLowerInvariant();
-        foreach (var secret in new[] { "price", "total", "amount", "customer", "phone" }) Assert.DoesNotContain(secret, json);
+        foreach (var secret in new[] { "price", "amount", "customer", "phone" }) Assert.DoesNotContain(secret, json);
 
         var withGovernorate = await retail.SoldFeed.ListAsync(true, null, null, 1);
         Assert.Equal("C", withGovernorate.Items.Single(entry => entry.Kind == "Build").Governorate);

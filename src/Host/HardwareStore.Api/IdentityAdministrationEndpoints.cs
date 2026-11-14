@@ -1,6 +1,8 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class IdentityAdministrationEndpoints
 {
@@ -21,7 +23,7 @@ public static class IdentityAdministrationEndpoints
             .RequireStepUp();
         group.MapGet("/roles", GetRolesAsync)
             .RequirePermission("System.ManageUsers");
-        group.MapGet("/permissions", GetPermissionsAsync)
+        group.MapGet("/permissions", GetPermissions)
             .RequirePermission("System.ManageUsers");
         group.MapPost("/roles", CreateRoleAsync)
             .RequirePermission("System.ManageUsers")
@@ -32,7 +34,7 @@ public static class IdentityAdministrationEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> GetUsersAsync(
+    private static async Task<Ok<PagedResult<AdminIdentityUser>>> GetUsersAsync(
         string? search,
         bool? isActive,
         int? page,
@@ -41,10 +43,9 @@ public static class IdentityAdministrationEndpoints
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
+        context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await service.GetUsersAsync(
+        return TypedResults.Ok(await service.GetUsersAsync(
             search,
             isActive,
             page ?? 1,
@@ -52,98 +53,87 @@ public static class IdentityAdministrationEndpoints
             cancellationToken));
     }
 
-    private static async Task<IResult> GetUserAsync(
+    private static async Task<Ok<AdminIdentityUser>> GetUserAsync(
         Guid id,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
+        context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
         var user = await service.GetUserAsync(id, cancellationToken);
-        return user is null ? Results.NotFound() : Results.Ok(user);
+        return TypedResults.Ok(user ?? throw new IdentityException(StatusCodes.Status404NotFound, "The user was not found."));
     }
 
-    private static async Task<IResult> CreateUserAsync(
+    private static async Task<Created<AdminIdentityUserInvitationResult>> CreateUserAsync(
         CreateAdminIdentityUserRequest request,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         var result = await service.CreateUserAsync(request, actorId, cancellationToken);
         IdentityHttp.NoStore(context);
-        return Results.Created((string?)null, result);
+        return TypedResults.Created((string?)null, result);
     }
 
-    private static async Task<IResult> UpdateUserAsync(
+    private static async Task<Ok<AdminIdentityUser>> UpdateUserAsync(
         Guid id,
         UpdateAdminIdentityUserRequest request,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.UpdateUserAsync(id, request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.UpdateUserAsync(id, request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> AssignRolesAsync(
+    private static async Task<Ok<AdminIdentityUser>> AssignRolesAsync(
         Guid id,
         AssignAdminIdentityRolesRequest request,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.AssignRolesAsync(id, request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.AssignRolesAsync(id, request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> GetRolesAsync(
+    private static async Task<Ok<IReadOnlyList<AdminIdentityRole>>> GetRolesAsync(
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
+        context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await service.GetRolesAsync(cancellationToken));
+        return TypedResults.Ok(await service.GetRolesAsync(cancellationToken));
     }
 
-    private static async Task<IResult> GetPermissionsAsync(
-        HttpContext context,
-        CancellationToken cancellationToken)
+    private static Ok<string[]> GetPermissions(HttpContext context)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
+        context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        await Task.CompletedTask;
-        return Results.Ok(PermissionCatalog.All.OrderBy(code => code, StringComparer.Ordinal).ToArray());
+        return TypedResults.Ok(PermissionCatalog.All.OrderBy(code => code, StringComparer.Ordinal).ToArray());
     }
 
-    private static async Task<IResult> CreateRoleAsync(
+    private static async Task<Ok<AdminIdentityRole>> CreateRoleAsync(
         CreateAdminIdentityRoleRequest request,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.CreateRoleAsync(request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.CreateRoleAsync(request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> UpdateRolePermissionsAsync(
+    private static async Task<Ok<AdminIdentityRole>> UpdateRolePermissionsAsync(
         Guid id,
         UpdateAdminIdentityRolePermissionsRequest request,
         HttpContext context,
         IdentityAdministrationService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.UpdateRolePermissionsAsync(id, request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.UpdateRolePermissionsAsync(id, request, actorId, cancellationToken));
     }
 }

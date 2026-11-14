@@ -6,6 +6,7 @@ Status: **current state** (what exists today) + **target** (what we are moving t
 
 ```
 apps/web            Next.js (App Router, TypeScript strict)   ← rebuilt from the design canvas (phase 4)
+packages/api-client Typed API client: openapi.v1.json (the contract) + generated types + one fetch wrapper
 src/Host            ASP.NET Core minimal API host (composition root only)
 src/Modules/*       Feature modules — each owns its domain, use cases, persistence, endpoints
 src/Common/*        Cross-cutting building blocks used by every module
@@ -77,7 +78,7 @@ Rules:
 | Trash | `ISoftDeletable` + global query filter (`ApplySoftDelete`); `ITrashSource` per deletable kind; `TrashPurgeJob` purges after 30 days, runs every 6 h |
 | Concurrency | `row_version` token; conflict → `409` |
 | Time | `TimeProvider` everywhere (no `DateTime.UtcNow`) |
-| Paging/filtering | shared `PageRequest`/`PagedResult<T>` |
+| Paging/filtering | `Common.Domain.Paging`: every list returns `PagedResult<T>` `{ items, page, pageSize, total }` (a list with extra members, e.g. store items `counts`, keeps those names first); query `page` (1-based) + `pageSize`, normalized once by `PageRequest.Of` (max 100 unless the list sets a lower one); filters are plain optional query parameters |
 | Background work | hosted job runner (backups, reminders, reservation expiry, outbox) |
 | Email | transactional outbox table → sender job (retries, no lost email) |
 | Media | storage abstraction (local volume now, S3-compatible later) + auto-watermark on upload |
@@ -92,14 +93,16 @@ Rules:
 
 ## 6. API
 - REST under `/api/v1`, admin under `/api/v1/admin`.
-- OpenAPI document generated from code; the frontend TypeScript client is **generated** from it (no hand-written duplicate types).
+- OpenAPI 3.1 document generated from code (`Microsoft.AspNetCore.OpenApi`, `OpenApi/OpenApiSetup.cs`), served at `/openapi/v1.json` in Development only. Every handler returns a typed result (`TypedResults`: `Ok<T>`, `Created<T>`, `Accepted<T>`, `NoContent`; files declare `.Produces<Stream>` with their content type), so every operation has its success schema. Each operation has a `default` ProblemDetails response, an area tag (`store`, `admin/retail`, ...), and its description names the permission and whether a step-up code is needed.
+- One error shape: RFC 9457 ProblemDetails for every failure — `AppException` (with `errors` and extensions such as `attemptsLeft`), concurrency, unhandled, CSRF, and empty-body 401/403/404/429 (`UseStatusCodePages`). Endpoints read the caller with `RequireUserId()` (401 `UnauthenticatedException`) and never return error results themselves.
+- The contract file `packages/api-client/openapi.v1.json` is committed; `ApiContractTests` fails when it differs from the code (regenerate with `UPDATE_API_CONTRACT=1`). The TypeScript types are **generated** from it (`npm run generate`, not committed) — no hand-written duplicate types.
 - Cookie auth (HttpOnly, `__Host-`, `SameSite=Lax`) + CSRF token for unsafe methods.
 - Public DTOs never contain cost, supplier, serial, partner, or private user data. Exception: the invoice link `/i/{token}` is a customer document (name, address, serials), reachable only by its unguessable token (decision 22).
 
 ## 7. Frontend (target)
 - Next.js App Router, TypeScript `strict`, server components for catalog pages (SEO), client components only where interaction needs it.
 - Design tokens from the canvas (carbon/paper/sand/orange, IBM Plex Sans Arabic + Plex Mono); one component library; RTL first, English via `next-intl`.
-- Generated API client + one fetch wrapper (CSRF, errors).
+- Generated API client + one fetch wrapper (CSRF, errors): `@rigx/api-client` (`createRigxClient`, `unwrap`, `ApiError`, `STEP_UP_HEADER`) on `openapi-fetch` + `openapi-typescript`.
 
 ## 8. Decisions log
 | # | Decision | Why |
@@ -140,3 +143,4 @@ Rules:
 | 34 | Trash and export share one path: every deletable kind is soft-deleted and purged only by the owner with step-up; one export writer set (CSV with BOM and formula neutralizing, XLSX, XML) with per-dataset permissions and a 50,000-row cap | one restore and purge rule per kind; exports cannot leak cost or contact columns to roles without the permission; PDF stays in the frontend (no PDF library on the server) |
 | 35 | Backups are built in a temp folder and copied atomically to every configured destination; a run succeeds only if all destinations get the file. Dump and drill use `ConnectionStrings:Backup` (falls back to Migrations, then Default) because the app role cannot create databases. Restore is never automatic: the drill restores into a temp database that is always dropped. Data reset runs per module in one FK-ordered transaction, only after a successful BeforeReset backup | one copy on one disk is not enough, so every destination must succeed; a backup nobody has restored is not a backup; no cross-module rollback, so the backup is the recovery |
 | 36 | The business audit log is captured by one `SaveChanges` interceptor on every business context, not by hand in each service. It records changed scalar fields only (before/after, CLR names). Bookkeeping fields are left out, byte[] values and secrets (seller national ID, tracking token, invoice token, request photo token hash) are masked as `"***"`, and technical tables opt out with `ExcludeFromAudit()`. Rows are written with plain SQL in the caller's transaction and are append-only by a database trigger (UPDATE, DELETE, TRUNCATE rejected). Restoring old values is owner-only + step-up and only for an explicit allowlist (listing fields, build card, expense types, partner contact and default %, categories, brands, product descriptive fields, store settings except logos, articles, FAQ). Money ledgers, stock state, orders, payments, warranties, partner ledgers, accounts and roles are never restored | one interceptor cannot be forgotten by a service; log and change commit together; the trigger keeps the log trustworthy even though the app writes it; restoring money or stock from a log would silently break ledgers, so only descriptive fields are restorable. Known limit: `ExecuteUpdate`, `ExecuteDelete` and raw SQL bypass the interceptor (listed in `docs/checkpoints/2.11-audit.md`) |
+| 37 | API contract = the committed OpenAPI file, checked by a test; the TS client is generated from it with `openapi-typescript` (types only) + `openapi-fetch` (tiny typed fetch), calls are by path (`api.GET("/api/v1/store/items")`), no operation-id naming; typed results instead of `.Produces` annotations; numbers are `number` only in the contract (the server still accepts numeric strings) | the frontend cannot drift from the backend: a changed endpoint changes the reviewed contract file in the same commit and breaks the frontend typecheck; typed results are compile-checked, annotations would drift; no generated code in git |

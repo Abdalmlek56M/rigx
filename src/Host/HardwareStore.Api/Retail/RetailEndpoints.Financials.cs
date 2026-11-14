@@ -2,48 +2,48 @@ using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static partial class RetailEndpoints
 {
-    private static async Task<IResult> ListExpensesAsync(HttpContext context, ExpenseService expenses, CancellationToken ct,
+    private static async Task<Ok<IReadOnlyList<ExpenseView>>> ListExpensesAsync(HttpContext context, ExpenseService expenses, CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await expenses.ListExpensesAsync(from, to, ct));
+        return TypedResults.Ok(await expenses.ListExpensesAsync(from, to, ct));
     }
 
-    private static async Task<IResult> CreateExpenseAsync(ExpenseCreateRequest request, HttpContext context,
+    private static async Task<Ok<ExpenseView>> CreateExpenseAsync(ExpenseCreateRequest request, HttpContext context,
         ExpenseService expenses, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
-        return Results.Ok(await expenses.CreateExpenseAsync(request, actorId, ct));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await expenses.CreateExpenseAsync(request, actorId, ct));
     }
 
     /// <summary>The receipt photo is private: re-encoded, stored outside the public media routes; a replaced one is deleted after the new one is saved.</summary>
-    private static async Task<IResult> SetExpenseReceiptAsync(Guid id, HttpContext context, ExpenseService expenses,
+    private static async Task<NoContent> SetExpenseReceiptAsync(Guid id, HttpContext context, ExpenseService expenses,
         ICatalogMediaStorage storage, CatalogMediaOptions options, CancellationToken ct)
     {
-        var (upload, problem) = await CatalogEndpoints.ReadSingleImageAsync(context, options, ct);
-        if (upload is null) return problem!;
+        var upload = await CatalogEndpoints.ReadSingleImageAsync(context, options, ct);
         var key = await storage.SavePrivateImageAsync("receipts", id, upload, ct);
         string? previous;
         try { previous = await expenses.SetReceiptAsync(id, key, ct); }
         catch { await storage.DeleteStorageKeyAsync(key, CancellationToken.None); throw; }
         if (previous is not null) await storage.DeleteStorageKeyAsync(previous, ct);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> GetExpenseReceiptAsync(Guid id, HttpContext context, ExpenseService expenses,
+    private static async Task<FileStreamHttpResult> GetExpenseReceiptAsync(Guid id, HttpContext context, ExpenseService expenses,
         ICatalogMediaStorage storage, CancellationToken ct) =>
         PrivateMediaResults.Image(context, storage, await expenses.GetReceiptKeyAsync(id, ct));
 
-    private static async Task<IResult> BusinessReportAsync(HttpContext context, BusinessReportService reports, TimeProvider timeProvider, TimeZoneInfo businessZone,
+    private static async Task<Ok<BusinessReportView>> BusinessReportAsync(HttpContext context, BusinessReportService reports, TimeProvider timeProvider, TimeZoneInfo businessZone,
         CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
         var end = to ?? BusinessDay.Today(timeProvider, businessZone);
         var start = from ?? end.AddDays(-30);
-        return Results.Ok(await reports.BuildReportAsync(start, end, ct));
+        return TypedResults.Ok(await reports.BuildReportAsync(start, end, ct));
     }
 }

@@ -10,6 +10,7 @@ using HardwareStore.Modules.Inventory;
 using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
+using Microsoft.AspNetCore.Http.HttpResults;
 using HardwareStore.Modules.Auditing;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -27,6 +28,7 @@ builder.Host.UseSerilog((_, _, configuration) => configuration
     .WriteTo.Console());
 
 builder.Services.AddProblemDetails();
+builder.Services.AddApiContract();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IAuditActor, HttpAuditActor>();
 builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
@@ -152,6 +154,8 @@ if (args.Contains("--bootstrap-owner", StringComparer.Ordinal))
 }
 
 app.UseExceptionHandler();
+// Empty-body errors (401/403/404/405/429 from auth, routing and rate limiting) get the same ProblemDetails body.
+app.UseStatusCodePages();
 app.UseForwardedHeaders();
 app.UseRouting();
 app.UseRateLimiter();
@@ -159,13 +163,16 @@ app.UseAuthentication();
 app.UseMiddleware<CsrfProtectionMiddleware>();
 app.UseAuthorization();
 
-app.MapGet("/api/v1/identity/antiforgery", (HttpContext context, Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery) =>
+app.MapGet("/api/v1/identity/antiforgery", Ok<AntiforgeryTokenResponse> (HttpContext context, Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery) =>
 {
     var tokens = antiforgery.GetAndStoreTokens(context);
     context.Response.Headers.CacheControl = "no-store";
     context.Response.Headers.Pragma = "no-cache";
-    return Results.Ok(new { requestToken = tokens.RequestToken });
+    return TypedResults.Ok(new AntiforgeryTokenResponse(tokens.RequestToken));
 }).AllowAnonymous();
+
+if (app.Environment.IsDevelopment())
+    app.MapOpenApi("/openapi/{documentName}.json").AllowAnonymous();
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
@@ -210,3 +217,5 @@ app.Run();
 public partial class Program
 {
 }
+
+public sealed record AntiforgeryTokenResponse(string? RequestToken);

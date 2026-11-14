@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Purchasing;
@@ -9,16 +10,14 @@ namespace HardwareStore.Modules.Purchasing;
 /// </summary>
 public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
-    private const int MaxPageSize = 100;
 
-    public async Task<PurchasePage> ListAsync(PurchaseQuery query, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<PurchaseListItem>> ListAsync(PurchaseQuery query, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var purchases = db.Purchases.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query.Status)) purchases = purchases.Where(purchase => purchase.Status == query.Status.Trim());
         if (!string.IsNullOrWhiteSpace(query.Search)) purchases = Matching(purchases, query.Search);
-        var page = Math.Max(1, query.Page);
-        var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        var (page, pageSize) = PageRequest.Of(query.Page, query.PageSize);
         var total = await purchases.CountAsync(cancellationToken);
         var rows = await purchases.OrderByDescending(purchase => purchase.CreatedAtUtc).ThenByDescending(purchase => purchase.Id)
             .Skip((page - 1) * pageSize).Take(pageSize)
@@ -27,7 +26,7 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
                 purchase.Kind, purchase.Status, purchase.PurchaseDate, purchase.Total, purchase.Remaining, purchase.Lines.Count,
                 purchase.CreatedAtUtc))
             .ToListAsync(cancellationToken);
-        return new PurchasePage(rows, page, pageSize, total);
+        return new PagedResult<PurchaseListItem>(rows, page, pageSize, total);
     }
 
     /// <summary>

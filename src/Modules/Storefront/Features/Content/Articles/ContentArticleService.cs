@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -18,14 +19,13 @@ public sealed class ContentArticleService(
     /// <summary>The reference type articles use in the media-usage index.</summary>
     private const string UsageType = "Article";
 
-    public async Task<ContentPage<ArticleView>> ListPublicAsync(
+    public async Task<PagedResult<ArticleView>> ListPublicAsync(
         int page,
         int pageSize,
         string? category,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 50);
+        (page, pageSize) = PageRequest.Of(page, pageSize, 50);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var now = Now();
         var rows = db.ContentArticles.AsNoTracking()
@@ -42,7 +42,7 @@ public sealed class ContentArticleService(
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-        return new ContentPage<ArticleView>(
+        return new PagedResult<ArticleView>(
             items.Select(item => Map(item, now)).ToList(), page, pageSize, total);
     }
 
@@ -70,15 +70,14 @@ public sealed class ContentArticleService(
             throw new StorefrontException(404, "Article was not found.");
     }
 
-    public async Task<ContentPage<ArticleView>> ListAdminAsync(
+    public async Task<PagedResult<ArticleView>> ListAdminAsync(
         int page,
         int pageSize,
         string? status,
         string? search,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 100);
+        (page, pageSize) = PageRequest.Of(page, pageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var now = Now();
         var rows = db.ContentArticles.AsNoTracking();
@@ -106,7 +105,7 @@ public sealed class ContentArticleService(
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-        return new ContentPage<ArticleView>(items.Select(item => Map(item, now)).ToList(), page, pageSize, total);
+        return new PagedResult<ArticleView>(items.Select(item => Map(item, now)).ToList(), page, pageSize, total);
     }
 
     public async Task<ArticleView> GetAdminAsync(Guid id, CancellationToken cancellationToken = default)

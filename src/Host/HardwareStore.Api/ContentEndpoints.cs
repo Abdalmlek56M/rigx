@@ -1,8 +1,10 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class ContentEndpoints
 {
@@ -44,7 +46,7 @@ public static class ContentEndpoints
 
     private const string ContentPermission = "System.StoreSettings";
 
-    private static async Task<IResult> ListPublicArticlesAsync(
+    private static async Task<Ok<PagedResult<ArticleView>>> ListPublicArticlesAsync(
         HttpContext context,
         ContentArticleService service,
         CancellationToken cancellationToken,
@@ -53,10 +55,10 @@ public static class ContentEndpoints
         string? category = null)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await service.ListPublicAsync(page, pageSize, category, cancellationToken));
+        return TypedResults.Ok(await service.ListPublicAsync(page, pageSize, category, cancellationToken));
     }
 
-    private static async Task<IResult> GetPublicArticleAsync(
+    private static async Task<Ok<ArticleDetailView>> GetPublicArticleAsync(
         string slug,
         HttpContext context,
         ContentArticleService service,
@@ -64,16 +66,16 @@ public static class ContentEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await WithProductsAsync(await service.GetPublicAsync(slug, cancellationToken), items, cancellationToken));
+        return TypedResults.Ok(await WithProductsAsync(await service.GetPublicAsync(slug, cancellationToken), items, cancellationToken));
     }
 
-    private static async Task<IResult> RecordArticleViewAsync(
+    private static async Task<NoContent> RecordArticleViewAsync(
         string slug,
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
         await service.RecordViewAsync(slug, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
     private static async Task<ArticleDetailView> WithProductsAsync(
@@ -85,113 +87,107 @@ public static class ContentEndpoints
         return new ArticleDetailView(article, await items.GetCardsAsync(codes, cancellationToken));
     }
 
-    private static async Task<IResult> ListAdminArticlesAsync(
+    private static async Task<Ok<PagedResult<ArticleView>>> ListAdminArticlesAsync(
         ContentArticleService service,
         CancellationToken cancellationToken,
         int page = 1,
         int pageSize = 25,
         string? status = null,
         string? search = null) =>
-        Results.Ok(await service.ListAdminAsync(page, pageSize, status, search, cancellationToken));
+        TypedResults.Ok(await service.ListAdminAsync(page, pageSize, status, search, cancellationToken));
 
-    private static async Task<IResult> GetAdminArticleAsync(
+    private static async Task<Ok<ArticleDetailView>> GetAdminArticleAsync(
         Guid id,
         ContentArticleService service,
         StoreItemService items,
         CancellationToken cancellationToken) =>
-        Results.Ok(await WithProductsAsync(await service.GetAdminAsync(id, cancellationToken), items, cancellationToken));
+        TypedResults.Ok(await WithProductsAsync(await service.GetAdminAsync(id, cancellationToken), items, cancellationToken));
 
-    private static async Task<IResult> ListArticleRevisionsAsync(
+    private static async Task<Ok<IReadOnlyList<ArticleRevisionView>>> ListArticleRevisionsAsync(
         Guid id,
         ContentArticleService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.ListRevisionsAsync(id, cancellationToken));
+        TypedResults.Ok(await service.ListRevisionsAsync(id, cancellationToken));
 
-    private static async Task<IResult> CreateArticleAsync(
+    private static async Task<Ok<ArticleView>> CreateArticleAsync(
         ArticleInput request,
         HttpContext context,
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.CreateAsync(request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.CreateAsync(request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> UpdateArticleAsync(
+    private static async Task<Ok<ArticleView>> UpdateArticleAsync(
         Guid id,
         ArticleInput request,
         HttpContext context,
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.UpdateAsync(id, request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.UpdateAsync(id, request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> PublishArticleAsync(
+    private static async Task<Ok<ArticleView>> PublishArticleAsync(
         Guid id,
         ArticlePublishRequest request,
         HttpContext context,
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.PublishAsync(id, request, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.PublishAsync(id, request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> UnpublishArticleAsync(
+    private static async Task<Ok<ArticleView>> UnpublishArticleAsync(
         Guid id,
         ContentVersionRequest request,
         HttpContext context,
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.UnpublishAsync(id, request.RowVersion, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await service.UnpublishAsync(id, request.RowVersion, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> DeleteArticleAsync(
+    private static async Task<NoContent> DeleteArticleAsync(
         Guid id,
         HttpContext context,
         ContentArticleService service,
         TrashAuditor audit,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await service.DeleteAsync(id, actorId, cancellationToken);
         await audit.DeletedAsync(ArticleTrashSource.TrashKind, id, actorId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> DeleteFaqAsync(
+    private static async Task<NoContent> DeleteFaqAsync(
         Guid id,
         HttpContext context,
         ContentFaqService service,
         TrashAuditor audit,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await service.DeleteAsync(id, actorId, cancellationToken);
         await audit.DeletedAsync(FaqTrashSource.TrashKind, id, actorId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> ListPublicFaqsAsync(
+    private static async Task<Ok<IReadOnlyList<FaqView>>> ListPublicFaqsAsync(
         HttpContext context,
         ContentFaqService service,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await service.ListPublicAsync(cancellationToken));
+        return TypedResults.Ok(await service.ListPublicAsync(cancellationToken));
     }
 
-    private static async Task<IResult> ListItemFaqsAsync(
+    private static async Task<Ok<IReadOnlyList<FaqView>>> ListItemFaqsAsync(
         string code,
         HttpContext context,
         ContentFaqService service,
@@ -204,87 +200,87 @@ public static class ContentEndpoints
             ? await taxonomy.GetCategoryPathIdsAsync(categoryId, cancellationToken)
             : [];
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await service.ListForItemAsync(item.Code, categoryPath, cancellationToken));
+        return TypedResults.Ok(await service.ListForItemAsync(item.Code, categoryPath, cancellationToken));
     }
 
-    private static async Task<IResult> ListAdminFaqsAsync(
+    private static async Task<Ok<IReadOnlyList<FaqView>>> ListAdminFaqsAsync(
         ContentFaqService service,
         CancellationToken cancellationToken,
         string? scope = null,
         Guid? categoryId = null,
         string? itemCode = null) =>
-        Results.Ok(await service.ListAdminAsync(scope, categoryId, itemCode, cancellationToken));
+        TypedResults.Ok(await service.ListAdminAsync(scope, categoryId, itemCode, cancellationToken));
 
-    private static async Task<IResult> CreateFaqAsync(
+    private static async Task<Ok<FaqView>> CreateFaqAsync(
         FaqInput request,
         ContentFaqService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.CreateAsync(request, cancellationToken));
+        TypedResults.Ok(await service.CreateAsync(request, cancellationToken));
 
-    private static async Task<IResult> UpdateFaqAsync(
+    private static async Task<Ok<FaqView>> UpdateFaqAsync(
         Guid id,
         FaqInput request,
         ContentFaqService service,
         CancellationToken cancellationToken,
         long rowVersion = 0) =>
-        Results.Ok(await service.UpdateAsync(id, request, rowVersion, cancellationToken));
+        TypedResults.Ok(await service.UpdateAsync(id, request, rowVersion, cancellationToken));
 
-    private static async Task<IResult> PublishFaqAsync(
+    private static async Task<Ok<FaqView>> PublishFaqAsync(
         Guid id,
         ContentVersionRequest request,
         ContentFaqService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.SetPublishedAsync(id, true, request.RowVersion, cancellationToken));
+        TypedResults.Ok(await service.SetPublishedAsync(id, true, request.RowVersion, cancellationToken));
 
-    private static async Task<IResult> UnpublishFaqAsync(
+    private static async Task<Ok<FaqView>> UnpublishFaqAsync(
         Guid id,
         ContentVersionRequest request,
         ContentFaqService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.SetPublishedAsync(id, false, request.RowVersion, cancellationToken));
+        TypedResults.Ok(await service.SetPublishedAsync(id, false, request.RowVersion, cancellationToken));
 
-    private static async Task<IResult> GetPublicPolicyAsync(
+    private static async Task<Ok<PolicyView>> GetPublicPolicyAsync(
         string kind,
         HttpContext context,
         ContentPolicyService service,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await service.GetPublicAsync(kind, cancellationToken));
+        return TypedResults.Ok(await service.GetPublicAsync(kind, cancellationToken));
     }
 
-    private static async Task<IResult> ListAdminPoliciesAsync(
+    private static async Task<Ok<IReadOnlyList<PolicyView>>> ListAdminPoliciesAsync(
         ContentPolicyService service,
         CancellationToken cancellationToken,
         string? kind = null) =>
-        Results.Ok(await service.ListAdminAsync(kind, cancellationToken));
+        TypedResults.Ok(await service.ListAdminAsync(kind, cancellationToken));
 
-    private static async Task<IResult> CreatePolicyVersionAsync(
+    private static async Task<Ok<PolicyView>> CreatePolicyVersionAsync(
         string kind,
         ContentPolicyService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.CreateVersionAsync(kind, cancellationToken));
+        TypedResults.Ok(await service.CreateVersionAsync(kind, cancellationToken));
 
-    private static async Task<IResult> UpdatePolicyAsync(
+    private static async Task<Ok<PolicyView>> UpdatePolicyAsync(
         Guid id,
         PolicyInput request,
         ContentPolicyService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.UpdateAsync(id, request, cancellationToken));
+        TypedResults.Ok(await service.UpdateAsync(id, request, cancellationToken));
 
-    private static async Task<IResult> ReviewPolicyAsync(
+    private static async Task<Ok<PolicyView>> ReviewPolicyAsync(
         Guid id,
         ContentVersionRequest request,
         ContentPolicyService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.MarkReviewAsync(id, request.RowVersion, cancellationToken));
+        TypedResults.Ok(await service.MarkReviewAsync(id, request.RowVersion, cancellationToken));
 
-    private static async Task<IResult> PublishPolicyAsync(
+    private static async Task<Ok<PolicyView>> PublishPolicyAsync(
         Guid id,
         ContentVersionRequest request,
         ContentPolicyService service,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.PublishAsync(id, request.RowVersion, cancellationToken));
+        TypedResults.Ok(await service.PublishAsync(id, request.RowVersion, cancellationToken));
 }
 
 public sealed record ContentVersionRequest(long RowVersion);

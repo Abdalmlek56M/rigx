@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -41,11 +42,11 @@ public sealed class WarrantyService(IDbContextFactory<RetailDbContext> contextFa
         }).ToList();
     }
 
-    public async Task<WarrantyAdminPage> ListAdminAsync(string? query, string? status, int page, bool includeContact, bool includeSerial,
+    public async Task<PagedResult<WarrantyAdminView>> ListAdminAsync(string? query, string? status, int page, bool includeContact, bool includeSerial,
         CancellationToken cancellationToken = default)
     {
         var now = timeProvider.GetUtcNow();
-        var number = Math.Max(1, page);
+        var paging = PageRequest.Of(page, PageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var warranties = db.Warranties.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query))
@@ -55,10 +56,10 @@ public sealed class WarrantyService(IDbContextFactory<RetailDbContext> contextFa
         }
         warranties = FilterStatus(warranties, status, now);
         var total = await warranties.CountAsync(cancellationToken);
-        var rows = await warranties.OrderByDescending(w => w.StartsAtUtc).ThenBy(w => w.Code).Skip((number - 1) * PageSize).Take(PageSize)
+        var rows = await warranties.OrderByDescending(w => w.StartsAtUtc).ThenBy(w => w.Code).Skip(paging.Skip).Take(paging.PageSize)
             .Join(db.Orders, w => w.OrderId, o => o.Id, (w, o) => new { Warranty = w, o.Reference, o.CustomerName }).ToListAsync(cancellationToken);
         var items = await AdminViewsAsync(db, rows.Select(row => (row.Warranty, row.Reference, row.CustomerName)).ToList(), now, includeContact, includeSerial, cancellationToken);
-        return new WarrantyAdminPage(items, number, PageSize, total);
+        return new PagedResult<WarrantyAdminView>(items, paging.Page, paging.PageSize, total);
     }
 
     /// <summary>The warranties of one customer account (see <see cref="CustomerOwnership"/>), newest first, for the customer 360 view.</summary>

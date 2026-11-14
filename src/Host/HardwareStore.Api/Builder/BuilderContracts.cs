@@ -16,8 +16,6 @@ public sealed record BuilderEvaluation(IReadOnlyList<BuilderPartView> Parts, IRe
     IReadOnlyList<OrderLineRequest> CartLines);
 
 public sealed record BuilderOptionView(BuilderItemView Item, IReadOnlyList<BuilderIssue> Issues, bool IsCompatible, bool IsAvailable);
-public sealed record BuilderOptionPage(IReadOnlyList<BuilderOptionView> Items, int Page, int PageSize, int Total);
-
 public sealed record UnmatchedPartView(string ModelName, string Condition);
 public sealed record BuilderFromBuildView(string Code, string Title, string? Usage, BuilderEvaluation Evaluation, IReadOnlyList<UnmatchedPartView> Unmatched);
 

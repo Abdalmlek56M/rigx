@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
@@ -93,12 +94,6 @@ public sealed record StoreReviewsResponse(
 public sealed record MyReviewsResponse(
     IReadOnlyList<ProductReviewView> ProductReviews,
     IReadOnlyList<StoreReviewView> StoreReview);
-
-public sealed record ReviewPage(
-    IReadOnlyList<AdminReviewView> Items,
-    int Page,
-    int PageSize,
-    int Total);
 
 public sealed record AdminReviewView(
     Guid Id,
@@ -263,15 +258,14 @@ public sealed class ReviewService(
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    public async Task<ReviewPage> ListAdminAsync(
+    public async Task<PagedResult<AdminReviewView>> ListAdminAsync(
         string? type,
         string? status,
         int page,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 100);
+        (page, pageSize) = PageRequest.Of(page, pageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var includeProducts = type is null or "Product";
         var includeStore = type is null or "Store";
@@ -311,7 +305,7 @@ public sealed class ReviewService(
         }
 
         var ordered = items.OrderByDescending(item => item.UpdatedAtUtc).ToList();
-        return new ReviewPage(
+        return new PagedResult<AdminReviewView>(
             ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
             page,
             pageSize,

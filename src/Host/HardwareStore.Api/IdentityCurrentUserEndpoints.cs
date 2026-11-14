@@ -1,6 +1,8 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class IdentityCurrentUserEndpoints
 {
@@ -17,62 +19,45 @@ public static class IdentityCurrentUserEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> UpdateProfileAsync(
+    private static async Task<Ok<CurrentIdentityUser>> UpdateProfileAsync(
         UpdateIdentityProfileRequest request,
         HttpContext context,
         IdentityProfileService profiles,
         IdentityCurrentUserService users,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await profiles.UpdateAsync(accountId, request, cancellationToken);
         return await GetCurrentUserAsync(context, users, cancellationToken);
     }
 
-    private static async Task<IResult> GetNewDeviceAlertsAsync(
+    private static async Task<Ok<NewDeviceAlertsSetting>> GetNewDeviceAlertsAsync(
         HttpContext context, NewDeviceSignInAlerts alerts, CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        return context.TryGetUserId(out var accountId)
-            ? Results.Ok(new NewDeviceAlertsSetting(await alerts.GetAsync(accountId, cancellationToken)))
-            : Results.Unauthorized();
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(new NewDeviceAlertsSetting(await alerts.GetAsync(accountId, cancellationToken)));
     }
 
-    private static async Task<IResult> SetNewDeviceAlertsAsync(
+    private static async Task<Ok<NewDeviceAlertsSetting>> SetNewDeviceAlertsAsync(
         NewDeviceAlertsSetting request, HttpContext context, NewDeviceSignInAlerts alerts, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await alerts.SetAsync(accountId, request.Enabled, cancellationToken);
-        return Results.Ok(request);
+        return TypedResults.Ok(request);
     }
 
-    private static async Task<IResult> GetCurrentUserAsync(
+    private static async Task<Ok<CurrentIdentityUser>> GetCurrentUserAsync(
         HttpContext context,
         IdentityCurrentUserService users,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
 
         var user = await users.GetAsync(accountId, cancellationToken);
-        return user is null ? Results.Unauthorized() : Results.Ok(ProfileResponse(user));
+        return TypedResults.Ok(user ?? throw new UnauthenticatedException());
     }
-
-    /// <summary>The profile shape the signed-in user sees; "view as customer" returns the same shape.</summary>
-    public static object ProfileResponse(CurrentIdentityUser user) => new
-    {
-        user.Username,
-        user.Email,
-        user.FullName,
-        user.PhoneNumber,
-        user.Roles,
-        user.Permissions,
-        user.IsEmailVerified,
-        user.AvatarStorageKey
-    };
 
     public sealed record NewDeviceAlertsSetting(bool Enabled);
 }

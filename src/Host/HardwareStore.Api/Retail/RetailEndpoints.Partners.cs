@@ -1,73 +1,74 @@
 using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static partial class RetailEndpoints
 {
-    private static async Task<IResult> ListPartnersAsync(HttpContext context, PartnerService partners, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<PartnerView>>> ListPartnersAsync(HttpContext context, PartnerService partners, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await partners.ListAsync(ct));
+        return TypedResults.Ok(await partners.ListAsync(ct));
     }
 
-    private static async Task<IResult> GetPartnerAsync(Guid id, HttpContext context, PartnerService partners, CancellationToken ct)
+    private static async Task<Ok<PartnerDetailView>> GetPartnerAsync(Guid id, HttpContext context, PartnerService partners, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await partners.GetAsync(id, ct));
+        return TypedResults.Ok(await partners.GetAsync(id, ct));
     }
 
-    private static async Task<IResult> CreatePartnerAsync(PartnerRequest request, PartnerService partners, CancellationToken ct) =>
-        Results.Created((string?)null, await partners.CreateAsync(request, ct));
+    private static async Task<Created<PartnerView>> CreatePartnerAsync(PartnerRequest request, PartnerService partners, CancellationToken ct) =>
+        TypedResults.Created((string?)null, await partners.CreateAsync(request, ct));
 
-    private static async Task<IResult> UpdatePartnerAsync(Guid id, PartnerRequest request, PartnerService partners, CancellationToken ct) =>
-        Results.Ok(await partners.UpdateAsync(id, request, ct));
+    private static async Task<Ok<PartnerView>> UpdatePartnerAsync(Guid id, PartnerRequest request, PartnerService partners, CancellationToken ct) =>
+        TypedResults.Ok(await partners.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> ListPartnerCapitalAsync(Guid id, HttpContext context, PartnerCapitalService capital, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<PartnerCapitalEntryView>>> ListPartnerCapitalAsync(Guid id, HttpContext context, PartnerCapitalService capital, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await capital.ListAsync(id, ct));
+        return TypedResults.Ok(await capital.ListAsync(id, ct));
     }
 
-    private static async Task<IResult> AddPartnerCapitalAsync(Guid id, PartnerCapitalRequest request, HttpContext context,
+    private static async Task<Ok<PartnerCapitalEntryView>> AddPartnerCapitalAsync(Guid id, PartnerCapitalRequest request, HttpContext context,
         PartnerCapitalService capital, CancellationToken ct) =>
-        context.TryGetUserId(out var actorId) ? Results.Ok(await capital.AddAsync(id, request, actorId, ct)) : Results.Unauthorized();
+        TypedResults.Ok(await capital.AddAsync(id, request, context.RequireUserId(), ct));
 
-    private static async Task<IResult> PartnerStatementAsync(Guid id, HttpContext context, PartnerStatementService statements, TimeProvider timeProvider,
+    private static async Task<Ok<PartnerStatementView>> PartnerStatementAsync(Guid id, HttpContext context, PartnerStatementService statements, TimeProvider timeProvider,
         TimeZoneInfo businessZone, CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
         var end = to ?? BusinessDay.Today(timeProvider, businessZone);
-        return Results.Ok(await statements.GetAsync(id, from ?? end.AddDays(-30), end, ct));
+        return TypedResults.Ok(await statements.GetAsync(id, from ?? end.AddDays(-30), end, ct));
     }
 
-    private static async Task<IResult> ListEarningsAsync(HttpContext context, PartnerLedgerService ledger, CancellationToken ct, Guid? partnerId = null)
+    private static async Task<Ok<IReadOnlyList<PartnerEarningView>>> ListEarningsAsync(HttpContext context, PartnerLedgerService ledger, CancellationToken ct, Guid? partnerId = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await ledger.ListEarningsAsync(partnerId, ct));
+        return TypedResults.Ok(await ledger.ListEarningsAsync(partnerId, ct));
     }
 
-    private static async Task<IResult> ListAdjustmentsAsync(HttpContext context, PartnerLedgerService ledger, CancellationToken ct, Guid? partnerId = null)
+    private static async Task<Ok<IReadOnlyList<PartnerAdjustmentView>>> ListAdjustmentsAsync(HttpContext context, PartnerLedgerService ledger, CancellationToken ct, Guid? partnerId = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await ledger.ListAdjustmentsAsync(partnerId, ct));
+        return TypedResults.Ok(await ledger.ListAdjustmentsAsync(partnerId, ct));
     }
 
-    private static async Task<IResult> ListPartnerPayoutsAsync(Guid id, HttpContext context, PartnerLedgerService ledger, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<PartnerSettlementView>>> ListPartnerPayoutsAsync(Guid id, HttpContext context, PartnerLedgerService ledger, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await ledger.ListPayoutsAsync(id, ct));
+        return TypedResults.Ok(await ledger.ListPayoutsAsync(id, ct));
     }
 
-    private static async Task<IResult> PayoutPartnerAsync(Guid id, PartnerPayoutRequest request, HttpContext context, PartnerLedgerService ledger,
+    private static async Task<Ok<PartnerSettlementView>> PayoutPartnerAsync(Guid id, PartnerPayoutRequest request, HttpContext context, PartnerLedgerService ledger,
         CancellationToken ct) =>
-        context.TryGetUserId(out var actorId) ? Results.Ok(await ledger.PayoutAsync(id, request, actorId, ct)) : Results.Unauthorized();
+        TypedResults.Ok(await ledger.PayoutAsync(id, request, context.RequireUserId(), ct));
 
     /// <summary>Posts the whole-shop partners' shares of a month that has ended (business time zone).</summary>
-    private static async Task<IResult> CloseMonthAsync(PartnerMonthCloseRequest request, PartnerMonthCloseService months,
+    private static async Task<Ok<PartnerMonthCloseView>> CloseMonthAsync(PartnerMonthCloseRequest request, PartnerMonthCloseService months,
         TimeZoneInfo businessTimeZone, CancellationToken ct) =>
-        Results.Ok(await months.CloseMonthAsync(request, businessTimeZone, ct));
+        TypedResults.Ok(await months.CloseMonthAsync(request, businessTimeZone, ct));
 
-    private static async Task<IResult> AssignUnitPartnerAsync(Guid id, UnitPartnerRequest request, UnitPartnerService units, CancellationToken ct) =>
-        Results.Ok(await units.AssignAsync(id, request, ct));
+    private static async Task<Ok<UnitView>> AssignUnitPartnerAsync(Guid id, UnitPartnerRequest request, UnitPartnerService units, CancellationToken ct) =>
+        TypedResults.Ok(await units.AssignAsync(id, request, ct));
 }

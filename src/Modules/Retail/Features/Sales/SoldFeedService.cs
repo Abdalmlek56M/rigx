@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -12,9 +13,9 @@ public sealed class SoldFeedService(IDbContextFactory<RetailDbContext> contextFa
     public const string KindBuild = "Build";
     private const int PageSize = 24;
 
-    public async Task<SoldFeedPage> ListAsync(bool showGovernorate, string? kind, Guid? categoryId, int page, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<SoldFeedItem>> ListAsync(bool showGovernorate, string? kind, Guid? categoryId, int page, CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
+        var paging = PageRequest.Of(page, PageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var lines = db.OrderItems.AsNoTracking()
             .Where(item => item.Order.Status == OrderStatus.Delivered || item.Order.Status == OrderStatus.Completed);
@@ -26,8 +27,9 @@ public sealed class SoldFeedService(IDbContextFactory<RetailDbContext> contextFa
         };
         if (categoryId is Guid category)
             lines = lines.Where(item => db.StockItems.Any(stock => stock.Id == item.StockItemId && stock.CategoryId == category));
+        var total = await lines.CountAsync(cancellationToken);
         var rows = await lines.OrderByDescending(item => item.Order.UpdatedAtUtc).ThenBy(item => item.Id)
-            .Skip((page - 1) * PageSize).Take(PageSize)
+            .Skip(paging.Skip).Take(paging.PageSize)
             .Select(item => new
             {
                 Build = item.AssemblyId != null && item.UnitId == null,
@@ -42,6 +44,6 @@ public sealed class SoldFeedService(IDbContextFactory<RetailDbContext> contextFa
             row.Build ? (row.AnyUsedPart ? StockCondition.Used : StockCondition.New) : row.Stock?.Condition ?? StockCondition.Used,
             row.Stock?.CategoryId, row.ThumbnailStorageKeySnapshot, row.FulfillmentMethod,
             showGovernorate && row.FulfillmentMethod == OrderFulfillment.Delivery ? row.Governorate : null, row.SoldAt)).ToList();
-        return new SoldFeedPage(items, page, PageSize);
+        return new PagedResult<SoldFeedItem>(items, paging.Page, paging.PageSize, total);
     }
 }

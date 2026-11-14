@@ -1,7 +1,9 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Customer administration: list, 360 view, support actions, merge and "view as customer". Business errors are module
@@ -26,64 +28,64 @@ public static class CustomerEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ListAsync(HttpContext context, CustomerProfileComposer composer, CancellationToken ct,
+    private static async Task<Ok<PagedResult<CustomerListItem>>> ListAsync(HttpContext context, CustomerProfileComposer composer, CancellationToken ct,
         string? search = null, int page = 1)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await composer.ListAsync(search, page, ct));
+        return TypedResults.Ok(await composer.ListAsync(search, page, ct));
     }
 
-    private static async Task<IResult> GetAsync(Guid id, HttpContext context, CustomerProfileComposer composer, CancellationToken ct)
+    private static async Task<Ok<CustomerProfile>> GetAsync(Guid id, HttpContext context, CustomerProfileComposer composer, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await composer.GetAsync(id, context.HasPermission("Inventory.ViewSerials"), ct));
+        return TypedResults.Ok(await composer.GetAsync(id, context.HasPermission("Inventory.ViewSerials"), ct));
     }
 
-    private static async Task<IResult> ViewAsAsync(Guid id, HttpContext context, CustomerProfileComposer composer, CustomerAdminService customers,
+    private static async Task<Ok<CustomerViewAs>> ViewAsAsync(Guid id, HttpContext context, CustomerProfileComposer composer, CustomerAdminService customers,
         CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
         var view = await composer.ViewAsAsync(id, ct);
         await customers.RecordViewedAsAsync(id, actorId, ct);
-        return Results.Ok(view);
+        return TypedResults.Ok(view);
     }
 
-    private static async Task<IResult> SetNoteAsync(Guid id, CustomerNoteRequest request, HttpContext context, CustomerAdminService customers,
+    private static async Task<NoContent> SetNoteAsync(Guid id, CustomerNoteRequest request, HttpContext context, CustomerAdminService customers,
         CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await customers.SetNoteAsync(id, request.Note, actorId, ct);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> SendLoginCodeAsync(Guid id, HttpContext context, CustomerAdminService customers, TimeProvider timeProvider,
+    private static async Task<Accepted<EmailCodeTicketView>> SendLoginCodeAsync(Guid id, HttpContext context, CustomerAdminService customers, TimeProvider timeProvider,
         CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         IdentityHttp.NoStore(context);
-        return Results.Accepted(value: EmailCodeTicketView.From(await customers.SendLoginCodeAsync(id, actorId, ct), timeProvider));
+        return TypedResults.Accepted((string?)null, EmailCodeTicketView.From(await customers.SendLoginCodeAsync(id, actorId, ct), timeProvider));
     }
 
-    private static async Task<IResult> UnlinkGoogleAsync(Guid id, HttpContext context, CustomerAdminService customers, CancellationToken ct)
+    private static async Task<NoContent> UnlinkGoogleAsync(Guid id, HttpContext context, CustomerAdminService customers, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await customers.UnlinkGoogleAsync(id, actorId, ct);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> SignOutAllAsync(Guid id, HttpContext context, CustomerAdminService customers, CancellationToken ct)
+    private static async Task<NoContent> SignOutAllAsync(Guid id, HttpContext context, CustomerAdminService customers, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await customers.SignOutAllAsync(id, actorId, context.TraceIdentifier, ct);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> MergeAsync(Guid id, CustomerMergeRequest request, HttpContext context, CustomerMergeOrchestrator merge,
+    private static async Task<Ok<CustomerProfile>> MergeAsync(Guid id, CustomerMergeRequest request, HttpContext context, CustomerMergeOrchestrator merge,
         CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await merge.MergeAsync(id, request.SourceAccountId, actorId, context.HasPermission("Inventory.ViewSerials"), ct));
+        return TypedResults.Ok(await merge.MergeAsync(id, request.SourceAccountId, actorId, context.HasPermission("Inventory.ViewSerials"), ct));
     }
 }

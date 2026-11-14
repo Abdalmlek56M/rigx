@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Auditing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -17,15 +18,14 @@ public sealed class WarehouseDirectoryService(
 {
     private const long AdvisoryLockKey = 0x57415245484F5553; // WAREHOUS
 
-    public async Task<WarehousePage> GetAsync(
+    public async Task<PagedResult<WarehouseView>> GetAsync(
         string? search,
         bool? isActive,
         int page,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 100);
+        (page, pageSize) = PageRequest.Of(page, pageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var query = db.Warehouses.AsNoTracking().AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
@@ -46,7 +46,7 @@ public sealed class WarehouseDirectoryService(
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-        return new WarehousePage(items.Select(Map).ToList(), page, pageSize, total);
+        return new PagedResult<WarehouseView>(items.Select(Map).ToList(), page, pageSize, total);
     }
 
     public async Task<WarehouseView?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

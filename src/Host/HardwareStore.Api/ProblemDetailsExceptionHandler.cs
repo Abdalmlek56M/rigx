@@ -22,6 +22,8 @@ public sealed class ProblemDetailsExceptionHandler(
             problem.Status = appException.StatusCode;
             problem.Title = appException.Message;
             problem.Instance = httpContext.Request.Path;
+            foreach (var (key, value) in appException.Extensions ?? new Dictionary<string, object?>())
+                problem.Extensions[key] = value;
             return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
             {
                 HttpContext = httpContext,

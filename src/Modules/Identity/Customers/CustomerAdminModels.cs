@@ -3,8 +3,6 @@ namespace HardwareStore.Modules.Identity;
 public sealed record CustomerListRow(Guid Id, string PersonCode, string Name, string Email, string? Phone, bool IsActive,
     DateTimeOffset CreatedAtUtc);
 
-public sealed record CustomerListPage(IReadOnlyList<CustomerListRow> Items, int Page, int PageSize, int Total);
-
 /// <summary>The Identity part of the customer 360 view.</summary>
 public sealed record CustomerAccountView(Guid Id, string PersonCode, string Name, string Email, string? Phone, bool IsActive,
     bool IsEmailVerified, DateTimeOffset CreatedAtUtc, string? Note, string? DefaultGovernorate, int ActiveSessions,

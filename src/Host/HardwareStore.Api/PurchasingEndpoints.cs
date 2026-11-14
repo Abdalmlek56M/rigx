@@ -1,7 +1,9 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Purchasing HTTP API: sellers, purchases and receiving a purchase into stock. Business errors are
@@ -27,51 +29,51 @@ public static class PurchasingEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ListSellersAsync(HttpContext context, SellerService sellers, CancellationToken ct,
+    private static async Task<Ok<IReadOnlyList<SellerView>>> ListSellersAsync(HttpContext context, SellerService sellers, CancellationToken ct,
         string? phone = null, string? q = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await sellers.ListAsync(phone, q, context.HasPermission(ManageSuppliers), ct));
+        return TypedResults.Ok(await sellers.ListAsync(phone, q, context.HasPermission(ManageSuppliers), ct));
     }
 
-    private static async Task<IResult> GetSellerAsync(Guid id, HttpContext context, SellerService sellers, CancellationToken ct)
+    private static async Task<Ok<SellerView>> GetSellerAsync(Guid id, HttpContext context, SellerService sellers, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await sellers.GetAsync(id, context.HasPermission(ManageSuppliers), ct));
+        return TypedResults.Ok(await sellers.GetAsync(id, context.HasPermission(ManageSuppliers), ct));
     }
 
-    private static async Task<IResult> CreateSellerAsync(SellerRequest request, SellerService sellers, CancellationToken ct) =>
-        Results.Created((string?)null, await sellers.CreateAsync(request, ct));
+    private static async Task<Created<SellerView>> CreateSellerAsync(SellerRequest request, SellerService sellers, CancellationToken ct) =>
+        TypedResults.Created((string?)null, await sellers.CreateAsync(request, ct));
 
-    private static async Task<IResult> UpdateSellerAsync(Guid id, SellerRequest request, SellerService sellers, CancellationToken ct) =>
-        Results.Ok(await sellers.UpdateAsync(id, request, ct));
+    private static async Task<Ok<SellerView>> UpdateSellerAsync(Guid id, SellerRequest request, SellerService sellers, CancellationToken ct) =>
+        TypedResults.Ok(await sellers.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> ListPurchasesAsync(HttpContext context, PurchaseService purchases, CancellationToken ct,
+    private static async Task<Ok<PagedResult<PurchaseListItem>>> ListPurchasesAsync(HttpContext context, PurchaseService purchases, CancellationToken ct,
         string? status = null, string? q = null, int page = 1, int pageSize = 25)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await purchases.ListAsync(new PurchaseQuery(status, q, page, pageSize), ct));
+        return TypedResults.Ok(await purchases.ListAsync(new PurchaseQuery(status, q, page, pageSize), ct));
     }
 
-    private static async Task<IResult> GetPurchaseAsync(Guid id, HttpContext context, PurchaseService purchases, CancellationToken ct)
+    private static async Task<Ok<PurchaseView>> GetPurchaseAsync(Guid id, HttpContext context, PurchaseService purchases, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await purchases.GetAsync(id, ct));
+        return TypedResults.Ok(await purchases.GetAsync(id, ct));
     }
 
-    private static async Task<IResult> CreatePurchaseAsync(PurchaseRequest request, HttpContext context, PurchaseService purchases,
+    private static async Task<Created<PurchaseView>> CreatePurchaseAsync(PurchaseRequest request, HttpContext context, PurchaseService purchases,
         PartnerService partners, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await EnsureFinancingPartnersAsync(request, partners, ct);
-        return Results.Created((string?)null, await purchases.CreateAsync(request, actorId, ct));
+        return TypedResults.Created((string?)null, await purchases.CreateAsync(request, actorId, ct));
     }
 
-    private static async Task<IResult> UpdatePurchaseAsync(Guid id, PurchaseRequest request, PurchaseService purchases, PartnerService partners,
+    private static async Task<Ok<PurchaseView>> UpdatePurchaseAsync(Guid id, PurchaseRequest request, PurchaseService purchases, PartnerService partners,
         CancellationToken ct)
     {
         await EnsureFinancingPartnersAsync(request, partners, ct);
-        return Results.Ok(await purchases.UpdateAsync(id, request, ct));
+        return TypedResults.Ok(await purchases.UpdateAsync(id, request, ct));
     }
 
     /// <summary>A draft line may only name an active financed-parts partner (Retail owns partners; the receipt checks again).</summary>
@@ -81,11 +83,11 @@ public static class PurchasingEndpoints
             await partners.EnsureCanFinanceAsync(partnerId, ct);
     }
 
-    private static async Task<IResult> CancelPurchaseAsync(Guid id, PurchaseVersionRequest request, PurchaseService purchases, CancellationToken ct) =>
-        Results.Ok(await purchases.CancelAsync(id, request.RowVersion, ct));
+    private static async Task<Ok<PurchaseView>> CancelPurchaseAsync(Guid id, PurchaseVersionRequest request, PurchaseService purchases, CancellationToken ct) =>
+        TypedResults.Ok(await purchases.CancelAsync(id, request.RowVersion, ct));
 
-    private static async Task<IResult> ReceivePurchaseAsync(Guid id, HttpContext context, PurchaseReceiptService receipts, CancellationToken ct) =>
-        context.TryGetUserId(out var actorId) ? Results.Ok(await receipts.ReceiveAsync(id, actorId, ct)) : Results.Unauthorized();
+    private static async Task<Ok<PurchaseReceived>> ReceivePurchaseAsync(Guid id, HttpContext context, PurchaseReceiptService receipts, CancellationToken ct) =>
+        TypedResults.Ok(await receipts.ReceiveAsync(id, context.RequireUserId(), ct));
 }
 
 public sealed record PurchaseVersionRequest(long RowVersion);

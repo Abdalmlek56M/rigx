@@ -1,8 +1,10 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 public static class ReviewEndpoints
@@ -27,7 +29,7 @@ public static class ReviewEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> GetProductReviewsAsync(
+    private static async Task<Ok<PublicProductReviews>> GetProductReviewsAsync(
         Guid productId,
         HttpContext context,
         ReviewService reviews,
@@ -35,37 +37,17 @@ public static class ReviewEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        try
+        var response = await reviews.GetProductReviewsAsync(productId, cancellationToken);
+        var authors = await LoadAuthorsAsync(identityFactory, response.Items.Select(item => item.UserAccountId), cancellationToken);
+        return TypedResults.Ok(new PublicProductReviews(response.Aggregate, response.Items.Select(item =>
         {
-            var response = await reviews.GetProductReviewsAsync(productId, cancellationToken);
-            var authors = await LoadAuthorsAsync(identityFactory, response.Items.Select(item => item.UserAccountId), cancellationToken);
-            return Results.Ok(new
-            {
-                response.Aggregate,
-                Items = response.Items.Select(item =>
-                {
-                    authors.TryGetValue(item.UserAccountId, out var author);
-                    return new
-                    {
-                        item.Id,
-                        item.ProductId,
-                        item.Rating,
-                        item.Title,
-                        item.Body,
-                        AuthorName = author?.Name ?? "RIGX customer",
-                        AuthorAvatarStorageKey = item.ShowAvatar ? author?.AvatarStorageKey : null,
-                        item.CreatedAtUtc
-                    };
-                }).ToList()
-            });
-        }
-        catch (ReviewException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+            authors.TryGetValue(item.UserAccountId, out var author);
+            return new PublicProductReview(item.Id, item.ProductId, item.Rating, item.Title, item.Body,
+                author?.Name ?? "RIGX customer", item.ShowAvatar ? author?.AvatarStorageKey : null, item.CreatedAtUtc);
+        }).ToList()));
     }
 
-    private static async Task<IResult> GetStoreReviewsAsync(
+    private static async Task<Ok<PublicStoreReviews>> GetStoreReviewsAsync(
         HttpContext context,
         ReviewService reviews,
         IDbContextFactory<IdentityDbContext> identityFactory,
@@ -74,97 +56,67 @@ public static class ReviewEndpoints
         context.Response.Headers.CacheControl = "public, max-age=60";
         var response = await reviews.GetStoreReviewsAsync(cancellationToken);
         var authors = await LoadAuthorsAsync(identityFactory, response.Items.Select(item => item.UserAccountId), cancellationToken);
-        return Results.Ok(new
+        return TypedResults.Ok(new PublicStoreReviews(response.Aggregate, response.Items.Select(item =>
         {
-            response.Aggregate,
-            Items = response.Items.Select(item =>
-            {
-                authors.TryGetValue(item.UserAccountId, out var author);
-                return new
-                {
-                    item.Id,
-                    item.Rating,
-                    item.Body,
-                    AuthorName = author?.Name ?? "RIGX customer",
-                    AuthorAvatarStorageKey = item.ShowAvatar ? author?.AvatarStorageKey : null,
-                    item.CreatedAtUtc
-                };
-            }).ToList()
-        });
+            authors.TryGetValue(item.UserAccountId, out var author);
+            return new PublicStoreReview(item.Id, item.Rating, item.Body, author?.Name ?? "RIGX customer",
+                item.ShowAvatar ? author?.AvatarStorageKey : null, item.CreatedAtUtc);
+        }).ToList()));
     }
 
-    private static async Task<IResult> GetMineAsync(
+    private static async Task<Ok<MyReviewsResponse>> GetMineAsync(
         HttpContext context,
         ReviewService reviews,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await reviews.GetMineAsync(accountId, cancellationToken));
+        return TypedResults.Ok(await reviews.GetMineAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> UpsertProductAsync(
+    private static async Task<Ok<ProductReviewView>> UpsertProductAsync(
         Guid productId,
         ReviewInput request,
         HttpContext context,
         ReviewService reviews,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await reviews.UpsertProductReviewAsync(accountId, productId, request, cancellationToken));
-        }
-        catch (ReviewException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await reviews.UpsertProductReviewAsync(accountId, productId, request, cancellationToken));
     }
 
-    private static async Task<IResult> DeleteProductAsync(
+    private static async Task<NoContent> DeleteProductAsync(
         Guid productId,
         HttpContext context,
         ReviewService reviews,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await reviews.DeleteProductReviewAsync(accountId, productId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> UpsertStoreAsync(
+    private static async Task<Ok<StoreReviewView>> UpsertStoreAsync(
         ReviewInput request,
         HttpContext context,
         ReviewService reviews,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await reviews.UpsertStoreReviewAsync(accountId, request, cancellationToken));
-        }
-        catch (ReviewException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await reviews.UpsertStoreReviewAsync(accountId, request, cancellationToken));
     }
 
-    private static async Task<IResult> DeleteStoreAsync(
+    private static async Task<NoContent> DeleteStoreAsync(
         HttpContext context,
         ReviewService reviews,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await reviews.DeleteStoreReviewAsync(accountId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> ListAdminAsync(
+    private static async Task<Ok<PagedResult<AdminReviewView>>> ListAdminAsync(
         ReviewService reviews,
         CancellationToken cancellationToken,
         string? type = null,
@@ -173,13 +125,13 @@ public static class ReviewEndpoints
         int pageSize = 25)
     {
         if (status is not null && status is not ("Pending" or "Published" or "Rejected" or "Hidden"))
-            return Results.Problem(statusCode: 400, title: "Unsupported review status filter.");
+            throw new ApiProblemException(StatusCodes.Status400BadRequest, "Unsupported review status filter.");
         if (type is not null && type is not ("Product" or "Store"))
-            return Results.Problem(statusCode: 400, title: "Unsupported review type filter.");
-        return Results.Ok(await reviews.ListAdminAsync(type, status, page, pageSize, cancellationToken));
+            throw new ApiProblemException(StatusCodes.Status400BadRequest, "Unsupported review type filter.");
+        return TypedResults.Ok(await reviews.ListAdminAsync(type, status, page, pageSize, cancellationToken));
     }
 
-    private static async Task<IResult> ModerateAsync(
+    private static async Task<Ok<AdminReviewView>> ModerateAsync(
         string type,
         Guid id,
         ModerationRequest request,
@@ -188,31 +140,23 @@ public static class ReviewEndpoints
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
+        var actorId = context.RequireUserId();
+        var result = await reviews.ModerateAsync(type, id, request, actorId, cancellationToken);
+        var titleKey = result.Status switch
         {
-            var result = await reviews.ModerateAsync(type, id, request, actorId, cancellationToken);
-            var titleKey = result.Status switch
-            {
-                ReviewStatus.Published => "notifications.reviewPublished",
-                ReviewStatus.Rejected => "notifications.reviewRejected",
-                ReviewStatus.Hidden => "notifications.reviewHidden",
-                _ => "notifications.reviewUpdated"
-            };
-            await notifications.PublishAsync(
-                result.UserAccountId,
-                "ReviewModeration",
-                titleKey,
-                "notifications.reviewBody",
-                "/account/reviews",
-                cancellationToken);
-            return Results.Ok(result);
-        }
-        catch (ReviewException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+            ReviewStatus.Published => "notifications.reviewPublished",
+            ReviewStatus.Rejected => "notifications.reviewRejected",
+            ReviewStatus.Hidden => "notifications.reviewHidden",
+            _ => "notifications.reviewUpdated"
+        };
+        await notifications.PublishAsync(
+            result.UserAccountId,
+            "ReviewModeration",
+            titleKey,
+            "notifications.reviewBody",
+            "/account/reviews",
+            cancellationToken);
+        return TypedResults.Ok(result);
     }
 
     private static async Task<Dictionary<Guid, AuthorProjection>> LoadAuthorsAsync(
@@ -235,3 +179,10 @@ public static class ReviewEndpoints
 
     private sealed record AuthorProjection(Guid Id, string Name, string? AvatarStorageKey);
 }
+
+public sealed record PublicProductReview(Guid Id, Guid ProductId, int Rating, string? Title, string Body, string AuthorName,
+    string? AuthorAvatarStorageKey, DateTimeOffset CreatedAtUtc);
+public sealed record PublicProductReviews(ReviewAggregate Aggregate, IReadOnlyList<PublicProductReview> Items);
+public sealed record PublicStoreReview(Guid Id, int Rating, string Body, string AuthorName, string? AuthorAvatarStorageKey,
+    DateTimeOffset CreatedAtUtc);
+public sealed record PublicStoreReviews(ReviewAggregate Aggregate, IReadOnlyList<PublicStoreReview> Items);

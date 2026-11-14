@@ -1,7 +1,9 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class AuditEndpoints
 {
@@ -20,33 +22,33 @@ public static class AuditEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ListEntriesAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken,
+    private static async Task<Ok<PagedResult<AuditEntryResponse>>> ListEntriesAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken,
         Guid? actorUserId = null, string? module = null, string? entity = null, string? entityId = null, string? action = null,
         DateOnly? from = null, DateOnly? to = null, int page = 1, int pageSize = AuditRules.DefaultPageSize)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await audit.QueryAsync(actorUserId, module, entity, entityId, action, from, to, page, pageSize, cancellationToken));
+        return TypedResults.Ok(await audit.QueryAsync(actorUserId, module, entity, entityId, action, from, to, page, pageSize, cancellationToken));
     }
 
-    private static async Task<IResult> GetEntryAsync(Guid id, HttpContext context, AuditLogService audit, CancellationToken cancellationToken)
+    private static async Task<Ok<AuditEntryResponse>> GetEntryAsync(Guid id, HttpContext context, AuditLogService audit, CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await audit.GetAsync(id, cancellationToken));
+        return TypedResults.Ok(await audit.GetAsync(id, cancellationToken));
     }
 
-    private static async Task<IResult> FiltersAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken)
+    private static async Task<Ok<AuditFilterLists>> FiltersAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await audit.FiltersAsync(cancellationToken));
+        return TypedResults.Ok(await audit.FiltersAsync(cancellationToken));
     }
 
-    private static async Task<IResult> RestoreAsync(Guid id, AuditLogService audit, CancellationToken cancellationToken)
+    private static async Task<NoContent> RestoreAsync(Guid id, AuditLogService audit, CancellationToken cancellationToken)
     {
         await audit.RestoreAsync(id, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> QueryAsync(
+    private static async Task<Ok<PagedResult<SecurityAuditItemView>>> QueryAsync(
         HttpContext context,
         SecurityAuditQueryService service,
         CancellationToken cancellationToken,
@@ -63,7 +65,7 @@ public static class AuditEndpoints
     {
         context.Response.Headers.CacheControl = "no-store";
         if (outcome is not null && outcome is not ("Succeeded" or "Failed" or "Rejected" or "Recorded"))
-            return Results.Problem(statusCode: 400, title: "Unsupported audit outcome filter.");
+            throw new ApiProblemException(StatusCodes.Status400BadRequest, "Unsupported audit outcome filter.");
         try
         {
             var result = await service.QueryAsync(
@@ -79,11 +81,11 @@ public static class AuditEndpoints
                     page,
                     pageSize),
                 cancellationToken);
-            return Results.Ok(result);
+            return TypedResults.Ok(result);
         }
         catch (ArgumentException exception)
         {
-            return Results.Problem(statusCode: 400, title: exception.Message);
+            throw new ApiProblemException(StatusCodes.Status400BadRequest, exception.Message);
         }
     }
 }

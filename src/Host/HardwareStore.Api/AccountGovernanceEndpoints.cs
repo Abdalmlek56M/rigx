@@ -1,6 +1,7 @@
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.RateLimiting;
 
 public static class AccountGovernanceEndpoints
@@ -31,88 +32,83 @@ public static class AccountGovernanceEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> RequestEmailChangeAsync(
+    private static async Task<Ok<EmailChangeResult>> RequestEmailChangeAsync(
         EmailChangeRequestInput request,
         HttpContext context,
         IdentityEmailChangeService service,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
-        return Results.Ok(await service.RequestAsync(accountId, request, cancellationToken));
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await service.RequestAsync(accountId, request, cancellationToken));
     }
 
-    private static async Task<IResult> ConfirmEmailChangeAsync(
+    private static async Task<Ok<EmailChangeConfirmResponse>> ConfirmEmailChangeAsync(
         EmailChangeConfirmRequest request,
         IdentityEmailChangeService service,
         CancellationToken cancellationToken)
     {
-        return Results.Ok(new { status = await service.ConfirmAsync(request.Token, cancellationToken) });
+        return TypedResults.Ok(new EmailChangeConfirmResponse(await service.ConfirmAsync(request.Token, cancellationToken)));
     }
 
-    private static async Task<IResult> GetNotificationsAsync(
+    private static async Task<Ok<NotificationPage>> GetNotificationsAsync(
         HttpContext context,
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await notifications.GetAsync(accountId, cancellationToken));
+        return TypedResults.Ok(await notifications.GetAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> MarkReadAsync(
+    private static async Task<NoContent> MarkReadAsync(
         Guid id,
         HttpContext context,
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await notifications.MarkReadAsync(accountId, id, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> MarkAllReadAsync(
+    private static async Task<NoContent> MarkAllReadAsync(
         HttpContext context,
         NotificationService notifications,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await notifications.MarkAllReadAsync(accountId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> ListRestrictionsAsync(
+    private static async Task<Ok<IReadOnlyList<RestrictionView>>> ListRestrictionsAsync(
         Guid id,
         AccountRestrictionService restrictions,
         CancellationToken cancellationToken) =>
-        Results.Ok(await restrictions.ListAsync(id, cancellationToken));
+        TypedResults.Ok(await restrictions.ListAsync(id, cancellationToken));
 
-    private static async Task<IResult> ApplyRestrictionAsync(
+    private static async Task<Ok<RestrictionView>> ApplyRestrictionAsync(
         Guid id,
         RestrictionRequest request,
         HttpContext context,
         AccountRestrictionService restrictions,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await restrictions.ApplyAsync(id, actorId, request, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await restrictions.ApplyAsync(id, actorId, request, cancellationToken));
     }
 
-    private static async Task<IResult> ReinstateAsync(
+    private static async Task<Ok<RestrictionView>> ReinstateAsync(
         Guid id,
         ReinstatementRequest request,
         HttpContext context,
         AccountRestrictionService restrictions,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        return Results.Ok(await restrictions.ReinstateAsync(id, actorId, request, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await restrictions.ReinstateAsync(id, actorId, request, cancellationToken));
     }
 }
 
 public sealed record EmailChangeConfirmRequest(string? Token);
+public sealed record EmailChangeConfirmResponse(string Status);

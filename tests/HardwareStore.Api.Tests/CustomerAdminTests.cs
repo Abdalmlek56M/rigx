@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
@@ -109,7 +110,7 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         await DeliveredAsync(retail, "Guest GPU", AlicePhone, pos: true);
         await DeliveredAsync(retail, "Other GPU", "01199999999", pos: true);
 
-        var all = await ReadAsync<CustomerPage>(await client.GetAsync(Admin));
+        var all = await ReadAsync<PagedResult<CustomerListItem>>(await client.GetAsync(Admin));
         var code = all.Items.Single(item => item.Customer.Id == alice).Customer.PersonCode;
 
         Assert.Equal(["carol", "bob", "alice"], all.Items.Select(item => item.Customer.Name));
@@ -120,8 +121,8 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         Assert.Equal((0, 0m, null), (all.Items[0].OrderCount, all.Items[0].TotalSpent, all.Items[0].LastOrderAtUtc));
         Assert.Contains("no-store", (await client.GetAsync(Admin)).Headers.CacheControl!.ToString());
         foreach (var search in new[] { "ALI", "alice@example", "1012345", code })
-            Assert.Equal(alice, Assert.Single((await ReadAsync<CustomerPage>(await client.GetAsync($"{Admin}?search={Uri.EscapeDataString(search)}"))).Items).Customer.Id);
-        Assert.Empty((await ReadAsync<CustomerPage>(await client.GetAsync($"{Admin}?search=nobody"))).Items);
+            Assert.Equal(alice, Assert.Single((await ReadAsync<PagedResult<CustomerListItem>>(await client.GetAsync($"{Admin}?search={Uri.EscapeDataString(search)}"))).Items).Customer.Id);
+        Assert.Empty((await ReadAsync<PagedResult<CustomerListItem>>(await client.GetAsync($"{Admin}?search=nobody"))).Items);
     }
 
     // ---------------------------------------------------------------- 360
@@ -328,7 +329,7 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         Assert.Equal(target, audit!.SubjectUserAccountId);
         Assert.Contains(source.ToString(), audit.SafeMetadata);
         Assert.Contains("\"Orders\": 1", audit.SafeMetadata);
-        var list = await ReadAsync<CustomerPage>(await admin.GetAsync(Admin));
+        var list = await ReadAsync<PagedResult<CustomerListItem>>(await admin.GetAsync(Admin));
         Assert.Equal([target], list.Items.Select(item => item.Customer.Id));
         Assert.Equal(HttpStatusCode.Conflict, (await MergeAsync(admin, factory, target, source)).StatusCode);
     }
@@ -396,7 +397,7 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         Assert.Single(view.Orders);
         Assert.Equal((1, 1, 1, 1, 1), (view.Addresses.Count, view.Warranties.Count, view.Invoices.Count, view.Requests.Count, view.Builds.Count));
         Assert.Equal(4000m, view.Requests[0].OfferAmount);
-        Assert.Equal("alice@example.test", ((System.Text.Json.JsonElement)view.Profile).GetProperty("email").GetString());
+        Assert.Equal("alice@example.test", view.Profile.Email);
         Assert.DoesNotContain("expectedResale", raw, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("internalNote", raw, StringComparison.OrdinalIgnoreCase);
         var audit = await AuditAsync(database, "Customer.ViewedAs");

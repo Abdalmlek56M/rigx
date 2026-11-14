@@ -1,70 +1,69 @@
 using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static partial class RetailEndpoints
 {
-    private static async Task<IResult> ListMoneyAccountsAsync(HttpContext context, MoneyAccountService accounts, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<MoneyAccountView>>> ListMoneyAccountsAsync(HttpContext context, MoneyAccountService accounts, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await accounts.ListAsync(ct));
+        return TypedResults.Ok(await accounts.ListAsync(ct));
     }
 
-    private static async Task<IResult> ListMoneyMovementsAsync(Guid id, HttpContext context, MoneyAccountService accounts, CancellationToken ct,
+    private static async Task<Ok<IReadOnlyList<MoneyMovementView>>> ListMoneyMovementsAsync(Guid id, HttpContext context, MoneyAccountService accounts, CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await accounts.ListMovementsAsync(id, from, to, ct));
+        return TypedResults.Ok(await accounts.ListMovementsAsync(id, from, to, ct));
     }
 
-    private static async Task<IResult> CreateMoneyAccountAsync(MoneyAccountRequest request, MoneyAccountService accounts, CancellationToken ct) =>
-        Results.Created((string?)null, await accounts.CreateAsync(request, ct));
+    private static async Task<Created<MoneyAccountView>> CreateMoneyAccountAsync(MoneyAccountRequest request, MoneyAccountService accounts, CancellationToken ct) =>
+        TypedResults.Created((string?)null, await accounts.CreateAsync(request, ct));
 
-    private static async Task<IResult> UpdateMoneyAccountAsync(Guid id, MoneyAccountRequest request, MoneyAccountService accounts, CancellationToken ct) =>
-        Results.Ok(await accounts.UpdateAsync(id, request, ct));
+    private static async Task<Ok<MoneyAccountView>> UpdateMoneyAccountAsync(Guid id, MoneyAccountRequest request, MoneyAccountService accounts, CancellationToken ct) =>
+        TypedResults.Ok(await accounts.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> TransferMoneyAsync(MoneyTransferRequest request, HttpContext context, MoneyAccountService accounts,
+    private static async Task<NoContent> TransferMoneyAsync(MoneyTransferRequest request, HttpContext context, MoneyAccountService accounts,
         CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        var actorId = context.RequireUserId();
         await accounts.TransferAsync(request, actorId, ct);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> ListExpenseTypesAsync(HttpContext context, ExpenseTypeService types, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<ExpenseTypeView>>> ListExpenseTypesAsync(HttpContext context, ExpenseTypeService types, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await types.ListAsync(ct));
+        return TypedResults.Ok(await types.ListAsync(ct));
     }
 
-    private static async Task<IResult> CreateExpenseTypeAsync(ExpenseTypeRequest request, ExpenseTypeService types, CancellationToken ct) =>
-        Results.Created((string?)null, await types.CreateAsync(request, ct));
+    private static async Task<Created<ExpenseTypeView>> CreateExpenseTypeAsync(ExpenseTypeRequest request, ExpenseTypeService types, CancellationToken ct) =>
+        TypedResults.Created((string?)null, await types.CreateAsync(request, ct));
 
-    private static async Task<IResult> UpdateExpenseTypeAsync(Guid id, ExpenseTypeRequest request, ExpenseTypeService types, CancellationToken ct) =>
-        Results.Ok(await types.UpdateAsync(id, request, ct));
+    private static async Task<Ok<ExpenseTypeView>> UpdateExpenseTypeAsync(Guid id, ExpenseTypeRequest request, ExpenseTypeService types, CancellationToken ct) =>
+        TypedResults.Ok(await types.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> ListRecurringExpensesAsync(HttpContext context, RecurringExpenseService recurring, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<RecurringExpenseView>>> ListRecurringExpensesAsync(HttpContext context, RecurringExpenseService recurring, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await recurring.ListAsync(ct));
+        return TypedResults.Ok(await recurring.ListAsync(ct));
     }
 
-    private static async Task<IResult> CreateRecurringExpenseAsync(RecurringExpenseRequest request, HttpContext context,
+    private static async Task<Created<RecurringExpenseView>> CreateRecurringExpenseAsync(RecurringExpenseRequest request, HttpContext context,
         RecurringExpenseService recurring, TimeZoneInfo businessTimeZone, CancellationToken ct) =>
-        context.TryGetUserId(out var actorId)
-            ? Results.Created((string?)null, await recurring.CreateAsync(request, actorId, businessTimeZone, ct))
-            : Results.Unauthorized();
+        TypedResults.Created((string?)null, await recurring.CreateAsync(request, context.RequireUserId(), businessTimeZone, ct));
 
-    private static async Task<IResult> UpdateRecurringExpenseAsync(Guid id, RecurringExpenseRequest request, RecurringExpenseService recurring,
+    private static async Task<Ok<RecurringExpenseView>> UpdateRecurringExpenseAsync(Guid id, RecurringExpenseRequest request, RecurringExpenseService recurring,
         CancellationToken ct) =>
-        Results.Ok(await recurring.UpdateAsync(id, request, ct));
+        TypedResults.Ok(await recurring.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> ExpenseSummaryAsync(HttpContext context, ExpenseService expenses, TimeProvider timeProvider, TimeZoneInfo businessZone,
+    private static async Task<Ok<ExpenseSummaryView>> ExpenseSummaryAsync(HttpContext context, ExpenseService expenses, TimeProvider timeProvider, TimeZoneInfo businessZone,
         CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
         var end = to ?? BusinessDay.Today(timeProvider, businessZone);
-        return Results.Ok(await expenses.ExpenseSummaryAsync(from ?? end.AddDays(-30), end, ct));
+        return TypedResults.Ok(await expenses.ExpenseSummaryAsync(from ?? end.AddDays(-30), end, ct));
     }
 }

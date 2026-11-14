@@ -1,6 +1,8 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Inventory;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class InventoryEndpoints
 {
@@ -17,7 +19,7 @@ public static class InventoryEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> GetWarehousesAsync(
+    private static async Task<Ok<PagedResult<WarehouseView>>> GetWarehousesAsync(
         string? search,
         bool? isActive,
         int? page,
@@ -26,10 +28,9 @@ public static class InventoryEndpoints
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
+        context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await warehouses.GetAsync(
+        return TypedResults.Ok(await warehouses.GetAsync(
             search,
             isActive,
             page ?? 1,
@@ -37,53 +38,36 @@ public static class InventoryEndpoints
             cancellationToken));
     }
 
-    private static async Task<IResult> GetWarehouseAsync(
+    private static async Task<Ok<WarehouseView>> GetWarehouseAsync(
         Guid id,
         HttpContext context,
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out _))
-            return Results.Unauthorized();
+        context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
         var warehouse = await warehouses.GetByIdAsync(id, cancellationToken);
-        return warehouse is null ? Results.NotFound() : Results.Ok(warehouse);
+        return TypedResults.Ok(warehouse ?? throw new WarehouseDirectoryException(StatusCodes.Status404NotFound, "The warehouse was not found."));
     }
 
-    private static async Task<IResult> CreateWarehouseAsync(
+    private static async Task<Ok<WarehouseView>> CreateWarehouseAsync(
         WarehouseCreateRequest request,
         HttpContext context,
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await warehouses.CreateAsync(request, actorId, cancellationToken));
-        }
-        catch (WarehouseDirectoryException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await warehouses.CreateAsync(request, actorId, cancellationToken));
     }
 
-    private static async Task<IResult> UpdateWarehouseAsync(
+    private static async Task<Ok<WarehouseView>> UpdateWarehouseAsync(
         Guid id,
         WarehouseUpdateRequest request,
         HttpContext context,
         WarehouseDirectoryService warehouses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            return Results.Ok(await warehouses.UpdateAsync(id, request, actorId, cancellationToken));
-        }
-        catch (WarehouseDirectoryException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await warehouses.UpdateAsync(id, request, actorId, cancellationToken));
     }
 }

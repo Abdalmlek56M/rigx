@@ -47,8 +47,6 @@ public sealed record ArticleInput(
 /// <summary>Publish now, or at <paramref name="PublishAtUtc"/> when it is in the future (scheduled).</summary>
 public sealed record ArticlePublishRequest(long RowVersion, DateTimeOffset? PublishAtUtc = null);
 
-public sealed record ContentPage<T>(IReadOnlyList<T> Items, int Page, int PageSize, int Total);
-
 public sealed record ArticleRevisionView(
     Guid Id,
     string Reason,

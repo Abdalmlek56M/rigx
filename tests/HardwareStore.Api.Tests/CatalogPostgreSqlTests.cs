@@ -141,7 +141,7 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         var storefront = new ProductSearchService(new TestCatalogContextFactory(fixture.Options));
         var filtered = await storefront.GetProductsAsync(
             "active-products", null, null, null, null, 100m, [], CatalogProductSort.PriceAscending, 1, 1);
-        Assert.Equal(1, filtered.TotalCount);
+        Assert.Equal(1, filtered.Total);
         Assert.Equal("cheap-product", filtered.Items.Single().Slug);
         Assert.Contains(filtered.Items.Single().Specifications,
             specification => specification.Name == "Capacity" && specification.Value == "8 GB");

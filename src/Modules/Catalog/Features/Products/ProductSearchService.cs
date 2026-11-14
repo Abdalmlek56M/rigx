@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
@@ -43,7 +44,7 @@ public sealed class ProductSearchService(
             product.CategorySlug, product.BrandName, product.ThumbnailStorageKey)).ToList();
     }
 
-    public async Task<ProductPageView> GetProductsAsync(
+    public async Task<PagedResult<ProductSummaryView>> GetProductsAsync(
         string? categorySlug,
         string? brandSlug,
         string? search,
@@ -56,8 +57,7 @@ public sealed class ProductSearchService(
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(page, 1);
-        pageSize = Math.Clamp(pageSize, 1, 100);
+        (page, pageSize) = PageRequest.Of(page, pageSize);
         if (minimumPrice is < 0 || maximumPrice is < 0)
             throw new CatalogValidationException("price", "Price filters must not be negative.");
         if (minimumPrice is not null && maximumPrice is not null && minimumPrice > maximumPrice)
@@ -65,7 +65,7 @@ public sealed class ProductSearchService(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var effectiveCategoryIds = await CategoryHierarchy.GetEffectiveIdsAsync(db, cancellationToken);
         if (effectiveCategoryIds.Length == 0)
-            return new ProductPageView([], page, pageSize, 0);
+            return new PagedResult<ProductSummaryView>([], page, pageSize, 0);
         var query = db.Products.AsNoTracking()
             .Where(product => product.Status == CatalogProductStatus.Published &&
                               effectiveCategoryIds.Contains(product.CategoryId) &&
@@ -164,7 +164,7 @@ public sealed class ProductSearchService(
                 product.Images.Where(image => image.IsPrimary).Select(image => image.ThumbnailStorageKey).FirstOrDefault()))
             .ToListAsync(cancellationToken);
 
-        return new ProductPageView(items, page, pageSize, total);
+        return new PagedResult<ProductSummaryView>(items, page, pageSize, total);
     }
 
     public async Task<IReadOnlyList<SpecificationFilterView>> GetSpecificationFiltersAsync(

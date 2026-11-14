@@ -12,7 +12,8 @@ Applies to every human or AI contributor. The goal: code that is easy to extend,
 - **Time via `TimeProvider`**, money via `decimal`, ids via `Guid`.
 - **No commented-out code, no dead code, no TODO without an issue/roadmap item.**
 - Nullable reference types and warnings-as-errors on (`Directory.Build.props`), with unused private members/parameters (IDE0051/0052/0060) failing the build; TypeScript `strict`, no `any`.
-- Read the signed-in user only through `HttpContextUserExtensions` (`TryGetUserId`, `HasPermission`).
+- Read the signed-in user only through `HttpContextUserExtensions` (`RequireUserId` when the endpoint needs a user, `TryGetUserId` only where anonymous callers are allowed, `HasPermission`).
+- **Endpoints return typed results** (`TypedResults.Ok(...)`, declared `Task<Ok<T>>`), never `IResult`, anonymous objects or inline error results; a list returns `PagedResult<T>`. After an API change regenerate `packages/api-client/openapi.v1.json` (`UPDATE_API_CONTRACT=1`, `ApiContractTests`) and commit it with the change.
 
 ## Before writing code, ask
 1. Would I write it this way from scratch? If not, fix it now or record why not.

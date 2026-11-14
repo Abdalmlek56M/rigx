@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -55,16 +56,16 @@ public sealed class InvoiceService(IDbContextFactory<RetailDbContext> contextFac
     }
 
     /// <summary>Admin list; the search text is an invoice number, an order reference (RIGX-…) or a customer phone number.</summary>
-    public async Task<InvoiceAdminPage> ListAdminAsync(string? query, int page, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<InvoiceSummaryView>> ListAdminAsync(string? query, int page, CancellationToken cancellationToken = default)
     {
-        var number = Math.Max(1, page);
+        var paging = PageRequest.Of(page, PageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var invoices = db.Invoices.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query)) invoices = Matching(db, invoices, query.Trim());
         var total = await invoices.CountAsync(cancellationToken);
         var rows = await Summaries(db, invoices).OrderByDescending(row => row.Invoice.IssuedAtUtc).ThenByDescending(row => row.Invoice.Number)
-            .Skip((number - 1) * PageSize).Take(PageSize).ToListAsync(cancellationToken);
-        return new InvoiceAdminPage(rows.Select(Summary).ToList(), number, PageSize, total);
+            .Skip(paging.Skip).Take(paging.PageSize).ToListAsync(cancellationToken);
+        return new PagedResult<InvoiceSummaryView>(rows.Select(Summary).ToList(), paging.Page, paging.PageSize, total);
     }
 
     private static IQueryable<Invoice> Matching(RetailDbContext db, IQueryable<Invoice> invoices, string text)

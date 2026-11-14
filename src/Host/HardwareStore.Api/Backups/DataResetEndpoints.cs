@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>The owner data reset: <c>System.ResetData</c> plus a fresh email code. Always preceded by a backup.</summary>
 public static class DataResetEndpoints
@@ -12,9 +13,9 @@ public static class DataResetEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ResetAsync(ResetRequest request, HttpContext context, DataResetService reset, CancellationToken cancellationToken)
+    private static async Task<Ok<DataResetResult>> ResetAsync(ResetRequest request, HttpContext context, DataResetService reset, CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
-        return Results.Ok(await reset.ResetAsync(request.Sections, request.Confirm, actorId, cancellationToken));
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await reset.ResetAsync(request.Sections, request.Confirm, actorId, cancellationToken));
     }
 }

@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
@@ -22,19 +23,19 @@ public sealed class CustomerAdminService(
     public const int PageSize = 25;
 
     /// <summary>Customer accounts (not merged ones), newest first; the search matches name, email, phone digits or person code.</summary>
-    public async Task<CustomerListPage> ListAsync(string? search, int page, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<CustomerListRow>> ListAsync(string? search, int page, CancellationToken cancellationToken = default)
     {
-        var number = Math.Max(1, page);
+        var paging = PageRequest.Of(page, PageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var accounts = db.UserAccounts.AsNoTracking().Customers().Where(account => account.MergedIntoAccountId == null);
         if (!string.IsNullOrWhiteSpace(search)) accounts = Matching(accounts, search.Trim());
         var total = await accounts.CountAsync(cancellationToken);
         var items = await accounts.OrderByDescending(account => account.CreatedAtUtc).ThenByDescending(account => account.Id)
-            .Skip((number - 1) * PageSize).Take(PageSize)
+            .Skip(paging.Skip).Take(paging.PageSize)
             .Select(account => new CustomerListRow(account.Id, account.Person.PersonCode, account.Person.FullName, account.Email,
                 account.Person.PhoneNumber, account.IsActive, account.CreatedAtUtc))
             .ToListAsync(cancellationToken);
-        return new CustomerListPage(items, number, PageSize, total);
+        return new PagedResult<CustomerListRow>(items, paging.Page, paging.PageSize, total);
     }
 
     /// <summary>

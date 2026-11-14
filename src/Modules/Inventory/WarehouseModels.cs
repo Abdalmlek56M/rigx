@@ -1,12 +1,6 @@
 using HardwareStore.Common.Domain;
 namespace HardwareStore.Modules.Inventory;
 
-public sealed record WarehousePage(
-    IReadOnlyList<WarehouseView> Items,
-    int Page,
-    int PageSize,
-    int TotalCount);
-
 public sealed record WarehouseView(
     Guid Id,
     string Code,

@@ -82,4 +82,3 @@ public sealed record TrackingItem(string Name, string? Code, int Quantity);
 /// <summary>Public "اتباع قبل كده" card: no price, no customer name.</summary>
 public sealed record SoldFeedItem(string Kind, string Title, string? Code, string Condition, Guid? CategoryId, string? ThumbnailStorageKey,
     string FulfillmentMethod, string? Governorate, DateTimeOffset SoldAtUtc);
-public sealed record SoldFeedPage(IReadOnlyList<SoldFeedItem> Items, int Page, int PageSize);

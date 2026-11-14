@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
@@ -22,12 +23,6 @@ public sealed record ContentMediaAssetView(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
     long RowVersion);
-
-public sealed record ContentMediaAssetPage(
-    IReadOnlyList<ContentMediaAssetView> Items,
-    int Page,
-    int PageSize,
-    int Total);
 
 public sealed record ContentMediaMetadataInput(
     string? TitleAr,
@@ -68,14 +63,13 @@ public sealed class ContentMediaService(
     TimeProvider timeProvider,
     IEnumerable<IMediaReferenceGuard> referenceGuards) : IContentMediaUsageSink
 {
-    public async Task<ContentMediaAssetPage> ListAsync(
+    public async Task<PagedResult<ContentMediaAssetView>> ListAsync(
         string? search,
         int page,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 60);
+        (page, pageSize) = PageRequest.Of(page, pageSize, 60);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = db.ContentMediaAssets.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search))
@@ -94,7 +88,7 @@ public sealed class ContentMediaService(
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-        return new ContentMediaAssetPage(items.Select(Map).ToList(), page, pageSize, total);
+        return new PagedResult<ContentMediaAssetView>(items.Select(Map).ToList(), page, pageSize, total);
     }
 
     public async Task<ContentMediaAssetView> UploadAsync(

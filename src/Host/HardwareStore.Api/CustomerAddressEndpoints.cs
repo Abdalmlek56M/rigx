@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Identity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class CustomerAddressEndpoints
 {
@@ -13,50 +14,46 @@ public static class CustomerAddressEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ListAsync(
+    private static async Task<Ok<IReadOnlyList<CustomerAddressView>>> ListAsync(
         HttpContext context,
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return context.TryGetUserId(out var accountId)
-            ? Results.Ok(await addresses.ListAsync(accountId, cancellationToken))
-            : Results.Unauthorized();
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await addresses.ListAsync(accountId, cancellationToken));
     }
 
-    private static async Task<IResult> CreateAsync(
+    private static async Task<Ok<CustomerAddressView>> CreateAsync(
         CustomerAddressCreateRequest request,
         HttpContext context,
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
-        return Results.Ok(await addresses.CreateAsync(accountId, request, cancellationToken));
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await addresses.CreateAsync(accountId, request, cancellationToken));
     }
 
-    private static async Task<IResult> UpdateAsync(
+    private static async Task<Ok<CustomerAddressView>> UpdateAsync(
         Guid id,
         CustomerAddressUpdateRequest request,
         HttpContext context,
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
-        return Results.Ok(await addresses.UpdateAsync(accountId, id, request, cancellationToken));
+        var accountId = context.RequireUserId();
+        return TypedResults.Ok(await addresses.UpdateAsync(accountId, id, request, cancellationToken));
     }
 
-    private static async Task<IResult> DeleteAsync(
+    private static async Task<NoContent> DeleteAsync(
         Guid id,
         long rowVersion,
         HttpContext context,
         CustomerAddressService addresses,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         await addresses.DeleteAsync(accountId, id, rowVersion, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 }

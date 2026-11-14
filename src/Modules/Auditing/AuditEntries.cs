@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Common.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,21 +63,19 @@ public sealed record AuditEntryView(Guid Id, DateTimeOffset OccurredAtUtc, strin
 public sealed record AuditEntryFilter(Guid? ActorUserId, string? Module, string? Entity, string? EntityId, string? Action,
     DateTimeOffset FromUtc, DateTimeOffset ToUtc, int Page, int PageSize);
 
-public sealed record AuditEntryPage(IReadOnlyList<AuditEntryView> Items, int Page, int PageSize, int Total);
-
 public sealed record AuditFilterLists(IReadOnlyList<string> Modules, IReadOnlyList<string> Entities, IReadOnlyList<string> Actions);
 
 /// <summary>Reads the business audit log. There is no write or delete here on purpose.</summary>
 public sealed class AuditEntryStore(IDbContextFactory<SecurityAuditDbContext> contextFactory)
 {
-    public async Task<AuditEntryPage> QueryAsync(AuditEntryFilter filter, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<AuditEntryView>> QueryAsync(AuditEntryFilter filter, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = Filtered(db, filter);
         var total = await rows.CountAsync(cancellationToken);
         var page = await rows.OrderByDescending(entry => entry.OccurredAtUtc).ThenByDescending(entry => entry.Id)
             .Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(cancellationToken);
-        return new AuditEntryPage([.. page.Select(ToView)], filter.Page, filter.PageSize, total);
+        return new PagedResult<AuditEntryView>([.. page.Select(ToView)], filter.Page, filter.PageSize, total);
     }
 
     /// <summary>Every entry in the range, newest first, at most <paramref name="limit"/> rows (used by the export).</summary>

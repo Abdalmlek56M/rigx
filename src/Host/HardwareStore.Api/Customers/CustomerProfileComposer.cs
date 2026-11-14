@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Retail;
@@ -22,7 +23,7 @@ public sealed class CustomerProfileComposer(
     SavedBuildService builds,
     TimeZoneInfo businessZone)
 {
-    public async Task<CustomerPage> ListAsync(string? search, int page, CancellationToken cancellationToken)
+    public async Task<PagedResult<CustomerListItem>> ListAsync(string? search, int page, CancellationToken cancellationToken)
     {
         var accounts = await customers.ListAsync(search, page, cancellationToken);
         var keys = accounts.Items.Select(row => new CustomerSalesKey(row.Id, row.Phone)).ToList();
@@ -32,7 +33,7 @@ public sealed class CustomerProfileComposer(
             var summary = stats[row.Id];
             return new CustomerListItem(row, summary.OrderCount, summary.TotalSpent, summary.LastOrderAtUtc);
         }).ToList();
-        return new CustomerPage(items, accounts.Page, accounts.PageSize, accounts.Total);
+        return new PagedResult<CustomerListItem>(items, accounts.Page, accounts.PageSize, accounts.Total);
     }
 
     /// <summary>Customers registered in the range with their order numbers, for the customer export.</summary>
@@ -65,7 +66,7 @@ public sealed class CustomerProfileComposer(
     {
         await customers.GetAsync(id, cancellationToken);
         var profile = await currentUsers.GetAsync(id, cancellationToken, activeOnly: false);
-        return new CustomerViewAs(IdentityCurrentUserEndpoints.ProfileResponse(profile!), await addresses.ListAsync(id, cancellationToken),
+        return new CustomerViewAs(profile!, await addresses.ListAsync(id, cancellationToken),
             await orders.ListMyOrdersAsync(id, cancellationToken), await warranties.ListMineAsync(id, cancellationToken),
             await invoices.ListMineAsync(id, cancellationToken), await requests.ListMineAsync(id, cancellationToken),
             await builds.ListMineAsync(id, cancellationToken));

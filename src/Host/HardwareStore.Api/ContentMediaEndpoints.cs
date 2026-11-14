@@ -1,6 +1,8 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class ContentMediaEndpoints
 {
@@ -16,76 +18,39 @@ public static class ContentMediaEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> ListAsync(
+    private static async Task<Ok<PagedResult<ContentMediaAssetView>>> ListAsync(
         ContentMediaService media,
         CancellationToken cancellationToken,
         string? search = null,
         int page = 1,
         int pageSize = 24) =>
-        Results.Ok(await media.ListAsync(search, page, pageSize, cancellationToken));
+        TypedResults.Ok(await media.ListAsync(search, page, pageSize, cancellationToken));
 
-    private static async Task<IResult> UploadAsync(
+    private static async Task<Created<ContentMediaAssetView>> UploadAsync(
         HttpContext context,
         ContentMediaService media,
         CatalogMediaOptions options,
         MediaWatermarkSource watermarks,
         CancellationToken cancellationToken)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        if (!context.Request.HasFormContentType)
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["form"] = ["A multipart form is required."]
-            });
-        LimitRequestSize(context, options);
-        if (context.Request.ContentLength > options.MaxUploadBytes + 64 * 1024)
-            return Results.Problem(statusCode: 413, title: "The uploaded image is too large.");
-        try
-        {
-            var form = await context.Request.ReadFormAsync(cancellationToken);
-            var image = form.Files.GetFile("image");
-            if (image is null)
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["image"] = ["An image file is required."]
-                });
-            var metadata = ReadMetadata(form);
-            var result = await media.UploadAsync(
-                new CatalogImageUpload(image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
-                metadata,
-                actorId,
-                await watermarks.ForArticlesAsync(cancellationToken),
-                cancellationToken);
-            return Results.Created((string?)null, result);
-        }
-        catch (CatalogValidationException exception)
-        {
-            return Results.ValidationProblem(exception.Errors);
-        }
+        var actorId = context.RequireUserId();
+        var (form, upload) = await CatalogEndpoints.ReadImageFormAsync(context, options, cancellationToken);
+        return TypedResults.Created((string?)null, await media.UploadAsync(
+            upload,
+            ReadMetadata(form),
+            actorId,
+            await watermarks.ForArticlesAsync(cancellationToken),
+            cancellationToken));
     }
 
-    private static async Task<IResult> UpdateAsync(
+    private static async Task<Ok<ContentMediaAssetView>> UpdateAsync(
         Guid id,
         ContentMediaMetadataInput request,
         ContentMediaService media,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return Results.Ok(await media.UpdateMetadataAsync(id, request, cancellationToken));
-        }
-        catch (ContentMediaNotFoundException)
-        {
-            return Results.NotFound();
-        }
-        catch (CatalogValidationException exception)
-        {
-            return Results.ValidationProblem(exception.Errors);
-        }
-    }
+        CancellationToken cancellationToken) =>
+        TypedResults.Ok(await media.UpdateMetadataAsync(id, request, cancellationToken));
 
-    private static async Task<IResult> ReplaceAsync(
+    private static async Task<Ok<ContentMediaAssetView>> ReplaceAsync(
         Guid id,
         HttpContext context,
         ContentMediaService media,
@@ -94,41 +59,16 @@ public static class ContentMediaEndpoints
         CancellationToken cancellationToken,
         long rowVersion = 0)
     {
-        if (!context.Request.HasFormContentType)
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["form"] = ["A multipart form is required."]
-            });
-        LimitRequestSize(context, options);
-        if (context.Request.ContentLength > options.MaxUploadBytes + 64 * 1024)
-            return Results.Problem(statusCode: 413, title: "The uploaded image is too large.");
-        try
-        {
-            var form = await context.Request.ReadFormAsync(cancellationToken);
-            var image = form.Files.GetFile("image");
-            if (image is null)
-                return Results.ValidationProblem(new Dictionary<string, string[]>
-                {
-                    ["image"] = ["An image file is required."]
-                });
-            return Results.Ok(await media.ReplaceImageAsync(
-                id,
-                new CatalogImageUpload(image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
-                rowVersion,
-                await watermarks.ForArticlesAsync(cancellationToken),
-                cancellationToken));
-        }
-        catch (ContentMediaNotFoundException)
-        {
-            return Results.NotFound();
-        }
-        catch (CatalogValidationException exception)
-        {
-            return Results.ValidationProblem(exception.Errors);
-        }
+        var upload = await CatalogEndpoints.ReadSingleImageAsync(context, options, cancellationToken);
+        return TypedResults.Ok(await media.ReplaceImageAsync(
+            id,
+            upload,
+            rowVersion,
+            await watermarks.ForArticlesAsync(cancellationToken),
+            cancellationToken));
     }
 
-    private static async Task<IResult> DeleteAsync(
+    private static async Task<NoContent> DeleteAsync(
         Guid id,
         HttpContext context,
         ContentMediaService media,
@@ -136,33 +76,17 @@ public static class ContentMediaEndpoints
         CancellationToken cancellationToken,
         long rowVersion = 0)
     {
-        if (!context.TryGetUserId(out var actorId))
-            return Results.Unauthorized();
-        try
-        {
-            await media.DeleteAsync(id, rowVersion, actorId, cancellationToken);
-            await audit.DeletedAsync(ContentMediaTrashSource.TrashKind, id, actorId, cancellationToken);
-            return Results.NoContent();
-        }
-        catch (ContentMediaNotFoundException)
-        {
-            return Results.NotFound();
-        }
-        catch (ContentMediaInUseException exception)
-        {
-            return Results.Problem(statusCode: 409, title: exception.Message);
-        }
-        catch (CatalogValidationException exception)
-        {
-            return Results.ValidationProblem(exception.Errors);
-        }
+        var actorId = context.RequireUserId();
+        await media.DeleteAsync(id, rowVersion, actorId, cancellationToken);
+        await audit.DeletedAsync(ContentMediaTrashSource.TrashKind, id, actorId, cancellationToken);
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> UsagesAsync(
+    private static async Task<Ok<IReadOnlyList<ContentMediaUsageView>>> UsagesAsync(
         Guid id,
         ContentMediaService media,
         CancellationToken cancellationToken) =>
-        Results.Ok(await media.ListUsagesAsync(id, cancellationToken));
+        TypedResults.Ok(await media.ListUsagesAsync(id, cancellationToken));
 
     private static ContentMediaMetadataInput ReadMetadata(IFormCollection form) => new(
         form["titleAr"].ToString(),
@@ -173,8 +97,4 @@ public static class ContentMediaEndpoints
         form["captionEn"].ToString(),
         form["tags"].ToString(),
         0);
-
-    private static void LimitRequestSize(HttpContext context, CatalogMediaOptions options) =>
-        context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>()!
-            .MaxRequestBodySize = options.MaxUploadBytes + 64 * 1024;
 }

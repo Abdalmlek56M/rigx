@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +44,7 @@ public sealed class IdentityAdministrationService
         _roles = new IdentityRoleAdministrationService(contextFactory, support, timeProvider);
     }
 
-    public Task<AdminIdentityUserPage> GetUsersAsync(
+    public Task<PagedResult<AdminIdentityUser>> GetUsersAsync(
         string? search,
         bool? isActive,
         int page,

@@ -1,4 +1,6 @@
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
@@ -23,69 +25,69 @@ public static class BuilderEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> SlotsAsync(HttpContext context, BuilderService builder, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<BuilderSlotView>>> SlotsAsync(HttpContext context, BuilderService builder, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await builder.SlotsAsync(ct));
+        return TypedResults.Ok(await builder.SlotsAsync(ct));
     }
 
-    private static async Task<IResult> OptionsAsync(BuilderOptionsRequest request, HttpContext context, BuilderService builder, CancellationToken ct)
+    private static async Task<Ok<PagedResult<BuilderOptionView>>> OptionsAsync(BuilderOptionsRequest request, HttpContext context, BuilderService builder, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await builder.OptionsAsync(request.Slot, request.Parts, request.Condition, request.Q, request.Page, ct));
+        return TypedResults.Ok(await builder.OptionsAsync(request.Slot, request.Parts, request.Condition, request.Q, request.Page, ct));
     }
 
-    private static async Task<IResult> CheckAsync(BuilderCheckRequest request, HttpContext context, BuilderService builder, CancellationToken ct)
+    private static async Task<Ok<BuilderEvaluation>> CheckAsync(BuilderCheckRequest request, HttpContext context, BuilderService builder, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await builder.CheckAsync(request.Parts, ct));
+        return TypedResults.Ok(await builder.CheckAsync(request.Parts, ct));
     }
 
-    private static async Task<IResult> FromBuildAsync(string code, HttpContext context, BuilderService builder, CancellationToken ct)
+    private static async Task<Ok<BuilderFromBuildView>> FromBuildAsync(string code, HttpContext context, BuilderService builder, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await builder.FromBuildAsync(code, ct));
+        return TypedResults.Ok(await builder.FromBuildAsync(code, ct));
     }
 
-    private static async Task<IResult> QuoteAsync(BuilderQuoteRequest request, HttpContext context, BuilderService builder, CancellationToken ct)
+    private static async Task<Ok<QuoteDocument>> QuoteAsync(BuilderQuoteRequest request, HttpContext context, BuilderService builder, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await builder.QuoteAsync(request.Name, request.Usage, request.Parts, ct));
+        return TypedResults.Ok(await builder.QuoteAsync(request.Name, request.Usage, request.Parts, ct));
     }
 
-    private static async Task<IResult> SaveAsync(BuilderSaveRequest request, HttpContext context, SavedBuildService saved, CancellationToken ct)
-    {
-        context.Response.Headers.CacheControl = "no-store";
-        Guid? userId = context.TryGetUserId(out var id) ? id : null;
-        return Results.Ok(await saved.SaveAsync(userId, request.Name, request.Usage, request.Parts, ct));
-    }
-
-    private static async Task<IResult> GetSavedAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)
+    private static async Task<Ok<SavedBuildView>> SaveAsync(BuilderSaveRequest request, HttpContext context, SavedBuildService saved, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
         Guid? userId = context.TryGetUserId(out var id) ? id : null;
-        return Results.Ok(await saved.GetAsync(token, userId, ct));
+        return TypedResults.Ok(await saved.SaveAsync(userId, request.Name, request.Usage, request.Parts, ct));
     }
 
-    private static async Task<IResult> UpdateSavedAsync(string token, BuilderSaveUpdateRequest request, HttpContext context, SavedBuildService saved,
+    private static async Task<Ok<SavedBuildView>> GetSavedAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        Guid? userId = context.TryGetUserId(out var id) ? id : null;
+        return TypedResults.Ok(await saved.GetAsync(token, userId, ct));
+    }
+
+    private static async Task<Ok<SavedBuildView>> UpdateSavedAsync(string token, BuilderSaveUpdateRequest request, HttpContext context, SavedBuildService saved,
         CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var userId)) return Results.Unauthorized();
+        var userId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await saved.UpdateAsync(token, userId, request.Name, request.Usage, request.Parts, request.RowVersion, ct));
+        return TypedResults.Ok(await saved.UpdateAsync(token, userId, request.Name, request.Usage, request.Parts, request.RowVersion, ct));
     }
 
-    private static async Task<IResult> DeleteSavedAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)
+    private static async Task<NoContent> DeleteSavedAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var userId)) return Results.Unauthorized();
+        var userId = context.RequireUserId();
         await saved.DeleteAsync(token, userId, ct);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> ListMineAsync(HttpContext context, SavedBuildService saved, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<SavedBuildSummary>>> ListMineAsync(HttpContext context, SavedBuildService saved, CancellationToken ct)
     {
-        if (!context.TryGetUserId(out var userId)) return Results.Unauthorized();
+        var userId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await saved.ListMineAsync(userId, ct));
+        return TypedResults.Ok(await saved.ListMineAsync(userId, ct));
     }
 }

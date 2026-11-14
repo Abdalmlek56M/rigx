@@ -1,4 +1,5 @@
 using HardwareStore.Modules.Identity.Authentication;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>Step-up confirmation for destructive actions: request a code, then send it in <c>X-Step-Up-Code</c>.</summary>
 public static class StepUpEndpoints
@@ -16,26 +17,33 @@ public static class StepUpEndpoints
     /// Use it for data reset, purge, customer-data export and security changes.
     /// </summary>
     public static TBuilder RequireStepUp<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter(async (invocation, next) =>
+        builder.WithMetadata(StepUpRequired.Instance).AddEndpointFilter(async (invocation, next) =>
         {
             var context = invocation.HttpContext;
-            if (!context.TryGetUserId(out var accountId))
-                return Results.Unauthorized();
             await context.RequestServices.GetRequiredService<StepUpService>().ConfirmAsync(
-                accountId, context.Request.Headers[StepUpService.HeaderName].ToString(), context.RequestAborted);
+                context.RequireUserId(), context.Request.Headers[StepUpService.HeaderName].ToString(), context.RequestAborted);
             return await next(invocation);
         });
 
-    private static async Task<IResult> RequestAsync(
+    private static async Task<Accepted<EmailCodeTicketView>> RequestAsync(
         HttpContext context,
         StepUpService stepUp,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
     {
         IdentityHttp.NoStore(context);
-        if (!context.TryGetUserId(out var accountId))
-            return Results.Unauthorized();
+        var accountId = context.RequireUserId();
         var ticket = await stepUp.RequestAsync(accountId, cancellationToken);
-        return Results.Accepted(value: EmailCodeTicketView.From(ticket, timeProvider));
+        return TypedResults.Accepted((string?)null, EmailCodeTicketView.From(ticket, timeProvider));
+    }
+}
+
+/// <summary>Endpoint metadata: the endpoint needs the <c>X-Step-Up-Code</c> header (shown in the OpenAPI document).</summary>
+public sealed class StepUpRequired
+{
+    public static readonly StepUpRequired Instance = new();
+
+    private StepUpRequired()
+    {
     }
 }

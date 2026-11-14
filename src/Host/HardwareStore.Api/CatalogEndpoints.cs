@@ -1,6 +1,8 @@
+using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -20,7 +22,7 @@ public static class CatalogEndpoints
         publicCatalog.MapGet("/products", GetPublicProductsAsync);
         publicCatalog.MapGet("/products/{slug}", GetPublicProductAsync);
         publicCatalog.MapGet("/search/suggestions", GetSuggestionsAsync).RequireRateLimiting(IdentityRateLimitPolicies.CatalogSuggest);
-        publicCatalog.MapGet("/media/{**storageKey}", GetMediaAsync);
+        publicCatalog.MapGet("/media/{**storageKey}", GetMediaAsync).Produces<Stream>(StatusCodes.Status200OK, "image/webp");
 
         var admin = endpoints.MapGroup("/api/v1/admin/catalog");
         admin.MapGet("/categories", GetAdminCategoriesAsync)
@@ -83,7 +85,7 @@ public static class CatalogEndpoints
         CancellationToken cancellationToken) =>
         catalog.GetSpecificationFiltersAsync(cancellationToken);
 
-    private static async Task<IResult> GetSuggestionsAsync(
+    private static async Task<Ok<IReadOnlyList<ProductSuggestionView>>> GetSuggestionsAsync(
         string? q,
         int? limit,
         HttpContext context,
@@ -91,10 +93,10 @@ public static class CatalogEndpoints
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=30";
-        return Results.Ok(await catalog.SuggestAsync(q, limit ?? 8, cancellationToken));
+        return TypedResults.Ok(await catalog.SuggestAsync(q, limit ?? 8, cancellationToken));
     }
 
-    private static async Task<IResult> GetPublicProductsAsync(
+    private static async Task<Ok<PagedResult<ProductSummaryView>>> GetPublicProductsAsync(
         string? category,
         string? brand,
         string? search,
@@ -107,17 +109,17 @@ public static class CatalogEndpoints
         int? pageSize,
         ProductSearchService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.GetProductsAsync(
+        TypedResults.Ok(await catalog.GetProductsAsync(
             category, brand, search, ParseCondition(condition), minimumPrice, maximumPrice,
             specification, ParseSort(sort), page ?? 1, pageSize ?? 12, cancellationToken));
 
-    private static async Task<IResult> GetPublicProductAsync(
+    private static async Task<Ok<ProductDetailView>> GetPublicProductAsync(
         string slug,
         ProductSearchService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.GetProductBySlugAsync(slug, cancellationToken));
+        TypedResults.Ok(await catalog.GetProductBySlugAsync(slug, cancellationToken));
 
-    private static IResult GetMediaAsync(
+    private static FileStreamHttpResult GetMediaAsync(
         string storageKey,
         HttpContext context,
         ICatalogMediaStorage storage)
@@ -125,20 +127,18 @@ public static class CatalogEndpoints
         try
         {
             if (!storageKey.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) || CatalogMediaKeys.IsPrivate(storageKey))
-                return Results.NotFound();
+                throw MediaNotFound();
             context.Response.Headers.XContentTypeOptions = "nosniff";
             context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
-            return Results.File(storage.OpenRead(storageKey), "image/webp");
+            return TypedResults.File(storage.OpenRead(storageKey), "image/webp");
         }
-        catch (CatalogValidationException)
+        catch (Exception exception) when (exception is CatalogValidationException or FileNotFoundException)
         {
-            return Results.NotFound();
-        }
-        catch (FileNotFoundException)
-        {
-            return Results.NotFound();
+            throw MediaNotFound();
         }
     }
+
+    private static ApiProblemException MediaNotFound() => new(StatusCodes.Status404NotFound, "The image was not found.");
 
     private static Task<IReadOnlyList<CategoryView>> GetAdminCategoriesAsync(
         TaxonomyService catalog,
@@ -155,169 +155,142 @@ public static class CatalogEndpoints
         CancellationToken cancellationToken) =>
         catalog.GetProductsAsync(cancellationToken);
 
-    private static async Task<IResult> GetAdminProductAsync(
+    private static async Task<Ok<ProductDetailView>> GetAdminProductAsync(
         Guid id,
         ProductManagementService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.GetProductAsync(id, cancellationToken));
+        TypedResults.Ok(await catalog.GetProductAsync(id, cancellationToken));
 
-    private static async Task<IResult> CreateCategoryAsync(
+    private static async Task<Created<CategoryView>> CreateCategoryAsync(
         CategoryInput input,
         TaxonomyService catalog,
         CancellationToken cancellationToken) =>
-        Results.Created(
+        TypedResults.Created(
             (string?)null,
             await catalog.SaveCategoryAsync(null, input, cancellationToken));
 
-    private static async Task<IResult> UpdateCategoryAsync(
+    private static async Task<Ok<CategoryView>> UpdateCategoryAsync(
         Guid id,
         CategoryInput input,
         TaxonomyService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.SaveCategoryAsync(id, input, cancellationToken));
+        TypedResults.Ok(await catalog.SaveCategoryAsync(id, input, cancellationToken));
 
-    private static async Task<IResult> SetCategorySpecsAsync(
+    private static async Task<Ok<CategoryView>> SetCategorySpecsAsync(
         Guid id,
         CategorySpecsInput input,
         CategorySpecService specs,
         CancellationToken cancellationToken) =>
-        Results.Ok(await specs.SetSpecsAsync(id, input.Specs, input.RowVersion, cancellationToken));
+        TypedResults.Ok(await specs.SetSpecsAsync(id, input.Specs, input.RowVersion, cancellationToken));
 
-    private static async Task<IResult> GetCategorySpecsAsync(
+    private static async Task<Ok<IReadOnlyList<SpecDefinition>>> GetCategorySpecsAsync(
         Guid id,
         CategorySpecService specs,
         CancellationToken cancellationToken) =>
-        Results.Ok(await specs.GetEffectiveSpecsAsync(id, cancellationToken));
+        TypedResults.Ok(await specs.GetEffectiveSpecsAsync(id, cancellationToken));
 
-    private static async Task<IResult> CreateBrandAsync(
+    private static async Task<Created<BrandView>> CreateBrandAsync(
         BrandInput input,
         TaxonomyService catalog,
         CancellationToken cancellationToken) =>
-        Results.Created(
+        TypedResults.Created(
             (string?)null,
             await catalog.SaveBrandAsync(null, input, cancellationToken));
 
-    private static async Task<IResult> UpdateBrandAsync(
+    private static async Task<Ok<BrandView>> UpdateBrandAsync(
         Guid id,
         BrandInput input,
         TaxonomyService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.SaveBrandAsync(id, input, cancellationToken));
+        TypedResults.Ok(await catalog.SaveBrandAsync(id, input, cancellationToken));
 
-    private static async Task<IResult> CreateProductAsync(
+    private static async Task<Created<ProductDetailView>> CreateProductAsync(
         ProductInput input,
         ProductManagementService catalog,
         CancellationToken cancellationToken) =>
-        Results.Created(
+        TypedResults.Created(
             (string?)null,
             await catalog.SaveProductAsync(null, input, cancellationToken));
 
-    private static async Task<IResult> UpdateProductAsync(
+    private static async Task<Ok<ProductDetailView>> UpdateProductAsync(
         Guid id,
         ProductInput input,
         ProductManagementService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.SaveProductAsync(id, input, cancellationToken));
+        TypedResults.Ok(await catalog.SaveProductAsync(id, input, cancellationToken));
 
-    private static async Task<IResult> UpdateProductStatusAsync(
+    private static async Task<Ok<ProductDetailView>> UpdateProductStatusAsync(
         Guid id,
         ProductStatusInput input,
         ProductManagementService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.SetProductStatusAsync(
+        TypedResults.Ok(await catalog.SetProductStatusAsync(
             id, input.Status, input.RowVersion, cancellationToken));
 
-    private static async Task<IResult> UploadImageAsync(
+    private static async Task<Created<ProductImageView>> UploadImageAsync(
         Guid id,
         ProductImageService catalog,
         CatalogMediaOptions options,
         HttpContext context,
         CancellationToken cancellationToken)
     {
-        if (!context.Request.HasFormContentType)
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["form"] = ["A multipart form is required."]
-            });
-        LimitRequestSize(context, options);
-        if (context.Request.ContentLength > options.MaxUploadBytes + 64 * 1024)
-            return Results.Problem(
-                statusCode: StatusCodes.Status413PayloadTooLarge,
-                title: "The uploaded image is too large.");
-        var form = await context.Request.ReadFormAsync(cancellationToken);
-        var image = form.Files.GetFile("image");
-        if (image is null)
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["image"] = ["An image file is required."]
-            });
+        var (form, upload) = await ReadImageFormAsync(context, options, cancellationToken);
         var altText = form["altText"].ToString();
         var isPrimary = bool.TryParse(form["isPrimary"].ToString(), out var parsedPrimary) && parsedPrimary;
-        var result = await catalog.AddImageAsync(
-            id,
-            altText,
-            isPrimary,
-            new CatalogImageUpload(
-                image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
-            cancellationToken);
-        return Results.Created((string?)null, result);
+        return TypedResults.Created((string?)null, await catalog.AddImageAsync(id, altText, isPrimary, upload, cancellationToken));
     }
 
-    private static async Task<IResult> UploadCategoryImageAsync(
+    private static async Task<Ok<CategoryView>> UploadCategoryImageAsync(
         Guid id,
         TaxonomyImageService catalog,
         CatalogMediaOptions options,
         HttpContext context,
         CancellationToken cancellationToken)
     {
-        var image = await ReadSingleImageAsync(context, options, cancellationToken);
-        if (image.Result is not null) return image.Result;
-        return Results.Ok(await catalog.SetCategoryImageAsync(
-            id, image.Upload!, cancellationToken));
+        var upload = await ReadSingleImageAsync(context, options, cancellationToken);
+        return TypedResults.Ok(await catalog.SetCategoryImageAsync(id, upload, cancellationToken));
     }
 
-    private static async Task<IResult> DeleteCategoryImageAsync(
+    private static async Task<Ok<CategoryView>> DeleteCategoryImageAsync(
         Guid id,
         TaxonomyImageService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.DeleteCategoryImageAsync(id, cancellationToken));
+        TypedResults.Ok(await catalog.DeleteCategoryImageAsync(id, cancellationToken));
 
-    private static async Task<IResult> UploadBrandLogoAsync(
+    private static async Task<Ok<BrandView>> UploadBrandLogoAsync(
         Guid id,
         TaxonomyImageService catalog,
         CatalogMediaOptions options,
         HttpContext context,
         CancellationToken cancellationToken)
     {
-        var image = await ReadSingleImageAsync(context, options, cancellationToken);
-        if (image.Result is not null) return image.Result;
-        return Results.Ok(await catalog.SetBrandLogoAsync(
-            id, image.Upload!, cancellationToken));
+        var upload = await ReadSingleImageAsync(context, options, cancellationToken);
+        return TypedResults.Ok(await catalog.SetBrandLogoAsync(id, upload, cancellationToken));
     }
 
-    private static async Task<IResult> DeleteBrandLogoAsync(
+    private static async Task<Ok<BrandView>> DeleteBrandLogoAsync(
         Guid id,
         TaxonomyImageService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.DeleteBrandLogoAsync(id, cancellationToken));
+        TypedResults.Ok(await catalog.DeleteBrandLogoAsync(id, cancellationToken));
 
-    private static async Task<IResult> UpdateImageAsync(
+    private static async Task<Ok<ProductImageView>> UpdateImageAsync(
         Guid id,
         Guid imageId,
         ImageMetadataInput input,
         ProductImageService catalog,
         CancellationToken cancellationToken) =>
-        Results.Ok(await catalog.UpdateImageAsync(
+        TypedResults.Ok(await catalog.UpdateImageAsync(
             id, imageId, input.AltText, input.SortOrder, input.IsPrimary, cancellationToken));
 
-    private static async Task<IResult> DeleteImageAsync(
+    private static async Task<NoContent> DeleteImageAsync(
         Guid id,
         Guid imageId,
         ProductImageService catalog,
         CancellationToken cancellationToken)
     {
         await catalog.DeleteImageAsync(id, imageId, cancellationToken);
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
     private static Task<CatalogMediaAuditView> GetMediaAuditAsync(
@@ -325,10 +298,10 @@ public static class CatalogEndpoints
         CancellationToken cancellationToken) =>
         maintenance.AuditAsync(cancellationToken);
 
-    private static async Task<IResult> CleanupOrphanMediaAsync(
+    private static async Task<Ok<CatalogMediaCleanupView>> CleanupOrphanMediaAsync(
         CatalogMediaMaintenanceService maintenance,
         CancellationToken cancellationToken) =>
-        Results.Ok(await maintenance.CleanupOrphansAsync(cancellationToken));
+        TypedResults.Ok(await maintenance.CleanupOrphansAsync(cancellationToken));
 
 
     private static CatalogProductCondition? ParseCondition(string? condition) => condition?.ToLowerInvariant() switch
@@ -352,41 +325,30 @@ public static class CatalogEndpoints
             "sort", "Sort must be newest, oldest, price-asc, price-desc, name-asc, or name-desc.")
     };
 
-    internal static async Task<(CatalogImageUpload? Upload, IResult? Result)> ReadSingleImageAsync(
+    internal static async Task<CatalogImageUpload> ReadSingleImageAsync(
         HttpContext context,
         CatalogMediaOptions options,
-        CancellationToken cancellationToken)
-    {
-        var (_, upload, result) = await ReadImageFormAsync(context, options, cancellationToken);
-        return (upload, result);
-    }
+        CancellationToken cancellationToken) =>
+        (await ReadImageFormAsync(context, options, cancellationToken)).Upload;
 
     /// <summary>The multipart form with its one <c>image</c> file; the form is returned too for endpoints that carry extra fields.</summary>
-    internal static async Task<(IFormCollection? Form, CatalogImageUpload? Upload, IResult? Result)> ReadImageFormAsync(
+    internal static async Task<(IFormCollection Form, CatalogImageUpload Upload)> ReadImageFormAsync(
         HttpContext context,
         CatalogMediaOptions options,
         CancellationToken cancellationToken)
     {
         if (!context.Request.HasFormContentType)
-            return (null, null, Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["form"] = ["A multipart form is required."]
-            }));
+            throw FormProblem("form", "A multipart form is required.");
         LimitRequestSize(context, options);
         if (context.Request.ContentLength > options.MaxUploadBytes + 64 * 1024)
-            return (null, null, Results.Problem(
-                statusCode: StatusCodes.Status413PayloadTooLarge,
-                title: "The uploaded image is too large."));
+            throw new ApiProblemException(StatusCodes.Status413PayloadTooLarge, "The uploaded image is too large.");
         var form = await context.Request.ReadFormAsync(cancellationToken);
-        var file = form.Files.GetFile("image");
-        if (file is null)
-            return (form, null, Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["image"] = ["An image file is required."]
-            }));
-        return (form, new CatalogImageUpload(
-            file.OpenReadStream(), file.Length, file.FileName, file.ContentType), null);
+        var file = form.Files.GetFile("image") ?? throw FormProblem("image", "An image file is required.");
+        return (form, new CatalogImageUpload(file.OpenReadStream(), file.Length, file.FileName, file.ContentType));
     }
+
+    private static ApiProblemException FormProblem(string field, string message) => new(StatusCodes.Status400BadRequest,
+        "One or more validation errors occurred.", new Dictionary<string, string[]> { [field] = [message] });
 
     private static void LimitRequestSize(HttpContext context, CatalogMediaOptions options)
     {

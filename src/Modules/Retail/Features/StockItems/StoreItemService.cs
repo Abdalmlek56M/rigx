@@ -1,5 +1,6 @@
 using System.Text.Json;
 using HardwareStore.Common.Domain;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -29,8 +30,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
             .Select(group => new ConditionCount(group.Key, group.Count())).ToListAsync(cancellationToken);
         var condition = string.IsNullOrWhiteSpace(query.Condition) ? null : StockCondition.Parse(query.Condition);
         var shown = condition is null ? items : items.Where(item => item.Condition == condition);
-        var page = Math.Max(1, query.Page);
-        var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        var (page, pageSize) = PageRequest.Of(query.Page, query.PageSize, MaxPageSize);
         var cards = await ToCardsAsync(Sorted(shown, query.Sort).Skip((page - 1) * pageSize).Take(pageSize), cancellationToken);
         var total = condition is null ? counts.Sum(entry => entry.Count) : CountOf(counts, condition);
         return new StoreItemPage(cards, page, pageSize, total,

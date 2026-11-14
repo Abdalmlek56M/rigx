@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Auditing;
@@ -13,12 +14,6 @@ public sealed record SecurityAuditItemView(
     Guid? SubjectUserAccountId,
     string? CorrelationId,
     IReadOnlyDictionary<string, string> Metadata);
-
-public sealed record SecurityAuditPage(
-    IReadOnlyList<SecurityAuditItemView> Items,
-    int Page,
-    int PageSize,
-    int Total);
 
 public sealed record SecurityAuditQuery(
     DateTimeOffset? FromUtc = null,
@@ -39,8 +34,6 @@ public sealed record SecurityAuditQuery(
 /// </summary>
 public sealed class SecurityAuditQueryService(IDbContextFactory<SecurityAuditDbContext> contextFactory)
 {
-    public const int MaxPageSize = 100;
-
     private static readonly HashSet<string> AllowedMetadataKeys = new(StringComparer.OrdinalIgnoreCase)
     {
         "kind", "emailKind", "attempts", "deadLetter", "roles", "roleCode", "permissionCode",
@@ -55,15 +48,14 @@ public sealed class SecurityAuditQueryService(IDbContextFactory<SecurityAuditDbC
         "token", "secret", "password", "hash", "ip", "email", "url", "cookie", "ticket", "sessionkey"
     ];
 
-    public async Task<SecurityAuditPage> QueryAsync(
+    public async Task<PagedResult<SecurityAuditItemView>> QueryAsync(
         SecurityAuditQuery query,
         CancellationToken cancellationToken = default)
     {
         if (query.FromUtc is not null && query.ToUtc is not null && query.FromUtc > query.ToUtc)
             throw new ArgumentException("The start of the range must precede the end.");
 
-        var page = Math.Max(1, query.Page);
-        var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        var (page, pageSize) = PageRequest.Of(query.Page, query.PageSize);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = db.SecurityAuditEvents.AsNoTracking();
@@ -119,7 +111,7 @@ public sealed class SecurityAuditQueryService(IDbContextFactory<SecurityAuditDbC
             })
             .ToListAsync(cancellationToken);
 
-        return new SecurityAuditPage(
+        return new PagedResult<SecurityAuditItemView>(
             items.Select(entry => new SecurityAuditItemView(
                 entry.Id,
                 entry.OccurredAtUtc,

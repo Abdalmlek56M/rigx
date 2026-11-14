@@ -27,4 +27,3 @@ public sealed record PurchaseListItem(Guid Id, string Code, SellerSummary Seller
 
 public sealed record PurchaseQuery(string? Status = null, string? Search = null, int Page = 1, int PageSize = 25);
 
-public sealed record PurchasePage(IReadOnlyList<PurchaseListItem> Items, int Page, int PageSize, int Total);

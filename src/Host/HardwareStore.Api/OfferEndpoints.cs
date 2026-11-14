@@ -2,6 +2,7 @@ using System.Security.Claims;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public static class OfferEndpoints
 {
@@ -20,99 +21,71 @@ public static class OfferEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> GetPublicAsync(
+    private static async Task<Ok<IReadOnlyList<PublicOfferView>>> GetPublicAsync(
         HttpContext context,
         OfferService offers,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await offers.GetPublicAsync(cancellationToken));
+        return TypedResults.Ok(await offers.GetPublicAsync(cancellationToken));
     }
 
-    private static async Task<IResult> ListAsync(
+    private static async Task<Ok<IReadOnlyList<OfferView>>> ListAsync(
         HttpContext context,
         OfferService offers,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return Results.Ok(await offers.ListAdminAsync(cancellationToken));
+        return TypedResults.Ok(await offers.ListAdminAsync(cancellationToken));
     }
 
-    private static async Task<IResult> CreateAsync(
+    private static async Task<Ok<OfferView>> CreateAsync(
         OfferInput request,
         OfferService offers,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            return Results.Ok(await offers.CreateAsync(request, cancellationToken));
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return TypedResults.Ok(await offers.CreateAsync(request, cancellationToken));
     }
 
-    private static async Task<IResult> UpdateAsync(
+    private static async Task<Ok<OfferView>> UpdateAsync(
         Guid id,
         OfferUpdateRequest request,
         OfferService offers,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            return Results.Ok(await offers.UpdateAsync(id, request, cancellationToken));
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return TypedResults.Ok(await offers.UpdateAsync(id, request, cancellationToken));
     }
 
-    private static async Task<IResult> PublishAsync(
+    private static async Task<Ok<OfferView>> PublishAsync(
         Guid id,
         ContentVersionRequest request,
         OfferService offers,
         CancellationToken cancellationToken) =>
         await SetPublishedAsync(id, true, request, offers, cancellationToken);
 
-    private static async Task<IResult> UnpublishAsync(
+    private static async Task<Ok<OfferView>> UnpublishAsync(
         Guid id,
         ContentVersionRequest request,
         OfferService offers,
         CancellationToken cancellationToken) =>
         await SetPublishedAsync(id, false, request, offers, cancellationToken);
 
-    private static async Task<IResult> SetPublishedAsync(
+    private static async Task<Ok<OfferView>> SetPublishedAsync(
         Guid id,
         bool published,
         ContentVersionRequest request,
         OfferService offers,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            return Results.Ok(await offers.SetPublishedAsync(id, published, request.RowVersion, cancellationToken));
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return TypedResults.Ok(await offers.SetPublishedAsync(id, published, request.RowVersion, cancellationToken));
     }
 
-    private static async Task<IResult> CancelAsync(
+    private static async Task<Ok<OfferView>> CancelAsync(
         Guid id,
         ContentVersionRequest request,
         OfferService offers,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            return Results.Ok(await offers.CancelAsync(id, request.RowVersion, cancellationToken));
-        }
-        catch (StorefrontException exception)
-        {
-            return Results.Problem(statusCode: exception.StatusCode, title: exception.Message);
-        }
+        return TypedResults.Ok(await offers.CancelAsync(id, request.RowVersion, cancellationToken));
     }
 }

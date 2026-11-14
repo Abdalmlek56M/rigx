@@ -18,18 +18,20 @@ public sealed class CsrfProtectionMiddleware(RequestDelegate next)
         {
             if (!await antiforgery.IsRequestValidAsync(context))
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(new { error = "Invalid anti-forgery token." });
+                await RejectAsync(context);
                 return;
             }
         }
         catch (AntiforgeryValidationException)
         {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new { error = "Invalid anti-forgery token." });
+            await RejectAsync(context);
             return;
         }
 
         await next(context);
     }
+
+    private static Task RejectAsync(HttpContext context) =>
+        Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid anti-forgery token.",
+            instance: context.Request.Path).ExecuteAsync(context);
 }
