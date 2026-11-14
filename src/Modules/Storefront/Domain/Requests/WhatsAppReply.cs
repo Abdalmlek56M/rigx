@@ -6,7 +6,7 @@ namespace HardwareStore.Modules.Storefront;
 /// <summary>Fills a WhatsApp template with a request's data and builds the wa.me link that opens it.</summary>
 public static partial class WhatsAppReply
 {
-    public static WhatsAppReplyView For(CustomerRequest request, string template)
+    public static WhatsAppReplyView For(CustomerRequest request, string template, string? link = null)
     {
         var values = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -14,6 +14,7 @@ public static partial class WhatsAppReply
             [WhatsAppPlaceholder.Phone] = request.Phone,
             [WhatsAppPlaceholder.Item] = request.ModelName ?? request.ItemCode ?? string.Empty,
             [WhatsAppPlaceholder.Code] = request.Code,
+            [WhatsAppPlaceholder.Link] = link ?? string.Empty,
             [WhatsAppPlaceholder.Price] = request.OfferAmount?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty
         };
         var text = Fill(template, values);

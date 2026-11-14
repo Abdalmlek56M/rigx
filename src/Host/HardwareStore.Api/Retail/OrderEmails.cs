@@ -3,14 +3,15 @@ using HardwareStore.Modules.Retail;
 
 /// <summary>
 /// Public page base URLs: tracking (<c>/t/{token}</c>, <c>Sales:TrackingBaseUrl</c>), invoice (<c>/i/{token}</c>,
-/// <c>Sales:InvoiceBaseUrl</c>) and the public warranty search (<c>Sales:WarrantyLookupUrl</c>).
+/// <c>Sales:InvoiceBaseUrl</c>), the public warranty search (<c>Sales:WarrantyLookupUrl</c>) and an item page (<c>/items/{code}</c>, <c>Sales:ItemBaseUrl</c>).
 /// </summary>
-public sealed record OrderLinks(Uri TrackingBase, Uri InvoiceBase, Uri WarrantyLookupBase)
+public sealed record OrderLinks(Uri TrackingBase, Uri InvoiceBase, Uri WarrantyLookupBase, Uri ItemBase)
 {
     public static OrderLinks FromConfiguration(IConfiguration configuration) => new(
         Read(configuration, "Sales:TrackingBaseUrl", "http://localhost:3000/t/", slash: true),
         Read(configuration, "Sales:InvoiceBaseUrl", "http://localhost:3000/i/", slash: true),
-        Read(configuration, "Sales:WarrantyLookupUrl", "http://localhost:3000/warranty", slash: false));
+        Read(configuration, "Sales:WarrantyLookupUrl", "http://localhost:3000/warranty", slash: false),
+        Read(configuration, "Sales:ItemBaseUrl", "http://localhost:3000/items/", slash: true));
 
     private static Uri Read(IConfiguration configuration, string key, string fallback, bool slash)
     {
@@ -22,6 +23,8 @@ public sealed record OrderLinks(Uri TrackingBase, Uri InvoiceBase, Uri WarrantyL
     }
 
     public string TrackingUrl(string token) => new Uri(TrackingBase, Uri.EscapeDataString(token)).ToString();
+
+    public string ItemUrl(string code) => new Uri(ItemBase, Uri.EscapeDataString(code)).ToString();
 
     public string InvoiceUrl(string token) => new Uri(InvoiceBase, Uri.EscapeDataString(token)).ToString();
 

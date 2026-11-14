@@ -29,6 +29,7 @@ public sealed partial record WhatsAppTemplateSettings : IStoreSettingsSection<Wh
     public string Order { get; init; } = "أهلًا RIGX، بخصوص طلبي رقم {الطلب}.";
     public string Warranty { get; init; } = "أهلًا RIGX، عندي مشكلة في {القطعة} ({الكود}) وعليها ضمان.";
     public string RequestReply { get; init; } = "أهلًا {الاسم}، بخصوص طلبك عند RIGX: ";
+    public string BackInStock { get; init; } = "أهلًا {الاسم}، القطعة اللي طلبتها ({القطعة}) اتوفرت عندنا في RIGX.\n{اللينك}";
 
     public WhatsAppTemplateSettings Normalize() => new()
     {
@@ -37,7 +38,8 @@ public sealed partial record WhatsAppTemplateSettings : IStoreSettingsSection<Wh
         Build = Template(Build, "Build template"),
         Order = Template(Order, "Order template"),
         Warranty = Template(Warranty, "Warranty template"),
-        RequestReply = Template(RequestReply, "Request reply template")
+        RequestReply = Template(RequestReply, "Request reply template"),
+        BackInStock = Template(BackInStock, "Back in stock template")
     };
 
     private static string Template(string? value, string label)

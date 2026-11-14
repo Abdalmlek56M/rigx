@@ -240,6 +240,7 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
         public List<EmailCodeMessage> EmailCodes { get; } = [];
         public List<NewDeviceSignInMessage> NewDeviceSignIns { get; } = [];
         public List<OrderEmailMessage> OrderUpdates { get; } = [];
+        public List<BackInStockEmailMessage> BackInStock { get; } = [];
 
         public Task SendEmailChangeVerificationAsync(EmailChangeMessage message, CancellationToken cancellationToken = default) =>
             Capture(EmailChanges, message);
@@ -255,6 +256,9 @@ public sealed class IdentityEmailOutboxPostgreSqlTests(OwnerBootstrapPostgreSqlF
 
         public Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default) =>
             Capture(OrderUpdates, message);
+
+        public Task SendBackInStockAsync(BackInStockEmailMessage message, CancellationToken cancellationToken = default) =>
+            Capture(BackInStock, message);
 
         private Task Capture<T>(List<T> sink, T message)
         {

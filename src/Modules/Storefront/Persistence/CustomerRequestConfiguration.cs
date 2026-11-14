@@ -37,6 +37,11 @@ internal static class CustomerRequestConfiguration
             entity.Property(item => item.ModelName).HasColumnName("model_name").HasMaxLength(200);
             entity.Property(item => item.OwnedFor).HasColumnName("owned_for").HasMaxLength(60);
             entity.Property(item => item.ItemCode).HasColumnName("item_code").HasMaxLength(40);
+            entity.Property(item => item.ModelKey).HasColumnName("model_key").HasMaxLength(200);
+            entity.Property(item => item.CategoryId).HasColumnName("category_id");
+            entity.Property(item => item.AvailableItemCode).HasColumnName("available_item_code").HasMaxLength(40);
+            entity.Property(item => item.AvailableAtUtc).HasColumnName("available_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(item => item.NotifiedAtUtc).HasColumnName("notified_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.ServiceKind).HasColumnName("service_kind").HasMaxLength(16);
             entity.Property(item => item.PreferredDate).HasColumnName("preferred_date").HasColumnType("date");
             entity.Property(item => item.OfferAmount).HasColumnName("offer_amount").HasColumnType("numeric(12,2)");
@@ -51,6 +56,8 @@ internal static class CustomerRequestConfiguration
             entity.HasIndex(item => item.Code).IsUnique().HasDatabaseName("ux_customer_requests_code");
             entity.HasIndex(item => new { item.Status, item.CreatedAtUtc }).HasDatabaseName("ix_customer_requests_status_created");
             entity.HasIndex(item => new { item.Type, item.Status }).HasDatabaseName("ix_customer_requests_type_status");
+            entity.HasIndex(item => new { item.Type, item.ModelKey }).HasDatabaseName("ix_customer_requests_type_model_key")
+                .HasFilter("model_key IS NOT NULL AND status IN ('New','Following')");
             entity.HasIndex(item => new { item.Phone, item.CreatedAtUtc }).HasDatabaseName("ix_customer_requests_phone_created");
         });
     }

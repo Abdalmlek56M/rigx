@@ -22,7 +22,11 @@ public interface IEmailProvider
     Task SendEmailChangeVerificationAsync(EmailChangeMessage message, CancellationToken cancellationToken = default);
     Task SendNewDeviceSignInAsync(NewDeviceSignInMessage message, CancellationToken cancellationToken = default);
     Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default);
+    Task SendBackInStockAsync(BackInStockEmailMessage message, CancellationToken cancellationToken = default);
 }
+
+/// <summary>Tells a notify-me customer that the item they asked about is available again; the link opens its page.</summary>
+public sealed record BackInStockEmailMessage(string Email, string FullName, string ItemName, string ItemUrl);
 
 /// <summary>Order emails (business §5): <see cref="Stage"/> is Received, Confirmed, Shipped or Invoiced; the link opens the public tracking page (the invoice page for Invoiced).</summary>
 public sealed record OrderEmailMessage(string Email, string FullName, string Reference, string Stage, string TrackingUrl,
@@ -42,12 +46,14 @@ public sealed class InMemoryTestEmailProvider : IEmailProvider
     private readonly ConcurrentQueue<EmailChangeMessage> _emailChanges = new();
     private readonly ConcurrentQueue<NewDeviceSignInMessage> _newDeviceSignIns = new();
     private readonly ConcurrentQueue<OrderEmailMessage> _orderUpdates = new();
+    private readonly ConcurrentQueue<BackInStockEmailMessage> _backInStock = new();
 
     public IReadOnlyCollection<EmailCodeMessage> EmailCodes => _emailCodes.ToArray();
     public IReadOnlyCollection<StaffInvitationMessage> StaffInvitations => _staffInvitations.ToArray();
     public IReadOnlyCollection<EmailChangeMessage> EmailChanges => _emailChanges.ToArray();
     public IReadOnlyCollection<NewDeviceSignInMessage> NewDeviceSignIns => _newDeviceSignIns.ToArray();
     public IReadOnlyCollection<OrderEmailMessage> OrderUpdates => _orderUpdates.ToArray();
+    public IReadOnlyCollection<BackInStockEmailMessage> BackInStock => _backInStock.ToArray();
 
     public Task SendEmailCodeAsync(EmailCodeMessage message, CancellationToken cancellationToken = default) =>
         Capture(_emailCodes, message, cancellationToken);
@@ -63,6 +69,9 @@ public sealed class InMemoryTestEmailProvider : IEmailProvider
 
     public Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default) =>
         Capture(_orderUpdates, message, cancellationToken);
+
+    public Task SendBackInStockAsync(BackInStockEmailMessage message, CancellationToken cancellationToken = default) =>
+        Capture(_backInStock, message, cancellationToken);
 
     private static Task Capture<T>(ConcurrentQueue<T> queue, T message, CancellationToken cancellationToken)
     {

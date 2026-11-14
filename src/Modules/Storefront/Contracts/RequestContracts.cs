@@ -12,7 +12,7 @@ public sealed record CustomerRequestView(Guid Id, string Code, string Type, stri
     string? Governorate, string? Source, Guid? UserAccountId, string? Subject, string? Message, string? PartType, string? ModelName,
     string? OwnedFor, string? ItemCode, string? ServiceKind, DateOnly? PreferredDate, decimal? OfferAmount, decimal? ExpectedResale,
     string? InternalNote, Guid? PurchaseId, string? PurchaseCode, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc,
-    DateTimeOffset? ClosedAtUtc, long RowVersion);
+    DateTimeOffset? ClosedAtUtc, long RowVersion, string? AvailableItemCode, DateTimeOffset? AvailableAtUtc, DateTimeOffset? NotifiedAtUtc);
 
 public sealed record CustomerRequestListItem(Guid Id, string Code, string Type, string Status, string Name, string Phone,
     string? Governorate, string? ModelName, string? ItemCode, string? ServiceKind, decimal? OfferAmount, DateTimeOffset CreatedAtUtc);

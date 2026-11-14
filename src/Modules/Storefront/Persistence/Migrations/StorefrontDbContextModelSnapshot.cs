@@ -416,6 +416,19 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset?>("AvailableAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("available_at_utc");
+
+                    b.Property<string>("AvailableItemCode")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("available_item_code");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
                     b.Property<DateTimeOffset?>("ClosedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("closed_at_utc");
@@ -459,6 +472,11 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("character varying(4000)")
                         .HasColumnName("message");
 
+                    b.Property<string>("ModelKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("model_key");
+
                     b.Property<string>("ModelName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -469,6 +487,10 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("name");
+
+                    b.Property<DateTimeOffset?>("NotifiedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("notified_at_utc");
 
                     b.Property<decimal?>("OfferAmount")
                         .HasColumnType("numeric(12,2)")
@@ -556,6 +578,10 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
 
                     b.HasIndex("Status", "CreatedAtUtc")
                         .HasDatabaseName("ix_customer_requests_status_created");
+
+                    b.HasIndex("Type", "ModelKey")
+                        .HasDatabaseName("ix_customer_requests_type_model_key")
+                        .HasFilter("model_key IS NOT NULL AND status IN ('New','Following')");
 
                     b.HasIndex("Type", "Status")
                         .HasDatabaseName("ix_customer_requests_type_status");

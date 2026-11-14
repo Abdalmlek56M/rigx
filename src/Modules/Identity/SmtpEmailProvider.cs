@@ -137,6 +137,20 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
             cancellationToken);
     }
 
+    /// <summary>Notify-me customers: the item they asked about is available, with the link to its page.</summary>
+    public Task SendBackInStockAsync(BackInStockEmailMessage message, CancellationToken cancellationToken = default) =>
+        SendAsync(message.Email, message.FullName, "القطعة اللي طلبتها اتوفرت",
+            $"""
+            أهلًا {message.FullName}،
+
+            القطعة اللي طلبتها اتوفرت: {message.ItemName}.
+
+            شوفها من هنا: {message.ItemUrl}
+
+            RIGX
+            """,
+            cancellationToken);
+
     private async Task SendAsync(
         string recipient,
         string recipientName,

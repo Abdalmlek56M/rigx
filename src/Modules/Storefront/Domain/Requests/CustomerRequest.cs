@@ -19,6 +19,14 @@ public sealed class CustomerRequest
     public string? ModelName { get; set; }
     public string? OwnedFor { get; set; }
     public string? ItemCode { get; set; }
+    /// <summary>Notify-me: the normalized model key the customer waits for (<c>ModelName.Key</c>); null on other types.</summary>
+    public string? ModelKey { get; set; }
+    public Guid? CategoryId { get; set; }
+    /// <summary>Notify-me: the first item of the model that became available, and when.</summary>
+    public string? AvailableItemCode { get; set; }
+    public DateTimeOffset? AvailableAtUtc { get; set; }
+    /// <summary>Notify-me: when the owner sent the WhatsApp message.</summary>
+    public DateTimeOffset? NotifiedAtUtc { get; set; }
     public string? ServiceKind { get; set; }
     public DateOnly? PreferredDate { get; set; }
     public decimal? OfferAmount { get; set; }

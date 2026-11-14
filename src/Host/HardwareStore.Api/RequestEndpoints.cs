@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ public static class RequestEndpoints
 {
     private const string View = "Requests.View";
     private const string Manage = "Requests.Manage";
+    private const int DefaultDemandDays = 30;
 
     public static IEndpointRouteBuilder MapRequestEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -20,12 +22,15 @@ public static class RequestEndpoints
         endpoints.MapGet("/api/v1/account/requests", ListMineAsync).RequireAuthorization();
         var admin = endpoints.MapGroup("/api/v1/admin/requests");
         admin.MapGet("", ListAsync).RequirePermission(View);
+        admin.MapGet("/back-in-stock", BackInStockAsync).RequirePermission(View);
+        admin.MapGet("/demand", DemandAsync).RequirePermission(View);
         admin.MapGet("/{id:guid}", GetAsync).RequirePermission(View);
         admin.MapGet("/{id:guid}/whatsapp", WhatsAppAsync).RequirePermission(View);
         admin.MapPut("/{id:guid}/status", SetStatusAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/offer", OfferAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/decision", DecideAsync).RequirePermission(Manage);
         admin.MapPut("/{id:guid}/note", SetNoteAsync).RequirePermission(Manage);
+        admin.MapPost("/{id:guid}/back-in-stock/sent", BackInStockSentAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/convert", ConvertAsync).RequirePermission(Manage);
         return endpoints;
     }
@@ -63,6 +68,24 @@ public static class RequestEndpoints
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await followUp.WhatsAppReplyAsync(id, ct));
     }
+
+    private static async Task<IResult> BackInStockAsync(HttpContext context, RequestFollowUpService followUp, OrderLinks links, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await followUp.BackInStockListAsync(links.ItemUrl, ct));
+    }
+
+    /// <summary>Default period: the last 30 business days ending today.</summary>
+    private static async Task<IResult> DemandAsync(HttpContext context, NotifyMeService notifyMe, TimeZoneInfo businessTimeZone,
+        TimeProvider timeProvider, CancellationToken ct, DateOnly? from = null, DateOnly? to = null)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        var end = to ?? BusinessDay.Today(timeProvider, businessTimeZone);
+        return Results.Ok(await notifyMe.DemandAsync(from ?? end.AddDays(1 - DefaultDemandDays), end, ct));
+    }
+
+    private static async Task<IResult> BackInStockSentAsync(Guid id, RequestFollowUpService followUp, CancellationToken ct) =>
+        Results.Ok(await followUp.MarkBackInStockSentAsync(id, ct));
 
     private static async Task<IResult> SetStatusAsync(Guid id, RequestStatusRequest request, RequestFollowUpService followUp, CancellationToken ct) =>
         Results.Ok(await followUp.SetStatusAsync(id, request.Status, request.RowVersion, ct));

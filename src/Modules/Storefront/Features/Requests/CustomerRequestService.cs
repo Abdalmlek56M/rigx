@@ -6,13 +6,18 @@ namespace HardwareStore.Modules.Storefront;
 /// <summary>Customer requests: the public form submission and the admin inbox list and details.</summary>
 public sealed class CustomerRequestService(
     IDbContextFactory<StorefrontDbContext> contextFactory,
+    IStockModelDirectory stock,
     TimeProvider timeProvider,
     TimeZoneInfo businessTimeZone)
 {
     private const int MaxPageSize = 100;
     private static readonly TimeSpan DuplicateWindow = TimeSpan.FromMinutes(10);
 
-    /// <summary>A filled honeypot stores nothing; the same request sent again within ten minutes returns the first code.</summary>
+    /// <summary>
+    /// A filled honeypot stores nothing; the same request sent again within ten minutes returns the first code. A notify-me request
+    /// waits for a model: the same phone asking again for a model it already waits for gets the same code, and a model that can be
+    /// bought now is refused.
+    /// </summary>
     public async Task<CustomerRequestReceipt> SubmitAsync(CustomerRequestSubmission submission, Guid? userAccountId,
         CancellationToken cancellationToken = default)
     {
@@ -20,21 +25,24 @@ public sealed class CustomerRequestService(
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, businessTimeZone).DateTime);
         var draft = CustomerRequestRules.CheckSubmission(submission, today);
+        var target = draft.Type == CustomerRequestType.NotifyMe ? await ResolveTargetAsync(draft, cancellationToken) : null;
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var since = now - DuplicateWindow;
-        var key = draft.Message ?? draft.ModelName ?? draft.ItemCode;
-        var existing = await db.CustomerRequests.AsNoTracking()
-            .Where(item => item.Phone == draft.Phone && item.Type == draft.Type && item.ServiceKind == draft.ServiceKind
-                && item.CreatedAtUtc >= since && (item.Message ?? item.ModelName ?? item.ItemCode) == key)
-            .Select(item => item.Code).FirstOrDefaultAsync(cancellationToken);
+        var existing = target is null
+            ? await RecentDuplicateAsync(db, draft, now, cancellationToken)
+            : await db.CustomerRequests.AsNoTracking().Where(NotifyMeRules.OpenFilter)
+                .Where(item => item.Phone == draft.Phone && item.ModelKey == target.ModelKey)
+                .Select(item => item.Code).FirstOrDefaultAsync(cancellationToken);
         if (existing is not null) return new CustomerRequestReceipt(existing);
+        if (target is not null && (await stock.FindAvailableAsync([target.ModelKey], cancellationToken)).ContainsKey(target.ModelKey))
+            throw NotifyMeRules.AvailableNow();
         var code = await NextCodeAsync(db, cancellationToken);
         db.CustomerRequests.Add(new CustomerRequest
         {
             Id = Guid.CreateVersion7(), Code = code, Type = draft.Type, Status = CustomerRequestStatus.New, Name = draft.Name,
             Phone = draft.Phone, Email = draft.Email, Governorate = draft.Governorate, Source = draft.Source,
             UserAccountId = userAccountId, Subject = draft.Subject, Message = draft.Message, PartType = draft.PartType,
-            ModelName = draft.ModelName, OwnedFor = draft.OwnedFor, ItemCode = draft.ItemCode, ServiceKind = draft.ServiceKind,
+            ModelName = target?.ModelName ?? draft.ModelName, OwnedFor = draft.OwnedFor, ItemCode = target is null ? draft.ItemCode : target.ItemCode,
+            ModelKey = target?.ModelKey, CategoryId = target?.CategoryId, ServiceKind = draft.ServiceKind,
             PreferredDate = draft.PreferredDate, CreatedAtUtc = now, UpdatedAtUtc = now
         });
         await db.SaveChangesAsync(cancellationToken);
@@ -65,6 +73,24 @@ public sealed class CustomerRequestService(
         var request = await db.CustomerRequests.AsNoTracking().SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
             ?? throw new StorefrontException(404, "Request was not found.");
         return request.ToView();
+    }
+
+    private async Task<NotifyMeTarget> ResolveTargetAsync(CustomerRequestDraft draft, CancellationToken cancellationToken)
+    {
+        var code = NotifyMeRules.ItemCodeOf(draft.ItemCode);
+        var model = code is null ? null : await stock.FindByItemCodeAsync(code, cancellationToken);
+        return NotifyMeRules.Target(code, draft.ModelName, model);
+    }
+
+    private static Task<string?> RecentDuplicateAsync(StorefrontDbContext db, CustomerRequestDraft draft, DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var since = now - DuplicateWindow;
+        var key = draft.Message ?? draft.ModelName ?? draft.ItemCode;
+        return db.CustomerRequests.AsNoTracking()
+            .Where(item => item.Phone == draft.Phone && item.Type == draft.Type && item.ServiceKind == draft.ServiceKind
+                && item.CreatedAtUtc >= since && (item.Message ?? item.ModelName ?? item.ItemCode) == key)
+            .Select(item => item.Code).FirstOrDefaultAsync(cancellationToken);
     }
 
     private static async Task<string> NextCodeAsync(StorefrontDbContext db, CancellationToken cancellationToken)

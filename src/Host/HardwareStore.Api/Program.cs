@@ -50,6 +50,7 @@ builder.Services.AddRetailModule(builder.Configuration);
 builder.Services.AddSingleton(OrderLinks.FromConfiguration(builder.Configuration));
 builder.Services.AddHostedService<ReservationExpiryJob>();
 builder.Services.AddHostedService<RecurringExpenseJob>();
+builder.Services.AddHostedService<BackInStockJob>();
 builder.Services.AddScoped<HardwareStore.Modules.Catalog.IMediaReferenceGuard, RetailMediaReferenceGuard>();
 builder.Services.AddSecurityAuditPersistence(builder.Configuration);
 var previewEnabled = builder.Environment.IsDevelopment() &&
@@ -95,6 +96,8 @@ builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgs
 builder.Services.AddScoped<PurchaseReceiptService>();
 builder.Services.AddScoped<DashboardComposer>();
 builder.Services.AddScoped<RequestPurchaseConversion>();
+builder.Services.AddScoped<IStockModelDirectory, RetailStockModelDirectory>();
+builder.Services.AddScoped<BackInStockNotifier>();
 builder.Services.AddScoped<CustomerProfileComposer>();
 builder.Services.AddScoped<CustomerMergeOrchestrator>();
 builder.Services.AddScoped<BuilderCatalogLoader>();

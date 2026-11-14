@@ -49,6 +49,23 @@ public sealed class RequestFollowUpService(
         return WhatsAppReply.For(request, store.WhatsAppTemplates.RequestReply);
     }
 
+    /// <summary>Matched notify-me requests the owner has not messaged yet, oldest match first, each with its WhatsApp message (<paramref name="itemUrl"/> = the item's page).</summary>
+    public async Task<IReadOnlyList<BackInStockListItem>> BackInStockListAsync(Func<string, string> itemUrl, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var requests = await db.CustomerRequests.AsNoTracking().Where(NotifyMeRules.OpenFilter)
+            .Where(item => item.AvailableItemCode != null && item.NotifiedAtUtc == null)
+            .OrderBy(item => item.AvailableAtUtc).ThenBy(item => item.Code).ToListAsync(cancellationToken);
+        var template = (await settings.GetAdminAsync(cancellationToken)).WhatsAppTemplates.BackInStock;
+        return requests.Select(request => new BackInStockListItem(request.Id, request.Code, request.Name, request.AvailableItemCode!,
+            request.ModelName ?? request.AvailableItemCode!, request.AvailableAtUtc!.Value,
+            WhatsAppReply.For(request, template, itemUrl(request.AvailableItemCode!)))).ToList();
+    }
+
+    /// <summary>The owner sent the WhatsApp message: stamps it and closes the request.</summary>
+    public Task<CustomerRequestView> MarkBackInStockSentAsync(Guid id, CancellationToken cancellationToken = default) =>
+        UpdateAsync(id, null, NotifyMeRules.MarkSent, cancellationToken);
+
     /// <summary>Checks the request can become a purchase (right type, accepted offer, same version) and returns it.</summary>
     public async Task<CustomerRequestView> EnsureConvertibleAsync(Guid id, long rowVersion, CancellationToken cancellationToken = default)
     {
@@ -80,12 +97,12 @@ public sealed class RequestFollowUpService(
         return request.ToView();
     }
 
-    private async Task<CustomerRequestView> UpdateAsync(Guid id, long rowVersion, Action<CustomerRequest, DateTimeOffset> apply,
+    private async Task<CustomerRequestView> UpdateAsync(Guid id, long? rowVersion, Action<CustomerRequest, DateTimeOffset> apply,
         CancellationToken cancellationToken)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var request = await db.CustomerRequests.SingleOrDefaultAsync(item => item.Id == id, cancellationToken) ?? throw NotFound();
-        EnsureVersion(request, rowVersion);
+        if (rowVersion is { } version) EnsureVersion(request, version);
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         apply(request, now);
         request.UpdatedAtUtc = now;

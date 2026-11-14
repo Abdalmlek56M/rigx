@@ -22,6 +22,7 @@ public static class StorefrontPersistenceRegistration
         services.AddScoped<OfferService>();
         services.AddScoped<CustomerRequestService>();
         services.AddScoped<RequestFollowUpService>();
+        services.AddScoped<NotifyMeService>();
         services.AddScoped<AccountRequestService>();
         return services;
     }
