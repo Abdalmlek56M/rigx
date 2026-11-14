@@ -1,6 +1,7 @@
 using HardwareStore.Common.Domain;
 using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Identity;
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -216,12 +217,14 @@ public static partial class RetailEndpoints
         TypedResults.Ok(await tracking.RateAsync(token, request, ct));
 
     /// <summary>"اتباع قبل كده": off → 404; the governorate shows only when the sales settings allow it.</summary>
-    private static async Task<Ok<PagedResult<SoldFeedItem>>> ListSoldFeedAsync(SoldFeedService sold, StoreSettingsService settings, CancellationToken ct,
+    private static async Task<Ok<PagedResult<SoldFeedItem>>> ListSoldFeedAsync(SoldFeedService sold, StoreSettingsService settings, TaxonomyService taxonomy,
+        CancellationToken ct,
         string? kind = null, Guid? categoryId = null, int page = 1)
     {
         var sales = (await settings.GetAdminAsync(ct)).Sales;
         if (!sales.SoldFeedEnabled) throw new RetailException(StatusCodes.Status404NotFound, "The sold feed is not available.");
-        return TypedResults.Ok(await sold.ListAsync(sales.SoldFeedShowGovernorate, kind, categoryId, page, ct));
+        var categoryIds = categoryId is Guid category ? await taxonomy.GetCategoryWithDescendantIdsAsync(category, ct) : null;
+        return TypedResults.Ok(await sold.ListAsync(sales.SoldFeedShowGovernorate, kind, categoryIds, page, ct));
     }
 
     private static async Task<Ok<IReadOnlyList<OrderView>>> ListMyOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct)

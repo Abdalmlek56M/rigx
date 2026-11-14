@@ -200,6 +200,18 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
         return rows.Select(AssemblyMapping.ToPublicView).ToList();
     }
 
+    /// <summary>One published build by its public code (<c>BLD-07</c>); unknown, draft or sold builds are 404.</summary>
+    public async Task<AssemblyPublicView> GetPublishedAssemblyAsync(string code, CancellationToken cancellationToken = default)
+    {
+        if (!PublicCode.TryNormalize(code, PublicCode.Build, out var normalized)) throw BuildNotFound();
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var build = await db.Assemblies.AsNoTracking().WithUnits().AsSplitQuery()
+            .SingleOrDefaultAsync(a => a.Status == AssemblyStatus.Published && a.Code == normalized, cancellationToken) ?? throw BuildNotFound();
+        return AssemblyMapping.ToPublicView(build);
+    }
+
+    private static RetailException BuildNotFound() => new(404, "The build was not found.");
+
     private static async Task<Assembly> LoadForPhotosAsync(RetailDbContext db, Guid id, CancellationToken cancellationToken)
     {
         var assembly = await db.Assemblies.SingleOrDefaultAsync(a => a.Id == id, cancellationToken)

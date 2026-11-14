@@ -126,3 +126,20 @@ export const ArrowUpIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const ImagePlaceholderIcon = ({ size = 104 }: IconProps) => (
+  <svg width={size} height={Math.round(size * 0.54)} viewBox="0 0 120 64" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <rect x="2" y="6" width="116" height="48" rx="4" />
+    <circle cx="36" cy="30" r="16" />
+    <circle cx="84" cy="30" r="16" />
+  </svg>
+);
+export const ChevronStartIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M15 6l-6 6 6 6" />
+  </Icon>
+);
+export const FilterIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 5h16l-6 8v6l-4-2v-4z" />
+  </Icon>
+);

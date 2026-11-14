@@ -4,7 +4,87 @@
     "description": "New and used PC hardware, and ready-made builds."
   },
   "home": {
-    "title": "New and used PC parts, and ready-made builds."
+    "hero": {
+      "title": "New and used PC parts,",
+      "titleAccent": "and ready-made builds.",
+      "subtitle": "Graphics cards, processors, motherboards, RAM and storage. Plus assembly, repair, selling and trade-in.",
+      "browse": "Browse products",
+      "recommend": "Recommend a build",
+      "startHere": "Where do you start?",
+      "paths": {
+        "part": {
+          "title": "I know the part I want",
+          "body": "Search by model or browse the categories"
+        },
+        "build": {
+          "title": "I want a complete PC",
+          "body": "Ready-made builds by use and budget"
+        },
+        "builder": {
+          "title": "I want to pick every part",
+          "body": "Build your PC and check compatibility"
+        },
+        "unsure": {
+          "title": "Not sure",
+          "body": "Tell us what you'll use it for and your budget, and we'll recommend"
+        }
+      }
+    },
+    "categories": {
+      "title": "Browse by part"
+    },
+    "latest": {
+      "title": "Just arrived",
+      "group": "Product type",
+      "all": "All"
+    },
+    "recommend": {
+      "eyebrow": "Can't decide?",
+      "title": "Recommend a build",
+      "usageLegend": "What will you use it for?",
+      "budgetLegend": "Your rough budget",
+      "budgets": {
+        "low": "Under 20K",
+        "mid": "20K – 35K",
+        "high": "Over 35K"
+      },
+      "send": "Send on WhatsApp",
+      "message": {
+        "base": "I'd like a build recommendation.",
+        "usage": "Use: {usage}.",
+        "budget": "Budget: {budget}."
+      }
+    },
+    "builderPromo": {
+      "eyebrow": "Know what you want?",
+      "title": "Build your own PC",
+      "body": "Pick every part, check compatibility, then send the build on WhatsApp or download a PDF quote.",
+      "start": "Start building"
+    },
+    "services": {
+      "title": "Our services",
+      "trade": {
+        "title": "Trade in your PC",
+        "body": "Send us your old part, get an offer, and its value comes off the new one."
+      },
+      "request": {
+        "title": "Request a part we don't have",
+        "body": "Tell us the model, we'll look for it and confirm the price before you pay."
+      },
+      "assemble": {
+        "title": "Assembly with your parts",
+        "body": "Bring your parts, we assemble and test them, and you get a working PC."
+      },
+      "maintain": {
+        "title": "Cleaning and maintenance",
+        "body": "Full cleaning and new thermal paste, with temperatures measured before and after."
+      }
+    },
+    "faq": {
+      "title": "Ask before you buy",
+      "body": "The questions we get most. If yours isn't here, <link>send it on WhatsApp</link>.",
+      "bodyNoLink": "The questions we get most."
+    }
   },
   "notFound": {
     "title": "This page doesn't exist",
@@ -96,6 +176,461 @@
     "viewCart": "View cart",
     "removedNotice": "An item sold out and was removed from your cart",
     "added": "Added to cart:",
-    "openCart": "Open cart"
+    "openCart": "Open cart",
+    "add": "Add to cart"
+  },
+  "usage": {
+    "Gaming": "Gaming",
+    "Editing": "Editing and design",
+    "StudyWork": "Study and work",
+    "Streaming": "Streaming"
+  },
+  "item": {
+    "soldOutBadge": "Sold out",
+    "soldOut": "Not available right now"
+  },
+  "notify": {
+    "cta": "Notify me when available",
+    "title": "Notify me when available",
+    "name": "Name",
+    "phone": "Mobile / WhatsApp number",
+    "email": "Email · optional",
+    "submit": "Notify me",
+    "note": "As soon as it's available we'll contact you on this number, and by email too if you leave one.",
+    "sent": "Done. As soon as {model} is available we'll contact you on the number you entered.",
+    "availableNow": "This model is available right now, no need to wait.",
+    "seeAvailable": "See what's available",
+    "errors": {
+      "name": "Enter your name",
+      "phone": "Enter a valid Egyptian mobile number",
+      "email": "The email isn't valid",
+      "invalid": "Check your details and try again.",
+      "failed": "Something went wrong, please try again shortly."
+    }
+  },
+  "catalog": {
+    "home": "Home",
+    "breadcrumb": "Breadcrumb",
+    "title": {
+      "all": "All products",
+      "new": "New parts",
+      "used": "Used parts",
+      "search": "Results for \"{query}\""
+    },
+    "subtitle": "New and used. Not sure what to pick?",
+    "recommendLink": "Tell us what you'll use it for",
+    "conditionGroup": "Product type",
+    "all": "All",
+    "resultCount": "{count} products",
+    "filters": {
+      "title": "Filter",
+      "clearAll": "Clear all",
+      "open": "Filter",
+      "panelLabel": "Filters",
+      "condition": "Condition",
+      "category": "Category",
+      "price": "Price (EGP)",
+      "min": "From",
+      "max": "To",
+      "apply": "Apply",
+      "availability": "Availability",
+      "inStock": "Available",
+      "soldOut": "Sold out",
+      "allStock": "All"
+    },
+    "chips": {
+      "search": "Search: {query}",
+      "stockOut": "Sold out",
+      "stockAll": "Available and sold out",
+      "priceBetween": "{min} – {max} EGP",
+      "priceFrom": "From {min} EGP",
+      "priceTo": "Up to {max} EGP",
+      "remove": "Remove filter {label}"
+    },
+    "sort": {
+      "label": "Sort",
+      "newest": "Newest",
+      "price_asc": "Price: low to high",
+      "price_desc": "Price: high to low"
+    },
+    "pagination": {
+      "label": "Pages",
+      "page": "Page {page}"
+    },
+    "empty": {
+      "title": "No results",
+      "body": "Try removing some filters or searching for something else.",
+      "clear": "Clear filters"
+    },
+    "loadFailed": "We can't load the products right now. Please try again shortly.",
+    "banner": {
+      "title": "Can't find what you're looking for?",
+      "body": "Send us the model and we'll confirm the price and availability date before any payment.",
+      "cta": "Request a part"
+    }
+  },
+  "product": {
+    "home": "Home",
+    "breadcrumb": "Breadcrumb",
+    "soldOut": "Sold out",
+    "availableUsed": "Available: one piece",
+    "availableNew": "Available: {count}",
+    "gallery": {
+      "photo": "Photo {number}"
+    },
+    "price": {
+      "legend": "What will you take it with?",
+      "inBuild": "With a full build from us",
+      "withBoard": "With a motherboard from us",
+      "alone": "On its own",
+      "hint": "The price goes down when you take it with other parts from us.",
+      "total": "Total"
+    },
+    "quantity": {
+      "label": "Quantity",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity"
+    },
+    "buyNow": "Buy now",
+    "askWhatsApp": "Ask on WhatsApp about {code}",
+    "whatsApp": "Hello RIGX, I'd like to ask about {item} ({code}).",
+    "fitsMyPc": "Will it fit my PC? Try it in \"Build your PC\"",
+    "specs": "Specifications",
+    "faqs": "Questions about this part",
+    "info": {
+      "warranty": "Warranty",
+      "warrantyLink": "What it covers",
+      "returns": "Returns",
+      "returnsLink": "Terms",
+      "paymentTitle": "Payment",
+      "payment": {
+        "cash": "Cash",
+        "instaPay": "InstaPay",
+        "wallet": "Wallet"
+      },
+      "pickupTitle": "Pickup",
+      "pickupAndShipping": "From {address}, or shipping to all governorates",
+      "shippingOnly": "Shipping to all governorates"
+    }
+  },
+  "builds": {
+    "title": "Ready-made builds",
+    "subtitle": "Complete, assembled PCs. Pick by use and budget, or take any build and tweak it.",
+    "all": "All",
+    "usageGroup": "Use",
+    "budget": "Budget",
+    "anyBudget": "Any budget",
+    "suitableFor": "Good for:",
+    "priceNote": "Assembly included",
+    "order": "Order it",
+    "edit": "Tweak it",
+    "loadFailed": "We can't load the builds right now. Please try again in a moment.",
+    "empty": {
+      "title": "No builds match this choice",
+      "body": "Try another use or budget, or tell us on WhatsApp and we'll recommend one."
+    },
+    "banner": {
+      "title": "Can't find the right build?",
+      "body": "Tell us what you'll use the PC for and your budget, and we'll recommend a build.",
+      "cta": "Recommend one on WhatsApp",
+      "message": "I'd like a build recommendation."
+    }
+  },
+  "build": {
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "builds": "Builds",
+    "suitableFor": "Good for:",
+    "priceNote": "Assembly included",
+    "total": "Total",
+    "quantity": {
+      "label": "Number of builds",
+      "decrease": "Decrease",
+      "increase": "Increase"
+    },
+    "soldOut": "This build is sold out",
+    "buyNow": "Buy now",
+    "askWhatsApp": "Ask about {code} on WhatsApp",
+    "whatsApp": "Hi RIGX, I'd like to ask about the build {item} ({code}).",
+    "edit": "Tweak it",
+    "parts": {
+      "title": "Parts in this build",
+      "name": "Part",
+      "condition": "Condition",
+      "warranty": "Warranty",
+      "price": "Price",
+      "splitNote": "Want just one part of this build? Ask us on WhatsApp."
+    }
+  },
+  "builder": {
+    "title": "Build your own PC",
+    "subtitle": "Pick each part, new or used, and we'll check compatibility with you. Not sure?",
+    "recommendLink": "let us recommend one",
+    "quickStart": {
+      "label": "Quick start",
+      "Gaming": "Start from a gaming build",
+      "Editing": "Start from an editing build"
+    },
+    "opening": "Opening your build...",
+    "noSlots": "The builder isn't available right now.",
+    "loadFailed": "We can't open the builder right now. Please try again in a moment.",
+    "openFailed": "That link doesn't work, so we started from an empty build.",
+    "unmatched": "We couldn't find these parts available in the same model right now. Pick a replacement:",
+    "missing": "Parts no longer available:",
+    "removeMissing": "remove",
+    "help": "Not sure what to pick?",
+    "helpLink": "Tell us what you'll use it for",
+    "slots": {
+      "choosing": "Choosing now…",
+      "empty": "Not chosen yet",
+      "remove": "Remove {slot}"
+    },
+    "options": {
+      "title": "Choose {slot}",
+      "conditionTabs": "Type",
+      "all": "All",
+      "hint": "Shows the parts that fit what you've chosen and are in stock now.",
+      "search": "Search by model",
+      "failed": "We can't load the parts right now. Please try again.",
+      "empty": "No parts match this choice.",
+      "more": "Show more",
+      "conditionGroup": "New or used: {model}",
+      "unavailable": "Unavailable",
+      "incompatible": "Not compatible"
+    },
+    "issues": {
+      "conflict": "Conflict",
+      "warning": "Notice",
+      "specMismatch": "{slot} and {other} don't match on {spec}.",
+      "overLimit": "{slot} is over the limit {other} supports ({spec}).",
+      "powerOver": "The estimated power draw is above the power supply's output. Pick a stronger one.",
+      "powerNear": "The power draw is close to the power supply's output (over 80%). A stronger one is better.",
+      "generic": "There is a problem with the compatibility of {slot}."
+    },
+    "summary": {
+      "label": "Build summary",
+      "title": "Your build",
+      "show": "Details",
+      "hide": "Hide",
+      "checkFailed": "We can't check compatibility right now. Please try again in a moment.",
+      "compatibility": "Compatibility",
+      "status": {
+        "ok": "No conflicts",
+        "warning": "Has a notice",
+        "conflict": "Has a conflict"
+      },
+      "power": "Estimated power",
+      "conditions": "New / used",
+      "counts": "{newCount} new · {usedCount} used",
+      "total": "Estimated total"
+    },
+    "actions": {
+      "addAll": "Add all to cart",
+      "cannotOrder": "To add it to the cart: no conflicts, and every part in stock.",
+      "whatsApp": "Review it with us on WhatsApp",
+      "whatsAppItem": "my build from the PC builder",
+      "whatsAppFallback": "Hi RIGX, I'd like to review a build with you:",
+      "copyLink": "Copy link",
+      "quote": "PDF quote",
+      "copiedSaved": "Build link copied.",
+      "copiedPlain": "A link with the parts was copied.",
+      "note": "A build doesn't reserve parts. We confirm availability with you before preparing the order."
+    },
+    "quote": {
+      "title": "Quote",
+      "loading": "Preparing the quote...",
+      "unavailable": "This build can't be ordered right now, so we can't make a quote for it.",
+      "failed": "We can't prepare the quote right now. Please try again in a moment.",
+      "backToBuilder": "Back to the builder",
+      "print": "Print / save as PDF",
+      "total": "Total",
+      "label": "My build",
+      "meta": "{count} parts",
+      "metaWithUsage": "{usage} · {count} parts",
+      "pricedOn": "Prices as of {date}",
+      "cta": "Build yours on the website"
+    }
+  },
+  "services": {
+    "title": "Our services",
+    "hero": {
+      "line1": "With you before you buy,",
+      "line2": "and after you buy.",
+      "body": "Every service has clear steps and a price we confirm with you before we start. Message us on WhatsApp, or request a service from here."
+    },
+    "items": {
+      "consult": {
+        "price": "Free",
+        "title": "Help choosing a build",
+        "body": "Tell us what you'll use the PC for and your budget, and we'll recommend a build and explain why we picked each part.",
+        "steps": [
+          "You send us the use and budget",
+          "We send one or two recommendations",
+          "You choose, and we adjust if you like"
+        ],
+        "cta": "Start on WhatsApp",
+        "message": "I'd like help choosing a build."
+      },
+      "build": {
+        "price": "Free",
+        "title": "Assembly",
+        "body": "Whether the parts come from us or from you, we assemble the PC, tidy the cables, install Windows and drivers, and hand it over ready. If a part should be swapped, we suggest an alternative.",
+        "steps": [
+          "You choose the parts or bring them",
+          "Assembly and cable management",
+          "Windows, drivers and handover"
+        ],
+        "cta": "Request assembly",
+        "message": "I'd like to request an assembly service."
+      },
+      "test": {
+        "price": "EGP 150 per part",
+        "title": "Part check",
+        "body": "Have a part and not sure about its condition? Bring it and we'll stress-test it and give you a report with the result. If you sell it to us or buy a replacement from us, the check fee is deducted.",
+        "steps": [
+          "Bring the part to Agami or ship it",
+          "Stress test and trial",
+          "Report with the result and photos"
+        ],
+        "cta": "Book a check",
+        "message": "I'd like to book a check for a part."
+      },
+      "maintenance": {
+        "price": "Cleaning from EGP 200 · thermal paste from EGP 200",
+        "title": "Maintenance and cleaning",
+        "body": "Full cleaning and thermal paste replacement, with temperatures measured before and after so you can see the difference yourself.",
+        "steps": [
+          "Book a time",
+          "Temperatures measured before",
+          "Cleaning and new paste",
+          "Measured after, with a report"
+        ],
+        "cta": "Book maintenance",
+        "message": "I'd like to book maintenance and cleaning."
+      },
+      "sourcing": {
+        "price": "Price confirmed before payment",
+        "title": "Request a part we don't have",
+        "body": "Send us the model and we'll look for it and confirm the price and the time to get it before you pay anything.",
+        "steps": [
+          "You send the model",
+          "We confirm price and timing",
+          "We source and check it"
+        ],
+        "cta": "Request a part",
+        "message": "I'd like to request a part you don't have."
+      },
+      "upgrade": {
+        "price": "Free consultation",
+        "title": "Upgrade your PC",
+        "body": "Want more performance? We tell you which part will really make a difference, and work out the value of your old one.",
+        "steps": [
+          "You send your PC's specs",
+          "We recommend the right upgrade",
+          "We deduct the old part's value if you like"
+        ],
+        "cta": "Ask about an upgrade",
+        "message": "I'd like to ask about upgrading my PC."
+      }
+    },
+    "sell": {
+      "eyebrow": "Sell or trade in",
+      "title": "Your old part is worth something.",
+      "body": "Send the details and photos and we'll reply with a first offer. The final offer is set after we check the part. If you buy from us, the amount is deducted from the new part.",
+      "steps": {
+        "1": "1. Send the details and photos",
+        "2": "2. First offer on WhatsApp",
+        "3": "3. We check the part and make the final offer",
+        "4": "4. Cash, or a deduction from the new part"
+      },
+      "form": {
+        "label": "Request an offer for your part",
+        "partType": "Part type",
+        "partTypes": {
+          "gpu": "Graphics card",
+          "cpu": "Processor",
+          "board": "Motherboard",
+          "pc": "Full PC"
+        },
+        "model": "Model",
+        "modelPlaceholder": "e.g. GTX 1660 Super",
+        "ownedFor": "How long have you had it? · optional",
+        "ownedForPlaceholder": "e.g. two years",
+        "want": "What do you want?",
+        "wants": {
+          "Sell": "Sell it",
+          "TradeIn": "Trade it for a part from you"
+        },
+        "photos": "Photos of the part",
+        "photosDrop": "Click to choose photos (up to {max})",
+        "photoProblems": {
+          "count": "At most {max} photos.",
+          "size": "That photo is over 12 MB.",
+          "type": "Photos must be JPG, PNG or WebP."
+        },
+        "removePhoto": "Remove photo {name}",
+        "name": "Name",
+        "phone": "Mobile / WhatsApp number",
+        "submit": "Send and get an offer",
+        "sentTitle": "We got your request",
+        "sent": "We'll reply with a first offer on the number you entered. The final offer is set after we check the part.",
+        "photosFailed": "{count, plural, one {One photo} other {# photos}} didn't upload. Please send them to us on WhatsApp.",
+        "errors": {
+          "name": "Enter your name",
+          "model": "Enter the model",
+          "phone": "Enter a valid Egyptian mobile number",
+          "invalid": "Please check the details and try again.",
+          "failed": "Something went wrong. Please try again in a moment."
+        }
+      }
+    },
+    "soon": {
+      "title": "Coming soon",
+      "subtitle": "Services we'll add over time. Register your interest and we'll tell you when they start.",
+      "badge": "Soon",
+      "business": {
+        "title": "Business and bulk orders",
+        "body": "PCs for an office, a center or a lab, with one quote and an invoice.",
+        "cta": "Register your interest"
+      },
+      "wholesale": {
+        "title": "Wholesale for traders",
+        "body": "Parts in quantity for shops and resellers, at wholesale prices.",
+        "cta": "Register your interest"
+      },
+      "branch": {
+        "title": "RIGX branch in Alexandria",
+        "body": "A place to inspect parts, collect orders and get maintenance.",
+        "cta": "Tell me when it opens"
+      }
+    }
+  },
+  "interest": {
+    "title": "Register your interest",
+    "name": "Name",
+    "phone": "Mobile / WhatsApp number",
+    "submit": "Register me",
+    "note": "We'll call this number as soon as the service starts.",
+    "sent": "Done. We'll call the number you entered as soon as {subject} starts.",
+    "message": "I'd like to know as soon as this starts: {subject}",
+    "errors": {
+      "name": "Enter your name",
+      "phone": "Enter a valid Egyptian mobile number",
+      "invalid": "Please check the details and try again.",
+      "failed": "Something went wrong. Please try again in a moment."
+    }
+  },
+  "sold": {
+    "title": "Sold before",
+    "subtitle": "Parts and builds that went to their owners. If you want something similar, tell us and we'll let you know when it's in.",
+    "filter": "Category",
+    "all": "All",
+    "builds": "Builds",
+    "soldBadge": "Sold ✓",
+    "pickup": "Picked up from Agami",
+    "shippedTo": "Shipped to {governorate}",
+    "wantOne": "Want one like it · tell me",
+    "loadFailed": "We can't load the list right now. Please try again in a moment.",
+    "empty": "Nothing here yet."
   }
 }

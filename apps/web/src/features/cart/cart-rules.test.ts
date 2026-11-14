@@ -1,13 +1,29 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  addLine, clampQuantity, itemCount, parseStoredLines, reconcile, removeLine, setLineQuantity, subtotal,
-  type CartLine, type FreshItem
+  addLine, buildFreshness, buildLine, clampQuantity, itemCount, itemLine, parseStoredLines, reconcile, removeLine, setLineQuantity,
+  subtotal, type CartLine, type FreshItem
 } from "./cart-rules.ts";
 
 const line = (overrides: Partial<CartLine> = {}): CartLine => ({
-  code: "RX-0001", modelName: "Ryzen 5 5600", condition: "New", warrantyLabel: null, thumbnailStorageKey: null,
+  kind: "Item", code: "RX-0001", modelName: "Ryzen 5 5600", condition: "New", warrantyLabel: null, thumbnailStorageKey: null,
   priceOption: "Alone", unitPrice: 100, quantity: 1, maxQuantity: 5, ...overrides
+});
+
+const build = (overrides: Partial<CartLine> = {}): CartLine => ({
+  kind: "Build", code: "BLD-01", modelName: "Gaming PC", condition: null, warrantyLabel: null, thumbnailStorageKey: null,
+  priceOption: "InBuild", unitPrice: 20000, quantity: 1, maxQuantity: 2, ...overrides
+});
+
+describe("line builders", () => {
+  it("makes an item line with the chosen price option", () => {
+    const made = itemLine({ code: "RX-1", modelName: "m", condition: "Used", warrantyLabel: null, thumbnailStorageKey: null, available: 1 }, "WithBoard", 90);
+    assert.deepEqual([made.kind, made.priceOption, made.unitPrice, made.quantity, made.maxQuantity], ["Item", "WithBoard", 90, 1, 1]);
+  });
+  it("makes a build line priced InBuild with no condition", () => {
+    const made = buildLine({ code: "BLD-01", title: "Gaming PC", warrantyLabel: null, thumbnailStorageKey: null, salePrice: 20000, copies: 2 });
+    assert.deepEqual([made.kind, made.condition, made.priceOption, made.maxQuantity], ["Build", null, "InBuild", 2]);
+  });
 });
 
 describe("clampQuantity", () => {
@@ -18,6 +34,9 @@ describe("clampQuantity", () => {
   });
   it("forces Used to 1", () => {
     assert.equal(clampQuantity(line({ condition: "Used" }), 4), 1);
+  });
+  it("lets a build go up to its copies", () => {
+    assert.equal(clampQuantity(build(), 5), 2);
   });
 });
 
@@ -67,7 +86,24 @@ describe("reconcile", () => {
   });
 });
 
+describe("reconcile builds", () => {
+  it("refreshes the price and copies of a build line, drops a gone one", () => {
+    const fresh = new Map([["BLD-01", buildFreshness({ salePrice: 18000, copies: 1 })]]);
+    const result = reconcile([build({ quantity: 2 })], fresh);
+    assert.deepEqual([result.lines[0]?.unitPrice, result.lines[0]?.quantity], [18000, 1]);
+    assert.equal(reconcile([build()], new Map([["BLD-01", null]])).lines.length, 0);
+  });
+});
+
 describe("parseStoredLines", () => {
+  it("reads lines saved before builds existed as items", () => {
+    const old: Record<string, unknown> = { ...line() };
+    delete old.kind;
+    assert.equal(parseStoredLines(JSON.stringify([old]))[0]?.kind, "Item");
+  });
+  it("keeps build lines (no condition)", () => {
+    assert.equal(parseStoredLines(JSON.stringify([build()]))[0]?.kind, "Build");
+  });
   it("returns an empty cart for missing or broken data", () => {
     assert.deepEqual(parseStoredLines(null), []);
     assert.deepEqual(parseStoredLines("{nope"), []);

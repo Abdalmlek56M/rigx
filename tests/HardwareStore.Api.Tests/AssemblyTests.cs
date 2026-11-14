@@ -249,6 +249,11 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
         Assert.All(published.Single(view => view.Id == gaming.Id).Units, unit => Assert.NotNull(unit.PartPrice));
         Assert.All(published.Single(view => view.Id == office.Id).Units, unit => Assert.Null(unit.PartPrice));
 
+        Assert.Equal(gaming.Id, (await retail.Assemblies.GetPublishedAssemblyAsync(gaming.Code.ToLowerInvariant())).Id);
+        await retail.Assemblies.SetAssemblyPublishedAsync(office.Id, false, (await retail.Assemblies.GetAsync(office.Id, false)).RowVersion);
+        Assert.Equal(404, await StatusOfAsync(() => retail.Assemblies.GetPublishedAssemblyAsync(office.Code)));
+        Assert.Equal(404, await StatusOfAsync(() => retail.Assemblies.GetPublishedAssemblyAsync("RX-0001")));
+
         var publicNames = typeof(AssemblyPublicView).GetProperties().Concat(typeof(PublicUnitView).GetProperties()).Select(property => property.Name).ToList();
         Assert.DoesNotContain(publicNames, name => name.Contains("Cost") || name.Contains("Partner") || name.Contains("Allocat") || name.Contains("Serial"));
     }

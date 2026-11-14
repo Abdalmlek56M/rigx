@@ -13,7 +13,7 @@ public sealed class SoldFeedService(IDbContextFactory<RetailDbContext> contextFa
     public const string KindBuild = "Build";
     private const int PageSize = 24;
 
-    public async Task<PagedResult<SoldFeedItem>> ListAsync(bool showGovernorate, string? kind, Guid? categoryId, int page, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<SoldFeedItem>> ListAsync(bool showGovernorate, string? kind, IReadOnlyList<Guid>? categoryIds, int page, CancellationToken cancellationToken = default)
     {
         var paging = PageRequest.Of(page, PageSize);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -25,8 +25,9 @@ public sealed class SoldFeedService(IDbContextFactory<RetailDbContext> contextFa
             KindItem => lines.Where(item => item.StockItemId != null),
             _ => lines
         };
-        if (categoryId is Guid category)
-            lines = lines.Where(item => db.StockItems.Any(stock => stock.Id == item.StockItemId && stock.CategoryId == category));
+        if (categoryIds is { Count: > 0 } categories)
+            lines = lines.Where(item => db.StockItems.Any(stock => stock.Id == item.StockItemId
+                && stock.CategoryId != null && categories.Contains(stock.CategoryId.Value)));
         var total = await lines.CountAsync(cancellationToken);
         var rows = await lines.OrderByDescending(item => item.Order.UpdatedAtUtc).ThenBy(item => item.Id)
             .Skip(paging.Skip).Take(paging.PageSize)

@@ -23,7 +23,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
             var json = JsonSerializer.Serialize(specs);
             items = items.Where(item => EF.Functions.JsonContains(item.Specs, json));
         }
-        if (query.InStock == true) items = items.Where(item => item.Units.Any(unit => unit.Status == UnitStatus.Available));
+        if (query.InStock is bool inStock) items = items.Where(item => item.Units.Any(unit => unit.Status == UnitStatus.Available) == inStock);
         if (query.MinPrice is decimal min) items = items.Where(item => item.Price >= min);
         if (query.MaxPrice is decimal max) items = items.Where(item => item.Price <= max);
         var counts = await items.GroupBy(item => item.Condition)

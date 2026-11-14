@@ -27,6 +27,12 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await assemblies.ListPublishedAssembliesAsync(new AssemblyStoreQuery(usage, minPrice, maxPrice), ct));
     }
 
+    private static async Task<Ok<AssemblyPublicView>> GetPublishedAssemblyAsync(string code, HttpContext context, AssemblyService assemblies, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "public, max-age=60";
+        return TypedResults.Ok(await assemblies.GetPublishedAssemblyAsync(code, ct));
+    }
+
     private static async Task<Ok<AssemblyView>> CreateAssemblyAsync(AssemblyCreateRequest request, HttpContext context, AssemblyService assemblies, CancellationToken ct) =>
         TypedResults.Ok(await assemblies.CreateAssemblyAsync(request, context.HasPermission(ViewCosts), ct));
 

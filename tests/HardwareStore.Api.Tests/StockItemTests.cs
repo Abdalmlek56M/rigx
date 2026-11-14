@@ -1,5 +1,6 @@
 using System.Text.Json;
 using HardwareStore.Modules.Retail;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using static HardwareStore.Api.Tests.RetailReceipts;
 
@@ -75,6 +76,22 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         Assert.Equal($"items/{items[0].Code}/0-t.webp", card.ThumbnailStorageKey);
         var detailError = await Assert.ThrowsAsync<RetailException>(() => retail.Store.GetAsync(items[1].Code));
         Assert.Equal(404, detailError.StatusCode);
+    }
+
+    [Fact]
+    public async Task Store_availability_filter_lists_in_stock_or_sold_out_items()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var retail = database.CreateRetailServices();
+        var items = (await retail.Units.ReceiveAsync(Receive(UsedLine("Free GPU"), UsedLine("Gone GPU")), Actor)).Items;
+        foreach (var item in items) await PublishAsync(retail, item);
+        await using (var db = database.CreateRetailContext())
+            await db.Units.Where(unit => unit.StockItemId == items[1].Id)
+                .ExecuteUpdateAsync(set => set.SetProperty(unit => unit.Status, UnitStatus.Sold));
+
+        Assert.Equal("Free GPU", Assert.Single((await retail.Store.ListAsync(new StoreItemQuery(InStock: true))).Items).ModelName);
+        Assert.Equal("Gone GPU", Assert.Single((await retail.Store.ListAsync(new StoreItemQuery(InStock: false))).Items).ModelName);
+        Assert.Equal(2, (await retail.Store.ListAsync(new StoreItemQuery())).Total);
     }
 
     [Fact]

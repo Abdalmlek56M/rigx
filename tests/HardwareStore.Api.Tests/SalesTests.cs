@@ -894,7 +894,7 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
 
         Assert.Equal("Build", Assert.Single((await retail.SoldFeed.ListAsync(false, "Build", null, 1)).Items).Kind);
         Assert.Equal("Item", Assert.Single((await retail.SoldFeed.ListAsync(false, "Item", null, 1)).Items).Kind);
-        Assert.Empty((await retail.SoldFeed.ListAsync(false, null, Guid.NewGuid(), 1)).Items);
+        Assert.Empty((await retail.SoldFeed.ListAsync(false, null, [Guid.NewGuid()], 1)).Items);
         Assert.Empty((await retail.SoldFeed.ListAsync(false, null, null, 2)).Items);
         Assert.Equal(1, (await retail.SoldFeed.ListAsync(false, null, null, 0)).Page);
     }

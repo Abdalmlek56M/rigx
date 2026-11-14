@@ -1,0 +1,43 @@
+import type { HTMLInputTypeAttribute } from "react";
+
+interface TextFieldProps {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: HTMLInputTypeAttribute;
+  /** Numbers, emails and codes read left-to-right. */
+  ltr?: boolean;
+  autoComplete?: string;
+  placeholder?: string;
+  required?: boolean;
+  error?: string | null;
+}
+
+/** A labelled text input; `error` is announced and linked to the input. */
+export function TextField({ label, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error }: TextFieldProps) {
+  const errorId = `${name}-error`;
+  return (
+    <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
+      {label}
+      <input
+        name={name}
+        type={type}
+        value={value}
+        required={required}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        dir={ltr ? "ltr" : undefined}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        onChange={(event) => onChange(event.target.value)}
+        className={`h-11 w-full rounded-control border border-input-line bg-surface px-3 text-sm font-normal text-ink ${ltr ? "text-start" : ""}`}
+      />
+      {error ? (
+        <span id={errorId} role="alert" className="text-xs font-normal text-error">
+          {error}
+        </span>
+      ) : null}
+    </label>
+  );
+}

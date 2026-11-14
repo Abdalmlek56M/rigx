@@ -81,8 +81,11 @@ body {
   min-height: 100vh;
 }
 
-a {
-  color: inherit;
+/* In the base layer so text-* utilities on links win. */
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 :focus-visible {
@@ -99,5 +102,43 @@ a {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+}
+
+/* Pages marked data-print-document (the PDF quote) print alone, on white paper, whatever the theme. */
+@media print {
+  :root,
+  [data-theme="dark"] {
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --ink: #15171b;
+    --ink-muted: #4a4d53;
+    --line: #d8d3c8;
+  }
+
+  @page quote {
+    size: 1080px 1350px;
+    margin: 0;
+  }
+
+  [data-print-document] {
+    page: quote;
+  }
+
+  [data-print-document] * {
+    print-color-adjust: exact;
+  }
+
+  [data-quote-frame] {
+    width: 1080px !important;
+    height: 1350px !important;
+  }
+
+  [data-quote-card] {
+    transform: none !important;
+  }
+
+  body:has([data-print-document]) > :not(main) {
+    display: none !important;
   }
 }
