@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
@@ -184,6 +185,62 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
     }
 
     [Fact]
+    public async Task Dashboard_money_and_expense_routes_follow_their_permissions()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "report-reader", ["Finance.ViewReports"]);
+        await CreateUserAsync(database, "vault-viewer", ["Finance.ViewVaults"]);
+        await CreateUserAsync(database, "disburser", ["Finance.Disburse"]);
+        await CreateUserAsync(database, "expense-manager", ["Finance.ManageExpenses"]);
+        await using var factory = CreateFactory(database.ConnectionString);
+        const string retail = "/api/v1/admin/retail";
+
+        using var anonymous = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/admin/dashboard")).StatusCode);
+
+        using var reader = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(reader, factory, "report-reader");
+        var dashboard = await reader.GetAsync("/api/v1/admin/dashboard?from=2026-10-01&to=2026-10-31");
+        Assert.Equal(HttpStatusCode.OK, dashboard.StatusCode);
+        Assert.Contains("\"snapshot\"", await dashboard.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync("/api/v1/admin/dashboard")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await reader.GetAsync("/api/v1/admin/dashboard?from=2026-11-02&to=2026-11-01")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"{retail}/expense-types")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"{retail}/recurring-expenses")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"{retail}/expenses/summary?from=2026-10-01&to=2026-10-31")).StatusCode);
+        var export = await reader.GetAsync($"{retail}/expenses/export?from=2026-10-01&to=2026-10-31");
+        Assert.Equal(HttpStatusCode.OK, export.StatusCode);
+        var bytes = await export.Content.ReadAsByteArrayAsync();
+        Assert.Equal("EFBBBF", Convert.ToHexString(bytes, 0, 3));
+        Assert.Equal(HttpStatusCode.Forbidden, (await reader.GetAsync($"{retail}/money/accounts")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(reader, $"{retail}/expense-types", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(reader, $"{retail}/money/transfers", new { })).StatusCode);
+
+        using var vaults = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(vaults, factory, "vault-viewer");
+        var accounts = await vaults.GetAsync($"{retail}/money/accounts");
+        Assert.Equal(HttpStatusCode.OK, accounts.StatusCode);
+        Assert.Equal(4, (await accounts.Content.ReadFromJsonAsync<List<MoneyAccountView>>())!.Count);
+        Assert.Equal(HttpStatusCode.NotFound, (await vaults.GetAsync($"{retail}/money/accounts/{Guid.NewGuid()}/movements")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await vaults.GetAsync("/api/v1/admin/dashboard")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(vaults, $"{retail}/money/transfers", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(vaults, $"{retail}/money/accounts", new { })).StatusCode);
+
+        using var disburser = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(disburser, factory, "disburser");
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(disburser, $"{retail}/money/transfers", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(disburser, $"{retail}/money/accounts", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await disburser.GetAsync($"{retail}/money/accounts")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(disburser, $"{retail}/expense-types", new { })).StatusCode);
+
+        using var manager = factory.CreatePreflightedClient(new() { HandleCookies = true });
+        await LoginAsync(manager, factory, "expense-manager");
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(manager, $"{retail}/expense-types", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(manager, $"{retail}/recurring-expenses", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await manager.GetAsync($"{retail}/expense-types")).StatusCode);
+    }
+
+    [Fact]
     public async Task Tracking_and_the_sold_feed_are_public_and_unknown_tokens_are_not_found()
     {
         var database = await fixture.CreateDatabaseAsync();
@@ -211,6 +268,8 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
             services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
             services.RemoveAll<IDbContextFactory<StorefrontDbContext>>();
             services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(connectionString));
+            services.RemoveAll<IDbContextFactory<CatalogDbContext>>();
+            services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(connectionString));
         });
 
     private static Task<Guid> CreateUserAsync(OwnerBootstrapDatabase database, string username, string[] permissions) =>

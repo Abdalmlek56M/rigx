@@ -10,11 +10,13 @@ public sealed record PurchaseReceived(PurchaseView Purchase, ReceiptResult Items
 /// Catalog spec schema, Retail stock), so it lives in Host per architecture decision 11.
 /// </summary>
 public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryUnitService inventory, AssemblyService assemblies,
-    StoreSettingsService settings, CategorySpecService categorySpecs)
+    StoreSettingsService settings, CategorySpecService categorySpecs, MoneyAccountService money)
 {
     public async Task<PurchaseReceived> ReceiveAsync(Guid purchaseId, Guid actorId, CancellationToken cancellationToken)
     {
         var purchase = await purchases.GetDraftAsync(purchaseId, cancellationToken);
+        var payKind = MoneyMethodOf(purchase.PaymentMethod);
+        if (purchase.PaidAmount > 0 && payKind is not null) await money.EnsureCanPayAsync(payKind, purchase.PaidAmount, cancellationToken);
         var warranties = await WarrantyChoice.LoadOptionsAsync(settings, cancellationToken);
         var lines = new List<ReceiptLine>();
         foreach (var line in purchase.Lines)
@@ -34,6 +36,17 @@ public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryU
             var build = await assemblies.CreateAssemblyAsync(new AssemblyCreateRequest(purchase.BuildName ?? $"PC {purchase.Code}", unitIds), cancellationToken: cancellationToken);
             assemblyId = build.Id;
         }
-        return new PurchaseReceived(await purchases.MarkReceivedAsync(purchase.Id, assemblyId, cancellationToken), receipt);
+        var received = await purchases.MarkReceivedAsync(purchase.Id, assemblyId, cancellationToken);
+        if (purchase.PaidAmount > 0 && payKind is not null)
+            await money.PayPurchaseAsync(purchase.Id, purchase.Code, payKind, purchase.PaidAmount, purchase.PurchaseDate, actorId, cancellationToken);
+        return new PurchaseReceived(received, receipt);
     }
+
+    /// <summary>The money method the seller is paid with: cash and trade-in is paid in cash; a pure trade-in moves no money.</summary>
+    private static string? MoneyMethodOf(string sellerMethod) => sellerMethod switch
+    {
+        SellerPaymentMethod.TradeIn => null,
+        SellerPaymentMethod.CashAndTradeIn => SellerPaymentMethod.Cash,
+        _ => sellerMethod
+    };
 }

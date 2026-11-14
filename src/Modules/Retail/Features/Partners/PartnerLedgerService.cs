@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
-/// <summary>Partner money: earnings and adjustments lists, and cash payouts (paid against the oldest earnings first).</summary>
+/// <summary>Partner money: earnings and adjustments lists, and cash payouts (paid against the oldest earnings first, from a money account).</summary>
 public sealed class PartnerLedgerService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
     public async Task<IReadOnlyList<PartnerEarningView>> ListEarningsAsync(Guid? partnerId = null, CancellationToken cancellationToken = default)
@@ -44,42 +44,24 @@ public sealed class PartnerLedgerService(IDbContextFactory<RetailDbContext> cont
     {
         var amount = decimal.Round(request.Amount, 2);
         if (amount <= 0) throw new RetailException(400, "A positive payout amount is required.");
-        var method = OrderRules.Optional(request.Method, 32, "Method") ?? "Cash";
+        var method = MoneyRules.KindForMethod(request.Method);
         var reference = OrderRules.Optional(request.Reference, 128, "Reference");
         var note = OrderRules.Optional(request.Note, 500, "Note");
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            await db.LockPartnerAsync(partnerId, cancellationToken);
-            var partner = await db.Partners.AsNoTracking().SingleOrDefaultAsync(item => item.Id == partnerId, cancellationToken)
-                ?? throw new RetailException(404, "The partner was not found.");
-            var earnings = await db.PartnerEarnings
-                .Where(item => item.PartnerId == partnerId && item.Status == EarningStatus.Outstanding && item.Amount > 0)
-                .OrderBy(item => item.CreatedAtUtc).ToListAsync(cancellationToken);
-            var available = earnings.Sum(item => item.Amount - item.PaidAmount - item.OffsetAmount);
-            if (amount > available) throw new RetailException(400, "The payout exceeds the cash due after offsets.");
-            var remaining = amount;
-            foreach (var earning in earnings)
-            {
-                if (remaining <= 0) break;
-                var applied = Math.Min(earning.Amount - earning.PaidAmount - earning.OffsetAmount, remaining);
-                earning.PaidAmount += applied; remaining -= applied;
-                if (earning.PaidAmount + earning.OffsetAmount >= earning.Amount) earning.Status = EarningStatus.Paid;
-            }
-            var settlement = new PartnerSettlement
-            {
-                Id = Guid.CreateVersion7(), PartnerId = partnerId, Amount = amount, Method = method, Reference = reference, Note = note,
-                ActorUserAccountId = actorId, CreatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
-            };
-            db.PartnerSettlements.Add(settlement);
+            var (settlement, partnerName) = await PartnerPayouts.PayAsync(db, partnerId, amount, method, reference, note, null, actorId, now, cancellationToken);
+            await MoneyLedger.PostOutAsync(db, request.MoneyAccountId, method, new MoneyEntry(MoneySource.PartnerPayout, settlement.Id, amount,
+                reference, note, DateOnly.FromDateTime(now.UtcDateTime), actorId, now), cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return Map(settlement, partner.Name);
+            return Map(settlement, partnerName);
         }
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
 
     private static PartnerSettlementView Map(PartnerSettlement item, string partnerName) => new(item.Id, item.PartnerId, partnerName, item.Amount,
-        item.OffsetApplied, item.Method, item.Reference, item.Note, item.CreatedAtUtc);
+        item.OffsetApplied, item.Method, item.Reference, item.Note, item.CreatedAtUtc, item.ExpenseId);
 }

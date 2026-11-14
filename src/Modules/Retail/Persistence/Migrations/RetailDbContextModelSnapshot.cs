@@ -238,6 +238,46 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.ToTable("blacklist_entries", (string)null);
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.ExpenseType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("row_version");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ux_expense_types_name");
+
+                    b.ToTable("expense_types", (string)null);
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.InventoryUnit", b =>
                 {
                     b.Property<Guid>("Id")
@@ -429,6 +469,128 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.HasKey("Year");
 
                     b.ToTable("invoice_counters", (string)null);
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.MoneyAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("opening_balance");
+
+                    b.Property<DateOnly>("OpeningDate")
+                        .HasColumnType("date")
+                        .HasColumnName("opening_date");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("row_version");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ux_money_accounts_name");
+
+                    b.ToTable("money_accounts", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_money_accounts_kind", "kind IN ('Cash','InstaPay','Wallet','BankTransfer')");
+
+                            t.HasCheckConstraint("ck_money_accounts_opening", "opening_balance >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.MoneyMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("account_id");
+
+                    b.Property<Guid>("ActorUserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_account_id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<DateOnly>("OccurredOn")
+                        .HasColumnType("date")
+                        .HasColumnName("occurred_on");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("reference");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("source");
+
+                    b.Property<Guid>("SourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "OccurredOn")
+                        .HasDatabaseName("ix_money_movements_account_date");
+
+                    b.HasIndex("Source", "SourceId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_money_movements_source");
+
+                    b.ToTable("money_movements", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_money_movements_amount", "amount <> 0");
+                        });
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.OrderEvent", b =>
@@ -641,6 +803,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("method");
 
+                    b.Property<Guid?>("MoneyAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("money_account_id");
+
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -651,6 +817,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("order_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MoneyAccountId");
 
                     b.HasIndex("OrderId");
 
@@ -1058,6 +1226,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<Guid?>("ExpenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expense_id");
+
                     b.Property<string>("Method")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -1084,6 +1256,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("reference");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpenseId");
 
                     b.HasIndex("PartnerId")
                         .HasDatabaseName("ix_partner_settlements_partner");
@@ -1123,6 +1297,75 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.ToTable("purchase_receipts", (string)null);
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.RecurringExpense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("category");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid>("CreatedByUserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_account_id");
+
+                    b.Property<int>("DayOfMonth")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_month");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<DateOnly?>("LastPostedMonth")
+                        .HasColumnType("date")
+                        .HasColumnName("last_posted_month");
+
+                    b.Property<Guid?>("MoneyAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("money_account_id");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("row_version");
+
+                    b.Property<DateOnly>("StartMonth")
+                        .HasColumnType("date")
+                        .HasColumnName("start_month");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MoneyAccountId");
+
+                    b.ToTable("recurring_expenses", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_recurring_expenses_amount", "amount > 0");
+
+                            t.HasCheckConstraint("ck_recurring_expenses_day", "day_of_month BETWEEN 1 AND 28");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.RetailExpense", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1133,6 +1376,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("amount");
+
+                    b.Property<Guid?>("AssemblyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assembly_id");
 
                     b.Property<string>("AttachmentReference")
                         .HasMaxLength(512)
@@ -1163,6 +1410,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("date")
                         .HasColumnName("expense_date");
 
+                    b.Property<Guid?>("MoneyAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("money_account_id");
+
                     b.Property<string>("Note")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
@@ -1171,6 +1422,14 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
+
+                    b.Property<Guid?>("PaidByPartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("paid_by_partner_id");
+
+                    b.Property<Guid?>("RecurringExpenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recurring_expense_id");
 
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
@@ -1187,6 +1446,15 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
                     b.HasIndex("ExpenseDate")
                         .HasDatabaseName("ix_retail_expenses_date");
+
+                    b.HasIndex("MoneyAccountId");
+
+                    b.HasIndex("PaidByPartnerId");
+
+                    b.HasIndex("RecurringExpenseId", "ExpenseDate")
+                        .IsUnique()
+                        .HasDatabaseName("ux_retail_expenses_recurring")
+                        .HasFilter("recurring_expense_id IS NOT NULL");
 
                     b.ToTable("retail_expenses", null, t =>
                         {
@@ -1750,6 +2018,15 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Navigation("StockItem");
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.MoneyMovement", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.MoneyAccount", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.OrderEvent", b =>
                 {
                     b.HasOne("HardwareStore.Modules.Retail.StoreOrder", null)
@@ -1783,6 +2060,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.OrderPayment", b =>
                 {
+                    b.HasOne("HardwareStore.Modules.Retail.MoneyAccount", null)
+                        .WithMany()
+                        .HasForeignKey("MoneyAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HardwareStore.Modules.Retail.StoreOrder", null)
                         .WithMany("Payments")
                         .HasForeignKey("OrderId")
@@ -1819,11 +2101,42 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerSettlement", b =>
                 {
+                    b.HasOne("HardwareStore.Modules.Retail.RetailExpense", null)
+                        .WithMany()
+                        .HasForeignKey("ExpenseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HardwareStore.Modules.Retail.Partner", null)
                         .WithMany()
                         .HasForeignKey("PartnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.RecurringExpense", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.MoneyAccount", null)
+                        .WithMany()
+                        .HasForeignKey("MoneyAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.RetailExpense", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.MoneyAccount", null)
+                        .WithMany()
+                        .HasForeignKey("MoneyAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HardwareStore.Modules.Retail.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PaidByPartnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HardwareStore.Modules.Retail.RecurringExpense", null)
+                        .WithMany()
+                        .HasForeignKey("RecurringExpenseId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.Assembly", b =>

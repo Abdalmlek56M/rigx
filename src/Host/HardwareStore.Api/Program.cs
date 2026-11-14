@@ -49,6 +49,7 @@ builder.Services.AddPcBuilderModule(builder.Configuration);
 builder.Services.AddRetailModule(builder.Configuration);
 builder.Services.AddSingleton(OrderLinks.FromConfiguration(builder.Configuration));
 builder.Services.AddHostedService<ReservationExpiryJob>();
+builder.Services.AddHostedService<RecurringExpenseJob>();
 builder.Services.AddScoped<HardwareStore.Modules.Catalog.IMediaReferenceGuard, RetailMediaReferenceGuard>();
 builder.Services.AddSecurityAuditPersistence(builder.Configuration);
 var previewEnabled = builder.Environment.IsDevelopment() &&
@@ -91,8 +92,8 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
 
 builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgsql(connectionString));
-builder.Services.AddScoped<AdminAnalyticsService>();
 builder.Services.AddScoped<PurchaseReceiptService>();
+builder.Services.AddScoped<DashboardComposer>();
 builder.Services.AddScoped<RequestPurchaseConversion>();
 builder.Services.AddScoped<BuilderCatalogLoader>();
 builder.Services.AddScoped<BuilderService>();
@@ -165,7 +166,6 @@ app.MapOfferEndpoints();
 app.MapContentMediaEndpoints();
 app.MapContentVideoEndpoints();
 app.MapReviewEndpoints();
-app.MapAdminAnalyticsEndpoints();
 app.MapBuilderEndpoints();
 app.MapRetailEndpoints();
 app.MapIdentityAdministrationEndpoints();

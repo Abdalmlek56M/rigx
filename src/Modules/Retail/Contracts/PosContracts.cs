@@ -8,7 +8,7 @@ public sealed record PosSaleRequest(OrderCustomer? Customer, string? Fulfillment
     IReadOnlyList<OrderLineRequest>? Items, decimal Discount = 0m, decimal? DeliveryFee = null,
     IReadOnlyList<PosPaymentRequest>? Payments = null, string? LeadSource = null, string? Usage = null, string? UsageNote = null,
     string? Notes = null, bool Confirm = true);
-public sealed record PosPaymentRequest(string? Method, decimal Amount);
+public sealed record PosPaymentRequest(string? Method, decimal Amount, Guid? MoneyAccountId = null);
 
 /// <summary>Discount limit (settings) unless the seller has the price-override permission; reservation defaults; shipping rate per governorate code.</summary>
 public sealed record PosPolicy(decimal MaxDiscountPercent, bool UnlimitedDiscount, ReservationPolicy Reservation, Func<string, ShippingRate> ShippingFor);

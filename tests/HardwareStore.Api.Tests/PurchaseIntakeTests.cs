@@ -22,7 +22,7 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         public RetailTestServices Retail { get; } = database.CreateRetailServices();
         public PurchaseReceiptService Receipts => new(Purchases, Retail.Units, Retail.Assemblies,
             new StoreSettingsService(Factory<StorefrontDbContext>(database), new SecurityAuditWriter(Factory<SecurityAuditDbContext>(database)), TimeProvider.System),
-            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System));
+            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System), Retail.Money);
 
         public async Task<SellerView> NewSellerAsync(string phone = "01012345678") =>
             await Sellers.CreateAsync(new SellerRequest("Person", "Ahmed", phone, null, null, null, null, null));
@@ -157,6 +157,7 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
     public async Task A_received_purchase_cannot_be_edited_or_cancelled_and_a_stale_draft_edit_is_a_conflict()
     {
         var harness = new Harness(await fixture.CreateDatabaseAsync());
+        await harness.Retail.FundAsync(1000m);
         var seller = await harness.NewSellerAsync();
         var stale = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("GTX 1060")), Actor);
         await harness.Purchases.UpdateAsync(stale.Id, Parts(seller.Id, 500m, Used("GTX 1060")) with { RowVersion = stale.RowVersion });
@@ -185,5 +186,63 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         Assert.Equal(PurchaseStatus.Cancelled, cancelled.Status);
         var error = await Assert.ThrowsAsync<PurchasingException>(() => harness.Receipts.ReceiveAsync(purchase.Id, Actor, default));
         Assert.Equal(409, error.StatusCode);
+    }
+
+    [Fact]
+    public async Task Receiving_a_purchase_pays_the_seller_from_the_account_of_the_payment_method()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        await harness.Retail.FundAsync(1000m);
+        await harness.Retail.FundAsync(300m, MoneyAccountKind.InstaPay);
+        var seller = await harness.NewSellerAsync();
+        var cash = await harness.Purchases.CreateAsync(Parts(seller.Id, 500m, Used("RTX 3060")), Actor);
+        var insta = await harness.Purchases.CreateAsync(Parts(seller.Id, 300m, Used("RX 6600")) with { PaymentMethod = SellerPaymentMethod.InstaPay }, Actor);
+
+        await harness.Receipts.ReceiveAsync(cash.Id, Actor, default);
+        await harness.Receipts.ReceiveAsync(insta.Id, Actor, default);
+
+        Assert.Equal((500m, 0m), (await harness.Retail.BalanceAsync(), await harness.Retail.BalanceAsync(MoneyAccountKind.InstaPay)));
+        var movement = Assert.Single(await harness.Retail.Money.ListMovementsAsync((await harness.Retail.AccountAsync()).Id, null, null),
+            item => item.Source == MoneySource.Purchase);
+        Assert.Equal((-500m, cash.Code), (movement.Amount, movement.Reference));
+    }
+
+    [Fact]
+    public async Task A_purchase_the_account_cannot_pay_is_refused_before_anything_is_received()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        await harness.Retail.FundAsync(100m);
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 500m, Used("RTX 3060")), Actor);
+
+        var error = await Assert.ThrowsAsync<RetailException>(() => harness.Receipts.ReceiveAsync(purchase.Id, Actor, default));
+
+        Assert.Equal(409, error.StatusCode);
+        Assert.Empty(await harness.Retail.Units.ListUnitsAsync(null, null));
+        Assert.Equal(PurchaseStatus.Draft, (await harness.Purchases.GetDraftAsync(purchase.Id, default)).Status);
+        Assert.Equal(100m, await harness.Retail.BalanceAsync());
+        await harness.Retail.FundAsync(400m);
+        await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+        Assert.Equal(0m, await harness.Retail.BalanceAsync());
+    }
+
+    [Fact]
+    public async Task A_pure_trade_in_moves_no_money_and_the_cash_part_of_a_mixed_one_comes_from_cash()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var tradeIn = await harness.Purchases.CreateAsync(new PurchaseRequest(seller.Id, PurchaseKind.Parts, false, null, Day, null,
+            SellerPaymentMethod.TradeIn, 0, 2000m, "old card", [Used("RTX 3060")]), Actor);
+        await harness.Receipts.ReceiveAsync(tradeIn.Id, Actor, default);
+
+        Assert.All(await harness.Retail.Money.ListAsync(), account => Assert.Equal(0m, account.Balance));
+        Assert.Empty(await harness.Retail.Money.ListMovementsAsync((await harness.Retail.AccountAsync()).Id, null, null));
+
+        var mixed = await harness.Purchases.CreateAsync(new PurchaseRequest(seller.Id, PurchaseKind.Parts, false, null, Day, null,
+            SellerPaymentMethod.CashAndTradeIn, 500m, 1500m, "old card", [Used("RX 6600")]), Actor);
+        Assert.Equal(409, (await Assert.ThrowsAsync<RetailException>(() => harness.Receipts.ReceiveAsync(mixed.Id, Actor, default))).StatusCode);
+        await harness.Retail.FundAsync(500m);
+        await harness.Receipts.ReceiveAsync(mixed.Id, Actor, default);
+        Assert.Equal(0m, await harness.Retail.BalanceAsync());
     }
 }

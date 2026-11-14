@@ -50,7 +50,7 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var (usage, usageNote) = OrderUsage.Parse(request.Usage, request.UsageNote);
         var shipping = ShippingOf(request, fulfillment, policy);
         var payments = (request.Payments ?? [])
-            .Select(payment => (Method: OrderRules.PaymentMethod(payment.Method, OrderChannel.Store), payment.Amount)).ToList();
+            .Select(payment => (Method: OrderRules.PaymentMethod(payment.Method, OrderChannel.Store), payment.Amount, payment.MoneyAccountId)).ToList();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
@@ -72,7 +72,8 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
             order.Notes = OrderRules.Optional(request.Notes, 2000, "Notes");
             order.IsBlacklisted = await BlacklistService.MatchesAsync(db, order, cancellationToken);
             order.Events.Add(OrderMapping.Event("OrderCreated", OrderChannel.Store, actorId, now));
-            foreach (var payment in payments) OrderPaymentService.Record(order, payment.Method, payment.Amount, null, actorId, now);
+            foreach (var payment in payments)
+                await OrderPaymentService.RecordAsync(db, order, payment.Method, payment.MoneyAccountId, payment.Amount, null, actorId, now, cancellationToken);
             if (request.Confirm)
             {
                 OrderRules.EnsureCanConfirm(order);

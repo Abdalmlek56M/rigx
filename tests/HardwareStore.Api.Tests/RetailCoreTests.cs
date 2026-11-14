@@ -43,6 +43,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
+        await retail.FundAsync(1000m);
         var productCpu = Guid.NewGuid();
         var productMb = Guid.NewGuid();
         var partnerA = await retail.CreateAsync("Partner A", 10m);
@@ -209,6 +210,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
+        await retail.FundAsync(1000m);
         var productId = Guid.NewGuid();
         var partnerE = await retail.CreateAsync("Partner E", 10m);
         var returnable = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
@@ -246,6 +248,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
+        await retail.FundAsync(1000m);
         var productId = Guid.NewGuid();
         var partnerF = await retail.CreateAsync("Partner F", 10m);
         var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
@@ -378,6 +381,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
+        await retail.FundAsync(1000m);
         var partnerA = await retail.CreateAsync("Partner A", 60m);
         var partnerB = await retail.CreateAsync("Partner B", 40m);
         var items = await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
@@ -422,14 +426,15 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
+        await retail.FundAsync(1000m);
         var reportUnit = Assert.Single(await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
             [Line(Guid.NewGuid(), "Report Unit", 100m)]), Actor));
         var order = await NewOrderAsync(retail, 10m, Sale(reportUnit, 300m));
         var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 50m, "Packaging", "Direct", null, order.Id, null, null), Actor);
-        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 100m, "Internet", "GeneralOverhead", null, null, null, null), Actor);
+        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 50m, "تغليف", "Direct", null, order.Id, null, null), Actor);
+        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 100m, "إنترنت", "GeneralOverhead", null, null, null, null), Actor);
 
         var report = await retail.Reports.BuildReportAsync(today, today);
         Assert.Equal(290m, report.GrossSales);

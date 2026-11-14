@@ -16,22 +16,27 @@ public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> conte
         if (order.RowVersion != request.RowVersion) throw new RetailException(409, "The order was changed by another user.");
         if (order.Status is OrderStatus.Cancelled or OrderStatus.Completed || order.PaymentStatus is PaymentStatus.Waived or PaymentStatus.Refunded)
             throw new RetailException(409, "This order cannot take payments.");
-        Record(order, OrderRules.PaymentMethod(request.Method, OrderChannel.Store), request.Amount,
-            OrderRules.Optional(request.Note, 500, "Note"), actorId, timeProvider.GetUtcNow().ToUniversalTime());
+        await RecordAsync(db, order, OrderRules.PaymentMethod(request.Method, OrderChannel.Store), request.MoneyAccountId, request.Amount,
+            OrderRules.Optional(request.Note, 500, "Note"), actorId, timeProvider.GetUtcNow().ToUniversalTime(), cancellationToken);
         order.RowVersion++;
         await db.SaveChangesAsync(cancellationToken);
         return OrderMapping.ToView(order);
     }
 
-    internal static void Record(StoreOrder order, string method, decimal amount, string? note, Guid actorId, DateTimeOffset now)
+    /// <summary>Adds the payment to the order and the money to the account (the chosen one, else the first active account of the method kind).</summary>
+    internal static async Task RecordAsync(RetailDbContext db, StoreOrder order, string method, Guid? accountId, decimal amount, string? note,
+        Guid actorId, DateTimeOffset now, CancellationToken cancellationToken)
     {
         OrderRules.ValidatePayment(amount);
         if (amount > OrderRules.Remaining(order)) throw new RetailException(400, "The payment is more than what is left to pay.");
-        order.Payments.Add(new OrderPayment
+        var payment = new OrderPayment
         {
             Id = Guid.CreateVersion7(), OrderId = order.Id, Method = method, Amount = amount, Note = note,
             ActorUserAccountId = actorId, CreatedAtUtc = now
-        });
+        };
+        var entry = new MoneyEntry(MoneySource.Sale, payment.Id, amount, order.Reference, note, DateOnly.FromDateTime(now.UtcDateTime), actorId, now);
+        payment.MoneyAccountId = await MoneyLedger.PostInAsync(db, accountId, MoneyRules.KindForMethod(method), entry, cancellationToken);
+        order.Payments.Add(payment);
         order.PaidAmount += amount;
         if (order.PaidAmount >= order.Total) order.PaymentStatus = PaymentStatus.Paid;
         order.UpdatedAtUtc = now;

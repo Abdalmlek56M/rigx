@@ -35,3 +35,27 @@ public static class WarrantyStatus { public const string Active = "Active"; publ
 public static class InvoiceKind { public const string Build = "Build"; public const string Parts = "Parts"; }
 /// <summary>Computed invoice state (never stored): Void once its order is cancelled.</summary>
 public static class InvoiceStatus { public const string Issued = "Issued"; public const string Void = "Void"; }
+/// <summary>Kind of a money account (where store money sits).</summary>
+public static class MoneyAccountKind
+{
+    public const string Cash = "Cash";
+    public const string InstaPay = "InstaPay";
+    public const string Wallet = "Wallet";
+    public const string BankTransfer = "BankTransfer";
+}
+/// <summary>What produced a money movement; with its source id it is unique, so a posting can never be repeated.</summary>
+public static class MoneySource
+{
+    public const string Sale = "Sale";
+    public const string Refund = "Refund";
+    public const string Purchase = "Purchase";
+    public const string Expense = "Expense";
+    public const string PartnerPayout = "PartnerPayout";
+    public const string CapitalDeposit = "CapitalDeposit";
+    public const string CapitalWithdrawal = "CapitalWithdrawal";
+    public const string TransferIn = "TransferIn";
+    public const string TransferOut = "TransferOut";
+}
+/// <summary>Method stored on a partner settlement that was an expense paid from the partner's own money (no account movement).</summary>
+public static class PartnerSettlementMethod { public const string PartnerExpense = "PartnerExpense"; }
+public static class ExpenseClassification { public const string Direct = "Direct"; public const string GeneralOverhead = "GeneralOverhead"; }

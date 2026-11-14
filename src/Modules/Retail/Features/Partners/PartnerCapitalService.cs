@@ -15,12 +15,12 @@ public sealed class PartnerCapitalService(IDbContextFactory<RetailDbContext> con
                 entry.Note, entry.CreatedAtUtc)).ToList();
     }
 
-    /// <summary>The partner row is locked so two withdrawals cannot both pass the balance check.</summary>
+    /// <summary>The partner row is locked so two withdrawals cannot both pass the balance check; the money moves in or out of an account.</summary>
     public async Task<PartnerCapitalEntryView> AddAsync(Guid partnerId, PartnerCapitalRequest request, Guid actorId,
         CancellationToken cancellationToken = default)
     {
         var amount = decimal.Round(request.Amount, 2);
-        var method = OrderRules.Optional(request.Method, 32, "Method");
+        var method = MoneyRules.KindForMethod(request.Method);
         var note = OrderRules.Optional(request.Note, 500, "Note");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -39,6 +39,11 @@ public sealed class PartnerCapitalService(IDbContextFactory<RetailDbContext> con
                 ActorUserAccountId = actorId, CreatedAtUtc = now
             };
             db.PartnerCapitalEntries.Add(entry);
+            var deposit = request.Kind == PartnerCapitalKind.Deposit;
+            var posting = new MoneyEntry(deposit ? MoneySource.CapitalDeposit : MoneySource.CapitalWithdrawal, entry.Id, amount, null, note,
+                entry.EntryDate, actorId, now);
+            if (deposit) await MoneyLedger.PostInAsync(db, request.MoneyAccountId, method, posting, cancellationToken);
+            else await MoneyLedger.PostOutAsync(db, request.MoneyAccountId, method, posting, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return new PartnerCapitalEntryView(entry.Id, entry.PartnerId, entry.Kind, entry.Amount, entry.EntryDate, entry.Method, entry.Note, entry.CreatedAtUtc);

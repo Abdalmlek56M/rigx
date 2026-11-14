@@ -99,6 +99,9 @@ public sealed class ReturnService(IDbContextFactory<RetailDbContext> contextFact
             order.Events.Add(new OrderEvent { Id = Guid.CreateVersion7(), EventType = "Return:Inspected", Notes = $"{condition} · refund {entity.RefundAmount}", ActorUserAccountId = actorId, CreatedAtUtc = now });
             order.UpdatedAtUtc = now; order.RowVersion++;
 
+            if (entity.RefundAmount > 0)
+                await MoneyLedger.PostOutAsync(db, request.RefundAccountId, MoneyAccountKind.Cash, new MoneyEntry(MoneySource.Refund, entity.Id,
+                    entity.RefundAmount, order.Reference, null, DateOnly.FromDateTime(now.UtcDateTime), actorId, now), cancellationToken);
             await WarrantyRegistry.VoidForUnitAsync(db, order.Id, unit.Id, "Returned", actorId, now, cancellationToken);
             await PartnerEarningsPosting.ReverseForReturnAsync(db, entity, item, unit.Id, condition, now, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);

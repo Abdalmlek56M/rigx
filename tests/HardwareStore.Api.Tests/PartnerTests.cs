@@ -166,13 +166,14 @@ public sealed class PartnerPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
     public async Task Month_close_posts_whole_shop_shares_once_after_the_month_ended()
     {
         var (retail, _, clock) = await StartAsync(MidSeptember);
+        await retail.FundAsync(1000m);
         var financer = await retail.CreateAsync("Financer", 10m);
         var shop = await retail.CreateAsync("Shop", 20m, basis: PartnerBasis.WholeShop);
         var late = await retail.CreateAsync("Late Joiner", 10m, basis: PartnerBasis.WholeShop, joinDate: new DateOnly(2026, 10, 1));
         var financed = await retail.ReceiveItemAsync(Line("Financed", 100m, 300m, financer.Id));
         var own = await retail.ReceiveItemAsync(Line("Own", 100m, 200m));
         await SellAsync(retail, (financed, 300m), (own, 200m));
-        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(new DateOnly(2026, 9, 20), 30m, "Rent", "GeneralOverhead", null, null, null, null), Actor);
+        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(new DateOnly(2026, 9, 20), 30m, "إيجار", "GeneralOverhead", null, null, null, null), Actor);
 
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.MonthClose.CloseMonthAsync(new PartnerMonthCloseRequest(2026, 9), RetailSales.BusinessZone)));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.MonthClose.CloseMonthAsync(new PartnerMonthCloseRequest(2026, 13), RetailSales.BusinessZone)));
@@ -219,6 +220,7 @@ public sealed class PartnerPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
     public async Task Payouts_reduce_the_due_and_cannot_exceed_it()
     {
         var (retail, _, _) = await StartAsync();
+        await retail.FundAsync(1000m);
         var first = await retail.CreateAsync("First", 10m);
         var second = await retail.CreateAsync("Second", 10m);
         var one = await retail.ReceiveItemAsync(Line("One", 100m, 300m, first.Id));
@@ -303,7 +305,7 @@ public sealed class PartnerPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
         public RetailTestServices Retail { get; } = database.CreateRetailServices();
         public PurchaseReceiptService Receipts => new(Purchases, Retail.Units, Retail.Assemblies,
             new StoreSettingsService(Factory<StorefrontDbContext>(database), new SecurityAuditWriter(Factory<SecurityAuditDbContext>(database)), TimeProvider.System),
-            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System));
+            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System), Retail.Money);
 
         private static Factory<T> Factory<T>(OwnerBootstrapDatabase db) where T : DbContext => new(db.ConnectionString);
     }

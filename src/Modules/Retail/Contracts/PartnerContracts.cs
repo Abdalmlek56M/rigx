@@ -3,8 +3,9 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>Create (no RowVersion) or update (RowVersion required) a partner card.</summary>
 public sealed record PartnerRequest(string? Name, string? Phone, DateOnly? JoinDate, decimal DefaultPercent, string? Basis,
     bool LossSharingEnabled = false, bool IsActive = true, string? Notes = null, long? RowVersion = null);
-public sealed record PartnerCapitalRequest(string? Kind, decimal Amount, DateOnly? EntryDate = null, string? Method = null, string? Note = null);
-public sealed record PartnerPayoutRequest(decimal Amount, string? Method, string? Reference, string? Note);
+public sealed record PartnerCapitalRequest(string? Kind, decimal Amount, DateOnly? EntryDate = null, string? Method = null, string? Note = null,
+    Guid? MoneyAccountId = null);
+public sealed record PartnerPayoutRequest(decimal Amount, string? Method, string? Reference, string? Note, Guid? MoneyAccountId = null);
 /// <summary>Sets or clears (PartnerId null) who finances an unsold unit, with an optional percent that overrides the partner default.</summary>
 public sealed record UnitPartnerRequest(Guid? PartnerId, decimal? Percent, long RowVersion);
 public sealed record PartnerMonthCloseRequest(int Year, int Month);
@@ -25,7 +26,7 @@ public sealed record PartnerEarningView(Guid Id, Guid PartnerId, string PartnerN
 public sealed record PartnerAdjustmentView(Guid Id, Guid PartnerId, string PartnerName, decimal Amount, decimal AppliedAmount,
     decimal RemainingAmount, string Status, string Reason, Guid? OrderReturnId, DateTimeOffset CreatedAtUtc);
 public sealed record PartnerSettlementView(Guid Id, Guid PartnerId, string PartnerName, decimal Amount, decimal OffsetApplied,
-    string Method, string? Reference, string? Note, DateTimeOffset CreatedAtUtc);
+    string Method, string? Reference, string? Note, DateTimeOffset CreatedAtUtc, Guid? ExpenseId = null);
 /// <summary>Whole-shop shares posted for a month: the month base and one earning per partner (skipped when already posted).</summary>
 public sealed record PartnerMonthCloseView(DateOnly Month, decimal StoreNetResult, decimal FinancedShares, decimal Base,
     IReadOnlyList<PartnerEarningView> Posted);

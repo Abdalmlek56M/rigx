@@ -28,15 +28,21 @@ public sealed record RetailTestServices(
     BlacklistService Blacklist,
     PosService Pos,
     SoldFeedService SoldFeed,
-    WarrantyService Warranties)
+    WarrantyService Warranties,
+    MoneyAccountService Money,
+    ExpenseTypeService ExpenseTypes,
+    RecurringExpenseService Recurring,
+    DashboardService Dashboard)
 {
     public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time)
     {
         var reports = new BusinessReportService(factory);
+        var recurring = new RecurringExpenseService(factory, time);
         return new(new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
             new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-            new(factory, reports, time), new(factory), new(factory), new(factory, time), reports, new(factory, time), new(factory),
-            new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory), new(factory, time));
+            new(factory, reports, time), new(factory), new(factory), new(factory, reports, time), reports, new(factory, time), new(factory),
+            new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory), new(factory, time),
+            new(factory, time), new(factory, time), recurring, new(factory, reports, recurring, time));
     }
 }
 
@@ -143,4 +149,33 @@ public static class RetailReceipts
 
     public static async Task<List<StockItemAdminView>> ReceiveItemsAsync(this RetailTestServices retail, ReceiveRequest request, Guid actorId) =>
         (await retail.Units.ReceiveAsync(request, actorId)).Items.ToList();
+}
+
+/// <summary>Money helpers: the four seeded accounts start empty, so a test funds one before it pays anything out of it.</summary>
+public static class RetailMoney
+{
+    public static async Task<MoneyAccountView> AccountAsync(this RetailTestServices retail, string kind = MoneyAccountKind.Cash) =>
+        (await retail.Money.ListAsync()).First(account => account.Kind == kind);
+
+    public static async Task<decimal> BalanceAsync(this RetailTestServices retail, string kind = MoneyAccountKind.Cash) =>
+        (await retail.AccountAsync(kind)).Balance;
+
+    /// <summary>Adds <paramref name="amount"/> to the opening balance of the first account of the kind.</summary>
+    public static async Task<MoneyAccountView> FundAsync(this RetailTestServices retail, decimal amount, string kind = MoneyAccountKind.Cash)
+    {
+        var account = await retail.AccountAsync(kind);
+        return await retail.Money.UpdateAsync(account.Id, new MoneyAccountRequest(account.Name, account.Kind, account.OpeningBalance + amount,
+            account.OpeningDate, account.IsActive, account.SortOrder, account.RowVersion));
+    }
+
+    /// <summary>Sells at the POS and walks the order to Completed (pickup: confirmed, preparing, delivered, completed).</summary>
+    public static async Task<OrderView> CompletedSaleAsync(this RetailTestServices retail, PosSaleRequest sale)
+    {
+        var order = await retail.StatusesAsync(await retail.PosAsync(sale), OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Delivered);
+        return await retail.OrderStatus.CompleteOrderAsync(order.Id, new CompleteOrderRequest(order.RowVersion, "done"), Guid.NewGuid());
+    }
+
+    /// <summary>One item sold at <paramref name="price"/>, paid in full with one method (into the chosen account, else the default one).</summary>
+    public static PosSaleRequest PaidSale(StockItemAdminView item, decimal price, string method = OrderPaymentMethod.Cash, Guid? accountId = null) =>
+        RetailSales.Sale([RetailSales.StockLine(item.Id, 1, price)], payments: [new PosPaymentRequest(method, price, accountId)]);
 }

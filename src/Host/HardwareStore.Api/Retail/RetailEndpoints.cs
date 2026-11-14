@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
 /// Retail HTTP API. Routes and permissions are listed here; handlers live in one partial file per area
-/// (inventory, assemblies, sales, partners, financials). Business errors are <c>RetailException</c>s
+/// (inventory, assemblies, sales, partners, financials, money). Business errors are <c>RetailException</c>s
 /// mapped once by <c>ProblemDetailsExceptionHandler</c>, so handlers do not catch them.
 /// </summary>
 public static partial class RetailEndpoints
@@ -61,6 +61,19 @@ public static partial class RetailEndpoints
         admin.MapGet("/partner/earnings", ListEarningsAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/expenses", ListExpensesAsync).RequirePermission("Finance.ViewReports");
         admin.MapPost("/expenses", CreateExpenseAsync).RequirePermission("Finance.ManageExpenses");
+        admin.MapGet("/expenses/summary", ExpenseSummaryAsync).RequirePermission("Finance.ViewReports");
+        admin.MapGet("/expenses/export", ExportExpensesAsync).RequirePermission("Finance.ViewReports");
+        admin.MapGet("/expense-types", ListExpenseTypesAsync).RequirePermission("Finance.ViewReports");
+        admin.MapPost("/expense-types", CreateExpenseTypeAsync).RequirePermission("Finance.ManageExpenses");
+        admin.MapPut("/expense-types/{id:guid}", UpdateExpenseTypeAsync).RequirePermission("Finance.ManageExpenses");
+        admin.MapGet("/recurring-expenses", ListRecurringExpensesAsync).RequirePermission("Finance.ViewReports");
+        admin.MapPost("/recurring-expenses", CreateRecurringExpenseAsync).RequirePermission("Finance.ManageExpenses");
+        admin.MapPut("/recurring-expenses/{id:guid}", UpdateRecurringExpenseAsync).RequirePermission("Finance.ManageExpenses");
+        admin.MapGet("/money/accounts", ListMoneyAccountsAsync).RequirePermission("Finance.ViewVaults");
+        admin.MapGet("/money/accounts/{id:guid}/movements", ListMoneyMovementsAsync).RequirePermission("Finance.ViewVaults");
+        admin.MapPost("/money/accounts", CreateMoneyAccountAsync).RequirePermission("Finance.Disburse");
+        admin.MapPut("/money/accounts/{id:guid}", UpdateMoneyAccountAsync).RequirePermission("Finance.Disburse");
+        admin.MapPost("/money/transfers", TransferMoneyAsync).RequirePermission("Finance.Disburse");
         admin.MapGet("/reports/business", BusinessReportAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/partner/adjustments", ListAdjustmentsAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/partners", ListPartnersAsync).RequirePermission("Finance.ViewReports");
@@ -89,6 +102,7 @@ public static partial class RetailEndpoints
         endpoints.MapGet("/api/v1/invoices/mine", ListMyInvoicesAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/invoices/{token}", GetInvoiceByTokenAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
         endpoints.MapPost("/api/v1/store/quote", QuoteAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
+        endpoints.MapGet("/api/v1/admin/dashboard", GetDashboardAsync).RequirePermission("Finance.ViewReports");
         return endpoints;
     }
 }

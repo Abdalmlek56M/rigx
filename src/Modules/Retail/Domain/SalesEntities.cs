@@ -73,6 +73,8 @@ public sealed class OrderPayment
     public required string Method { get; set; }
     public decimal Amount { get; set; }
     public string? Note { get; set; }
+    /// <summary>The account the money went into; null for payments recorded before accounts existed.</summary>
+    public Guid? MoneyAccountId { get; set; }
     public Guid? ActorUserAccountId { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
 }

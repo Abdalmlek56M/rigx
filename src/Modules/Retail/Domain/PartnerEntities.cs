@@ -75,6 +75,8 @@ public sealed class PartnerSettlement
     public required string Method { get; set; }
     public string? Reference { get; set; }
     public string? Note { get; set; }
+    /// <summary>Set when the settlement is an expense paid from the partner's own money (no account movement).</summary>
+    public Guid? ExpenseId { get; set; }
     public Guid ActorUserAccountId { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
 }

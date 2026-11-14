@@ -36,8 +36,12 @@ public static class RetailRegistration
         services.AddScoped<PartnerLedgerService>();
         services.AddScoped<PartnerMonthCloseService>();
         services.AddScoped<PartnerStatementService>();
+        services.AddScoped<MoneyAccountService>();
         services.AddScoped<ExpenseService>();
+        services.AddScoped<ExpenseTypeService>();
+        services.AddScoped<RecurringExpenseService>();
         services.AddScoped<BusinessReportService>();
+        services.AddScoped<DashboardService>();
         return services;
     }
 }

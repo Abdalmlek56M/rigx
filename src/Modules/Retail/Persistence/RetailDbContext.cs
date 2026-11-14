@@ -25,10 +25,18 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<Warranty> Warranties => Set<Warranty>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceCounter> InvoiceCounters => Set<InvoiceCounter>();
+    public DbSet<MoneyAccount> MoneyAccounts => Set<MoneyAccount>();
+    public DbSet<MoneyMovement> MoneyMovements => Set<MoneyMovement>();
+    public DbSet<ExpenseType> ExpenseTypes => Set<ExpenseType>();
+    public DbSet<RecurringExpense> RecurringExpenses => Set<RecurringExpense>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.ApplyConfiguration(new StockItemConfiguration());
+        model.ApplyConfiguration(new MoneyAccountConfiguration());
+        model.ApplyConfiguration(new MoneyMovementConfiguration());
+        model.ApplyConfiguration(new ExpenseTypeConfiguration());
+        model.ApplyConfiguration(new RecurringExpenseConfiguration());
         model.Entity<InventoryUnit>(e =>
         {
             e.ToTable("inventory_units", t => t.HasCheckConstraint("ck_inventory_units_cost", "acquisition_cost >= 0"));
@@ -185,6 +193,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Method).HasColumnName("method").HasMaxLength(32).IsRequired();
             e.Property(x => x.Amount).HasColumnName("amount").HasPrecision(18, 2);
             e.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
+            e.Property(x => x.MoneyAccountId).HasColumnName("money_account_id");
+            e.HasOne<MoneyAccount>().WithMany().HasForeignKey(x => x.MoneyAccountId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
         });
@@ -339,6 +349,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Method).HasColumnName("method").HasMaxLength(32).IsRequired();
             e.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(128);
             e.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
+            e.Property(x => x.ExpenseId).HasColumnName("expense_id");
+            e.HasOne<RetailExpense>().WithMany().HasForeignKey(x => x.ExpenseId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
         });
@@ -358,6 +370,15 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Note).HasColumnName("note").HasMaxLength(1000);
             e.Property(x => x.OrderId).HasColumnName("order_id");
             e.Property(x => x.UnitId).HasColumnName("unit_id");
+            e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
+            e.Property(x => x.MoneyAccountId).HasColumnName("money_account_id");
+            e.HasOne<MoneyAccount>().WithMany().HasForeignKey(x => x.MoneyAccountId).OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.PaidByPartnerId).HasColumnName("paid_by_partner_id");
+            e.HasOne<Partner>().WithMany().HasForeignKey(x => x.PaidByPartnerId).OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.RecurringExpenseId).HasColumnName("recurring_expense_id");
+            e.HasOne<RecurringExpense>().WithMany().HasForeignKey(x => x.RecurringExpenseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.RecurringExpenseId, x.ExpenseDate }).IsUnique().HasFilter("recurring_expense_id IS NOT NULL")
+                .HasDatabaseName("ux_retail_expenses_recurring");
             e.Property(x => x.AttachmentReference).HasColumnName("attachment_reference").HasMaxLength(512);
             e.Property(x => x.CreatedByUserAccountId).HasColumnName("created_by_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");

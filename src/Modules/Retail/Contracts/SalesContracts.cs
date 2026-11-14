@@ -43,13 +43,14 @@ public sealed record OrderStatusRequest(string? Status, string? Notes, long RowV
 public sealed record CompleteOrderRequest(long RowVersion, string? Notes);
 public sealed record PaymentStatusRequest(string? PaymentStatus, string? Notes, long RowVersion);
 public sealed record WaivePaymentRequest(string? Reason, long RowVersion);
-public sealed record OrderPaymentRequest(string? Method, decimal Amount, string? Note, long RowVersion);
+public sealed record OrderPaymentRequest(string? Method, decimal Amount, string? Note, long RowVersion, Guid? MoneyAccountId = null);
 public sealed record OrderShippingRequest(string? CourierName, string? WaybillNumber, long RowVersion);
 public sealed record OrderReservationRequest(int? Hours, bool AutoRelease, long RowVersion);
 public sealed record OrderRatingRequest(int Score, string? Comment);
 public sealed record BlacklistRequest(Guid? OrderId, string? Name, string? Phone, string? Email, OrderAddress? Address, string? Reason);
 public sealed record ReturnCreateRequest(Guid OrderId, Guid OrderItemId, Guid UnitId, decimal RefundAmount, string? Reason);
-public sealed record ReturnInspectRequest(string? Condition, string? Notes, long RowVersion);
+/// <summary>RefundAccountId is the account the refund is paid from; without it the first active cash account pays.</summary>
+public sealed record ReturnInspectRequest(string? Condition, string? Notes, long RowVersion, Guid? RefundAccountId = null);
 public sealed record ReturnRejectRequest(string? Notes, long RowVersion);
 
 public sealed record OrderComponentView(Guid Id, Guid UnitId, decimal AllocationPercent, decimal RevenueAmount, decimal DiscountAmount, decimal DirectExpenseAmount, decimal CostAmount, decimal NetProfit);
