@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f4f2ed;
+  --surface: #ffffff;
+  --carbon: #15171b;
+  --ink: #15171b;
+  --ink-muted: #4a4d53;
+  --line: #d8d3c8;
+  --sand: #d8d3c8;
+  --orange: #ff6a2b;
+  --orange-text: #b84a12;
+  --orange-text-hover: #8f380c;
+  --success: #1f8a55;
+  --field: #24262b;
+  --header-line: #3a3d43;
+  --footer-text: #bfc1c5;
+  --footer-line: #2e3036;
+  --muted: #6b6e74;
+  --input-line: #bdb7aa;
+  --error: #a3321a;
+  --disabled: #e2ded5;
+  --on-carbon: #f4f2ed;
+  --on-orange: #15171b;
+}
+
+[data-theme="dark"] {
+  --paper: #111214;
+  --surface: #1b1d21;
+  --carbon: #0b0c0e;
+  --ink: #eceae5;
+  --ink-muted: #a9abb0;
+  --line: #2e3036;
+  --orange-text: #ff8a5c;
+  --orange-text-hover: #ffa684;
+  --success: #3fd08a;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-carbon: var(--carbon);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-sand: var(--sand);
+  --color-orange: var(--orange);
+  --color-orange-text: var(--orange-text);
+  --color-orange-text-hover: var(--orange-text-hover);
+  --color-success: var(--success);
+  --color-field: var(--field);
+  --color-header-line: var(--header-line);
+  --color-footer-text: var(--footer-text);
+  --color-footer-line: var(--footer-line);
+  --color-muted: var(--muted);
+  --color-input-line: var(--input-line);
+  --color-error: var(--error);
+  --color-disabled: var(--disabled);
+  --color-on-carbon: var(--on-carbon);
+  --color-on-orange: var(--on-orange);
+  --font-sans: var(--font-plex-sans), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --radius-panel: 12px;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-plex-sans), sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+.ltr-text {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: var(--font-plex-mono), monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "rigx",
+  "private": true,
+  "description": "RIGX frontend workspace (storefront and shared packages). The .NET backend lives in src/.",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev -w @rigx/web",
+    "build": "npm run build -w @rigx/web",
+    "lint": "npm run lint -w @rigx/web",
+    "typecheck": "npm run typecheck -w @rigx/web && npm run typecheck -w @rigx/api-client",
+    "test": "npm test -w @rigx/web -w @rigx/api-client"
+  }
+}

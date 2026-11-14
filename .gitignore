@@ -35,3 +35,5 @@ docs/review/
 **/TestResults/
 *.log
 .opencode/
+**/next-env.d.ts
+**/*.tsbuildinfo

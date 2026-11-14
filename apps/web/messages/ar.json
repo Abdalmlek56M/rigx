@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "title": "RIGX Hardware",
+    "description": "قطع كمبيوتر جديدة ومستعملة، وتجميعات جاهزة."
+  },
+  "home": {
+    "title": "قطع كمبيوتر جديدة ومستعملة، وتجميعات جاهزة."
+  },
+  "notFound": {
+    "title": "الصفحة دي مش موجودة",
+    "home": "ارجع للرئيسية"
+  },
+  "common": {
+    "close": "قفل",
+    "condition": {
+      "New": "جديد",
+      "Used": "مستعمل"
+    }
+  },
+  "topBar": {
+    "defaultAnnouncement": "شحن لكل المحافظات",
+    "whatsApp": "واتساب:"
+  },
+  "header": {
+    "home": "RIGX الرئيسية",
+    "navLabel": "الأقسام",
+    "allCategories": "كل الأقسام",
+    "used": "مستعمل",
+    "new": "جديد",
+    "builds": "تجميعات",
+    "builder": "جمّع جهازك",
+    "services": "خدماتنا",
+    "searchLabel": "ابحث بالموديل أو رقم القطعة",
+    "searchPlaceholder": "RTX 3060 أو RX-0142",
+    "account": "حسابي",
+    "menu": "القائمة",
+    "darkMode": "الوضع الليلي",
+    "lightMode": "الوضع العادي"
+  },
+  "locale": {
+    "switchLabel": "EN",
+    "switchAria": "English"
+  },
+  "footer": {
+    "tagline": "هاردوير جديد ومستعمل، وتجميعات، وخدمات.",
+    "follow": "تابعنا",
+    "shop": {
+      "title": "تسوّق",
+      "new": "جديد",
+      "used": "مستعمل",
+      "builds": "تجميعات",
+      "builder": "جمّع جهازك"
+    },
+    "allProducts": "كل المنتجات",
+    "help": "المساعدة",
+    "warranty": "سياسة الضمان",
+    "returns": "الاسترجاع والاستبدال",
+    "shipping": "الشحن والعربون",
+    "about": "إزاي بنشتغل",
+    "articles": "المقالات",
+    "contact": "تواصل معانا",
+    "support": "الدعم الفني",
+    "copyright": "© {year} RIGX Hardware",
+    "platforms": {
+      "WhatsApp": "واتساب",
+      "Telegram": "تليجرام",
+      "Facebook": "فيسبوك",
+      "Instagram": "إنستجرام",
+      "TikTok": "تيك توك",
+      "YouTube": "يوتيوب"
+    }
+  },
+  "floatingContact": {
+    "label": "تواصل معانا",
+    "call": "اتصل بينا",
+    "support": "الدعم الفني",
+    "faq": "الأسئلة الشائعة"
+  },
+  "backToTop": "ارجع لفوق",
+  "cart": {
+    "title": "السلة",
+    "titleWithCount": "السلة · {count}",
+    "button": "السلة",
+    "buttonAria": "{count, plural, =0 {السلة} other {السلة، # منتجات}}",
+    "empty": "السلة فاضية",
+    "browse": "تصفح المنتجات",
+    "remove": "شيل",
+    "removeAria": "شيل {model} من السلة",
+    "quantity": "الكمية",
+    "increase": "زوّد الكمية",
+    "decrease": "قلّل الكمية",
+    "shipping": "الشحن",
+    "shippingNote": "بيتحسب في الخطوة الجاية",
+    "total": "الإجمالي",
+    "checkout": "كمّل الطلب",
+    "viewCart": "اعرض السلة",
+    "removedNotice": "فيه قطعة خلصت واتشالت من السلة",
+    "added": "اتضافت للسلة:",
+    "openCart": "افتح السلة"
+  }
+}

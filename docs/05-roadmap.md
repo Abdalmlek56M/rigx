@@ -49,7 +49,7 @@ Order matters: we restructure before adding features, so new features land in cl
 - [x] Generated TypeScript client package for the frontend: `packages/api-client` (`@rigx/api-client`): types generated from the contract (`openapi-typescript`, not committed), `openapi-fetch` client with cookie credentials, automatic CSRF token, `unwrap` → `ApiError` (ProblemDetails, field errors), `STEP_UP_HEADER`; strict typecheck + wrapper tests. Checkpoint: `docs/checkpoints/3-api-contract.md`.
 
 ## Phase 4 — Frontend (Next.js, from the approved canvas)
-1. Foundation: tokens, fonts, RTL/EN, layout, header (search, EN, account, cart drawer), footer, floating contact, back-to-top.
+1. [x] **Foundation**: tokens, fonts, RTL/EN, layout, header (search, EN, account, cart drawer), footer, floating contact, back-to-top. Done 14 Nov 2026: npm workspace and `apps/web` shell (Next.js 16) with AR/EN routing, design tokens and dark mode, header with client-side cart drawer, footer, floating contact and back-to-top; storefront pages follow in 4.2. Checkpoint: `docs/checkpoints/4.1-foundation.md`.
 2. Storefront: home, catalog (category tree, in/out of stock filter), product (context price, notify-me, WhatsApp prefilled), builds, PC builder (new/used per slot, out-of-stock struck), services, sold page.
 3. Checkout → order success → tracking page; login (email/Google); account (orders, warranties, profile/security, subscriptions, tier); warranty lookup.
 4. Admin: dashboard, POS, orders, purchase intake, inventory, build editor, partners, categories, customers, offers/coupons, expenses, requests inbox, campaigns, tiers, FAQ/articles, users/roles, audit log, trash/backup/export, settings.

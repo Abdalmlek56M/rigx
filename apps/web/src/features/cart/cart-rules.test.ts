@@ -1,0 +1,80 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import {
+  addLine, clampQuantity, itemCount, parseStoredLines, reconcile, removeLine, setLineQuantity, subtotal,
+  type CartLine, type FreshItem
+} from "./cart-rules.ts";
+
+const line = (overrides: Partial<CartLine> = {}): CartLine => ({
+  code: "RX-0001", modelName: "Ryzen 5 5600", condition: "New", warrantyLabel: null, thumbnailStorageKey: null,
+  priceOption: "Alone", unitPrice: 100, quantity: 1, maxQuantity: 5, ...overrides
+});
+
+describe("clampQuantity", () => {
+  it("keeps New within 1..max", () => {
+    assert.equal(clampQuantity(line(), 0), 1);
+    assert.equal(clampQuantity(line(), 3), 3);
+    assert.equal(clampQuantity(line(), 99), 5);
+  });
+  it("forces Used to 1", () => {
+    assert.equal(clampQuantity(line({ condition: "Used" }), 4), 1);
+  });
+});
+
+describe("addLine", () => {
+  it("merges same code and price option, clamped to the lot", () => {
+    const result = addLine([line({ quantity: 4 })], line({ quantity: 3 }));
+    assert.equal(result.length, 1);
+    assert.equal(result[0]?.quantity, 5);
+  });
+  it("keeps different price options apart", () => {
+    assert.equal(addLine([line()], line({ priceOption: "WithBoard" })).length, 2);
+  });
+  it("never lets a Used item reach 2", () => {
+    const used = line({ condition: "Used", maxQuantity: 1 });
+    assert.equal(addLine([used], used)[0]?.quantity, 1);
+  });
+});
+
+describe("totals and edits", () => {
+  const lines = [line({ quantity: 2, unitPrice: 100 }), line({ code: "RX-0002", unitPrice: 50 })];
+  it("counts units and sums the subtotal", () => {
+    assert.equal(itemCount(lines), 3);
+    assert.equal(subtotal(lines), 250);
+  });
+  it("removes by code and price option", () => {
+    assert.deepEqual(removeLine(lines, "RX-0001", "Alone").map((l) => l.code), ["RX-0002"]);
+    assert.equal(removeLine(lines, "RX-0001", "WithBoard").length, 2);
+  });
+  it("sets a clamped quantity", () => {
+    assert.equal(setLineQuantity(lines, "RX-0001", "Alone", 50)[0]?.quantity, 5);
+  });
+});
+
+describe("reconcile", () => {
+  const fresh = (available: number): FreshItem => ({ available, prices: { alone: 90, withBoard: 80, inBuild: 70 } });
+  it("updates price by option and clamps to what is available", () => {
+    const result = reconcile([line({ quantity: 4, priceOption: "WithBoard" })], new Map([["RX-0001", fresh(2)]]));
+    assert.equal(result.lines[0]?.unitPrice, 80);
+    assert.equal(result.lines[0]?.quantity, 2);
+    assert.equal(result.removed, 0);
+  });
+  it("drops gone and sold-out lines, keeps unknown ones", () => {
+    const lines = [line(), line({ code: "RX-0002" }), line({ code: "RX-0003" })];
+    const result = reconcile(lines, new Map<string, FreshItem | null>([["RX-0001", null], ["RX-0002", fresh(0)]]));
+    assert.deepEqual(result.lines.map((l) => l.code), ["RX-0003"]);
+    assert.equal(result.removed, 2);
+  });
+});
+
+describe("parseStoredLines", () => {
+  it("returns an empty cart for missing or broken data", () => {
+    assert.deepEqual(parseStoredLines(null), []);
+    assert.deepEqual(parseStoredLines("{nope"), []);
+    assert.deepEqual(parseStoredLines('{"a":1}'), []);
+  });
+  it("drops malformed lines and keeps valid ones", () => {
+    const raw = JSON.stringify([line(), { code: 5 }]);
+    assert.equal(parseStoredLines(raw).length, 1);
+  });
+});
