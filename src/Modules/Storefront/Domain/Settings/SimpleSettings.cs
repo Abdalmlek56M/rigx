@@ -161,3 +161,21 @@ public sealed record SalesSettings : IStoreSettingsSection<SalesSettings>
         return this with { ReservationHours = SettingsValues.Range(ReservationHours, 1, 720, "Reservation hours") };
     }
 }
+
+/// <summary>The daily backup schedule (2.10): on/off, the Cairo hour it starts from, and how many days of archives are kept.</summary>
+public sealed record BackupSettings : IStoreSettingsSection<BackupSettings>
+{
+    public static string Key => "backup";
+    public static BackupSettings Read(StoreSettings settings) => settings.Backup;
+    public static void Write(StoreSettings settings, BackupSettings value) => settings.Backup = value;
+
+    public bool Enabled { get; init; } = true;
+    public int HourCairo { get; init; } = 3;
+    public int RetentionDays { get; init; } = 14;
+
+    public BackupSettings Normalize() => this with
+    {
+        HourCairo = SettingsValues.Range(HourCairo, 0, 23, "Backup hour"),
+        RetentionDays = SettingsValues.Range(RetentionDays, 3, 90, "Backup retention days")
+    };
+}

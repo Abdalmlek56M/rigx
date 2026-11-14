@@ -32,6 +32,7 @@ internal static class StoreSettingsConfiguration
             Section(entity, item => item.Sales, "sales");
             Section(entity, item => item.WarrantyOptions, "warranty_options");
             Section(entity, item => item.Logos, "logos");
+            Section(entity, item => item.Backup, "backup");
             entity.Property(item => item.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();

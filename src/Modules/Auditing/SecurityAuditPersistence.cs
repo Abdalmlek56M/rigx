@@ -28,6 +28,7 @@ public sealed class AuditUserAccountReference
 public sealed class SecurityAuditDbContext(DbContextOptions<SecurityAuditDbContext> options) : DbContext(options)
 {
     public DbSet<SecurityAuditEvent> SecurityAuditEvents => Set<SecurityAuditEvent>();
+    public DbSet<BackupRun> BackupRuns => Set<BackupRun>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -62,8 +63,35 @@ public sealed class SecurityAuditDbContext(DbContextOptions<SecurityAuditDbConte
             entity.HasIndex(audit => audit.OccurredAtUtc).HasDatabaseName("ix_security_audit_events_occurred_at_utc");
             entity.HasIndex(audit => audit.ActorUserAccountId).HasDatabaseName("ix_security_audit_events_actor_user_account_id");
             entity.HasIndex(audit => audit.SubjectUserAccountId).HasDatabaseName("ix_security_audit_events_subject_user_account_id");
-            entity.HasOne<AuditUserAccountReference>().WithMany().HasForeignKey(audit => audit.ActorUserAccountId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne<AuditUserAccountReference>().WithMany().HasForeignKey(audit => audit.SubjectUserAccountId).OnDelete(DeleteBehavior.Restrict);
+            // SetNull lets a data reset delete customer accounts; the event and its metadata stay, only the account link goes.
+            entity.HasOne<AuditUserAccountReference>().WithMany().HasForeignKey(audit => audit.ActorUserAccountId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne<AuditUserAccountReference>().WithMany().HasForeignKey(audit => audit.SubjectUserAccountId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        model.Entity<BackupRun>(entity =>
+        {
+            entity.ToTable("backup_runs", table =>
+            {
+                table.HasCheckConstraint("ck_backup_runs_trigger", "trigger_kind IN ('Scheduled', 'Manual', 'BeforeReset')");
+                table.HasCheckConstraint("ck_backup_runs_status", "status IN ('Succeeded', 'Failed')");
+            });
+            entity.HasKey(run => run.Id);
+            entity.Property(run => run.Id).HasColumnName("id").ValueGeneratedNever();
+            entity.Property(run => run.StartedAtUtc).HasColumnName("started_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(run => run.FinishedAtUtc).HasColumnName("finished_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(run => run.Trigger).HasColumnName("trigger_kind").HasMaxLength(16).IsRequired();
+            entity.Property(run => run.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
+            entity.Property(run => run.FileName).HasColumnName("file_name").HasMaxLength(64);
+            entity.Property(run => run.SizeBytes).HasColumnName("size_bytes");
+            entity.Property(run => run.Sha256).HasColumnName("sha256").HasMaxLength(64);
+            entity.Property(run => run.DestinationsWritten).HasColumnName("destinations_written");
+            entity.Property(run => run.Error).HasColumnName("error").HasMaxLength(500);
+            entity.Property(run => run.VerifiedAtUtc).HasColumnName("verified_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(run => run.VerifyPassed).HasColumnName("verify_passed");
+            entity.Property(run => run.VerifyTables).HasColumnName("verify_tables");
+            entity.Property(run => run.VerifyRows).HasColumnName("verify_rows");
+            entity.Property(run => run.VerifyError).HasColumnName("verify_error").HasMaxLength(500);
+            entity.HasIndex(run => run.StartedAtUtc).HasDatabaseName("ix_backup_runs_started_at_utc");
         });
     }
 }
@@ -157,6 +185,7 @@ public static class SecurityAuditPersistenceRegistration
         services.AddScoped<ISecurityAuditWriter>(provider => provider.GetRequiredService<SecurityAuditWriter>());
         services.AddScoped<ISecurityAuditTransactionWriter>(provider => provider.GetRequiredService<SecurityAuditWriter>());
         services.AddScoped<SecurityAuditQueryService>();
+        services.AddScoped<BackupRunStore>();
         return services;
     }
 }

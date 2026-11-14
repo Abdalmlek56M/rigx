@@ -752,6 +752,13 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
+                    b.Property<string>("Backup")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("backup")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
                     b.Property<string>("ContactLinks")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

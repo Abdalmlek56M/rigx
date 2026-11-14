@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ public static class PcBuilderRegistration
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
         services.AddDbContextFactory<PcBuilderDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<SavedBuildStore>();
+        services.AddScoped<IDataResetSource, PcBuilderDataReset>();
         return services;
     }
 }

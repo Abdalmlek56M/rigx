@@ -115,6 +115,9 @@ public sealed class OwnerBootstrapPostgreSqlFixture : IAsyncLifetime
 
     public string ConnectionString { get; private set; } = string.Empty;
 
+    /// <summary>The running container, for tests that must run PostgreSQL command-line tools inside it.</summary>
+    public PostgreSqlContainer Container => _postgres;
+
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();

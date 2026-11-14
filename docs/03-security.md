@@ -22,6 +22,11 @@
 - Request photo upload `POST /api/v1/requests/photos`: anonymous, authorized only by the upload token (32 random bytes, only the SHA-256 hash stored, 30 min, max 5 photos); rate-limited `request-photo` 20 / 10 min per IP; bad or expired token returns 404. Files are re-encoded to WebP (EXIF/GPS stripped), stored under `private/`, never watermarked. Admin read `GET /api/v1/admin/requests/{id}/photos/{index}` needs `Requests.View`, `no-store`.
 - Private media not served publicly: `GET /api/v1/catalog/media/...` returns 404 for `private/` keys; orphan cleanup skips `private/` and `settings/`. Expense receipts `GET /api/v1/admin/retail/expenses/{id}/receipt` need `Finance.ViewReports`, `no-store`.
 - Dependency audit (12 Nov 2026): 0 known vulnerable NuGet packages.
+- Trash purge: owner-only + step-up (`System.Purge`); restore needs `System.Trash`.
+- Exports: audited (`System.Exported`), permission per dataset, cost and contact columns only with their permission, customers export needs step-up, CSV formula neutralization, 50,000-row cap.
+- Backup download: owner-only (`System.BackupDownload`) + step-up, `no-store`. Backup, verify and download are audited.
+- Data reset: owner-only (`System.ResetData`) + step-up; a successful BeforeReset backup first, else nothing is deleted. Audited, also on failure.
+- Owner-only permissions (`System.Purge`, `System.BackupDownload`, `System.ResetData`) cannot be granted to custom roles.
 
 ## Rules every change must keep
 1. **Never trust the client**: prices, totals, discounts, stock, permissions and tier perks are computed on the server.
@@ -42,7 +47,7 @@
 | ~~Owner/admin step-up for destructive actions~~ | Closed in 2.1 | 2 |
 | Full audit log (before/after for all entities) | High | 1 |
 | Content-Security-Policy (nonce-based with Next.js) | Normal | 4 |
-| Off-host encrypted backups + restore drill | High | 2/5 |
+| Off-host encrypted backups + restore drill: partly closed in 2.10 (restore drill, two destinations); encryption and off-host target at launch | High | 2/5 |
 | Migration runner outside dev-only "preview" mode | High | 0/1 |
 | External penetration test before launch | High | 5 |
 | ~~Rate limits for notify-me submissions~~ | Closed in 2.12: notify-me goes through the rate-limited requests endpoint | 2 |

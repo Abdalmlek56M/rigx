@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ public static class IdentityAccountsRegistration
         services.AddScoped<GoogleSignInService>();
         services.AddScoped<CustomerAdminService>();
         services.AddScoped<CustomerMergeService>();
+        services.AddScoped<IDataResetSource, CustomerDataReset>();
 
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {

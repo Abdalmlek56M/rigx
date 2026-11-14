@@ -124,7 +124,7 @@ public sealed class StoreSettingsService(
     private static StoreSettingsAdminView AdminView(StoreSettings row, long rowVersion) =>
         new(row.StoreInfo, row.ContactLinks, row.Shipping, row.Payment, row.Watermark, row.Controls,
             row.WhatsAppTemplates, row.Reviews, row.Language, row.Invoice, row.LeadSources, row.WarrantyOptions,
-            row.Sales, row.Logos, rowVersion);
+            row.Sales, row.Logos, row.Backup, rowVersion);
 
     private async Task<(StoreSettings Row, long RowVersion)> LoadAsync(CancellationToken cancellationToken)
     {

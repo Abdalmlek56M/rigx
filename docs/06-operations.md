@@ -34,3 +34,34 @@ dotnet test --filter "FullyQualifiedName~Retail"   # one area only
 ## Configuration
 - Secrets only in `.env` locally / the host's secret store in production. Never committed.
 - SMTP variables are listed (commented) in `.env.example`; Development uses an in-memory email provider.
+
+## Backups and restore
+**What a backup is.** One zip per day, `rigx-backup-{yyyyMMdd-HHmmss}Z.zip`: `database.dump` (`pg_dump --format=custom --no-owner` of the whole database: data, settings, audit log), `media/` (every photo, incl. `private/` and `settings/`) and `manifest.json` (time, app version, database size, file count, SHA-256 of the dump, applied migrations per module). It is built in a temp folder, then copied to **every** destination (`.tmp` first, then moved). A run counts as successful only if all destinations got the file; a failed attempt is recorded and retried at the next hourly tick.
+
+**Configuration** (server config only, never the web API):
+```
+System__Backup__Destinations__0=/backups/local            # a local volume
+System__Backup__Destinations__1=/mnt/gdrive/rigx-backups  # a synced off-host folder (mounted Google Drive / rclone mount)
+System__Backup__PgDumpPath=pg_dump                        # defaults
+System__Backup__PgRestorePath=pg_restore
+ConnectionStrings__Backup=Host=...;Username=...;Password=...   # optional; falls back to ConnectionStrings:Migrations, then Default
+```
+With no destination, backups are off and the backup and reset endpoints answer 409. The role in the connection string must read every table (including the audit log) and have `CREATEDB` for the restore drill. The API image installs `postgresql-client-17` (PGDG) so `pg_dump` matches the server; the password goes to the tools only through `PGPASSWORD`. The destination folders must be writable by the container user.
+
+**Schedule.** Store settings, section `backup` (`PUT /api/v1/admin/storefront/settings/backup`): `enabled` (default on), `hourCairo` 0-23 (default 3), `retentionDays` 3-90 (default 14). The hourly job runs a backup once the Cairo hour is reached if no scheduled backup succeeded today (Cairo date), then deletes archives older than the retention from each destination (only files named like a backup; the age comes from the name).
+
+**Pages / API** (`/api/v1/admin/system/backups`): list and run now (`System.ManageBackups`), restore drill `POST /{id}/verify` (`System.ManageBackups`), download `GET /{id}/download` (owner-only `System.BackupDownload` + email code; the zip holds all customer data). Run a drill after the first deployment and then now and then: it checks the SHA-256 against the manifest, restores into a temporary database `rigx_restore_check_*` (always dropped), counts tables and rows, and records the result on the run.
+
+**Real restore (manual, never from the web).** The app cannot overwrite the live database on purpose.
+1. Take the newest good archive (a run with a passed drill) from a destination; unzip it somewhere safe.
+2. Stop the API (`docker compose stop api`) so nothing writes.
+3. Restore the database: `pg_restore --clean --if-exists --no-owner --dbname=<db> --host=... --username=... database.dump` (run as a role allowed to drop and create the tables; then re-run `dotnet HardwareStore.Api.dll --migrate` if the archive is older than the deployed app).
+4. Copy the unzipped `media/` folder back over the media root (`Catalog:MediaRoot`, default `App_Data/catalog-media`; in compose the `api_data_catalog_media` volume).
+5. Start the API and check `/health/ready` and a sign-in.
+
+## Data reset
+`POST /api/v1/admin/system/reset` with `{ "sections": ["business", "content", "customers"], "confirm": "RESET" }`; owner-only (`System.ResetData`) with a fresh email code. A successful backup (trigger `BeforeReset`) is taken first; if backups are off or the backup fails, the answer is 409 and nothing is deleted.
+- `business`: stock items and units, builds, purchases and sellers, orders (lines, payments, returns, reservations), invoices and their counters, warranties and extensions, money movements (accounts kept; balances fall back to the opening balance), expenses and recurring templates, partner earnings/payouts/capital/month closes, customer requests, saved builds, wishlists, and the private photos (request photos, receipts).
+- `content`: articles with revisions, FAQ entries, the media library (assets, usages, image files).
+- `customers` (needs `business` in the same call): accounts holding only the Customer role, with sessions, addresses, notifications, restrictions, Google links and pending codes.
+- Never reset: staff and owner accounts, roles and permissions, store settings and logos, categories/brands/spec schemas, catalog products, audit logs (their link to a deleted customer becomes empty), backup runs, person-code counters and the database sequences behind public codes. Each module clears its own explicit table list in one transaction.

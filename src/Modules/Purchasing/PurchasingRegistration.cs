@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public static class PurchasingRegistration
         services.AddDbContextFactory<PurchasingDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<SellerService>();
         services.AddScoped<PurchaseService>();
+        services.AddScoped<IDataResetSource, PurchasingDataReset>();
         return services;
     }
 }

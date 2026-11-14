@@ -26,6 +26,7 @@ public static class StorefrontEndpoints
         MapSection<LeadSourceSettings>(settings);
         MapSection<SalesSettings>(settings);
         MapSection<WarrantyOptionSettings>(settings);
+        MapSection<BackupSettings>(settings);
         settings.MapPut("/logos/{kind}", SetLogoAsync).RequirePermission(SettingsPermission);
         settings.MapDelete("/logos/{kind}", RemoveLogoAsync).RequirePermission(SettingsPermission);
         settings.MapPost("/watermark/reapply", ReapplyWatermark).RequirePermission(SettingsPermission);

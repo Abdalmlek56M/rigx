@@ -37,6 +37,89 @@ namespace HardwareStore.Modules.Auditing.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Auditing.BackupRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DestinationsWritten")
+                        .HasColumnType("integer")
+                        .HasColumnName("destinations_written");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("error");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("file_name");
+
+                    b.Property<DateTimeOffset>("FinishedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finished_at_utc");
+
+                    b.Property<string>("Sha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("sha256");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at_utc");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Trigger")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("trigger_kind");
+
+                    b.Property<DateTimeOffset?>("VerifiedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verified_at_utc");
+
+                    b.Property<string>("VerifyError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("verify_error");
+
+                    b.Property<bool?>("VerifyPassed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("verify_passed");
+
+                    b.Property<long?>("VerifyRows")
+                        .HasColumnType("bigint")
+                        .HasColumnName("verify_rows");
+
+                    b.Property<int?>("VerifyTables")
+                        .HasColumnType("integer")
+                        .HasColumnName("verify_tables");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartedAtUtc")
+                        .HasDatabaseName("ix_backup_runs_started_at_utc");
+
+                    b.ToTable("backup_runs", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_backup_runs_status", "status IN ('Succeeded', 'Failed')");
+
+                            t.HasCheckConstraint("ck_backup_runs_trigger", "trigger_kind IN ('Scheduled', 'Manual', 'BeforeReset')");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Auditing.SecurityAuditEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -117,12 +200,12 @@ namespace HardwareStore.Modules.Auditing.Persistence.Migrations
                     b.HasOne("HardwareStore.Modules.Auditing.AuditUserAccountReference", null)
                         .WithMany()
                         .HasForeignKey("ActorUserAccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("HardwareStore.Modules.Auditing.AuditUserAccountReference", null)
                         .WithMany()
                         .HasForeignKey("SubjectUserAccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618
         }

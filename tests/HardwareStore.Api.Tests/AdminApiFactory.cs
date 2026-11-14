@@ -16,7 +16,7 @@ namespace HardwareStore.Api.Tests;
 /// <summary>The real API host with every module pointed at one test database, plus signed-in staff clients and step-up codes.</summary>
 internal static class AdminApiFactory
 {
-    public static IdentityLoginApiFactory Create(string connectionString) =>
+    public static IdentityLoginApiFactory Create(string connectionString, Action<IServiceCollection>? configureMore = null) =>
         new(connectionString, configureTestServices: services =>
         {
             services.RemoveAll<IDbContextFactory<RetailDbContext>>();
@@ -29,6 +29,7 @@ internal static class AdminApiFactory
             services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(connectionString));
             services.RemoveAll<IDbContextFactory<PurchasingDbContext>>();
             services.AddDbContextFactory<PurchasingDbContext>(options => options.UseNpgsql(connectionString));
+            configureMore?.Invoke(services);
         });
 
     public static Task<Guid> StaffAsync(OwnerBootstrapDatabase database, string email, params string[] permissions) =>

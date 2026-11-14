@@ -734,6 +734,10 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         },
                         new
                         {
+                            Code = "System.BackupDownload"
+                        },
+                        new
+                        {
                             Code = "System.ExecuteAllowlistedAction"
                         },
                         new
@@ -747,6 +751,10 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         new
                         {
                             Code = "System.Purge"
+                        },
+                        new
+                        {
+                            Code = "System.ResetData"
                         },
                         new
                         {

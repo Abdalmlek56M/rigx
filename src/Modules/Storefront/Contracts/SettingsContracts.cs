@@ -16,6 +16,7 @@ public sealed record StoreSettingsAdminView(
     WarrantyOptionSettings WarrantyOptions,
     SalesSettings Sales,
     StoreLogos Logos,
+    BackupSettings Backup,
     long RowVersion);
 
 /// <summary>What the storefront needs: only links shown on the site; only the store logo (no watermark, invoice or warranty-list settings).</summary>

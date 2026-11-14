@@ -16,16 +16,42 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 public static class DatabaseMigrator
 {
+    /// <summary>Every module context in dependency order: its name and how to open it on a connection string.</summary>
+    private static readonly (string Name, Func<string, DbContext> Open)[] Contexts =
+    [
+        (nameof(IdentityDbContext), connectionString => new IdentityDbContext(Options<IdentityDbContext>(connectionString))),
+        (nameof(SecurityAuditDbContext), connectionString => new SecurityAuditDbContext(Options<SecurityAuditDbContext>(connectionString))),
+        (nameof(CatalogDbContext), connectionString => new CatalogDbContext(Options<CatalogDbContext>(connectionString))),
+        (nameof(StorefrontDbContext), connectionString => new StorefrontDbContext(Options<StorefrontDbContext>(connectionString))),
+        (nameof(PurchasingDbContext), connectionString => new PurchasingDbContext(Options<PurchasingDbContext>(connectionString))),
+        (nameof(InventoryDbContext), connectionString => new InventoryDbContext(Options<InventoryDbContext>(connectionString))),
+        (nameof(RetailDbContext), connectionString => new RetailDbContext(Options<RetailDbContext>(connectionString))),
+        (nameof(PcBuilderDbContext), connectionString => new PcBuilderDbContext(Options<PcBuilderDbContext>(connectionString)))
+    ];
+
     public static async Task MigrateAllAsync(string connectionString, ILogger logger, CancellationToken cancellationToken = default)
     {
-        await MigrateAsync<IdentityDbContext>(connectionString, options => new IdentityDbContext(options), logger, cancellationToken);
-        await MigrateAsync<SecurityAuditDbContext>(connectionString, options => new SecurityAuditDbContext(options), logger, cancellationToken);
-        await MigrateAsync<CatalogDbContext>(connectionString, options => new CatalogDbContext(options), logger, cancellationToken);
-        await MigrateAsync<StorefrontDbContext>(connectionString, options => new StorefrontDbContext(options), logger, cancellationToken);
-        await MigrateAsync<PurchasingDbContext>(connectionString, options => new PurchasingDbContext(options), logger, cancellationToken);
-        await MigrateAsync<InventoryDbContext>(connectionString, options => new InventoryDbContext(options), logger, cancellationToken);
-        await MigrateAsync<RetailDbContext>(connectionString, options => new RetailDbContext(options), logger, cancellationToken);
-        await MigrateAsync<PcBuilderDbContext>(connectionString, options => new PcBuilderDbContext(options), logger, cancellationToken);
+        foreach (var (name, open) in Contexts)
+        {
+            await using var context = open(connectionString);
+            await context.Database.MigrateAsync(cancellationToken);
+            logger.LogInformation("Migrated {Context}.", name);
+        }
+    }
+
+    /// <summary>The migrations applied to the database, per module context (recorded in every backup's manifest).</summary>
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<string>>> AppliedMigrationsAsync(
+        string connectionString, CancellationToken cancellationToken = default)
+    {
+        var applied = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+        foreach (var (name, open) in Contexts)
+        {
+            await using var context = open(connectionString);
+            // The history table is shared by every module, so keep only the migrations this module owns.
+            var owned = context.Database.GetMigrations().ToHashSet(StringComparer.Ordinal);
+            applied[name] = [.. (await context.Database.GetAppliedMigrationsAsync(cancellationToken)).Where(owned.Contains)];
+        }
+        return applied;
     }
 
     /// <summary>Entry point for <c>dotnet run -- --migrate</c>. Returns a process exit code.</summary>
@@ -53,15 +79,6 @@ public static class DatabaseMigrator
         }
     }
 
-    private static async Task MigrateAsync<TContext>(
-        string connectionString,
-        Func<DbContextOptions<TContext>, TContext> create,
-        ILogger logger,
-        CancellationToken cancellationToken) where TContext : DbContext
-    {
-        var options = new DbContextOptionsBuilder<TContext>().UseNpgsql(connectionString).Options;
-        await using var context = create(options);
-        await context.Database.MigrateAsync(cancellationToken);
-        logger.LogInformation("Migrated {Context}.", typeof(TContext).Name);
-    }
+    private static DbContextOptions<TContext> Options<TContext>(string connectionString) where TContext : DbContext =>
+        new DbContextOptionsBuilder<TContext>().UseNpgsql(connectionString).Options;
 }

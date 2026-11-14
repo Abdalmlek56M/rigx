@@ -21,6 +21,7 @@ public static class StorefrontPersistenceRegistration
         services.AddScoped<ContentFaqService>();
         services.AddScoped<ITrashSource, ArticleTrashSource>();
         services.AddScoped<ITrashSource, FaqTrashSource>();
+        services.AddScoped<IDataResetSource, StorefrontDataReset>();
         services.AddScoped<ContentPolicyService>();
         services.AddScoped<OfferService>();
         services.AddScoped<CustomerRequestService>();
