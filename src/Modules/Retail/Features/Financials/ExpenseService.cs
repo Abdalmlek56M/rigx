@@ -1,12 +1,11 @@
 using HardwareStore.Common.Domain;
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>
 /// Store expenses (direct or general overhead): each one is paid from a money account or from a partner's own money,
-/// with a summary against the previous period and a CSV export.
+/// with a summary against the previous period and an export table.
 /// </summary>
 public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFactory, BusinessReportService reports, TimeProvider timeProvider,
     TimeZoneInfo businessZone)
@@ -96,13 +95,12 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
             sales == 0 ? null : decimal.Round(total / sales * 100, 1), fixedMonthly);
     }
 
-    /// <summary>The expenses of a period as CSV text (no byte-order mark; the endpoint adds it).</summary>
-    public async Task<string> ExportCsvAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+    /// <summary>The expenses of a period as an export table (read at most <see cref="ExportRules.ReadLimit"/> rows).</summary>
+    public async Task<ExportTable> ExportAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        if (to < from) throw new RetailException(400, "The end date cannot precede the start date.");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var expenses = await db.Expenses.AsNoTracking().Where(item => item.ExpenseDate >= from && item.ExpenseDate <= to)
-            .OrderBy(item => item.ExpenseDate).ThenBy(item => item.CreatedAtUtc).ToListAsync(cancellationToken);
+            .OrderBy(item => item.ExpenseDate).ThenBy(item => item.CreatedAtUtc).Take(ExportRules.ReadLimit).ToListAsync(cancellationToken);
         var accounts = await db.MoneyAccounts.AsNoTracking().ToDictionaryAsync(item => item.Id, item => item.Name, cancellationToken);
         var partnerIds = expenses.Select(item => item.PaidByPartnerId).OfType<Guid>().Distinct().ToList();
         var partners = await db.Partners.AsNoTracking().Where(item => partnerIds.Contains(item.Id)).ToDictionaryAsync(item => item.Id, item => item.Name, cancellationToken);
@@ -113,12 +111,13 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
             .ToDictionaryAsync(item => item.Id, item => item.StockItem.Code, cancellationToken);
         var assemblyIds = expenses.Select(item => item.AssemblyId).OfType<Guid>().Distinct().ToList();
         var builds = await db.Assemblies.AsNoTracking().Where(item => assemblyIds.Contains(item.Id)).ToDictionaryAsync(item => item.Id, item => item.Code, cancellationToken);
-        return ExpenseCsv.Build(expenses.Select(item => (IReadOnlyList<string?>)
-        [
-            item.ExpenseDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), item.Category, item.Classification,
-            item.Amount.ToString("0.00", CultureInfo.InvariantCulture), PaidFrom(item, accounts, partners),
-            Lookup(orders, item.OrderId), Lookup(units, item.UnitId), Lookup(builds, item.AssemblyId), item.Note
-        ]));
+        return new ExportTable(["date", "type", "classification", "amount", "paid from", "order reference", "unit code", "build code", "note"],
+            [.. expenses.Select(item => (IReadOnlyList<ExportCell>)
+            [
+                ExportCell.Date(item.ExpenseDate), ExportCell.Text(item.Category), ExportCell.Text(item.Classification), ExportCell.Number(item.Amount),
+                ExportCell.Text(PaidFrom(item, accounts, partners)), ExportCell.Text(Lookup(orders, item.OrderId)),
+                ExportCell.Text(Lookup(units, item.UnitId)), ExportCell.Text(Lookup(builds, item.AssemblyId)), ExportCell.Text(item.Note)
+            ])]);
     }
 
     private static string? PaidFrom(RetailExpense item, Dictionary<Guid, string> accounts, Dictionary<Guid, string> partners) =>

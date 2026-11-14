@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,8 @@ public static class StorefrontPersistenceRegistration
         services.AddScoped<WishlistService>();
         services.AddScoped<ContentArticleService>();
         services.AddScoped<ContentFaqService>();
+        services.AddScoped<ITrashSource, ArticleTrashSource>();
+        services.AddScoped<ITrashSource, FaqTrashSource>();
         services.AddScoped<ContentPolicyService>();
         services.AddScoped<OfferService>();
         services.AddScoped<CustomerRequestService>();

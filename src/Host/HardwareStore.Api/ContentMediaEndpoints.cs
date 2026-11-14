@@ -130,13 +130,18 @@ public static class ContentMediaEndpoints
 
     private static async Task<IResult> DeleteAsync(
         Guid id,
+        HttpContext context,
         ContentMediaService media,
+        TrashAuditor audit,
         CancellationToken cancellationToken,
         long rowVersion = 0)
     {
+        if (!context.TryGetUserId(out var actorId))
+            return Results.Unauthorized();
         try
         {
-            await media.DeleteAsync(id, rowVersion, cancellationToken);
+            await media.DeleteAsync(id, rowVersion, actorId, cancellationToken);
+            await audit.DeletedAsync(ContentMediaTrashSource.TrashKind, id, actorId, cancellationToken);
             return Results.NoContent();
         }
         catch (ContentMediaNotFoundException)

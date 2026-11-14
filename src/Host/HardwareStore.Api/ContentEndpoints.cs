@@ -25,12 +25,14 @@ public static class ContentEndpoints
         admin.MapPut("/articles/{id:guid}", UpdateArticleAsync).RequirePermission(ContentPermission);
         admin.MapPost("/articles/{id:guid}/publish", PublishArticleAsync).RequirePermission(ContentPermission);
         admin.MapPost("/articles/{id:guid}/unpublish", UnpublishArticleAsync).RequirePermission(ContentPermission);
+        admin.MapDelete("/articles/{id:guid}", DeleteArticleAsync).RequirePermission(ContentPermission);
 
         admin.MapGet("/faqs", ListAdminFaqsAsync).RequirePermission(ContentPermission);
         admin.MapPost("/faqs", CreateFaqAsync).RequirePermission(ContentPermission);
         admin.MapPut("/faqs/{id:guid}", UpdateFaqAsync).RequirePermission(ContentPermission);
         admin.MapPost("/faqs/{id:guid}/publish", PublishFaqAsync).RequirePermission(ContentPermission);
         admin.MapPost("/faqs/{id:guid}/unpublish", UnpublishFaqAsync).RequirePermission(ContentPermission);
+        admin.MapDelete("/faqs/{id:guid}", DeleteFaqAsync).RequirePermission(ContentPermission);
 
         admin.MapGet("/policies", ListAdminPoliciesAsync).RequirePermission(ContentPermission);
         admin.MapPost("/policies/{kind}/versions", CreatePolicyVersionAsync).RequirePermission(ContentPermission);
@@ -150,6 +152,34 @@ public static class ContentEndpoints
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
         return Results.Ok(await service.UnpublishAsync(id, request.RowVersion, actorId, cancellationToken));
+    }
+
+    private static async Task<IResult> DeleteArticleAsync(
+        Guid id,
+        HttpContext context,
+        ContentArticleService service,
+        TrashAuditor audit,
+        CancellationToken cancellationToken)
+    {
+        if (!context.TryGetUserId(out var actorId))
+            return Results.Unauthorized();
+        await service.DeleteAsync(id, actorId, cancellationToken);
+        await audit.DeletedAsync(ArticleTrashSource.TrashKind, id, actorId, cancellationToken);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> DeleteFaqAsync(
+        Guid id,
+        HttpContext context,
+        ContentFaqService service,
+        TrashAuditor audit,
+        CancellationToken cancellationToken)
+    {
+        if (!context.TryGetUserId(out var actorId))
+            return Results.Unauthorized();
+        await service.DeleteAsync(id, actorId, cancellationToken);
+        await audit.DeletedAsync(FaqTrashSource.TrashKind, id, actorId, cancellationToken);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> ListPublicFaqsAsync(

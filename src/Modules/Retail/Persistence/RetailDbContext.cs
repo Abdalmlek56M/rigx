@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Trash;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -493,6 +494,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Year).HasColumnName("year").ValueGeneratedNever();
             e.Property(x => x.LastNumber).HasColumnName("last_number");
         });
+        model.ApplySoftDelete();
     }
 }
 

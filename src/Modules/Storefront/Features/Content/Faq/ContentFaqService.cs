@@ -154,6 +154,16 @@ public sealed class ContentFaqService(
         return Map(faq);
     }
 
+    /// <summary>Moves the FAQ to the trash: hidden from the site and the lists, restorable for 30 days.</summary>
+    public async Task DeleteAsync(Guid id, Guid actorId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var faq = await db.ContentFaqs.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
+            ?? throw new StorefrontException(404, "FAQ was not found.");
+        TrashRules.MoveToTrash(faq, actorId, timeProvider.GetUtcNow().ToUniversalTime());
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<NormalizedFaq> NormalizeAsync(FaqInput input, CancellationToken cancellationToken)
     {
         var target = FaqRules.Target(input.Scope, input.CategoryId, input.ItemCode, input.HelpPageOnly,

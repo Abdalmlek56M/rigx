@@ -347,9 +347,9 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.False((await ReloadAsync(retail, confirmedBefore.Id)).IsBlacklisted);
         Assert.False((await ReloadAsync(retail, stranger.Id)).IsBlacklisted);
 
-        await retail.Blacklist.RemoveAsync(entry.Id);
+        await retail.Blacklist.RemoveAsync(entry.Id, Actor);
         Assert.Empty(await retail.Blacklist.ListAsync());
-        Assert.Equal(404, await RetailSales.StatusCodeAsync(() => retail.Blacklist.RemoveAsync(entry.Id)));
+        Assert.Equal(404, await RetailSales.StatusCodeAsync(() => retail.Blacklist.RemoveAsync(entry.Id, Actor)));
         Assert.False((await retail.CheckoutAsync(Checkout([StockLine(item.Id)], phone: "01005556666", email: "x@example.test"))).IsBlacklisted);
     }
 

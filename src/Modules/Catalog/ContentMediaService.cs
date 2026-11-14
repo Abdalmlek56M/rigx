@@ -77,7 +77,7 @@ public sealed class ContentMediaService(
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 60);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var rows = db.ContentMediaAssets.AsNoTracking().Where(asset => !asset.IsDeleted);
+        var rows = db.ContentMediaAssets.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search))
         {
             var pattern = $"%{search.Trim()}%";
@@ -186,9 +186,11 @@ public sealed class ContentMediaService(
         return Map(asset);
     }
 
+    /// <summary>Moves the asset to the trash (restorable for 30 days) unless published content or another module still uses it.</summary>
     public async Task DeleteAsync(
         Guid id,
         long rowVersion,
+        Guid actorId,
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -202,8 +204,9 @@ public sealed class ContentMediaService(
         if (references.Count > 0)
             throw new ContentMediaInUseException(
                 $"The media asset is held by historical or operational records: {string.Join("; ", references.Take(3).Select(Describe))}.");
-        asset.IsDeleted = true;
-        asset.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        TrashRules.MoveToTrash(asset, actorId, now);
+        asset.UpdatedAtUtc = now;
         asset.RowVersion++;
         await db.SaveChangesAsync(cancellationToken);
     }
@@ -252,7 +255,7 @@ public sealed class ContentMediaService(
                 .Where(usage => usage.ReferenceType == referenceType && usage.ReferenceId == referenceId)
                 .ExecuteDeleteAsync(cancellationToken);
             var assetIds = await db.ContentMediaAssets.AsNoTracking()
-                .Where(asset => storageKeys.Contains(asset.StorageKey) && !asset.IsDeleted)
+                .Where(asset => storageKeys.Contains(asset.StorageKey))
                 .Select(asset => asset.Id)
                 .Distinct()
                 .ToListAsync(cancellationToken);
@@ -294,7 +297,7 @@ public sealed class ContentMediaService(
         Guid id,
         CancellationToken cancellationToken) =>
         await db.ContentMediaAssets.SingleOrDefaultAsync(
-            asset => asset.Id == id && !asset.IsDeleted, cancellationToken)
+            asset => asset.Id == id, cancellationToken)
         ?? throw new ContentMediaNotFoundException();
 
     private async Task<IReadOnlyList<MediaReferenceInfo>> FindGuardReferencesAsync(

@@ -15,8 +15,11 @@ public static class PermissionCatalog
         "Finance.ViewVaults", "Finance.VerifyPayment", "Finance.Disburse", "Finance.ManageExpenses", "Finance.ViewReports",
         "Finance.ManagePartnerAgreements", "Finance.PostPartnerSettlements",
         "System.ManageUsers", "System.ViewAuditLogs", "System.ViewErrorLogs", "System.ExecuteAllowlistedAction",
-        "System.ManageBackups", "System.StoreSettings",
+        "System.ManageBackups", "System.StoreSettings", "System.Trash", "System.Purge",
         "Requests.View", "Requests.Manage",
         "Customers.View", "Customers.Manage"
     }.ToFrozenSet(StringComparer.Ordinal);
+
+    /// <summary>Permissions that only the Owner role holds; no other role can be given them.</summary>
+    public static readonly IReadOnlySet<string> OwnerOnly = new[] { "System.Purge" }.ToFrozenSet(StringComparer.Ordinal);
 }

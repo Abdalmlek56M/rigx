@@ -76,9 +76,11 @@ public static partial class RetailEndpoints
         return Results.Ok(await blacklist.AddAsync(request, actorId, ct));
     }
 
-    private static async Task<IResult> RemoveBlacklistAsync(Guid id, BlacklistService blacklist, CancellationToken ct)
+    private static async Task<IResult> RemoveBlacklistAsync(Guid id, HttpContext context, BlacklistService blacklist, TrashAuditor audit, CancellationToken ct)
     {
-        await blacklist.RemoveAsync(id, ct);
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        await blacklist.RemoveAsync(id, actorId, ct);
+        await audit.DeletedAsync(BlacklistTrashSource.TrashKind, id, actorId, ct);
         return Results.NoContent();
     }
 

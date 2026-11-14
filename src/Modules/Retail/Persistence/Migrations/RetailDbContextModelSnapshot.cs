@@ -203,6 +203,14 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_user_account_id");
 
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at_utc");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by_user_id");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")

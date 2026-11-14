@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Catalog;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,9 @@ public sealed class ContentArticleService(
     TimeProvider timeProvider,
     IContentMediaUsageSink mediaUsage)
 {
+    /// <summary>The reference type articles use in the media-usage index.</summary>
+    private const string UsageType = "Article";
+
     public async Task<ContentPage<ArticleView>> ListPublicAsync(
         int page,
         int pageSize,
@@ -243,12 +247,35 @@ public sealed class ContentArticleService(
         return Map(article, article.UpdatedAtUtc);
     }
 
-    private async Task SyncUsageAsync(ContentArticle article, CancellationToken cancellationToken)
+    /// <summary>Moves the article to the trash: hidden from the site and the lists, restorable for 30 days.</summary>
+    public async Task DeleteAsync(Guid id, Guid actorId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var article = await FindAsync(db, id, cancellationToken);
+        TrashRules.MoveToTrash(article, actorId, Now());
+        await db.SaveChangesAsync(cancellationToken);
+        await ClearUsageAsync(id, cancellationToken);
+    }
+
+    /// <summary>Media usage is advisory metadata for the library delete guard; failing to refresh it must not fail the article change.</summary>
+    internal async Task ClearUsageAsync(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await mediaUsage.ClearAsync(UsageType, id, cancellationToken);
+        }
+        catch
+        {
+            // Advisory only, see above.
+        }
+    }
+
+    internal async Task SyncUsageAsync(ContentArticle article, CancellationToken cancellationToken)
     {
         try
         {
             await mediaUsage.RegisterAsync(
-                "Article",
+                UsageType,
                 article.Id,
                 string.IsNullOrWhiteSpace(article.TitleEn) ? article.Slug : article.TitleEn,
                 [.. ImageKeys(article)],

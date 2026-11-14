@@ -44,7 +44,7 @@ public sealed class ContentMediaPostgreSqlTests(OwnerBootstrapPostgreSqlFixture 
 
         await media.RegisterAsync("Article", Guid.NewGuid(), "Published article", [replaced.StorageKey, replaced.StorageKey], true);
         await Assert.ThrowsAsync<ContentMediaInUseException>(() =>
-            media.DeleteAsync(asset.Id, replaced.RowVersion));
+            media.DeleteAsync(asset.Id, replaced.RowVersion, Guid.NewGuid()));
         Assert.Single(await media.ListUsagesAsync(asset.Id));
 
         var otherArticle = Guid.NewGuid();
@@ -55,8 +55,45 @@ public sealed class ContentMediaPostgreSqlTests(OwnerBootstrapPostgreSqlFixture 
 
         // Clearing the published reference releases the delete guard.
         await media.ClearAsync("Article", (await media.ListUsagesAsync(asset.Id))[0].ReferenceId);
-        await media.DeleteAsync(asset.Id, replaced.RowVersion);
+        await media.DeleteAsync(asset.Id, replaced.RowVersion, Guid.NewGuid());
         Assert.Empty((await media.ListAsync(null, 1, 10)).Items);
+    }
+
+    [Fact]
+    public async Task A_deleted_asset_goes_to_the_trash_and_can_be_restored_or_purged_with_its_files()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var storage = new FakeMediaStorage();
+        var factory = new CatalogFactory(database.ConnectionString);
+        var media = new ContentMediaService(factory, storage, TimeProvider.System, []);
+        var trash = new ContentMediaTrashSource(factory, storage);
+        var asset = await media.UploadAsync(
+            new CatalogImageUpload(Stream.Null, 10, "trash.png", "image/png"),
+            new ContentMediaMetadataInput("للمسح", "To trash", "وصف", "Description", null, null, null, 0),
+            Guid.NewGuid());
+        var actor = Guid.NewGuid();
+
+        await media.DeleteAsync(asset.Id, asset.RowVersion, actor);
+
+        Assert.Empty((await media.ListAsync(null, 1, 10)).Items);
+        var listed = Assert.Single(await trash.ListAsync());
+        Assert.Equal((asset.Id, "للمسح", actor), (listed.Id, listed.Label, listed.DeletedByUserId));
+        await Assert.ThrowsAsync<ContentMediaNotFoundException>(() => media.DeleteAsync(asset.Id, asset.RowVersion + 1, actor));
+
+        await trash.RestoreAsync(asset.Id);
+        Assert.Single((await media.ListAsync(null, 1, 10)).Items);
+        Assert.Empty(await trash.ListAsync());
+        await Assert.ThrowsAsync<ContentMediaNotFoundException>(() => trash.RestoreAsync(asset.Id));
+
+        var restored = Assert.Single((await media.ListAsync(null, 1, 10)).Items);
+        await media.DeleteAsync(asset.Id, restored.RowVersion, actor);
+        Assert.Empty(await trash.PurgeExpiredAsync(DateTimeOffset.UtcNow.AddDays(-30)));
+        Assert.Empty(storage.Deleted);
+        Assert.Equal([asset.Id], await trash.PurgeExpiredAsync(DateTimeOffset.UtcNow.AddMinutes(1)));
+        Assert.Equal([asset.StorageKey], storage.Deleted);
+        Assert.Empty(await trash.ListAsync());
+        await using var db = factory.CreateDbContext();
+        Assert.False(await db.ContentMediaAssets.IgnoreQueryFilters().AnyAsync(item => item.Id == asset.Id));
     }
 
     [Fact]
@@ -81,7 +118,7 @@ public sealed class ContentMediaPostgreSqlTests(OwnerBootstrapPostgreSqlFixture 
         Assert.Contains("historical", usage.ReferenceTitle, StringComparison.OrdinalIgnoreCase);
 
         var error = await Assert.ThrowsAsync<ContentMediaInUseException>(() =>
-            media.DeleteAsync(asset.Id, asset.RowVersion));
+            media.DeleteAsync(asset.Id, asset.RowVersion, Guid.NewGuid()));
         Assert.Contains("historical", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -140,8 +177,13 @@ public sealed class ContentMediaPostgreSqlTests(OwnerBootstrapPostgreSqlFixture 
         public bool Exists(string storageKey) => false;
 
         public Stream OpenRead(string storageKey) => Stream.Null;
-        public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
+        public List<string> Deleted { get; } = [];
+
+        public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)
+        {
+            Deleted.Add(storageKey);
+            return Task.CompletedTask;
+        }
         public Task<IReadOnlyList<StoredMediaFile>> ListFilesAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<StoredMediaFile>>([]);
         public Task DeleteStorageKeyAsync(string storageKey, CancellationToken cancellationToken = default) =>

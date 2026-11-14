@@ -1,8 +1,9 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
 
-public sealed class ContentMediaAsset
+public sealed class ContentMediaAsset : ISoftDeletable
 {
     public Guid Id { get; set; }
     public required string TitleAr { get; set; }
@@ -20,7 +21,8 @@ public sealed class ContentMediaAsset
     public int Height { get; set; }
     public int ThumbnailWidth { get; set; }
     public int ThumbnailHeight { get; set; }
-    public bool IsDeleted { get; set; }
+    public DateTimeOffset? DeletedAtUtc { get; set; }
+    public Guid? DeletedByUserId { get; set; }
     public Guid? UploadedByUserAccountId { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
@@ -70,12 +72,11 @@ public static class ContentMediaModelConfiguration
             entity.Property(asset => asset.Height).HasColumnName("height");
             entity.Property(asset => asset.ThumbnailWidth).HasColumnName("thumbnail_width");
             entity.Property(asset => asset.ThumbnailHeight).HasColumnName("thumbnail_height");
-            entity.Property(asset => asset.IsDeleted).HasColumnName("is_deleted");
             entity.Property(asset => asset.UploadedByUserAccountId).HasColumnName("uploaded_by_user_account_id");
             entity.Property(asset => asset.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(asset => asset.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(asset => asset.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
-            entity.HasIndex(asset => new { asset.IsDeleted, asset.UpdatedAtUtc })
+            entity.HasIndex(asset => new { asset.DeletedAtUtc, asset.UpdatedAtUtc })
                 .HasDatabaseName("ix_content_media_assets_active");
         });
 

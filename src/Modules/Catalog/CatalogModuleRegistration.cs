@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ public static class CatalogModuleRegistration
         services.AddScoped<TaxonomyImageService>();
         services.AddScoped<CatalogMediaMaintenanceService>();
         services.AddScoped<ContentMediaService>();
+        services.AddScoped<ITrashSource, ContentMediaTrashSource>();
         services.AddScoped<ReviewService>();
         services.AddScoped<IContentMediaUsageSink>(provider => provider.GetRequiredService<ContentMediaService>());
         return services;

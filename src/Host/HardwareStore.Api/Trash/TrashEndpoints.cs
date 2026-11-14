@@ -1,0 +1,39 @@
+using HardwareStore.Modules.Identity.Authorization;
+using Microsoft.AspNetCore.Http;
+
+/// <summary>The trash page: list, restore (<c>System.Trash</c>) and purge now (owner-only <c>System.Purge</c> with a fresh code).</summary>
+public static class TrashEndpoints
+{
+    private const string View = "System.Trash";
+    private const string Purge = "System.Purge";
+
+    public static IEndpointRouteBuilder MapTrashEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        var group = endpoints.MapGroup("/api/v1/admin/system/trash");
+        group.MapGet("", ListAsync).RequirePermission(View);
+        group.MapPost("/{kind}/{id:guid}/restore", RestoreAsync).RequirePermission(View);
+        group.MapDelete("/{kind}/{id:guid}", PurgeAsync).RequirePermission(Purge).RequireStepUp();
+        return endpoints;
+    }
+
+    private static async Task<IResult> ListAsync(HttpContext context, TrashService trash, CancellationToken cancellationToken,
+        string? kind = null)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await trash.ListAsync(kind, cancellationToken));
+    }
+
+    private static async Task<IResult> RestoreAsync(string kind, Guid id, HttpContext context, TrashService trash, CancellationToken cancellationToken)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        await trash.RestoreAsync(kind, id, actorId, cancellationToken);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> PurgeAsync(string kind, Guid id, HttpContext context, TrashService trash, CancellationToken cancellationToken)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        await trash.PurgeAsync(kind, id, actorId, cancellationToken);
+        return Results.NoContent();
+    }
+}

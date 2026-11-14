@@ -65,7 +65,6 @@ public static partial class RetailEndpoints
         admin.MapPut("/expenses/{id:guid}/receipt", SetExpenseReceiptAsync).RequirePermission("Finance.ManageExpenses");
         admin.MapGet("/expenses/{id:guid}/receipt", GetExpenseReceiptAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/expenses/summary", ExpenseSummaryAsync).RequirePermission("Finance.ViewReports");
-        admin.MapGet("/expenses/export", ExportExpensesAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/expense-types", ListExpenseTypesAsync).RequirePermission("Finance.ViewReports");
         admin.MapPost("/expense-types", CreateExpenseTypeAsync).RequirePermission("Finance.ManageExpenses");
         admin.MapPut("/expense-types/{id:guid}", UpdateExpenseTypeAsync).RequirePermission("Finance.ManageExpenses");

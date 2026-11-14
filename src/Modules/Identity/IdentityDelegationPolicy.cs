@@ -1,3 +1,5 @@
+using HardwareStore.Modules.Identity.Authorization;
+
 namespace HardwareStore.Modules.Identity;
 
 /// <summary>
@@ -56,6 +58,7 @@ public static class IdentityDelegationPolicy
         IdentityActor actor,
         IReadOnlyCollection<string> requestedPermissions)
     {
+        EnsureNoOwnerOnly(requestedPermissions);
         EnsureSubset(actor, requestedPermissions, "You cannot create a role with permissions you do not hold.");
     }
 
@@ -67,8 +70,15 @@ public static class IdentityDelegationPolicy
         if (string.Equals(role.Code, "Owner", StringComparison.Ordinal) ||
             string.Equals(role.Code, "Customer", StringComparison.Ordinal))
             throw new IdentityException(409, "Owner and Customer permissions are fixed.");
+        EnsureNoOwnerOnly(requestedPermissions);
         EnsureSubset(actor, role.Permissions, "You cannot edit a role with permissions you do not hold.");
         EnsureSubset(actor, requestedPermissions, "You cannot grant permissions you do not hold.");
+    }
+
+    private static void EnsureNoOwnerOnly(IEnumerable<string> permissions)
+    {
+        if (permissions.Any(PermissionCatalog.OwnerOnly.Contains))
+            throw new IdentityException(409, "Some permissions belong to the Owner role only.");
     }
 
     private static void EnsureSubset(

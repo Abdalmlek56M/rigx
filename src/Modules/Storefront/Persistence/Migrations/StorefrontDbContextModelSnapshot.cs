@@ -57,6 +57,14 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at_utc");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by_user_id");
+
                     b.Property<string>("MainImageStorageKey")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
@@ -155,7 +163,8 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
 
                     b.HasIndex("Slug")
                         .IsUnique()
-                        .HasDatabaseName("ux_content_articles_slug");
+                        .HasDatabaseName("ux_content_articles_slug")
+                        .HasFilter("deleted_at_utc IS NULL");
 
                     b.HasIndex("Status", "PublishedAtUtc")
                         .HasDatabaseName("ix_content_articles_status_published");
@@ -239,6 +248,14 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at_utc");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by_user_id");
 
                     b.PrimitiveCollection<List<Guid>>("ExcludedCategoryIds")
                         .IsRequired()

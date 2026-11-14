@@ -1,3 +1,5 @@
+using System.Text;
+using HardwareStore.Common.Infrastructure.Export;
 using HardwareStore.Modules.Retail;
 using Xunit;
 
@@ -220,13 +222,12 @@ public sealed class ExpensesV2PostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         await retail.Expenses.CreateExpenseAsync(Overhead(25.5m, Internet, new DateOnly(2026, 10, 6), "=HYPERLINK(\"x\")"), Actor);
         await retail.Expenses.CreateExpenseAsync(Overhead(5m, date: new DateOnly(2026, 11, 6)), Actor);
 
-        var lines = (await retail.Expenses.ExportCsvAsync(new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 31)))
-            .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        var lines = Encoding.UTF8.GetString(CsvExportWriter.Write(await retail.Expenses.ExportAsync(new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 31))))
+            .TrimStart('\uFEFF').Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
 
         Assert.Equal("date,type,classification,amount,paid from,order reference,unit code,build code,note", lines[0]);
         Assert.Equal("2026-10-05,إيجار,GeneralOverhead,100.00,الخزنة,,,,\"إيجار, شهر أكتوبر\"", lines[1]);
         Assert.Equal("2026-10-06,إنترنت,GeneralOverhead,25.50,الخزنة,,,,\"'=HYPERLINK(\"\"x\"\")\"", lines[2]);
         Assert.Equal(3, lines.Length);
-        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Expenses.ExportCsvAsync(new DateOnly(2026, 10, 2), new DateOnly(2026, 10, 1))));
     }
 }

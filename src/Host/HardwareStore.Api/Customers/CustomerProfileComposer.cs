@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Retail;
@@ -18,7 +19,8 @@ public sealed class CustomerProfileComposer(
     OrderService orders,
     WarrantyService warranties,
     InvoiceService invoices,
-    SavedBuildService builds)
+    SavedBuildService builds,
+    TimeZoneInfo businessZone)
 {
     public async Task<CustomerPage> ListAsync(string? search, int page, CancellationToken cancellationToken)
     {
@@ -31,6 +33,23 @@ public sealed class CustomerProfileComposer(
             return new CustomerListItem(row, summary.OrderCount, summary.TotalSpent, summary.LastOrderAtUtc);
         }).ToList();
         return new CustomerPage(items, accounts.Page, accounts.PageSize, accounts.Total);
+    }
+
+    /// <summary>Customers registered in the range with their order numbers, for the customer export.</summary>
+    public async Task<ExportTable> ExportAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    {
+        var accounts = await customers.ListForExportAsync(from, to, cancellationToken);
+        var stats = new Dictionary<Guid, CustomerOrderStats>();
+        foreach (var batch in accounts.Chunk(500))
+            foreach (var (id, summary) in await sales.StatsAsync([.. batch.Select(row => new CustomerSalesKey(row.Id, row.Phone))], cancellationToken))
+                stats[id] = summary;
+        return new ExportTable(["code", "name", "email", "phone", "active", "registered", "orders", "total spent", "last order"],
+            [.. accounts.Select(row => (IReadOnlyList<ExportCell>)
+            [
+                ExportCell.Text(row.PersonCode), ExportCell.Text(row.Name), ExportCell.Text(row.Email), ExportCell.Text(row.Phone),
+                ExportCell.Flag(row.IsActive), ExportCell.Instant(row.CreatedAtUtc, businessZone), ExportCell.Number(stats[row.Id].OrderCount),
+                ExportCell.Number(stats[row.Id].TotalSpent), ExportCell.Instant(stats[row.Id].LastOrderAtUtc, businessZone)
+            ])]);
     }
 
     public async Task<CustomerProfile> GetAsync(Guid id, bool includeSerial, CancellationToken cancellationToken)

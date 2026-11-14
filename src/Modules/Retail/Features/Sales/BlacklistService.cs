@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -52,11 +53,14 @@ public sealed class BlacklistService(IDbContextFactory<RetailDbContext> contextF
         return new BlacklistView(entry.Id, entry.Name, entry.PhoneNumber, entry.Email, entry.AddressText, entry.Reason, entry.CreatedAtUtc);
     }
 
-    public async Task RemoveAsync(Guid id, CancellationToken cancellationToken = default)
+    /// <summary>Moves the entry to the trash: it stops matching orders at once and can be restored for 30 days.</summary>
+    public async Task RemoveAsync(Guid id, Guid actorId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        if (await db.Blacklist.Where(entry => entry.Id == id).ExecuteDeleteAsync(cancellationToken) == 0)
-            throw new RetailException(404, "Blacklist entry was not found.");
+        var entry = await db.Blacklist.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
+            ?? throw new RetailException(404, "Blacklist entry was not found.");
+        TrashRules.MoveToTrash(entry, actorId, timeProvider.GetUtcNow().ToUniversalTime());
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     internal static Task<bool> MatchesAsync(RetailDbContext db, StoreOrder order, CancellationToken cancellationToken) =>

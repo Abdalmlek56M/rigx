@@ -516,6 +516,14 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at_utc");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by_user_id");
+
                     b.Property<long>("FileSizeBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("file_size_bytes");
@@ -523,10 +531,6 @@ namespace HardwareStore.Modules.Catalog.Migrations
                     b.Property<int>("Height")
                         .HasColumnType("integer")
                         .HasColumnName("height");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
 
                     b.Property<string>("OriginalStorageKey")
                         .IsRequired()
@@ -597,7 +601,7 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_content_media_assets_storage_key");
 
-                    b.HasIndex("IsDeleted", "UpdatedAtUtc")
+                    b.HasIndex("DeletedAtUtc", "UpdatedAtUtc")
                         .HasDatabaseName("ix_content_media_assets_active");
 
                     b.ToTable("content_media_assets", null, t =>

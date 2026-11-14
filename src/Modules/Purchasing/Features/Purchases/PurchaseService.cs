@@ -30,6 +30,34 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
         return new PurchasePage(rows, page, pageSize, total);
     }
 
+    /// <summary>
+    /// Purchases dated in the range as an export table. The seller's national ID is never exported.
+    /// Reads at most <see cref="ExportRules.ReadLimit"/> rows.
+    /// </summary>
+    public async Task<ExportTable> ExportAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.Purchases.AsNoTracking()
+            .Where(purchase => purchase.PurchaseDate >= from && purchase.PurchaseDate <= to)
+            .OrderBy(purchase => purchase.PurchaseDate).ThenBy(purchase => purchase.CreatedAtUtc).Take(ExportRules.ReadLimit)
+            .Select(purchase => new
+            {
+                purchase.Code, purchase.PurchaseDate, SellerName = purchase.Seller.Name, SellerPhone = purchase.Seller.Phone,
+                purchase.Kind, purchase.Status, purchase.PaymentMethod, purchase.Total, purchase.PaidAmount, purchase.TradeInValue,
+                purchase.Remaining, Lines = purchase.Lines.Count, purchase.ReceivedAtUtc
+            })
+            .ToListAsync(cancellationToken);
+        return new ExportTable(
+            ["code", "date", "seller", "seller phone", "kind", "status", "payment method", "total", "paid", "trade-in", "remaining", "lines", "received"],
+            [.. rows.Select(row => (IReadOnlyList<ExportCell>)
+            [
+                ExportCell.Text(row.Code), ExportCell.Date(row.PurchaseDate), ExportCell.Text(row.SellerName), ExportCell.Text(row.SellerPhone),
+                ExportCell.Text(row.Kind), ExportCell.Text(row.Status), ExportCell.Text(row.PaymentMethod), ExportCell.Number(row.Total),
+                ExportCell.Number(row.PaidAmount), ExportCell.Number(row.TradeInValue), ExportCell.Number(row.Remaining),
+                ExportCell.Number(row.Lines), ExportCell.Instant(row.ReceivedAtUtc, businessZone)
+            ])]);
+    }
+
     public async Task<PurchaseView> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);

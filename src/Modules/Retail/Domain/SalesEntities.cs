@@ -80,7 +80,7 @@ public sealed class OrderPayment
 }
 
 /// <summary>A blacklisted customer, matched on new orders by phone, email or address.</summary>
-public sealed class BlacklistEntry
+public sealed class BlacklistEntry : HardwareStore.Common.Domain.ISoftDeletable
 {
     public Guid Id { get; set; }
     public string? Name { get; set; }
@@ -91,6 +91,8 @@ public sealed class BlacklistEntry
     public required string Reason { get; set; }
     public Guid CreatedByUserAccountId { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset? DeletedAtUtc { get; set; }
+    public Guid? DeletedByUserId { get; set; }
 }
 
 public sealed class OrderItem

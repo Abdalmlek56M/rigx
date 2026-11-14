@@ -208,7 +208,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"{retail}/expense-types")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"{retail}/recurring-expenses")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"{retail}/expenses/summary?from=2026-10-01&to=2026-10-31")).StatusCode);
-        var export = await reader.GetAsync($"{retail}/expenses/export?from=2026-10-01&to=2026-10-31");
+        var export = await reader.GetAsync("/api/v1/admin/system/export/expenses?from=2026-10-01&to=2026-10-31");
         Assert.Equal(HttpStatusCode.OK, export.StatusCode);
         var bytes = await export.Content.ReadAsByteArrayAsync();
         Assert.Equal("EFBBBF", Convert.ToHexString(bytes, 0, 3));

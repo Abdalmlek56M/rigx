@@ -746,7 +746,15 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         },
                         new
                         {
+                            Code = "System.Purge"
+                        },
+                        new
+                        {
                             Code = "System.StoreSettings"
+                        },
+                        new
+                        {
+                            Code = "System.Trash"
                         },
                         new
                         {

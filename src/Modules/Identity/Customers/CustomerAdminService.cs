@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
@@ -15,7 +16,8 @@ public sealed class CustomerAdminService(
     EmailCodeSignInService emailCodes,
     GoogleSignInService google,
     IdentitySessionService sessions,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    TimeZoneInfo businessZone)
 {
     public const int PageSize = 25;
 
@@ -33,6 +35,22 @@ public sealed class CustomerAdminService(
                 account.Person.PhoneNumber, account.IsActive, account.CreatedAtUtc))
             .ToListAsync(cancellationToken);
         return new CustomerListPage(items, number, PageSize, total);
+    }
+
+    /// <summary>
+    /// Customer accounts (not merged ones) registered in the range, oldest first, for the customer export.
+    /// Reads at most <see cref="ExportRules.ReadLimit"/> rows.
+    /// </summary>
+    public async Task<IReadOnlyList<CustomerListRow>> ListForExportAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+    {
+        var (fromUtc, toUtc) = BusinessDay.Range(from, to, businessZone);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.UserAccounts.AsNoTracking().Customers()
+            .Where(account => account.MergedIntoAccountId == null && account.CreatedAtUtc >= fromUtc && account.CreatedAtUtc < toUtc)
+            .OrderBy(account => account.CreatedAtUtc).ThenBy(account => account.Id).Take(ExportRules.ReadLimit)
+            .Select(account => new CustomerListRow(account.Id, account.Person.PersonCode, account.Person.FullName, account.Email,
+                account.Person.PhoneNumber, account.IsActive, account.CreatedAtUtc))
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<CustomerAccountView> GetAsync(Guid id, CancellationToken cancellationToken = default)

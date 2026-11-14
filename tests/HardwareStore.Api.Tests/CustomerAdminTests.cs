@@ -24,25 +24,12 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
     private const string Support = "support@example.test";
     private const string AlicePhone = "01012345678";
 
-    private static IdentityLoginApiFactory CreateFactory(string connectionString) =>
-        new(connectionString, configureTestServices: services =>
-        {
-            services.RemoveAll<IDbContextFactory<RetailDbContext>>();
-            services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
-            services.RemoveAll<IDbContextFactory<StorefrontDbContext>>();
-            services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(connectionString));
-            services.RemoveAll<IDbContextFactory<PcBuilderDbContext>>();
-            services.AddDbContextFactory<PcBuilderDbContext>(options => options.UseNpgsql(connectionString));
-            services.RemoveAll<IDbContextFactory<CatalogDbContext>>();
-            services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(connectionString));
-            services.RemoveAll<IDbContextFactory<PurchasingDbContext>>();
-            services.AddDbContextFactory<PurchasingDbContext>(options => options.UseNpgsql(connectionString));
-        });
+    private static IdentityLoginApiFactory CreateFactory(string connectionString) => AdminApiFactory.Create(connectionString);
 
     private static Task<Guid> StaffAsync(OwnerBootstrapDatabase database, string email, params string[] permissions) =>
-        EmailCodeSignInTests.CreateAccountAsync(database, email, verified: true, active: true, roleCode: $"{email}-role", permissions);
+        AdminApiFactory.StaffAsync(database, email, permissions);
 
-    private static async Task<Guid> CustomerAsync(OwnerBootstrapDatabase database, string name, string? phone = null)
+    internal static async Task<Guid> CustomerAsync(OwnerBootstrapDatabase database, string name, string? phone = null)
     {
         var id = await EmailCodeSignInTests.CreateAccountAsync(database, $"{name}@example.test", verified: true, active: true, roleCode: "Customer");
         await using var identity = database.CreateIdentityContext();
@@ -53,12 +40,7 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         return id;
     }
 
-    private static async Task<HttpClient> SignedInAsync(IdentityLoginApiFactory factory, string email)
-    {
-        var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
-        await TestSignIn.SignInAsync(client, factory.Services, email);
-        return client;
-    }
+    private static Task<HttpClient> SignedInAsync(IdentityLoginApiFactory factory, string email) => AdminApiFactory.SignedInAsync(factory, email);
 
     private static async Task<HttpClient> SupportAsync(OwnerBootstrapDatabase database, IdentityLoginApiFactory factory)
     {
@@ -97,18 +79,8 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         return (await response.Content.ReadFromJsonAsync<T>())!;
     }
 
-    private static async Task<Dictionary<string, string>> StepUpAsync(HttpClient client, IdentityLoginApiFactory factory, string email)
-    {
-        await using (var db = await factory.Services.GetRequiredService<IDbContextFactory<IdentityDbContext>>().CreateDbContextAsync())
-        {
-            var normalized = IdentityLoginService.NormalizeIdentifier(email);
-            await db.EmailCodes.Where(code => code.NormalizedEmail == normalized).ExecuteDeleteAsync();
-        }
-        using var request = await TestSignIn.PostJsonAsync(client, "/api/v1/identity/step-up/request", new { });
-        Assert.Equal(HttpStatusCode.Accepted, request.StatusCode);
-        var code = await TestSignIn.LatestCodeAsync(factory.Services, email);
-        return new Dictionary<string, string> { [StepUpService.HeaderName] = code.Code };
-    }
+    private static Task<Dictionary<string, string>> StepUpAsync(HttpClient client, IdentityLoginApiFactory factory, string email) =>
+        AdminApiFactory.StepUpAsync(client, factory, email);
 
     private static async Task<HttpResponseMessage> MergeAsync(HttpClient client, IdentityLoginApiFactory factory, Guid target, Guid source,
         bool stepUp = true) =>

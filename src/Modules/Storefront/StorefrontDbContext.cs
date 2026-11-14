@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Trash;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Storefront;
@@ -103,5 +104,6 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
         StoreSettingsConfiguration.Configure(model);
         ContentModelConfiguration.Configure(model);
         OfferModelConfiguration.Configure(model);
+        model.ApplySoftDelete();
     }
 }

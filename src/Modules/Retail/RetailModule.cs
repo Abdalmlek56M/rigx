@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,7 @@ public static class RetailRegistration
         services.AddScoped<OrderFulfillmentService>();
         services.AddScoped<OrderTrackingService>();
         services.AddScoped<BlacklistService>();
+        services.AddScoped<ITrashSource, BlacklistTrashSource>();
         services.AddScoped<PosService>();
         services.AddScoped<SoldFeedService>();
         services.AddScoped<ReturnService>();
@@ -44,6 +46,7 @@ public static class RetailRegistration
         services.AddScoped<RecurringExpenseService>();
         services.AddScoped<BusinessReportService>();
         services.AddScoped<DashboardService>();
+        services.AddScoped<RetailExportService>();
         return services;
     }
 }

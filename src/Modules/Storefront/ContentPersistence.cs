@@ -1,3 +1,5 @@
+using HardwareStore.Common.Domain;
+using HardwareStore.Common.Infrastructure.Trash;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Storefront;
@@ -16,7 +18,7 @@ public static class ContentPolicyKind
         ["Shipping", "Returns", "Exchanges", "Warranty", "Terms"];
 }
 
-public sealed class ContentArticle
+public sealed class ContentArticle : ISoftDeletable
 {
     public Guid Id { get; set; }
     public required string Slug { get; set; }
@@ -41,6 +43,8 @@ public sealed class ContentArticle
     public DateTimeOffset? PublishedAtUtc { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
+    public DateTimeOffset? DeletedAtUtc { get; set; }
+    public Guid? DeletedByUserId { get; set; }
     public long RowVersion { get; set; } = 1;
 }
 
@@ -54,7 +58,7 @@ public sealed class ContentArticleRevision
     public DateTimeOffset CreatedAtUtc { get; set; }
 }
 
-public sealed class ContentFaq
+public sealed class ContentFaq : ISoftDeletable
 {
     public Guid Id { get; set; }
     public required string QuestionAr { get; set; }
@@ -75,6 +79,8 @@ public sealed class ContentFaq
     public DateTimeOffset? PublishedAtUtc { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
+    public DateTimeOffset? DeletedAtUtc { get; set; }
+    public Guid? DeletedByUserId { get; set; }
     public long RowVersion { get; set; } = 1;
 }
 
@@ -109,7 +115,7 @@ public static class ContentModelConfiguration
             entity.HasKey(article => article.Id);
             entity.Property(article => article.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(article => article.Slug).HasColumnName("slug").HasMaxLength(200).IsRequired();
-            entity.HasIndex(article => article.Slug).IsUnique().HasDatabaseName("ux_content_articles_slug");
+            entity.HasIndex(article => article.Slug).IsUnique().HasFilter(SoftDeleteModel.LiveFilter).HasDatabaseName("ux_content_articles_slug");
             entity.Property(article => article.TitleAr).HasColumnName("title_ar").HasMaxLength(200).IsRequired();
             entity.Property(article => article.TitleEn).HasColumnName("title_en").HasMaxLength(200).IsRequired();
             entity.Property(article => article.SummaryAr).HasColumnName("summary_ar").HasMaxLength(600).IsRequired();
