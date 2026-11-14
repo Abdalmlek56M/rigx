@@ -1,14 +1,49 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.AspNetCore.Http;
 
 public static class AuditEndpoints
 {
+    private const string View = "System.ViewAuditLogs";
+    private const string Restore = "Audit.Restore";
+
     public static IEndpointRouteBuilder MapAuditEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/api/v1/admin/audit/events", QueryAsync)
-            .RequirePermission("System.ViewAuditLogs");
+            .RequirePermission(View);
+        var entries = endpoints.MapGroup("/api/v1/admin/audit");
+        entries.MapGet("/entries", ListEntriesAsync).RequirePermission(View);
+        entries.MapGet("/entries/{id:guid}", GetEntryAsync).RequirePermission(View);
+        entries.MapGet("/filters", FiltersAsync).RequirePermission(View);
+        entries.MapPost("/entries/{id:guid}/restore", RestoreAsync).RequirePermission(Restore).RequireStepUp();
         return endpoints;
+    }
+
+    private static async Task<IResult> ListEntriesAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken,
+        Guid? actorUserId = null, string? module = null, string? entity = null, string? entityId = null, string? action = null,
+        DateOnly? from = null, DateOnly? to = null, int page = 1, int pageSize = AuditRules.DefaultPageSize)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await audit.QueryAsync(actorUserId, module, entity, entityId, action, from, to, page, pageSize, cancellationToken));
+    }
+
+    private static async Task<IResult> GetEntryAsync(Guid id, HttpContext context, AuditLogService audit, CancellationToken cancellationToken)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await audit.GetAsync(id, cancellationToken));
+    }
+
+    private static async Task<IResult> FiltersAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await audit.FiltersAsync(cancellationToken));
+    }
+
+    private static async Task<IResult> RestoreAsync(Guid id, AuditLogService audit, CancellationToken cancellationToken)
+    {
+        await audit.RestoreAsync(id, cancellationToken);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> QueryAsync(

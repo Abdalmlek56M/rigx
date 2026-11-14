@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +14,7 @@ public static class InventoryPersistenceRegistration
     {
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
-        services.AddDbContextFactory<InventoryDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditedDbContextFactory<InventoryDbContext>(connectionString);
         services.AddScoped<WarehouseDirectoryService>();
         return services;
     }

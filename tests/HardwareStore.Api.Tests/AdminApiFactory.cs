@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using System.Net;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authentication;
@@ -20,15 +21,15 @@ internal static class AdminApiFactory
         new(connectionString, configureTestServices: services =>
         {
             services.RemoveAll<IDbContextFactory<RetailDbContext>>();
-            services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddAuditedDbContextFactory<RetailDbContext>(connectionString);
             services.RemoveAll<IDbContextFactory<StorefrontDbContext>>();
-            services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddAuditedDbContextFactory<StorefrontDbContext>(connectionString);
             services.RemoveAll<IDbContextFactory<PcBuilderDbContext>>();
-            services.AddDbContextFactory<PcBuilderDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddAuditedDbContextFactory<PcBuilderDbContext>(connectionString);
             services.RemoveAll<IDbContextFactory<CatalogDbContext>>();
-            services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddAuditedDbContextFactory<CatalogDbContext>(connectionString);
             services.RemoveAll<IDbContextFactory<PurchasingDbContext>>();
-            services.AddDbContextFactory<PurchasingDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddAuditedDbContextFactory<PurchasingDbContext>(connectionString);
             configureMore?.Invoke(services);
         });
 

@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Modules.Identity.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -299,5 +300,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             });
         });
         model.Entity<Role>().HasData(new Role { Id = Guid.Parse("11111111-1111-4111-8111-111111111111"), Code = "Customer", Name = "Customer" });
+        model.ExcludeFromAudit(typeof(AuthSession), typeof(IdentityEmailOutboxMessage), typeof(IdentityEmailChangeRequest), typeof(UserNotification),
+            typeof(EmailCode), typeof(AuthorizationState), typeof(PersonCodeCounter));
     }
 }

@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Storefront;
@@ -47,7 +48,7 @@ internal static class CustomerRequestConfiguration
             entity.Property(item => item.OfferAmount).HasColumnName("offer_amount").HasColumnType("numeric(12,2)");
             entity.Property(item => item.ExpectedResale).HasColumnName("expected_resale").HasColumnType("numeric(12,2)");
             entity.Property(item => item.InternalNote).HasColumnName("internal_note").HasMaxLength(CustomerRequestRules.MaxNoteLength);
-            entity.Property(item => item.PhotoTokenHash).HasColumnName("photo_token_hash").HasMaxLength(64);
+            entity.Property(item => item.PhotoTokenHash).HasColumnName("photo_token_hash").HasMaxLength(64).AuditMasked();
             entity.Property(item => item.PhotoTokenExpiresAtUtc).HasColumnName("photo_token_expires_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.Photos).HasColumnName("photos").HasColumnType("text[]").HasDefaultValueSql("'{}'::text[]").IsRequired();
             entity.Property(item => item.PurchaseId).HasColumnName("purchase_id");

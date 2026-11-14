@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,7 +15,7 @@ internal sealed class SellerConfiguration : IEntityTypeConfiguration<Seller>
         e.Property(x => x.Name).HasColumnName("name").HasMaxLength(SellerRules.MaxNameLength).IsRequired();
         e.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(16).IsRequired();
         e.HasIndex(x => x.Phone).IsUnique().HasDatabaseName("ux_sellers_phone");
-        e.Property(x => x.NationalId).HasColumnName("national_id").HasMaxLength(SellerRules.MaxNationalIdLength);
+        e.Property(x => x.NationalId).HasColumnName("national_id").HasMaxLength(SellerRules.MaxNationalIdLength).AuditMasked();
         e.Property(x => x.Governorate).HasColumnName("governorate").HasMaxLength(8);
         e.Property(x => x.Area).HasColumnName("area").HasMaxLength(SellerRules.MaxAreaLength);
         e.Property(x => x.Source).HasColumnName("source").HasMaxLength(SellerRules.MaxSourceLength);

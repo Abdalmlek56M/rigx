@@ -26,6 +26,8 @@ public static class ExportDatasets
             services.GetRequiredService<PurchaseService>().ExportAsync(query.From, query.To, ct)),
         new("money-movements", "Finance.ViewVaults", false, (services, query, ct) =>
             services.GetRequiredService<RetailExportService>().MoneyMovementsAsync(query.From, query.To, ct)),
+        new("audit", "System.ViewAuditLogs", false, (services, query, ct) =>
+            services.GetRequiredService<AuditLogService>().ExportAsync(query.From, query.To, ct)),
         new("customers", "Customers.View", true, (services, query, ct) =>
             services.GetRequiredService<CustomerProfileComposer>().ExportAsync(query.From, query.To, ct))
     ];

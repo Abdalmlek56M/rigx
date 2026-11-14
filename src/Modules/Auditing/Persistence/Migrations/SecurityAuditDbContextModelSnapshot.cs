@@ -22,6 +22,95 @@ namespace HardwareStore.Modules.Auditing.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("HardwareStore.Modules.Auditing.AuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("ActorIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("actor_ip");
+
+                    b.Property<string>("ActorKind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("actor_kind");
+
+                    b.Property<string>("ActorUserAgent")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("actor_user_agent");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<string>("Changes")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("changes");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<string>("Entity")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("entity");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("module");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at_utc");
+
+                    b.Property<Guid?>("RestoredFromEntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("restored_from_entry_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId")
+                        .HasDatabaseName("ix_audit_entries_actor_user_id");
+
+                    b.HasIndex("Module")
+                        .HasDatabaseName("ix_audit_entries_module");
+
+                    b.HasIndex("OccurredAtUtc")
+                        .IsDescending()
+                        .HasDatabaseName("ix_audit_entries_occurred_at_utc");
+
+                    b.HasIndex("Entity", "EntityId")
+                        .HasDatabaseName("ix_audit_entries_entity");
+
+                    b.ToTable("audit_entries", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_audit_entries_action", "action IN ('Created', 'Updated', 'Deleted', 'SoftDeleted', 'Restored', 'ValuesRestored')");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Auditing.AuditUserAccountReference", b =>
                 {
                     b.Property<Guid>("Id")

@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Infrastructure.Trash;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -275,6 +276,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.HasOne(image => image.Product).WithMany(product => product.Images)
                 .HasForeignKey(image => image.ProductId).OnDelete(DeleteBehavior.Restrict);
         });
+        model.ExcludeFromAudit(typeof(ContentMediaAssetUsage));
         model.ApplySoftDelete();
     }
 }

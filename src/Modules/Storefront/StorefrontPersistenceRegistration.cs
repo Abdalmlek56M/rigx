@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -14,7 +15,8 @@ public static class StorefrontPersistenceRegistration
     {
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
-        services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditedDbContextFactory<StorefrontDbContext>(connectionString);
+        services.AddStorefrontAuditRestore();
         services.AddScoped<StoreSettingsService>();
         services.AddScoped<WishlistService>();
         services.AddScoped<ContentArticleService>();

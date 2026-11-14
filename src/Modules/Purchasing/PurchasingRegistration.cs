@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +13,7 @@ public static class PurchasingRegistration
     {
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
-        services.AddDbContextFactory<PurchasingDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditedDbContextFactory<PurchasingDbContext>(connectionString);
         services.AddScoped<SellerService>();
         services.AddScoped<PurchaseService>();
         services.AddScoped<IDataResetSource, PurchasingDataReset>();

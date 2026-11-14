@@ -79,6 +79,8 @@ public sealed class StoreAdminPostgreSqlFixture : IAsyncLifetime
 
 public sealed class StoreAdminDatabase(string connectionString)
 {
+    public string ConnectionString => connectionString;
+
     public IdentityDbContext CreateIdentityContext() =>
         new(new DbContextOptionsBuilder<IdentityDbContext>().UseNpgsql(connectionString).Options);
 

@@ -4,4 +4,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.Domain\Common.Domain.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Infrastructure\Common.Infrastructure.csproj" />
+  </ItemGroup>
 </Project>

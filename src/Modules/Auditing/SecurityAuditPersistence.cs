@@ -29,9 +29,12 @@ public sealed class SecurityAuditDbContext(DbContextOptions<SecurityAuditDbConte
 {
     public DbSet<SecurityAuditEvent> SecurityAuditEvents => Set<SecurityAuditEvent>();
     public DbSet<BackupRun> BackupRuns => Set<BackupRun>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        AuditEntryConfiguration.Configure(model);
+
         model.Entity<AuditUserAccountReference>(entity =>
         {
             entity.ToTable("user_accounts", table => table.ExcludeFromMigrations());
@@ -186,6 +189,7 @@ public static class SecurityAuditPersistenceRegistration
         services.AddScoped<ISecurityAuditTransactionWriter>(provider => provider.GetRequiredService<SecurityAuditWriter>());
         services.AddScoped<SecurityAuditQueryService>();
         services.AddScoped<BackupRunStore>();
+        services.AddScoped<AuditEntryStore>();
         return services;
     }
 }

@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Infrastructure.Trash;
 using Microsoft.EntityFrameworkCore;
 
@@ -104,6 +105,7 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
         StoreSettingsConfiguration.Configure(model);
         ContentModelConfiguration.Configure(model);
         OfferModelConfiguration.Configure(model);
+        model.ExcludeFromAudit(typeof(WishlistItem), typeof(ContentArticleRevision));
         model.ApplySoftDelete();
     }
 }

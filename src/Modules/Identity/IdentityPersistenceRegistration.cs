@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Modules.Identity.Persistence;
 using HardwareStore.Modules.Identity.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,7 @@ public static class IdentityPersistenceRegistration
 
         services.AddSingleton(timeZone);
         services.AddSingleton<TimeProvider>(TimeProvider.System);
-        services.AddDbContextFactory<IdentityDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditedDbContextFactory<IdentityDbContext>(connectionString);
         services.AddScoped<IdentityLoginService>();
         services.AddScoped<IdentityCurrentUserService>();
         services.AddScoped<IdentityProfileService>();
@@ -44,6 +45,7 @@ public static class IdentityPersistenceRegistration
         services.AddScoped<PersonCodeGenerator>();
         services.AddScoped<FirstOwnerBootstrapService>();
         services.AddScoped<IdentityAdministrationService>();
+        services.AddScoped<UserDisplayNames>();
         return services;
     }
 }

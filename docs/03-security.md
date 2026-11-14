@@ -27,6 +27,9 @@
 - Backup download: owner-only (`System.BackupDownload`) + step-up, `no-store`. Backup, verify and download are audited.
 - Data reset: owner-only (`System.ResetData`) + step-up; a successful BeforeReset backup first, else nothing is deleted. Audited, also on failure.
 - Owner-only permissions (`System.Purge`, `System.BackupDownload`, `System.ResetData`) cannot be granted to custom roles.
+- Business audit log is append-only: a database trigger rejects UPDATE, DELETE and TRUNCATE on `audit_entries` (M47), and the app role lost those grants. Viewing needs `System.ViewAuditLogs`.
+- Audit log masks secrets as `"***"`: seller national ID, order tracking token, invoice access token, request photo token hash, and every byte[] field.
+- Restore of previous values: owner-only (`Audit.Restore`) + step-up; allowlisted fields only; 409 if the record changed since.
 
 ## Rules every change must keep
 1. **Never trust the client**: prices, totals, discounts, stock, permissions and tier perks are computed on the server.
@@ -45,7 +48,7 @@
 | ~~Password login still exists~~ | Closed: removed in 2.1 | 2 |
 | ~~Google sign-in missing~~ | Closed in 2.1 | 2 |
 | ~~Owner/admin step-up for destructive actions~~ | Closed in 2.1 | 2 |
-| Full audit log (before/after for all entities) | High | 1 |
+| ~~Full audit log (before/after for all entities)~~ | Closed in 2.11 (business audit log). Open part: `ExecuteUpdate`, `ExecuteDelete` and raw SQL writes bypass the interceptor (listed in the 2.11 checkpoint) | 2 |
 | Content-Security-Policy (nonce-based with Next.js) | Normal | 4 |
 | Off-host encrypted backups + restore drill: partly closed in 2.10 (restore drill, two destinations); encryption and off-host target at launch | High | 2/5 |
 | Migration runner outside dev-only "preview" mode | High | 0/1 |

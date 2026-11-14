@@ -1,4 +1,5 @@
 using System.Net;
+using HardwareStore.Common.Domain;
 using HardwareStore.Common.Infrastructure.Persistence;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
@@ -26,6 +27,8 @@ builder.Host.UseSerilog((_, _, configuration) => configuration
     .WriteTo.Console());
 
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IAuditActor, HttpAuditActor>();
 builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
 builder.Services.AddValidation();
 var dataProtectionKeyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
@@ -105,6 +108,7 @@ builder.Services.AddScoped<RequestPurchaseConversion>();
 builder.Services.AddScoped<IStockModelDirectory, RetailStockModelDirectory>();
 builder.Services.AddScoped<BackInStockNotifier>();
 builder.Services.AddScoped<TrashAuditor>();
+builder.Services.AddScoped<AuditLogService>();
 builder.Services.AddScoped<TrashService>();
 builder.Services.AddScoped<ExportRunner>();
 builder.Services.AddSingleton(BackupOptions.FromConfiguration(builder.Configuration));

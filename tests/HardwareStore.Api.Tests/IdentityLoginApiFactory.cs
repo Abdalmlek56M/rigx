@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Infrastructure.Persistence;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Persistence;
@@ -35,7 +36,7 @@ internal sealed class IdentityLoginApiFactory(
             services.RemoveAll<DbContextOptions<IdentityDbContext>>();
             services.RemoveAll<IDbContextFactory<IdentityDbContext>>();
             services.RemoveAll<IdentityDbContext>();
-            services.AddDbContextFactory<IdentityDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddAuditedDbContextFactory<IdentityDbContext>(connectionString);
 
             services.RemoveAll<DbContextOptions<SecurityAuditDbContext>>();
             services.RemoveAll<IDbContextFactory<SecurityAuditDbContext>>();

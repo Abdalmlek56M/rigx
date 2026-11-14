@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +13,8 @@ public static class RetailRegistration
     {
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
-        services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditedDbContextFactory<RetailDbContext>(connectionString);
+        services.AddRetailAuditRestore();
         services.AddScoped<InventoryUnitService>();
         services.AddScoped<StockItemAdminService>();
         services.AddScoped<StoreItemService>();

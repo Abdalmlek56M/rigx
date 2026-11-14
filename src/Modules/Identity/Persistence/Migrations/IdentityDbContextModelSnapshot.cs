@@ -183,6 +183,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_auth_sessions_key_hash_length", "octet_length(session_key_hash) = 32");
                         });
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.AuthorizationState", b =>
@@ -208,6 +210,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_authorization_state_singleton", "id = 1");
                         });
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
 
                     b.HasData(
                         new
@@ -410,6 +414,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_email_codes_purpose", "purpose IN ('SignIn', 'StepUp')");
                         });
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.ExternalLogin", b =>
@@ -510,6 +516,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasDatabaseName("ix_identity_email_change_requests_account");
 
                     b.ToTable("identity_email_change_requests", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.IdentityEmailOutboxMessage", b =>
@@ -570,6 +578,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasDatabaseName("ix_identity_email_outbox_due");
 
                     b.ToTable("identity_email_outbox", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.Permission", b =>
@@ -584,6 +594,10 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                     b.ToTable("permissions", (string)null);
 
                     b.HasData(
+                        new
+                        {
+                            Code = "Audit.Restore"
+                        },
                         new
                         {
                             Code = "Catalog.ManageMedia"
@@ -873,6 +887,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_person_code_counters_year_month", "year_month ~ '^[0-9]{6}$'");
                         });
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.Role", b =>
@@ -1074,6 +1090,8 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasDatabaseName("ix_user_notifications_recipient");
 
                     b.ToTable("user_notifications", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Identity.Persistence.UserRole", b =>

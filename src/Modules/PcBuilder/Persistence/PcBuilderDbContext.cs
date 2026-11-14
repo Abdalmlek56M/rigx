@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -13,6 +14,7 @@ public sealed class PcBuilderDbContext(DbContextOptions<PcBuilderDbContext> opti
         model.Entity<SavedBuild>(e =>
         {
             e.ToTable("saved_builds");
+            e.ExcludeFromAudit();
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             e.Property(x => x.Token).HasColumnName("token").HasMaxLength(32).IsRequired();

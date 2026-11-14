@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,7 +33,8 @@ public static class CatalogModuleRegistration
             OrphanGracePeriod = TimeSpan.FromMinutes(
                 ReadInt(configuration, "Catalog:Media:OrphanGraceMinutes", 30))
         });
-        services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditedDbContextFactory<CatalogDbContext>(connectionString);
+        services.AddCatalogAuditRestore();
         services.AddSingleton<ICatalogImageProcessor, SkiaCatalogImageProcessor>();
         services.AddSingleton<ICatalogMediaStorage, LocalCatalogMediaStorage>();
         services.AddScoped<ProductSearchService>();

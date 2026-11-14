@@ -1,3 +1,4 @@
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Common.Infrastructure.Trash;
 using Microsoft.EntityFrameworkCore;
 
@@ -134,7 +135,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(32).IsRequired();
             e.HasIndex(x => x.Reference).IsUnique().HasDatabaseName("ux_store_orders_reference");
             e.Property(x => x.UserAccountId).HasColumnName("user_account_id");
-            e.Property(x => x.TrackingToken).HasColumnName("tracking_token").HasMaxLength(32).IsRequired();
+            e.Property(x => x.TrackingToken).HasColumnName("tracking_token").HasMaxLength(32).IsRequired().AuditMasked();
             e.HasIndex(x => x.TrackingToken).IsUnique().HasDatabaseName("ux_store_orders_tracking_token");
             e.Property(x => x.Channel).HasColumnName("channel").HasMaxLength(16).IsRequired();
             e.Property(x => x.CustomerName).HasColumnName("customer_name").HasMaxLength(200).IsRequired();
@@ -481,7 +482,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.HasIndex(x => x.Number).IsUnique().HasDatabaseName("ux_invoices_number");
             e.Property(x => x.Year).HasColumnName("year");
             e.Property(x => x.Sequence).HasColumnName("sequence");
-            e.Property(x => x.AccessToken).HasColumnName("access_token").HasMaxLength(64).IsRequired();
+            e.Property(x => x.AccessToken).HasColumnName("access_token").HasMaxLength(64).IsRequired().AuditMasked();
             e.HasIndex(x => x.AccessToken).IsUnique().HasDatabaseName("ux_invoices_token");
             e.Property(x => x.SellerName).HasColumnName("seller_name").HasMaxLength(200);
             e.Property(x => x.IssuedAtUtc).HasColumnName("issued_at_utc").HasColumnType("timestamp with time zone");
@@ -494,6 +495,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.Year).HasColumnName("year").ValueGeneratedNever();
             e.Property(x => x.LastNumber).HasColumnName("last_number");
         });
+        model.ExcludeFromAudit(typeof(InvoiceCounter), typeof(OrderEvent));
         model.ApplySoftDelete();
     }
 }
