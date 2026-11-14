@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>
-/// Build parts: add from stock, add a new part that is not in stock, edit a part (price, warranty override, partner %),
+/// Build parts: add from stock, add a new part that is not in stock, edit a part (price, warranty override, financing partner and %),
 /// remove it back to stock or into another build, and replace it from stock or by swapping with another build's part.
 /// Adding resets the revenue split to the default; removing rebalances the rest; a replacement takes the old part's share.
 /// </summary>
@@ -49,16 +49,17 @@ public sealed class AssemblyPartService(IDbContextFactory<RetailDbContext> conte
     {
         AssemblyRules.ValidatePartPrice(request.PartPrice);
         StockItemRules.ValidateWarranty(request.WarrantyLabel, request.WarrantyMonths);
-        if (request.PartnerPercentOverride is < 0 or > 100) throw new RetailException(400, "Partner percentage must be between 0 and 100.");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var assembly = await AssemblyEditing.LoadEditableAsync(db, assemblyId, request.RowVersion, cancellationToken);
         var link = FindPart(assembly, unitId);
+        await PartnerFinancing.EnsureAsync(db, request.PartnerId, request.PartnerPercentOverride, cancellationToken);
         link.PartPrice = request.PartPrice;
         link.WarrantyLabel = string.IsNullOrWhiteSpace(request.WarrantyLabel) ? null : request.WarrantyLabel.Trim();
         link.WarrantyMonths = link.WarrantyLabel is null ? null : request.WarrantyMonths;
-        if (link.Unit.PartnerPercentOverride != request.PartnerPercentOverride)
+        if (link.Unit.PartnerPercentOverride != request.PartnerPercentOverride || link.Unit.PartnerId != request.PartnerId)
         {
             link.Unit.PartnerPercentOverride = request.PartnerPercentOverride;
+            link.Unit.PartnerId = request.PartnerId;
             link.Unit.RowVersion++;
         }
         AssemblyEditing.Touch(assembly, timeProvider.GetUtcNow().ToUniversalTime());

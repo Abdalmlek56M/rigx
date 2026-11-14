@@ -64,7 +64,7 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
         Assert.All(withWarranty.Units, unit => Assert.False(unit.WarrantyOverridden));
 
         var overridden = await retail.Parts.UpdatePartAsync(build.Id, cpu,
-            new AssemblyPartUpdateRequest(400m, "Part", 6, null, withWarranty.RowVersion));
+            new AssemblyPartUpdateRequest(400m, "Part", 6, null, null, withWarranty.RowVersion));
         var cpuView = overridden.Units.Single(unit => unit.UnitId == cpu);
         Assert.Equal(("Part", (int?)6, true), (cpuView.WarrantyLabel, cpuView.WarrantyMonths, cpuView.WarrantyOverridden));
         var gpuView = overridden.Units.Single(unit => unit.UnitId == gpu);
@@ -129,22 +129,30 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
         var (retail, database, units) = await StartAsync(fixture, Line("Upd CPU", 100m, 300m), Line("Upd GPU", 100m, 100m));
         var (cpu, gpu) = (units[0].Id, units[1].Id);
         var build = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Update", [cpu, gpu]));
+        var partner = await retail.CreateAsync("Part Partner", 10m);
 
-        var updated = await retail.Parts.UpdatePartAsync(build.Id, cpu, new AssemblyPartUpdateRequest(350m, "Part", 6, 12.5m, build.RowVersion));
+        var updated = await retail.Parts.UpdatePartAsync(build.Id, cpu, new AssemblyPartUpdateRequest(350m, "Part", 6, 12.5m, partner.Id, build.RowVersion));
         var view = updated.Units.Single(unit => unit.UnitId == cpu);
         Assert.Equal((350m, "Part", (int?)6, (decimal?)12.5m), (view.PartPrice, view.WarrantyLabel, view.WarrantyMonths, view.PartnerPercentOverride));
+        Assert.Equal(partner.Id, view.PartnerId);
         await using (var db = database.CreateRetailContext())
-            Assert.Equal(12.5m, (await db.Units.SingleAsync(unit => unit.Id == cpu)).PartnerPercentOverride);
+        {
+            var unit = await db.Units.SingleAsync(row => row.Id == cpu);
+            Assert.Equal((12.5m, (Guid?)partner.Id), (unit.PartnerPercentOverride, unit.PartnerId));
+        }
+        Assert.Equal(400, await StatusOfAsync(() => retail.Parts.UpdatePartAsync(build.Id, cpu,
+            new AssemblyPartUpdateRequest(350m, null, null, 12.5m, null, updated.RowVersion))));
 
-        var cleared = await retail.Parts.UpdatePartAsync(build.Id, cpu, new AssemblyPartUpdateRequest(350m, null, null, null, updated.RowVersion));
+        var cleared = await retail.Parts.UpdatePartAsync(build.Id, cpu, new AssemblyPartUpdateRequest(350m, null, null, null, null, updated.RowVersion));
         view = cleared.Units.Single(unit => unit.UnitId == cpu);
         Assert.False(view.WarrantyOverridden);
         Assert.Null(view.PartnerPercentOverride);
+        Assert.Null(view.PartnerId);
 
         Assert.Equal(400, await StatusOfAsync(() => retail.Parts.UpdatePartAsync(build.Id, cpu,
-            new AssemblyPartUpdateRequest(-1m, null, null, null, cleared.RowVersion))));
+            new AssemblyPartUpdateRequest(-1m, null, null, null, null, cleared.RowVersion))));
         Assert.Equal(409, await StatusOfAsync(() => retail.Parts.UpdatePartAsync(build.Id, cpu,
-            new AssemblyPartUpdateRequest(10m, null, null, null, build.RowVersion))));
+            new AssemblyPartUpdateRequest(10m, null, null, null, null, build.RowVersion))));
     }
 
     [Fact]
@@ -211,7 +219,7 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
             Assert.Equal(409, await StatusOfAsync(() => retail.Assemblies.UpdateAssemblyAsync(build.Id, Card(build))));
             Assert.Equal(409, await StatusOfAsync(() => retail.Parts.AddPartAsync(build.Id, new AssemblyAddPartRequest(fan, build.RowVersion))));
             Assert.Equal(409, await StatusOfAsync(() => retail.Parts.UpdatePartAsync(build.Id, unit,
-                new AssemblyPartUpdateRequest(1m, null, null, null, build.RowVersion))));
+                new AssemblyPartUpdateRequest(1m, null, null, null, null, build.RowVersion))));
             Assert.Equal(409, await StatusOfAsync(() => retail.Parts.RemovePartAsync(build.Id, unit, new AssemblyRemovePartRequest(build.RowVersion))));
             Assert.Equal(409, await StatusOfAsync(() => retail.Parts.ReplacePartAsync(build.Id, unit, new AssemblyReplacePartRequest(fan, build.RowVersion))));
             Assert.Equal(409, await StatusOfAsync(() => retail.Assemblies.AddPhotoAsync(build.Id, new StockItemPhoto("a.webp", "a-t.webp"))));
@@ -251,7 +259,8 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
         var (retail, _, units) = await StartAsync(fixture, Line("Cost CPU", 123m, 300m), Line("Cost GPU", 77m, 100m));
         var build = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Costs", units.Select(unit => unit.Id).ToList()));
         var priced = await retail.Assemblies.UpdateAssemblyAsync(build.Id, Card(build, 2000m));
-        var full = await retail.Parts.UpdatePartAsync(build.Id, units[0].Id, new AssemblyPartUpdateRequest(300m, null, null, 15m, priced.RowVersion));
+        var partner = await retail.CreateAsync("Cost Partner", 10m);
+        var full = await retail.Parts.UpdatePartAsync(build.Id, units[0].Id, new AssemblyPartUpdateRequest(300m, null, null, 15m, partner.Id, priced.RowVersion));
 
         Assert.Equal(200m, full.ComponentCost);
         Assert.NotNull(full.AllocatedTotal);
@@ -261,7 +270,8 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
             Assert.NotNull(unit.StandalonePrice);
             Assert.NotNull(unit.AllocatedAmount);
         });
-        Assert.Equal(15m, full.Units.Single(unit => unit.UnitId == units[0].Id).PartnerPercentOverride);
+        Assert.Equal((15m, (Guid?)partner.Id), (full.Units.Single(unit => unit.UnitId == units[0].Id).PartnerPercentOverride,
+            full.Units.Single(unit => unit.UnitId == units[0].Id).PartnerId));
 
         var hidden = new[] { await retail.Assemblies.GetAsync(build.Id, false), Assert.Single(await retail.Assemblies.ListAssembliesAsync(false)) };
         foreach (var view in hidden)
@@ -273,6 +283,7 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
                 Assert.Null(unit.AcquisitionCost);
                 Assert.Null(unit.StandalonePrice);
                 Assert.Null(unit.PartnerPercentOverride);
+                Assert.Null(unit.PartnerId);
                 Assert.Null(unit.AllocatedAmount);
             });
         }

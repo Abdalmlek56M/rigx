@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Purchasing;
+using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -58,13 +59,27 @@ public static class PurchasingEndpoints
         return Results.Ok(await purchases.GetAsync(id, ct));
     }
 
-    private static async Task<IResult> CreatePurchaseAsync(PurchaseRequest request, HttpContext context, PurchaseService purchases, CancellationToken ct) =>
-        context.TryGetUserId(out var actorId)
-            ? Results.Created((string?)null, await purchases.CreateAsync(request, actorId, ct))
-            : Results.Unauthorized();
+    private static async Task<IResult> CreatePurchaseAsync(PurchaseRequest request, HttpContext context, PurchaseService purchases,
+        PartnerService partners, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        await EnsureFinancingPartnersAsync(request, partners, ct);
+        return Results.Created((string?)null, await purchases.CreateAsync(request, actorId, ct));
+    }
 
-    private static async Task<IResult> UpdatePurchaseAsync(Guid id, PurchaseRequest request, PurchaseService purchases, CancellationToken ct) =>
-        Results.Ok(await purchases.UpdateAsync(id, request, ct));
+    private static async Task<IResult> UpdatePurchaseAsync(Guid id, PurchaseRequest request, PurchaseService purchases, PartnerService partners,
+        CancellationToken ct)
+    {
+        await EnsureFinancingPartnersAsync(request, partners, ct);
+        return Results.Ok(await purchases.UpdateAsync(id, request, ct));
+    }
+
+    /// <summary>A draft line may only name an active financed-parts partner (Retail owns partners; the receipt checks again).</summary>
+    private static async Task EnsureFinancingPartnersAsync(PurchaseRequest request, PartnerService partners, CancellationToken ct)
+    {
+        foreach (var partnerId in (request.Lines ?? []).Select(line => line.PartnerId).OfType<Guid>().Distinct())
+            await partners.EnsureCanFinanceAsync(partnerId, ct);
+    }
 
     private static async Task<IResult> CancelPurchaseAsync(Guid id, PurchaseVersionRequest request, PurchaseService purchases, CancellationToken ct) =>
         Results.Ok(await purchases.CancelAsync(id, request.RowVersion, ct));

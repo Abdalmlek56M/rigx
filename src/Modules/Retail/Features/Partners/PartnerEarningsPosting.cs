@@ -6,94 +6,69 @@ namespace HardwareStore.Modules.Retail;
 internal static class PartnerEarningsPosting
 {
     /// <summary>
-    /// Creates partner earnings for a completed order (unit, product or category allocation, else the active agreement),
-    /// turns explicit loss sharing into recoverable balances, then offsets those balances. Idempotent per component/partner.
+    /// Creates partner earnings for a completed order: every sold unit that has a financing partner earns that partner's share
+    /// (unit percent, else the partner default). Explicit loss sharing becomes a recoverable balance, which is then offset.
+    /// Idempotent per component/partner.
     /// </summary>
     public static async Task PostForOrderAsync(RetailDbContext db, StoreOrder order, TimeProvider timeProvider, CancellationToken cancellationToken)
     {
-        var orderDate = DateOnly.FromDateTime(order.CreatedAtUtc.UtcDateTime);
-        var agreement = await db.PartnerAgreements.AsNoTracking()
-            .Where(item => item.IsActive && item.EffectiveFrom <= orderDate && (item.EffectiveTo == null || item.EffectiveTo >= orderDate))
-            .OrderByDescending(item => item.EffectiveFrom).ThenByDescending(item => item.CreatedAtUtc)
-            .FirstOrDefaultAsync(cancellationToken);
-        var allocations = await db.PartnerUnitAllocations.AsNoTracking()
-            .Where(item => item.IsActive).ToListAsync(cancellationToken);
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
         var unitIds = order.Items.SelectMany(item => item.Components).Select(component => component.UnitId).Distinct().ToList();
-        var units = await db.Units.AsNoTracking().Include(unit => unit.StockItem).Where(unit => unitIds.Contains(unit.Id))
+        var units = await db.Units.AsNoTracking().Where(unit => unitIds.Contains(unit.Id) && unit.PartnerId != null)
             .ToDictionaryAsync(unit => unit.Id, cancellationToken);
+        if (units.Count == 0) return;
+        var partnerIds = units.Values.Select(unit => unit.PartnerId!.Value).Distinct().ToList();
+        var partners = await db.Partners.AsNoTracking().Where(partner => partnerIds.Contains(partner.Id)).ToDictionaryAsync(partner => partner.Id, cancellationToken);
         var existing = (await db.PartnerEarnings.AsNoTracking()
                 .Where(earning => earning.OrderId == order.Id)
-                .Select(earning => new { earning.OrderItemComponentId, earning.PartnerName })
+                .Select(earning => new { earning.OrderItemComponentId, earning.PartnerId })
                 .ToListAsync(cancellationToken))
-            .Select(entry => (entry.OrderItemComponentId, entry.PartnerName))
+            .Select(entry => (entry.OrderItemComponentId, entry.PartnerId))
             .ToHashSet();
-        var touchedPartners = new HashSet<string>(StringComparer.Ordinal);
-
-        void AddEarning(OrderItem item, OrderItemComponent component, string partnerName, decimal percent, bool lossSharing)
-        {
-            if (string.IsNullOrWhiteSpace(partnerName) || percent <= 0) return;
-            if (!existing.Add((component.Id, partnerName))) return;
-            var profit = decimal.Round(component.NetProfit, 2);
-            var amount = decimal.Round(profit * percent / 100m, 2);
-            if (amount < 0 && !lossSharing) amount = 0;
-            db.PartnerEarnings.Add(new PartnerEarning
-            {
-                Id = Guid.CreateVersion7(), OrderItemId = item.Id, OrderItemComponentId = component.Id,
-                UnitId = component.UnitId, OrderId = order.Id, PartnerName = partnerName,
-                Percent = percent, LossSharingEnabled = lossSharing,
-                RevenueAmount = component.RevenueAmount, DiscountAmount = component.DiscountAmount,
-                DirectExpenseAmount = component.DirectExpenseAmount, CostAmount = component.CostAmount,
-                GrossProfit = profit, Amount = amount, PaidAmount = 0, OffsetAmount = 0,
-                Status = EarningStatus.Outstanding, CreatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
-            });
-            touchedPartners.Add(partnerName);
-        }
-
+        var added = new List<PartnerEarning>();
         foreach (var item in order.Items)
         {
             foreach (var component in item.Components)
             {
                 if (!units.TryGetValue(component.UnitId, out var unit)) continue;
-                var scoped = allocations.Where(allocation => allocation.UnitId == component.UnitId).ToList();
-                if (scoped.Count == 0 && unit.ProductId is not null)
-                    scoped = allocations.Where(allocation => allocation.UnitId == null && allocation.ProductId == unit.ProductId).ToList();
-                if (scoped.Count == 0 && !string.IsNullOrWhiteSpace(unit.StockItem.PartnerCategoryScope))
-                    scoped = allocations.Where(allocation => allocation.UnitId == null && allocation.ProductId == null &&
-                        allocation.Category == unit.StockItem.PartnerCategoryScope).ToList();
-                if (scoped.Count > 0)
+                var partner = partners[unit.PartnerId!.Value];
+                var percent = PartnerRules.EffectivePercent(unit.PartnerPercentOverride, partner.DefaultPercent);
+                if (percent <= 0 || !existing.Add((component.Id, partner.Id))) continue;
+                var profit = decimal.Round(component.NetProfit, 2);
+                added.Add(new PartnerEarning
                 {
-                    if (scoped.Sum(allocation => allocation.Percent) > 100.01m)
-                        throw new RetailException(409, "Partner allocations for a sold unit exceed 100%.");
-                    foreach (var allocation in scoped)
-                        AddEarning(item, component, allocation.PartnerName, allocation.Percent, allocation.LossSharingEnabled);
-                    continue;
-                }
-                if (agreement is null) continue;
-                AddEarning(item, component, agreement.PartnerName,
-                    unit.PartnerPercentOverride ?? agreement.DefaultPercent, agreement.LossSharingEnabled);
+                    Id = Guid.CreateVersion7(), PartnerId = partner.Id, OrderItemId = item.Id, OrderItemComponentId = component.Id,
+                    UnitId = component.UnitId, OrderId = order.Id, Percent = percent, LossSharingEnabled = partner.LossSharingEnabled,
+                    RevenueAmount = component.RevenueAmount, DiscountAmount = component.DiscountAmount,
+                    DirectExpenseAmount = component.DirectExpenseAmount, CostAmount = component.CostAmount,
+                    GrossProfit = profit, Amount = PartnerRules.Share(profit, percent, partner.LossSharingEnabled),
+                    Status = EarningStatus.Outstanding, CreatedAtUtc = now
+                });
             }
         }
-        await db.SaveChangesAsync(cancellationToken);
-        var losses = await db.PartnerEarnings
-            .Where(item => item.OrderId == order.Id && item.Amount < 0 && item.Status == EarningStatus.Outstanding)
-            .ToListAsync(cancellationToken);
-        foreach (var loss in losses)
+        await SaveAndApplyAsync(db, added, now, cancellationToken);
+    }
+
+    /// <summary>Adds new earnings (losses turned into recoverable balances), saves, then offsets the recoverable balances.</summary>
+    public static async Task SaveAndApplyAsync(RetailDbContext db, IReadOnlyList<PartnerEarning> added, DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        db.PartnerEarnings.AddRange(added);
+        foreach (var loss in added.Where(item => item.Amount < 0))
         {
             db.PartnerAdjustments.Add(new PartnerAdjustment
             {
-                Id = Guid.CreateVersion7(), PartnerName = loss.PartnerName, PartnerEarningId = loss.Id,
+                Id = Guid.CreateVersion7(), PartnerId = loss.PartnerId, PartnerEarningId = loss.Id,
                 Amount = loss.Amount, AppliedAmount = 0, Status = AdjustmentStatus.Open,
-                Reason = "Loss sharing converted to recoverable partner balance",
-                CreatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
+                Reason = "Loss sharing converted to recoverable partner balance", CreatedAtUtc = now
             });
             loss.Status = EarningStatus.Reversed;
-            loss.ReversedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
+            loss.ReversedAtUtc = now;
             loss.ReversalReason = "Converted to recoverable balance under explicit loss sharing";
-            touchedPartners.Add(loss.PartnerName);
         }
         await db.SaveChangesAsync(cancellationToken);
-        foreach (var partnerName in touchedPartners)
-            await ApplyRecoverableAsync(db, partnerName, cancellationToken);
+        foreach (var partnerId in added.Select(item => item.PartnerId).Distinct())
+            await ApplyRecoverableAsync(db, partnerId, cancellationToken);
     }
 
     /// <summary>
@@ -106,7 +81,7 @@ internal static class PartnerEarningsPosting
         var earnings = await db.PartnerEarnings
             .Where(entry => entry.OrderItemId == item.Id && entry.UnitId == unitId)
             .ToListAsync(cancellationToken);
-        var touchedPartners = new HashSet<string>(StringComparer.Ordinal);
+        var touchedPartners = new HashSet<Guid>();
         foreach (var earning in earnings.Where(entry => entry.Status != EarningStatus.Reversed))
         {
             var settled = decimal.Round(earning.PaidAmount + earning.OffsetAmount, 2);
@@ -114,7 +89,7 @@ internal static class PartnerEarningsPosting
             {
                 db.PartnerAdjustments.Add(new PartnerAdjustment
                 {
-                    Id = Guid.CreateVersion7(), PartnerName = earning.PartnerName,
+                    Id = Guid.CreateVersion7(), PartnerId = earning.PartnerId,
                     PartnerEarningId = earning.Id, OrderReturnId = orderReturn.Id,
                     Amount = -settled, AppliedAmount = 0, Status = AdjustmentStatus.Open,
                     Reason = $"Return recovery for {item.Name}", CreatedAtUtc = now
@@ -123,21 +98,21 @@ internal static class PartnerEarningsPosting
             earning.Status = EarningStatus.Reversed;
             earning.ReversedAtUtc = now;
             earning.ReversalReason = $"Order return {orderReturn.Id} ({condition})";
-            touchedPartners.Add(earning.PartnerName);
+            touchedPartners.Add(earning.PartnerId);
         }
         await db.SaveChangesAsync(cancellationToken);
-        foreach (var partnerName in touchedPartners)
-            await ApplyRecoverableAsync(db, partnerName, cancellationToken);
+        foreach (var partnerId in touchedPartners)
+            await ApplyRecoverableAsync(db, partnerId, cancellationToken);
     }
 
-    private static async Task ApplyRecoverableAsync(RetailDbContext db, string partnerName, CancellationToken cancellationToken)
+    private static async Task ApplyRecoverableAsync(RetailDbContext db, Guid partnerId, CancellationToken cancellationToken)
     {
         var adjustments = await db.PartnerAdjustments
-            .Where(item => item.PartnerName == partnerName && item.Status == AdjustmentStatus.Open && item.Amount < 0)
+            .Where(item => item.PartnerId == partnerId && item.Status == AdjustmentStatus.Open && item.Amount < 0)
             .OrderBy(item => item.CreatedAtUtc).ToListAsync(cancellationToken);
         if (adjustments.Count == 0) return;
         var earnings = await db.PartnerEarnings
-            .Where(item => item.PartnerName == partnerName && item.Status == EarningStatus.Outstanding && item.Amount > 0)
+            .Where(item => item.PartnerId == partnerId && item.Status == EarningStatus.Outstanding && item.Amount > 0)
             .OrderBy(item => item.CreatedAtUtc).ToListAsync(cancellationToken);
         foreach (var adjustment in adjustments)
         {

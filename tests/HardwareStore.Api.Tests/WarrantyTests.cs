@@ -120,7 +120,7 @@ public sealed class WarrantyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
             new AssemblyUpdateRequest("Warranty build", "عنوان", "Title", 5000m, build.RowVersion, WarrantyLabel: "Build", WarrantyMonths: 12, Copies: 2));
         var cpu = card.Units.Single(unit => unit.StockItemCode == items[0].Code);
         card = await retail.Parts.UpdatePartAsync(card.Id, cpu.UnitId,
-            new AssemblyPartUpdateRequest(cpu.PartPrice, "Part", 6, null, card.RowVersion));
+            new AssemblyPartUpdateRequest(cpu.PartPrice, "Part", 6, null, null, card.RowVersion));
         await retail.Assemblies.SetAssemblyPublishedAsync(card.Id, true, card.RowVersion);
 
         var order = await DeliverAsync(retail, await retail.PosAsync(Sale([BuildLine(build.Id)])));

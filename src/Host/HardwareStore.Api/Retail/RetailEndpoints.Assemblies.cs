@@ -67,7 +67,7 @@ public static partial class RetailEndpoints
         var specs = await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct);
         var part = new ReceiptLine(request.ModelName ?? string.Empty, request.Condition ?? string.Empty, 1, request.AcquisitionCost,
             request.Price, request.CategoryId, request.ProductId, request.WithBoardExtra, request.AloneExtra, request.SerialNumber,
-            request.PartnerPercentOverride, label, months, request.HasBox, request.IsHidden, request.InternalNote, specs);
+            request.PartnerPercentOverride, label, months, request.HasBox, request.IsHidden, request.InternalNote, specs, request.PartnerId);
         return Results.Ok(await parts.AddNewPartAsync(id, new AssemblyNewPartRequest(part, request.RowVersion), context.HasPermission(ViewCosts), ct));
     }
 
@@ -75,7 +75,7 @@ public static partial class RetailEndpoints
         AssemblyPartService parts, StoreSettingsService settings, CancellationToken ct)
     {
         var (label, months) = WarrantyChoice.Resolve(await WarrantyChoice.LoadOptionsAsync(settings, ct), request.WarrantyLabel);
-        var update = new AssemblyPartUpdateRequest(request.PartPrice, label, months, request.PartnerPercentOverride, request.RowVersion);
+        var update = new AssemblyPartUpdateRequest(request.PartPrice, label, months, request.PartnerPercentOverride, request.PartnerId, request.RowVersion);
         return Results.Ok(await parts.UpdatePartAsync(id, unitId, update, context.HasPermission(ViewCosts), ct));
     }
 
@@ -111,8 +111,8 @@ public sealed record AssemblyEditRequest(string? Name, string? PublicTitleAr, st
     string? Usage = null, string? SellMode = null, string? WarrantyLabel = null, int? Copies = null, string? SuitableForAr = null,
     string? SuitableForEn = null);
 /// <summary>Per-part edit; an empty <paramref name="WarrantyLabel"/> means "use the build's warranty".</summary>
-public sealed record AssemblyPartBody(decimal PartPrice, string? WarrantyLabel, decimal? PartnerPercentOverride, long RowVersion);
+public sealed record AssemblyPartBody(decimal PartPrice, string? WarrantyLabel, decimal? PartnerPercentOverride, Guid? PartnerId, long RowVersion);
 public sealed record AssemblyNewPartBody(string? ModelName, string? Condition, decimal AcquisitionCost, decimal Price, long RowVersion,
     Guid? CategoryId = null, Guid? ProductId = null, decimal? WithBoardExtra = null, decimal? AloneExtra = null, string? SerialNumber = null,
     decimal? PartnerPercentOverride = null, string? WarrantyLabel = null, bool HasBox = false, bool IsHidden = false,
-    string? InternalNote = null, Dictionary<string, string>? Specs = null);
+    string? InternalNote = null, Dictionary<string, string>? Specs = null, Guid? PartnerId = null);

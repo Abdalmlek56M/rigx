@@ -16,10 +16,15 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var items = await PriceAsync(db, request, cancellationToken);
         var lines = new List<PosPreviewLine>();
         var warnings = new List<string>();
+        var financed = new List<(Guid PartnerId, decimal? Percent, decimal Profit)>();
         foreach (var item in items)
         {
-            var cost = await CostOfAsync(db, item, cancellationToken);
+            var units = await UnitsOfAsync(db, item, cancellationToken);
+            var cost = units.Sum(unit => unit.Cost);
             var sale = item.LineTotal - item.DiscountAmount;
+            var unitProfits = PartnerRules.SplitProfitByCost(sale - cost, units.Select(unit => unit.Cost).ToList());
+            for (var index = 0; index < units.Count; index++)
+                if (units[index].PartnerId is Guid partnerId) financed.Add((partnerId, units[index].Percent, unitProfits[index]));
             var belowCost = sale < cost;
             if (belowCost) warnings.Add($"{item.Name} ({item.Code}) is sold below its cost.");
             lines.Add(new PosPreviewLine(item.Name, item.Code, item.Quantity, item.UnitPrice, decimal.Round(sale / item.Quantity, 2),
@@ -34,7 +39,8 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var fee = ShippingOf(request, fulfillment, policy).Fee;
         var costTotal = lines.Sum(line => line.Cost ?? 0m);
         return new PosPreview(lines, linesTotal, discount, subtotal, fee, subtotal + fee, includeCosts ? costTotal : null,
-            includeCosts ? subtotal - costTotal : null, warnings, await ReturningPartsAsync(db, items, cancellationToken));
+            includeCosts ? subtotal - costTotal : null, warnings, await ReturningPartsAsync(db, items, cancellationToken),
+            includeCosts ? await PartnerSharesAsync(db, financed, cancellationToken) : null);
     }
 
     public async Task<OrderView> SellAsync(PosSaleRequest request, PosPolicy policy, Guid actorId, CancellationToken cancellationToken = default)
@@ -117,15 +123,33 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         return items;
     }
 
-    /// <summary>Cost of what the line would take: the build's parts, the chosen part, or the oldest available units.</summary>
-    private static async Task<decimal> CostOfAsync(RetailDbContext db, OrderItem item, CancellationToken cancellationToken)
+    private sealed record PosUnit(decimal Cost, Guid? PartnerId, decimal? Percent);
+
+    /// <summary>The units the line would take: the build's parts, the chosen part, or the oldest available units.</summary>
+    private static async Task<List<PosUnit>> UnitsOfAsync(RetailDbContext db, OrderItem item, CancellationToken cancellationToken)
     {
-        if (item.UnitId is Guid unitId)
-            return await db.Units.Where(unit => unit.Id == unitId).Select(unit => unit.AcquisitionCost).SingleAsync(cancellationToken);
-        if (item.AssemblyId is Guid assemblyId)
-            return await db.AssemblyUnits.Where(link => link.AssemblyId == assemblyId).SumAsync(link => link.Unit.AcquisitionCost, cancellationToken);
-        return await db.Units.Where(unit => unit.StockItemId == item.StockItemId && unit.Status == UnitStatus.Available)
-            .OrderBy(unit => unit.ReceivedAtUtc).Take(item.Quantity).SumAsync(unit => unit.AcquisitionCost, cancellationToken);
+        IQueryable<InventoryUnit> units;
+        if (item.UnitId is Guid unitId) units = db.Units.Where(unit => unit.Id == unitId);
+        else if (item.AssemblyId is Guid assemblyId) units = db.AssemblyUnits.Where(link => link.AssemblyId == assemblyId).Select(link => link.Unit);
+        else units = db.Units.Where(unit => unit.StockItemId == item.StockItemId && unit.Status == UnitStatus.Available)
+            .OrderBy(unit => unit.ReceivedAtUtc).Take(item.Quantity);
+        return await units.AsNoTracking().Select(unit => new PosUnit(unit.AcquisitionCost, unit.PartnerId, unit.PartnerPercentOverride))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>Estimated share of each financing partner over the financed units of the sale (real shares post when the order completes).</summary>
+    private static async Task<IReadOnlyList<PartnerSharePreview>> PartnerSharesAsync(RetailDbContext db,
+        List<(Guid PartnerId, decimal? Percent, decimal Profit)> financed, CancellationToken cancellationToken)
+    {
+        if (financed.Count == 0) return [];
+        var ids = financed.Select(item => item.PartnerId).Distinct().ToList();
+        var partners = await db.Partners.AsNoTracking().Where(partner => ids.Contains(partner.Id)).ToDictionaryAsync(partner => partner.Id, cancellationToken);
+        return financed.GroupBy(item => item.PartnerId).Select(group =>
+        {
+            var partner = partners[group.Key];
+            return new PartnerSharePreview(partner.Id, partner.Name, group.Sum(item =>
+                PartnerRules.Share(item.Profit, PartnerRules.EffectivePercent(item.Percent, partner.DefaultPercent), partner.LossSharingEnabled)));
+        }).OrderBy(share => share.PartnerName).ToList();
     }
 
     private static async Task<IReadOnlyList<PosReturningPart>> ReturningPartsAsync(RetailDbContext db, List<OrderItem> items,

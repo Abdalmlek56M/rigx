@@ -18,7 +18,7 @@ internal static class StockItemFactory
         var specs = StockItemRules.CleanSpecs(line.Specs);
         var note = StockItemRules.CleanNote(line.InternalNote);
         if (line.AcquisitionCost < 0) throw new RetailException(400, "Acquisition cost cannot be negative.");
-        if (line.PartnerPercentOverride is < 0 or > 100) throw new RetailException(400, "Partner percentage must be between 0 and 100.");
+        await PartnerFinancing.EnsureAsync(db, line.PartnerId, line.PartnerPercentOverride, cancellationToken);
         var items = new List<StockItem>();
         foreach (var unitCount in StockItemRules.UnitsPerItem(condition, line.Quantity))
         {
@@ -58,6 +58,7 @@ internal static class StockItemFactory
                     PurchaseDate = source.PurchaseDate,
                     AcquisitionCost = line.AcquisitionCost,
                     PartnerPercentOverride = line.PartnerPercentOverride,
+                    PartnerId = line.PartnerId,
                     Status = UnitStatus.Available,
                     ReceiptId = receiptId,
                     ReceivedAtUtc = now,

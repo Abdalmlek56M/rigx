@@ -195,6 +195,10 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasColumnType("character varying(160)")
                         .HasColumnName("model_name");
 
+                    b.Property<Guid?>("PartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("partner_id");
+
                     b.Property<decimal?>("PartnerPercent")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)")

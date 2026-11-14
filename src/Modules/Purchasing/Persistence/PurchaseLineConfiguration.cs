@@ -37,6 +37,7 @@ internal sealed class PurchaseLineConfiguration : IEntityTypeConfiguration<Purch
         e.Property(x => x.AloneExtra).HasColumnName("alone_extra").HasPrecision(18, 2);
         e.Property(x => x.SerialNumber).HasColumnName("serial_number").HasMaxLength(PurchaseDraftRules.MaxSerialLength);
         e.Property(x => x.PartnerPercent).HasColumnName("partner_percent").HasPrecision(5, 2);
+        e.Property(x => x.PartnerId).HasColumnName("partner_id");
         e.Property(x => x.IsHidden).HasColumnName("is_hidden");
         e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(PurchaseDraftRules.MaxWarrantyLabelLength);
         e.Property(x => x.HasBox).HasColumnName("has_box");

@@ -1,6 +1,7 @@
 using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 
 namespace HardwareStore.Modules.Retail;
 
@@ -26,6 +27,14 @@ internal static class RetailQueries
     /// <summary>Row-locks an order for the rest of the current transaction.</summary>
     public static Task LockOrderAsync(this RetailDbContext db, Guid id, CancellationToken cancellationToken) =>
         db.Database.ExecuteSqlRawAsync("SELECT 1 FROM store_orders WHERE id = {0} FOR UPDATE", new object[] { id }, cancellationToken);
+
+    /// <summary>Row-locks a partner for the rest of the current transaction (serializes capital and month-close postings).</summary>
+    public static Task LockPartnerAsync(this RetailDbContext db, Guid id, CancellationToken cancellationToken) =>
+        db.Database.ExecuteSqlRawAsync("SELECT 1 FROM partners WHERE id = {0} FOR UPDATE", new object[] { id }, cancellationToken);
+
+    /// <summary>True when the save failed on a unique index (a concurrent duplicate).</summary>
+    public static bool IsUniqueViolation(this DbUpdateException exception) =>
+        exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
     /// <summary>Takes the next number of a code sequence and formats it (e.g. <c>RX-0142</c>).</summary>
     public static async Task<string> NextCodeAsync(this RetailDbContext db, string sequence, string prefix, CancellationToken cancellationToken)

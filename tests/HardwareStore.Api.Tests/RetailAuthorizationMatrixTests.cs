@@ -18,7 +18,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
     : IClassFixture<OwnerBootstrapPostgreSqlFixture>
 {
     [Fact]
-    public async Task Finance_report_reader_cannot_write_agreements_or_post_settlements()
+    public async Task Finance_report_reader_cannot_manage_partners_or_post_payouts()
     {
         var database = await fixture.CreateDatabaseAsync();
         await CreateUserAsync(database, "finance-reader", ["Finance.ViewReports"]);
@@ -26,11 +26,14 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
         await LoginAsync(client, factory, "finance-reader");
 
+        var partnerUrl = $"/api/v1/admin/retail/partners/{Guid.NewGuid()}";
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/admin/retail/partner/earnings")).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/admin/retail/partner/allocations")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, "/api/v1/admin/retail/partner/allocations", new { partnerName = "X", unitId = Guid.NewGuid(), percent = 10, isActive = true })).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, "/api/v1/admin/retail/partner/agreements", new { })).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, "/api/v1/admin/retail/partner/settlements", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/admin/retail/partners")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, "/api/v1/admin/retail/partners", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, $"{partnerUrl}/capital", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, "/api/v1/admin/retail/partners/month-close", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await PostAsync(client, $"{partnerUrl}/payouts", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/v1/admin/retail/partner/allocations")).StatusCode);
     }
 
     [Fact]
@@ -57,9 +60,11 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
         var productId = Guid.NewGuid();
+        var partner = await retail.CreateAsync("Matrix Partner", 10m);
         await retail.ReceiveUnitsAsync(new ReceiveRequest(Guid.NewGuid(), null,
             new ReceiptSource("Secret Supplier", "Supplier", "Component", new DateOnly(2026, 11, 1)),
-            [new ReceiptLine("Matrix GPU", "New", 1, 700m, 1200m, ProductId: productId, SerialNumber: "SERIAL-SECRET", PartnerPercentOverride: 8m)]),
+            [new ReceiptLine("Matrix GPU", "New", 1, 700m, 1200m, ProductId: productId, SerialNumber: "SERIAL-SECRET", PartnerPercentOverride: 8m,
+                PartnerId: partner.Id)]),
             Guid.NewGuid());
         var customerId = await CreateUserAsync(database, "inventory-viewer", ["Inventory.View"]);
         await using var factory = CreateFactory(database.ConnectionString);
@@ -73,6 +78,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
         Assert.Null(unit.AcquisitionCost);
         Assert.Null(unit.SerialNumber);
         Assert.Null(unit.SourceName);
+        Assert.Null(unit.PartnerId);
         Assert.Equal("Matrix GPU", unit.Name);
 
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/api/v1/admin/retail/assemblies")).StatusCode);

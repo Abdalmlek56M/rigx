@@ -274,6 +274,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<Guid?>("PartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("partner_id");
+
                     b.Property<decimal?>("PartnerPercentOverride")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)")
@@ -333,6 +337,9 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("stock_item_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PartnerId")
+                        .HasDatabaseName("ix_inventory_units_partner");
 
                     b.HasIndex("SerialNumber")
                         .HasDatabaseName("ix_inventory_units_serial");
@@ -733,6 +740,80 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.Partner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("basis");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<decimal>("DefaultPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("default_percent");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<DateOnly>("JoinDate")
+                        .HasColumnType("date")
+                        .HasColumnName("join_date");
+
+                    b.Property<bool>("LossSharingEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("loss_sharing_enabled");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(11)
+                        .HasColumnType("character varying(11)")
+                        .HasColumnName("phone");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("row_version");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ux_partners_name");
+
+                    b.ToTable("partners", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_partners_percent", "default_percent BETWEEN 0 AND 100");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerAdjustment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -761,11 +842,9 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("partner_earning_id");
 
-                    b.Property<string>("PartnerName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("partner_name");
+                    b.Property<Guid>("PartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("partner_id");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -781,114 +860,66 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PartnerId")
+                        .HasDatabaseName("ix_partner_adjustments_partner");
+
                     b.ToTable("partner_adjustments", (string)null);
                 });
 
-            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerAgreement", b =>
+            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerCapitalEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<decimal>("DefaultPercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)")
-                        .HasColumnName("default_percent");
-
-                    b.Property<DateOnly>("EffectiveFrom")
-                        .HasColumnType("date")
-                        .HasColumnName("effective_from");
-
-                    b.Property<DateOnly?>("EffectiveTo")
-                        .HasColumnType("date")
-                        .HasColumnName("effective_to");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<bool>("LossSharingEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("loss_sharing_enabled");
-
-                    b.Property<string>("PartnerName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("partner_name");
-
-                    b.Property<long>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1L)
-                        .HasColumnName("row_version");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at_utc");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("partner_agreements", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_partner_agreements_percent", "default_percent BETWEEN 0 AND 100");
-                        });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerAllocationEvent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("action");
 
                     b.Property<Guid>("ActorUserAccountId")
                         .HasColumnType("uuid")
                         .HasColumnName("actor_user_account_id");
 
-                    b.Property<Guid>("AllocationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("allocation_id");
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
-                    b.Property<string>("PartnerName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("partner_name");
+                    b.Property<DateOnly>("EntryDate")
+                        .HasColumnType("date")
+                        .HasColumnName("entry_date");
 
-                    b.Property<string>("Reason")
+                    b.Property<string>("Kind")
                         .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Method")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
-                        .HasColumnName("reason");
+                        .HasColumnName("note");
 
-                    b.Property<string>("SnapshotJson")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("snapshot_json");
+                    b.Property<Guid>("PartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("partner_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AllocationId")
-                        .HasDatabaseName("ix_partner_allocation_events_allocation");
+                    b.HasIndex("PartnerId")
+                        .HasDatabaseName("ix_partner_capital_entries_partner");
 
-                    b.ToTable("partner_allocation_events", (string)null);
+                    b.ToTable("partner_capital_entries", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_partner_capital_entries_amount", "amount > 0");
+
+                            t.HasCheckConstraint("ck_partner_capital_entries_kind", "kind IN ('Deposit','Withdrawal')");
+                        });
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerEarning", b =>
@@ -937,7 +968,7 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("offset_amount");
 
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid?>("OrderId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
 
@@ -945,7 +976,7 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("order_item_component_id");
 
-                    b.Property<Guid>("OrderItemId")
+                    b.Property<Guid?>("OrderItemId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_item_id");
 
@@ -954,16 +985,18 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("paid_amount");
 
-                    b.Property<string>("PartnerName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("partner_name");
+                    b.Property<Guid>("PartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("partner_id");
 
                     b.Property<decimal>("Percent")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)")
                         .HasColumnName("percent");
+
+                    b.Property<DateOnly?>("PeriodMonth")
+                        .HasColumnType("date")
+                        .HasColumnName("period_month");
 
                     b.Property<decimal>("RevenueAmount")
                         .HasPrecision(18, 2)
@@ -991,7 +1024,15 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderItemId", "UnitId", "PartnerName")
+                    b.HasIndex("PartnerId")
+                        .HasDatabaseName("ix_partner_earnings_partner");
+
+                    b.HasIndex("PartnerId", "PeriodMonth")
+                        .IsUnique()
+                        .HasDatabaseName("ux_partner_earnings_partner_month")
+                        .HasFilter("period_month IS NOT NULL");
+
+                    b.HasIndex("OrderItemId", "UnitId", "PartnerId")
                         .IsUnique()
                         .HasDatabaseName("ux_partner_earnings_item_unit_partner");
 
@@ -1033,11 +1074,9 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("offset_applied");
 
-                    b.Property<string>("PartnerName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("partner_name");
+                    b.Property<Guid>("PartnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("partner_id");
 
                     b.Property<string>("Reference")
                         .HasMaxLength(128)
@@ -1046,76 +1085,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PartnerId")
+                        .HasDatabaseName("ix_partner_settlements_partner");
+
                     b.ToTable("partner_settlements", (string)null);
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerUnitAllocation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("category");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
-
-                    b.Property<bool>("LossSharingEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("loss_sharing_enabled");
-
-                    b.Property<string>("PartnerName")
-                        .IsRequired()
-                        .HasMaxLength(160)
-                        .HasColumnType("character varying(160)")
-                        .HasColumnName("partner_name");
-
-                    b.Property<decimal>("Percent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)")
-                        .HasColumnName("percent");
-
-                    b.Property<Guid?>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
-                    b.Property<long>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1L)
-                        .HasColumnName("row_version");
-
-                    b.Property<Guid?>("UnitId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("unit_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at_utc");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PartnerName", "UnitId", "ProductId", "Category")
-                        .IsUnique()
-                        .HasDatabaseName("ux_partner_unit_allocations_scope");
-
-                    b.ToTable("partner_unit_allocations", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_partner_unit_allocations_percent", "percent > 0 AND percent <= 100");
-                        });
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.PurchaseReceipt", b =>
@@ -1763,6 +1736,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.InventoryUnit", b =>
                 {
+                    b.HasOne("HardwareStore.Modules.Retail.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HardwareStore.Modules.Retail.StockItem", "StockItem")
                         .WithMany("Units")
                         .HasForeignKey("StockItemId")
@@ -1809,6 +1787,42 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .WithMany("Payments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerAdjustment", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerCapitalEntry", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerEarning", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.PartnerSettlement", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

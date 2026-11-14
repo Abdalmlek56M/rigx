@@ -63,15 +63,17 @@ public static partial class RetailEndpoints
         admin.MapPost("/expenses", CreateExpenseAsync).RequirePermission("Finance.ManageExpenses");
         admin.MapGet("/reports/business", BusinessReportAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/partner/adjustments", ListAdjustmentsAsync).RequirePermission("Finance.ViewReports");
-        admin.MapGet("/partner/ledger", ListPartnerLedgerAsync).RequirePermission("Finance.ViewReports");
-        admin.MapGet("/partner/allocations", ListAllocationsAsync).RequirePermission("Finance.ViewReports");
-        admin.MapGet("/partner/allocations/preview", PreviewAllocationAsync).RequirePermission("Finance.ViewReports");
-        admin.MapGet("/partner/allocations/{id:guid}/history", AllocationHistoryAsync).RequirePermission("Finance.ViewReports");
-        admin.MapPost("/partner/allocations", UpsertAllocationAsync).RequirePermission("Finance.ManagePartnerAgreements");
-        admin.MapPost("/partner/allocations/{id:guid}/deactivate", DeactivateAllocationAsync).RequirePermission("Finance.ManagePartnerAgreements");
-        admin.MapGet("/partner/agreements", ListAgreementsAsync).RequirePermission("Finance.ViewReports");
-        admin.MapPost("/partner/agreements", UpsertAgreementAsync).RequirePermission("Finance.ManagePartnerAgreements");
-        admin.MapPost("/partner/settlements", SettleAsync).RequirePermission("Finance.PostPartnerSettlements");
+        admin.MapGet("/partners", ListPartnersAsync).RequirePermission("Finance.ViewReports");
+        admin.MapGet("/partners/{id:guid}", GetPartnerAsync).RequirePermission("Finance.ViewReports");
+        admin.MapGet("/partners/{id:guid}/capital", ListPartnerCapitalAsync).RequirePermission("Finance.ViewReports");
+        admin.MapGet("/partners/{id:guid}/statement", PartnerStatementAsync).RequirePermission("Finance.ViewReports");
+        admin.MapGet("/partners/{id:guid}/payouts", ListPartnerPayoutsAsync).RequirePermission("Finance.ViewReports");
+        admin.MapPost("/partners", CreatePartnerAsync).RequirePermission("Finance.ManagePartnerAgreements");
+        admin.MapPut("/partners/{id:guid}", UpdatePartnerAsync).RequirePermission("Finance.ManagePartnerAgreements");
+        admin.MapPost("/partners/{id:guid}/capital", AddPartnerCapitalAsync).RequirePermission("Finance.ManagePartnerAgreements");
+        admin.MapPost("/partners/month-close", CloseMonthAsync).RequirePermission("Finance.ManagePartnerAgreements");
+        admin.MapPut("/units/{id:guid}/partner", AssignUnitPartnerAsync).RequirePermission("Finance.ManagePartnerAgreements");
+        admin.MapPost("/partners/{id:guid}/payouts", PayoutPartnerAsync).RequirePermission("Finance.PostPartnerSettlements");
 
         endpoints.MapGet("/api/v1/store/items", ListStoreItemsAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/store/items/{code}", GetStoreItemAsync).AllowAnonymous();
@@ -92,4 +94,3 @@ public static partial class RetailEndpoints
 }
 
 public sealed record RetailVersionRequest(long RowVersion);
-public sealed record AllocationDeactivateRequest(long RowVersion, string? Reason);

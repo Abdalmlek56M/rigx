@@ -7,9 +7,9 @@ public sealed record AssemblyUpdateRequest(string? Name, string? PublicTitleAr, 
     string? SuitableForAr = null, string? SuitableForEn = null);
 public sealed record AssemblyAllocationRequest(long RowVersion, IReadOnlyList<AssemblyAllocationInput>? Allocations);
 public sealed record AssemblyAllocationInput(Guid UnitId, decimal Percent);
-/// <summary>Per-part edits: price inside the build, warranty override (null label = use the build's), partner % override.</summary>
+/// <summary>Per-part edits: price inside the build, warranty override (null label = use the build's), financing partner and partner % override.</summary>
 public sealed record AssemblyPartUpdateRequest(decimal PartPrice, string? WarrantyLabel, int? WarrantyMonths,
-    decimal? PartnerPercentOverride, long RowVersion);
+    decimal? PartnerPercentOverride, Guid? PartnerId, long RowVersion);
 /// <summary>Adds an available stock unit to the build.</summary>
 public sealed record AssemblyAddPartRequest(Guid UnitId, long RowVersion);
 /// <summary>Adds a part that is not in stock yet: it becomes a new single-piece stock item inside the build.</summary>
@@ -37,7 +37,7 @@ public sealed record PublicUnitView(Guid? ProductId, Guid? CategoryId, string Na
 /// <summary><paramref name="StandalonePrice"/> is the stock item's price when sold alone (admin only).</summary>
 public sealed record AssemblyUnitView(Guid UnitId, Guid? CategoryId, string Name, string StockItemCode, string Condition,
     decimal? AcquisitionCost, decimal? StandalonePrice, decimal PartPrice, string? WarrantyLabel, int? WarrantyMonths,
-    bool WarrantyOverridden, decimal? PartnerPercentOverride, decimal AllocationPercent, decimal? AllocatedAmount);
+    bool WarrantyOverridden, decimal? PartnerPercentOverride, Guid? PartnerId, decimal AllocationPercent, decimal? AllocatedAmount);
 public sealed record AssemblyView(Guid Id, string Code, string Name, string? PublicTitleAr, string? PublicTitleEn, decimal SalePrice,
     string Status, string? Usage, string SellMode, string? WarrantyLabel, int? WarrantyMonths, int Copies, string? SuitableForAr,
     string? SuitableForEn, IReadOnlyList<StockItemPhoto> Photos, IReadOnlyList<AssemblyUnitView> Units, decimal? ComponentCost,

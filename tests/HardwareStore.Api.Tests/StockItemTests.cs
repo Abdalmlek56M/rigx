@@ -107,7 +107,8 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     public async Task Store_views_never_expose_cost_serial_partner_or_internal_notes()
     {
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
-        var line = UsedLine("Secret GPU") with { PartnerPercentOverride = 15m, InternalNote = "bought from Ahmed" };
+        var partner = await retail.CreateAsync("Secret Partner", 10m);
+        var line = UsedLine("Secret GPU") with { PartnerPercentOverride = 15m, PartnerId = partner.Id, InternalNote = "bought from Ahmed" };
         var item = Assert.Single((await retail.Units.ReceiveAsync(Receive(line), Actor)).Items);
         await PublishAsync(retail, item);
 
@@ -123,6 +124,7 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         Assert.Null(unit.AcquisitionCost);
         Assert.Null(unit.SerialNumber);
         Assert.Null(unit.PartnerPercentOverride);
+        Assert.Null(unit.PartnerId);
     }
 
     [Fact]

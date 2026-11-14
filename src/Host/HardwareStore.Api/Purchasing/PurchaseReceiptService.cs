@@ -23,7 +23,7 @@ public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryU
             var specs = await categorySpecs.CheckValuesAsync(line.CategoryId, line.Specs, cancellationToken);
             lines.Add(new ReceiptLine(line.ModelName, line.Condition, line.Quantity, line.UnitCost, line.Price, line.CategoryId,
                 line.ProductId, line.WithBoardExtra, line.AloneExtra, line.SerialNumber, line.PartnerPercent, label, months,
-                line.HasBox, line.IsHidden, line.InternalNote, specs));
+                line.HasBox, line.IsHidden, line.InternalNote, specs, line.PartnerId));
         }
         var source = new ReceiptSource(purchase.Seller.Name, purchase.Seller.Kind, purchase.Kind, purchase.PurchaseDate);
         var receipt = await inventory.ReceiveAsync(new ReceiveRequest(purchase.Id, purchase.Notes, source, lines), actorId, cancellationToken);

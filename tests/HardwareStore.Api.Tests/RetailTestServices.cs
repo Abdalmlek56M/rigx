@@ -13,9 +13,12 @@ public sealed record RetailTestServices(
     OrderStatusService OrderStatus,
     OrderPaymentService Payments,
     ReturnService Returns,
-    PartnerAgreementService Agreements,
-    PartnerAllocationService Allocations,
+    PartnerService Partners,
+    PartnerCapitalService Capital,
     PartnerLedgerService PartnerLedger,
+    PartnerMonthCloseService MonthClose,
+    PartnerStatementService Statements,
+    UnitPartnerService UnitPartners,
     ExpenseService Expenses,
     BusinessReportService Reports,
     StockItemAdminService StockItems,
@@ -27,11 +30,22 @@ public sealed record RetailTestServices(
     SoldFeedService SoldFeed,
     WarrantyService Warranties)
 {
-    public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time) => new(
-        new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-        new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-        new(factory, time), new(factory), new(factory, time), new(factory),
-        new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory), new(factory, time));
+    public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time)
+    {
+        var reports = new BusinessReportService(factory);
+        return new(new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
+            new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
+            new(factory, reports, time), new(factory), new(factory), new(factory, time), reports, new(factory, time), new(factory),
+            new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory), new(factory, time));
+    }
+}
+
+/// <summary>Partner helpers for tests.</summary>
+public static class RetailPartners
+{
+    public static Task<PartnerView> CreateAsync(this RetailTestServices retail, string name, decimal percent, bool lossSharing = false,
+        string basis = PartnerBasis.FinancedParts, DateOnly? joinDate = null) =>
+        retail.Partners.CreateAsync(new PartnerRequest(name, null, joinDate ?? new DateOnly(2020, 1, 1), percent, basis, lossSharing));
 }
 
 /// <summary>Order-side helpers: default policies, a published item, and one-line checkout/POS requests.</summary>

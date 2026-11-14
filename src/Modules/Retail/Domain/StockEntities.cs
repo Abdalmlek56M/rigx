@@ -12,8 +12,6 @@ public sealed class StockItem
     public required string Code { get; set; }
     public required string Condition { get; set; }
     public Guid? CategoryId { get; set; }
-    /// <summary>Partner allocations scoped by category compare against this text (the category id).</summary>
-    public string? PartnerCategoryScope => CategoryId?.ToString();
     public Guid? ProductId { get; set; }
     public required string ModelName { get; set; }
     public required string ModelKey { get; set; }

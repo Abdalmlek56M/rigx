@@ -61,10 +61,10 @@ public sealed class InventoryUnitService(IDbContextFactory<RetailDbContext> cont
         }
     }
 
-    private static UnitView MapUnit(InventoryUnit unit, bool includeCosts, bool includeSerials) => new(unit.Id, unit.StockItemId,
+    internal static UnitView MapUnit(InventoryUnit unit, bool includeCosts, bool includeSerials) => new(unit.Id, unit.StockItemId,
         unit.StockItem.Code, unit.ProductId, unit.Name, unit.Condition, unit.InspectionCondition,
         includeSerials ? unit.SerialNumber : null, includeCosts ? unit.SourceName : null, includeCosts ? unit.SourceType : null,
         includeCosts ? unit.PurchaseKind : null, includeCosts ? unit.PurchaseDate : null,
-        includeCosts ? unit.AcquisitionCost : null, includeCosts ? unit.PartnerPercentOverride : null,
-        unit.Status, unit.AssemblyId, unit.ReceivedAtUtc);
+        includeCosts ? unit.AcquisitionCost : null, includeCosts ? unit.PartnerPercentOverride : null, includeCosts ? unit.PartnerId : null,
+        unit.Status, unit.AssemblyId, unit.ReceivedAtUtc, unit.RowVersion);
 }

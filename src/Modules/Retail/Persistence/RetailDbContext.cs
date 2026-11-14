@@ -15,12 +15,11 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
     public DbSet<OrderPayment> OrderPayments => Set<OrderPayment>();
     public DbSet<BlacklistEntry> Blacklist => Set<BlacklistEntry>();
-    public DbSet<PartnerAgreement> PartnerAgreements => Set<PartnerAgreement>();
+    public DbSet<Partner> Partners => Set<Partner>();
+    public DbSet<PartnerCapitalEntry> PartnerCapitalEntries => Set<PartnerCapitalEntry>();
     public DbSet<PartnerEarning> PartnerEarnings => Set<PartnerEarning>();
     public DbSet<PartnerSettlement> PartnerSettlements => Set<PartnerSettlement>();
     public DbSet<PartnerAdjustment> PartnerAdjustments => Set<PartnerAdjustment>();
-    public DbSet<PartnerUnitAllocation> PartnerUnitAllocations => Set<PartnerUnitAllocation>();
-    public DbSet<PartnerAllocationEvent> PartnerAllocationEvents => Set<PartnerAllocationEvent>();
     public DbSet<RetailExpense> Expenses => Set<RetailExpense>();
     public DbSet<OrderReturn> OrderReturns => Set<OrderReturn>();
     public DbSet<Warranty> Warranties => Set<Warranty>();
@@ -47,6 +46,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.PurchaseDate).HasColumnName("purchase_date").HasColumnType("date");
             e.Property(x => x.AcquisitionCost).HasColumnName("acquisition_cost").HasPrecision(18, 2);
             e.Property(x => x.PartnerPercentOverride).HasColumnName("partner_percent_override").HasPrecision(5, 2);
+            e.Property(x => x.PartnerId).HasColumnName("partner_id");
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(24).IsRequired();
             e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
             e.Property(x => x.ReceiptId).HasColumnName("receipt_id");
@@ -56,6 +56,8 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.HasIndex(x => new { x.Status, x.ProductId }).HasDatabaseName("ix_inventory_units_status_product");
             e.HasIndex(x => x.SerialNumber).HasDatabaseName("ix_inventory_units_serial");
             e.HasIndex(x => x.StockItemId).HasDatabaseName("ix_inventory_units_stock_item");
+            e.HasIndex(x => x.PartnerId).HasDatabaseName("ix_inventory_units_partner");
+            e.HasOne<Partner>().WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.StockItem).WithMany(x => x.Units).HasForeignKey(x => x.StockItemId).OnDelete(DeleteBehavior.Restrict);
         });
         model.Entity<PurchaseReceipt>(e =>
@@ -255,20 +257,43 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.HasOne<StoreOrder>().WithMany(x => x.Events).HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
         });
-        model.Entity<PartnerAgreement>(e =>
+        model.Entity<Partner>(e =>
         {
-            e.ToTable("partner_agreements", t => t.HasCheckConstraint("ck_partner_agreements_percent", "default_percent BETWEEN 0 AND 100"));
+            e.ToTable("partners", t => t.HasCheckConstraint("ck_partners_percent", "default_percent BETWEEN 0 AND 100"));
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
-            e.Property(x => x.PartnerName).HasColumnName("partner_name").HasMaxLength(160).IsRequired();
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(PartnerRules.NameMaxLength).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique().HasDatabaseName("ux_partners_name");
+            e.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(11);
+            e.Property(x => x.JoinDate).HasColumnName("join_date").HasColumnType("date");
             e.Property(x => x.DefaultPercent).HasColumnName("default_percent").HasPrecision(5, 2);
+            e.Property(x => x.Basis).HasColumnName("basis").HasMaxLength(16).IsRequired();
             e.Property(x => x.LossSharingEnabled).HasColumnName("loss_sharing_enabled").HasDefaultValue(false);
             e.Property(x => x.IsActive).HasColumnName("is_active");
-            e.Property(x => x.EffectiveFrom).HasColumnName("effective_from").HasColumnType("date");
-            e.Property(x => x.EffectiveTo).HasColumnName("effective_to").HasColumnType("date");
+            e.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(PartnerRules.NotesMaxLength);
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+        });
+        model.Entity<PartnerCapitalEntry>(e =>
+        {
+            e.ToTable("partner_capital_entries", t =>
+            {
+                t.HasCheckConstraint("ck_partner_capital_entries_kind", "kind IN ('Deposit','Withdrawal')");
+                t.HasCheckConstraint("ck_partner_capital_entries_amount", "amount > 0");
+            });
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.PartnerId).HasColumnName("partner_id");
+            e.HasIndex(x => x.PartnerId).HasDatabaseName("ix_partner_capital_entries_partner");
+            e.Property(x => x.Kind).HasColumnName("kind").HasMaxLength(16).IsRequired();
+            e.Property(x => x.Amount).HasColumnName("amount").HasPrecision(18, 2);
+            e.Property(x => x.EntryDate).HasColumnName("entry_date").HasColumnType("date");
+            e.Property(x => x.Method).HasColumnName("method").HasMaxLength(32);
+            e.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
+            e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+            e.HasOne<Partner>().WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
         });
         model.Entity<PartnerEarning>(e =>
         {
@@ -278,9 +303,14 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.OrderItemId).HasColumnName("order_item_id");
             e.Property(x => x.OrderItemComponentId).HasColumnName("order_item_component_id");
             e.Property(x => x.UnitId).HasColumnName("unit_id");
-            e.HasIndex(x => new { x.OrderItemId, x.UnitId, x.PartnerName }).IsUnique().HasDatabaseName("ux_partner_earnings_item_unit_partner");
+            e.Property(x => x.PartnerId).HasColumnName("partner_id");
+            e.Property(x => x.PeriodMonth).HasColumnName("period_month").HasColumnType("date");
+            e.HasIndex(x => new { x.OrderItemId, x.UnitId, x.PartnerId }).IsUnique().HasDatabaseName("ux_partner_earnings_item_unit_partner");
+            e.HasIndex(x => new { x.PartnerId, x.PeriodMonth }).IsUnique().HasFilter("period_month IS NOT NULL")
+                .HasDatabaseName("ux_partner_earnings_partner_month");
+            e.HasIndex(x => x.PartnerId).HasDatabaseName("ix_partner_earnings_partner");
+            e.HasOne<Partner>().WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.OrderId).HasColumnName("order_id");
-            e.Property(x => x.PartnerName).HasColumnName("partner_name").HasMaxLength(160).IsRequired();
             e.Property(x => x.Percent).HasColumnName("percent").HasPrecision(5, 2);
             e.Property(x => x.LossSharingEnabled).HasColumnName("loss_sharing_enabled").HasDefaultValue(false);
             e.Property(x => x.RevenueAmount).HasColumnName("revenue_amount").HasPrecision(18, 2);
@@ -301,45 +331,15 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.ToTable("partner_settlements");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
-            e.Property(x => x.PartnerName).HasColumnName("partner_name").HasMaxLength(160).IsRequired();
+            e.Property(x => x.PartnerId).HasColumnName("partner_id");
+            e.HasIndex(x => x.PartnerId).HasDatabaseName("ix_partner_settlements_partner");
+            e.HasOne<Partner>().WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.Amount).HasColumnName("amount").HasPrecision(18, 2);
             e.Property(x => x.OffsetApplied).HasColumnName("offset_applied").HasPrecision(18, 2);
             e.Property(x => x.Method).HasColumnName("method").HasMaxLength(32).IsRequired();
             e.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(128);
             e.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
             e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
-            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
-        });
-        model.Entity<PartnerUnitAllocation>(e =>
-        {
-            e.ToTable("partner_unit_allocations", t => t.HasCheckConstraint("ck_partner_unit_allocations_percent", "percent > 0 AND percent <= 100"));
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
-            e.Property(x => x.PartnerName).HasColumnName("partner_name").HasMaxLength(160).IsRequired();
-            e.Property(x => x.UnitId).HasColumnName("unit_id");
-            e.Property(x => x.ProductId).HasColumnName("product_id");
-            e.Property(x => x.Category).HasColumnName("category").HasMaxLength(160);
-            e.Property(x => x.Percent).HasColumnName("percent").HasPrecision(5, 2);
-            e.Property(x => x.LossSharingEnabled).HasColumnName("loss_sharing_enabled").HasDefaultValue(false);
-            e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
-            e.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
-            e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
-            e.HasIndex(x => new { x.PartnerName, x.UnitId, x.ProductId, x.Category }).IsUnique()
-                .HasDatabaseName("ux_partner_unit_allocations_scope");
-        });
-        model.Entity<PartnerAllocationEvent>(e =>
-        {
-            e.ToTable("partner_allocation_events");
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
-            e.Property(x => x.AllocationId).HasColumnName("allocation_id");
-            e.HasIndex(x => x.AllocationId).HasDatabaseName("ix_partner_allocation_events_allocation");
-            e.Property(x => x.PartnerName).HasColumnName("partner_name").HasMaxLength(160).IsRequired();
-            e.Property(x => x.Action).HasColumnName("action").HasMaxLength(32).IsRequired();
-            e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
-            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(500).IsRequired();
-            e.Property(x => x.SnapshotJson).HasColumnName("snapshot_json").IsRequired();
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
         });
         model.Entity<RetailExpense>(e =>
@@ -369,7 +369,9 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.ToTable("partner_adjustments");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
-            e.Property(x => x.PartnerName).HasColumnName("partner_name").HasMaxLength(160).IsRequired();
+            e.Property(x => x.PartnerId).HasColumnName("partner_id");
+            e.HasIndex(x => x.PartnerId).HasDatabaseName("ix_partner_adjustments_partner");
+            e.HasOne<Partner>().WithMany().HasForeignKey(x => x.PartnerId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.PartnerEarningId).HasColumnName("partner_earning_id");
             e.Property(x => x.OrderReturnId).HasColumnName("order_return_id");
             e.Property(x => x.Amount).HasColumnName("amount").HasPrecision(18, 2);

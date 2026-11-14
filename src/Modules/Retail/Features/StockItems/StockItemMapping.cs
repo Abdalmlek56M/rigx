@@ -11,6 +11,6 @@ internal static class StockItemMapping
         Math.Max(0, (int)(now - item.CreatedAtUtc).TotalDays), item.CreatedAtUtc, item.RowVersion,
         item.Units.OrderBy(unit => unit.ReceivedAtUtc).ThenBy(unit => unit.Id)
             .Select(unit => new StockUnitView(unit.Id, unit.Status, unit.Condition, includeSerials ? unit.SerialNumber : null,
-                includeCosts ? unit.AcquisitionCost : null, includeCosts ? unit.PartnerPercentOverride : null,
-                unit.AssemblyId, unit.ReceivedAtUtc)).ToList());
+                includeCosts ? unit.AcquisitionCost : null, includeCosts ? unit.PartnerPercentOverride : null, includeCosts ? unit.PartnerId : null,
+                unit.AssemblyId, unit.ReceivedAtUtc, unit.RowVersion)).ToList());
 }

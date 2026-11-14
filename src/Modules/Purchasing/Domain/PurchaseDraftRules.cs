@@ -66,6 +66,7 @@ public static class PurchaseDraftRules
             AloneExtra = request.AloneExtra,
             SerialNumber = serial,
             PartnerPercent = request.PartnerPercent,
+            PartnerId = request.PartnerId,
             IsHidden = request.IsHidden,
             WarrantyLabel = TextRules.Optional(request.WarrantyLabel, MaxWarrantyLabelLength, "Warranty"),
             HasBox = request.HasBox,

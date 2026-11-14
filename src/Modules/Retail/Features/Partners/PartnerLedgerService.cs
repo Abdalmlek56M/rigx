@@ -2,85 +2,84 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
-/// <summary>
-/// Partner money: earnings and adjustments lists, per-partner ledger, and cash settlements (oldest earnings first).
-/// </summary>
+/// <summary>Partner money: earnings and adjustments lists, and cash payouts (paid against the oldest earnings first).</summary>
 public sealed class PartnerLedgerService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    public async Task<IReadOnlyList<PartnerEarningView>> ListEarningsAsync(string? partner = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<PartnerEarningView>> ListEarningsAsync(Guid? partnerId = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var query = db.PartnerEarnings.AsNoTracking().AsQueryable();
-        if (!string.IsNullOrWhiteSpace(partner)) { var value = partner.Trim(); query = query.Where(item => item.PartnerName == value); }
-        return (await query.OrderByDescending(item => item.CreatedAtUtc).Take(500).ToListAsync(cancellationToken))
-            .Select(item => new PartnerEarningView(item.Id, item.OrderId, item.OrderItemId, item.UnitId, item.PartnerName, item.Percent,
-                item.RevenueAmount, item.DiscountAmount, item.DirectExpenseAmount, item.CostAmount, item.GrossProfit,
-                item.Amount, item.PaidAmount, item.OffsetAmount, item.Status, item.ReversedAtUtc, item.CreatedAtUtc)).ToList();
+        var rows = await (from item in db.PartnerEarnings.AsNoTracking()
+                join partner in db.Partners.AsNoTracking() on item.PartnerId equals partner.Id
+                where partnerId == null || item.PartnerId == partnerId
+                orderby item.CreatedAtUtc descending
+                select new { item, partner.Name }).Take(500).ToListAsync(cancellationToken);
+        return rows.Select(row => PartnerViews.EarningView(row.item, row.Name)).ToList();
     }
 
-    public async Task<IReadOnlyList<PartnerAdjustmentView>> ListAdjustmentsAsync(string? partner = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<PartnerAdjustmentView>> ListAdjustmentsAsync(Guid? partnerId = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var query = db.PartnerAdjustments.AsNoTracking().AsQueryable();
-        if (!string.IsNullOrWhiteSpace(partner)) { var value = partner.Trim(); query = query.Where(item => item.PartnerName == value); }
-        return (await query.OrderByDescending(item => item.CreatedAtUtc).Take(500).ToListAsync(cancellationToken))
-            .Select(item => new PartnerAdjustmentView(item.Id, item.PartnerName, item.Amount, item.AppliedAmount,
-                decimal.Round(item.Amount - item.AppliedAmount, 2), item.Status, item.Reason, item.OrderReturnId, item.CreatedAtUtc)).ToList();
+        var rows = await (from item in db.PartnerAdjustments.AsNoTracking()
+                join partner in db.Partners.AsNoTracking() on item.PartnerId equals partner.Id
+                where partnerId == null || item.PartnerId == partnerId
+                orderby item.CreatedAtUtc descending
+                select new { item, partner.Name }).Take(500).ToListAsync(cancellationToken);
+        return rows.Select(row => new PartnerAdjustmentView(row.item.Id, row.item.PartnerId, row.Name, row.item.Amount, row.item.AppliedAmount,
+            decimal.Round(row.item.Amount - row.item.AppliedAmount, 2), row.item.Status, row.item.Reason, row.item.OrderReturnId,
+            row.item.CreatedAtUtc)).ToList();
     }
 
-    public async Task<IReadOnlyList<PartnerLedgerView>> ListPartnerLedgerAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<PartnerSettlementView>> ListPayoutsAsync(Guid partnerId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var earnings = await db.PartnerEarnings.AsNoTracking()
-            .Where(item => item.Status == EarningStatus.Outstanding).ToListAsync(cancellationToken);
-        var adjustments = await db.PartnerAdjustments.AsNoTracking()
-            .Where(item => item.Status == AdjustmentStatus.Open).ToListAsync(cancellationToken);
-        var names = earnings.Select(item => item.PartnerName).Concat(adjustments.Select(item => item.PartnerName)).Distinct();
-        return names.Select(name =>
-        {
-            var due = earnings.Where(item => item.PartnerName == name && item.Amount > 0)
-                .Sum(item => item.Amount - item.PaidAmount - item.OffsetAmount);
-            var recoverable = adjustments.Where(item => item.PartnerName == name)
-                .Sum(item => decimal.Round(item.Amount - item.AppliedAmount, 2));
-            return new PartnerLedgerView(name, decimal.Round(due, 2), decimal.Round(due, 2), Math.Abs(decimal.Round(recoverable, 2)));
-        }).OrderBy(item => item.PartnerName).ToList();
+        var partner = await db.Partners.AsNoTracking().SingleOrDefaultAsync(item => item.Id == partnerId, cancellationToken)
+            ?? throw new RetailException(404, "The partner was not found.");
+        return (await db.PartnerSettlements.AsNoTracking().Where(item => item.PartnerId == partnerId)
+                .OrderByDescending(item => item.CreatedAtUtc).Take(500).ToListAsync(cancellationToken))
+            .Select(item => Map(item, partner.Name)).ToList();
     }
 
-    public async Task<PartnerSettlementView> SettleAsync(SettlementRequest request, Guid actorId, CancellationToken cancellationToken = default)
+    public async Task<PartnerSettlementView> PayoutAsync(Guid partnerId, PartnerPayoutRequest request, Guid actorId,
+        CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(request.PartnerName) || request.Amount <= 0)
-            throw new RetailException(400, "Partner and a positive settlement amount are required.");
+        var amount = decimal.Round(request.Amount, 2);
+        if (amount <= 0) throw new RetailException(400, "A positive payout amount is required.");
+        var method = OrderRules.Optional(request.Method, 32, "Method") ?? "Cash";
+        var reference = OrderRules.Optional(request.Reference, 128, "Reference");
+        var note = OrderRules.Optional(request.Note, 500, "Note");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            var name = request.PartnerName.Trim();
+            await db.LockPartnerAsync(partnerId, cancellationToken);
+            var partner = await db.Partners.AsNoTracking().SingleOrDefaultAsync(item => item.Id == partnerId, cancellationToken)
+                ?? throw new RetailException(404, "The partner was not found.");
             var earnings = await db.PartnerEarnings
-                .Where(item => item.PartnerName == name && item.Status == EarningStatus.Outstanding && item.Amount > 0)
+                .Where(item => item.PartnerId == partnerId && item.Status == EarningStatus.Outstanding && item.Amount > 0)
                 .OrderBy(item => item.CreatedAtUtc).ToListAsync(cancellationToken);
             var available = earnings.Sum(item => item.Amount - item.PaidAmount - item.OffsetAmount);
-            if (request.Amount > available) throw new RetailException(400, "Settlement exceeds the cash due after offsets.");
-            var remaining = request.Amount;
+            if (amount > available) throw new RetailException(400, "The payout exceeds the cash due after offsets.");
+            var remaining = amount;
             foreach (var earning in earnings)
             {
                 if (remaining <= 0) break;
-                var due = earning.Amount - earning.PaidAmount - earning.OffsetAmount;
-                var applied = Math.Min(due, remaining);
+                var applied = Math.Min(earning.Amount - earning.PaidAmount - earning.OffsetAmount, remaining);
                 earning.PaidAmount += applied; remaining -= applied;
                 if (earning.PaidAmount + earning.OffsetAmount >= earning.Amount) earning.Status = EarningStatus.Paid;
             }
             var settlement = new PartnerSettlement
             {
-                Id = Guid.CreateVersion7(), PartnerName = name, Amount = request.Amount,
-                Method = request.Method?.Trim() is { Length: > 0 } method ? method : "Cash",
-                Reference = request.Reference?.Trim(), Note = request.Note?.Trim(),
+                Id = Guid.CreateVersion7(), PartnerId = partnerId, Amount = amount, Method = method, Reference = reference, Note = note,
                 ActorUserAccountId = actorId, CreatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
             };
             db.PartnerSettlements.Add(settlement);
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return new PartnerSettlementView(settlement.Id, settlement.PartnerName, settlement.Amount, settlement.OffsetApplied, settlement.Method, settlement.Reference, settlement.Note, settlement.CreatedAtUtc);
+            return Map(settlement, partner.Name);
         }
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
+
+    private static PartnerSettlementView Map(PartnerSettlement item, string partnerName) => new(item.Id, item.PartnerId, partnerName, item.Amount,
+        item.OffsetApplied, item.Method, item.Reference, item.Note, item.CreatedAtUtc);
 }

@@ -12,7 +12,7 @@ internal static class AssemblyMapping
             return new AssemblyUnitView(link.UnitId, item.CategoryId, link.Unit.Name, item.Code, link.Unit.Condition,
                 includeCosts ? link.Unit.AcquisitionCost : null, includeCosts ? AssemblyEditing.AlonePrice(item) : null,
                 link.PartPrice, label, months, link.WarrantyLabel is not null,
-                includeCosts ? link.Unit.PartnerPercentOverride : null, link.AllocationPercent,
+                includeCosts ? link.Unit.PartnerPercentOverride : null, includeCosts ? link.Unit.PartnerId : null, link.AllocationPercent,
                 includeCosts ? decimal.Round(assembly.SalePrice * link.AllocationPercent / 100m, 2) : null);
         }).ToList();
         return new AssemblyView(assembly.Id, assembly.Code, assembly.Name, assembly.PublicTitleAr, assembly.PublicTitleEn,

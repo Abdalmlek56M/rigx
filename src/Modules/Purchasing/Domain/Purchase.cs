@@ -76,6 +76,8 @@ public sealed class PurchaseLine
     public decimal? AloneExtra { get; set; }
     public string? SerialNumber { get; set; }
     public decimal? PartnerPercent { get; set; }
+    /// <summary>The partner financing these pieces (a Retail partner id; no foreign key across modules).</summary>
+    public Guid? PartnerId { get; set; }
     public bool IsHidden { get; set; }
     public string? WarrantyLabel { get; set; }
     public bool HasBox { get; set; }

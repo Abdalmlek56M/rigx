@@ -17,6 +17,8 @@ public sealed class InventoryUnit
     public DateOnly? PurchaseDate { get; set; }
     public decimal AcquisitionCost { get; set; }
     public decimal? PartnerPercentOverride { get; set; }
+    /// <summary>The partner financing this unit (null = the store's own money); its earning is posted when the unit is sold.</summary>
+    public Guid? PartnerId { get; set; }
     public required string Status { get; set; } = UnitStatus.Available;
     public Guid? AssemblyId { get; set; }
     public Guid? ReceiptId { get; set; }

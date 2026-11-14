@@ -2,7 +2,7 @@ namespace HardwareStore.Modules.Retail;
 
 // Admin (back office). Cost, serial and partner fields are null when the caller lacks the permission.
 public sealed record StockUnitView(Guid Id, string Status, string Condition, string? SerialNumber, decimal? AcquisitionCost,
-    decimal? PartnerPercentOverride, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc);
+    decimal? PartnerPercentOverride, Guid? PartnerId, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion);
 public sealed record StockItemAdminView(Guid Id, string Code, string Condition, Guid? CategoryId, Guid? ProductId, string ModelName,
     decimal Price, decimal? WithBoardExtra, decimal? AloneExtra, StockItemPrices Prices, string? WarrantyLabel, int? WarrantyMonths,
     bool HasBox, bool IsHidden, bool IsPublished, string? InternalNote, IReadOnlyDictionary<string, string> Specs,

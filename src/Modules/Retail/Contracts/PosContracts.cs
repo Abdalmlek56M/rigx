@@ -15,7 +15,7 @@ public sealed record PosPolicy(decimal MaxDiscountPercent, bool UnlimitedDiscoun
 
 public sealed record PosPreview(IReadOnlyList<PosPreviewLine> Lines, decimal LinesTotal, decimal Discount, decimal Subtotal,
     decimal DeliveryFee, decimal Total, decimal? CostTotal, decimal? Profit, IReadOnlyList<string> Warnings,
-    IReadOnlyList<PosReturningPart> ReturningToStock);
+    IReadOnlyList<PosReturningPart> ReturningToStock, IReadOnlyList<PartnerSharePreview>? PartnerShares = null);
 public sealed record PosPreviewLine(string Name, string? Code, int Quantity, decimal ShownPrice, decimal SalePrice, decimal? Cost, bool BelowCost);
 /// <summary>Parts of a split build that go back to stock when the sale is confirmed.</summary>
 public sealed record PosReturningPart(Guid UnitId, string Name, string Code);

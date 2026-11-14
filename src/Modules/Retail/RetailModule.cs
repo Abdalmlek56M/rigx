@@ -30,9 +30,12 @@ public static class RetailRegistration
         services.AddScoped<WarrantyService>();
         services.AddScoped<InvoiceService>();
         services.AddScoped<QuoteService>();
-        services.AddScoped<PartnerAgreementService>();
-        services.AddScoped<PartnerAllocationService>();
+        services.AddScoped<UnitPartnerService>();
+        services.AddScoped<PartnerService>();
+        services.AddScoped<PartnerCapitalService>();
         services.AddScoped<PartnerLedgerService>();
+        services.AddScoped<PartnerMonthCloseService>();
+        services.AddScoped<PartnerStatementService>();
         services.AddScoped<ExpenseService>();
         services.AddScoped<BusinessReportService>();
         return services;
