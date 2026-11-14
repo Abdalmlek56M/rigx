@@ -2,10 +2,10 @@ namespace HardwareStore.Modules.Retail;
 
 /// <summary>An expense; paid from an account (explicit or the default cash one) or from a partner's own money, never both.</summary>
 public sealed record ExpenseCreateRequest(DateOnly? ExpenseDate, decimal Amount, string? Category, string? Classification,
-    string? Note, Guid? OrderId, Guid? UnitId, string? AttachmentReference, Guid? AssemblyId = null, Guid? MoneyAccountId = null,
+    string? Note, Guid? OrderId, Guid? UnitId, Guid? AssemblyId = null, Guid? MoneyAccountId = null,
     Guid? PaidByPartnerId = null);
 public sealed record ExpenseView(Guid Id, DateOnly ExpenseDate, decimal Amount, string Category, string Classification,
-    string? Note, Guid? OrderId, Guid? UnitId, string? AttachmentReference, Guid CreatedByUserAccountId,
+    string? Note, Guid? OrderId, Guid? UnitId, bool HasReceipt, Guid CreatedByUserAccountId,
     DateTimeOffset CreatedAtUtc, long RowVersion, Guid? AssemblyId, Guid? MoneyAccountId, Guid? PaidByPartnerId, Guid? RecurringExpenseId);
 public sealed record ExpenseTypeRequest(string? Name, bool IsActive = true, int SortOrder = 0, long? RowVersion = null);
 public sealed record ExpenseTypeView(Guid Id, string Name, bool IsActive, int SortOrder, long RowVersion);

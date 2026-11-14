@@ -101,11 +101,12 @@ public sealed class ContentMediaService(
         CatalogImageUpload upload,
         ContentMediaMetadataInput metadata,
         Guid actorId,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default)
     {
         var normalized = Normalize(metadata);
         var id = Guid.CreateVersion7();
-        var stored = await storage.SaveContentImageAsync(id, upload, replace: false, cancellationToken);
+        var stored = await storage.SaveContentImageAsync(id, upload, replace: false, watermark, cancellationToken);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         var asset = new ContentMediaAsset
@@ -162,6 +163,7 @@ public sealed class ContentMediaService(
         Guid id,
         CatalogImageUpload upload,
         long rowVersion,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default)
     {
         await using (var db = await contextFactory.CreateDbContextAsync(cancellationToken))
@@ -170,7 +172,7 @@ public sealed class ContentMediaService(
             if (existing.RowVersion != rowVersion)
                 throw new CatalogValidationException("asset", "The media asset was changed by another user.");
         }
-        var stored = await storage.SaveContentImageAsync(id, upload, replace: true, cancellationToken);
+        var stored = await storage.SaveContentImageAsync(id, upload, replace: true, watermark, cancellationToken);
         await using var updateDb = await contextFactory.CreateDbContextAsync(cancellationToken);
         var asset = await FindAsync(updateDb, id, cancellationToken);
         asset.FileSizeBytes = stored.FileSizeBytes;

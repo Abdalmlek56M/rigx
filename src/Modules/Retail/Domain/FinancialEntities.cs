@@ -17,7 +17,8 @@ public sealed class RetailExpense
     /// <summary>The partner who paid from his own money (deducted from his dues); null when an account paid.</summary>
     public Guid? PaidByPartnerId { get; set; }
     public Guid? RecurringExpenseId { get; set; }
-    public string? AttachmentReference { get; set; }
+    /// <summary>Private storage key of the receipt photo; null when none was uploaded.</summary>
+    public string? ReceiptStorageKey { get; set; }
     public Guid CreatedByUserAccountId { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public long RowVersion { get; set; } = 1;

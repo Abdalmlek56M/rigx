@@ -21,7 +21,7 @@ public sealed class ExpensesV2PostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
 
     private static ExpenseCreateRequest Overhead(decimal amount, string category = Rent, DateOnly? date = null, string? note = null,
         Guid? accountId = null, Guid? partnerId = null) =>
-        new(date ?? new DateOnly(2026, 10, 15), amount, category, ExpenseClassification.GeneralOverhead, note, null, null, null,
+        new(date ?? new DateOnly(2026, 10, 15), amount, category, ExpenseClassification.GeneralOverhead, note, null, null,
             MoneyAccountId: accountId, PaidByPartnerId: partnerId);
 
     private static ReceiptLine Line(string model, decimal cost, decimal price, Guid? partnerId = null) =>
@@ -54,7 +54,7 @@ public sealed class ExpensesV2PostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var units = await retail.ReceiveUnitsAsync(RetailReceipts.Receipt(Guid.NewGuid(), null, [new ReceiptLine("GPU", "New", 1, 100m, 300m)]), Actor);
         var build = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("PC", [units.Single().Id]));
         ExpenseCreateRequest Direct(Guid? assemblyId = null) =>
-            new(new DateOnly(2026, 10, 15), 40m, "تغليف", ExpenseClassification.Direct, null, null, null, null, assemblyId);
+            new(new DateOnly(2026, 10, 15), 40m, "تغليف", ExpenseClassification.Direct, null, null, null, assemblyId);
 
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Expenses.CreateExpenseAsync(Direct(), Actor)));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Expenses.CreateExpenseAsync(Overhead(10m) with { Classification = "Weird" }, Actor)));

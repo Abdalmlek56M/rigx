@@ -19,6 +19,8 @@
 - Quote `POST /api/v1/store/quote`: anonymous, rate-limited, no customer data, no invoice number.
 - Shipping rates `GET /api/v1/storefront/shipping-rates`: anonymous, public shipping settings only (pickup address, governorate fees and delivery times), no customer data.
 - Requests `POST /api/v1/requests`: anonymous (links the user when signed in), rate-limited `customer-request` 5 / 10 min per IP, honeypot field, duplicate within 10 min returns the same code. Returns 202 with the public `REQ` code only, no request data. Admin routes need `Requests.View` / `Requests.Manage`.
+- Request photo upload `POST /api/v1/requests/photos`: anonymous, authorized only by the upload token (32 random bytes, only the SHA-256 hash stored, 30 min, max 5 photos); rate-limited `request-photo` 20 / 10 min per IP; bad or expired token returns 404. Files are re-encoded to WebP (EXIF/GPS stripped), stored under `private/`, never watermarked. Admin read `GET /api/v1/admin/requests/{id}/photos/{index}` needs `Requests.View`, `no-store`.
+- Private media not served publicly: `GET /api/v1/catalog/media/...` returns 404 for `private/` keys; orphan cleanup skips `private/` and `settings/`. Expense receipts `GET /api/v1/admin/retail/expenses/{id}/receipt` need `Finance.ViewReports`, `no-store`.
 - Dependency audit (12 Nov 2026): 0 known vulnerable NuGet packages.
 
 ## Rules every change must keep

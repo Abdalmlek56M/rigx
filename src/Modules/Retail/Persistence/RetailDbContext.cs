@@ -380,7 +380,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.HasOne<RecurringExpense>().WithMany().HasForeignKey(x => x.RecurringExpenseId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.RecurringExpenseId, x.ExpenseDate }).IsUnique().HasFilter("recurring_expense_id IS NOT NULL")
                 .HasDatabaseName("ux_retail_expenses_recurring");
-            e.Property(x => x.AttachmentReference).HasColumnName("attachment_reference").HasMaxLength(512);
+            e.Property(x => x.ReceiptStorageKey).HasColumnName("receipt_storage_key").HasMaxLength(512);
             e.Property(x => x.CreatedByUserAccountId).HasColumnName("created_by_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();

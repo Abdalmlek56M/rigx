@@ -22,6 +22,6 @@ internal static class ExpensePosting
     }
 
     public static ExpenseView View(RetailExpense item) => new(item.Id, item.ExpenseDate, item.Amount, item.Category, item.Classification,
-        item.Note, item.OrderId, item.UnitId, item.AttachmentReference, item.CreatedByUserAccountId, item.CreatedAtUtc, item.RowVersion,
+        item.Note, item.OrderId, item.UnitId, item.ReceiptStorageKey is not null, item.CreatedByUserAccountId, item.CreatedAtUtc, item.RowVersion,
         item.AssemblyId, item.MoneyAccountId, item.PaidByPartnerId, item.RecurringExpenseId);
 }

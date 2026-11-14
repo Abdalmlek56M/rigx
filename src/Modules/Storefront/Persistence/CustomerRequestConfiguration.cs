@@ -47,12 +47,17 @@ internal static class CustomerRequestConfiguration
             entity.Property(item => item.OfferAmount).HasColumnName("offer_amount").HasColumnType("numeric(12,2)");
             entity.Property(item => item.ExpectedResale).HasColumnName("expected_resale").HasColumnType("numeric(12,2)");
             entity.Property(item => item.InternalNote).HasColumnName("internal_note").HasMaxLength(CustomerRequestRules.MaxNoteLength);
+            entity.Property(item => item.PhotoTokenHash).HasColumnName("photo_token_hash").HasMaxLength(64);
+            entity.Property(item => item.PhotoTokenExpiresAtUtc).HasColumnName("photo_token_expires_at_utc").HasColumnType("timestamp with time zone");
+            entity.Property(item => item.Photos).HasColumnName("photos").HasColumnType("text[]").HasDefaultValueSql("'{}'::text[]").IsRequired();
             entity.Property(item => item.PurchaseId).HasColumnName("purchase_id");
             entity.Property(item => item.PurchaseCode).HasColumnName("purchase_code").HasMaxLength(16);
             entity.Property(item => item.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.ClosedAtUtc).HasColumnName("closed_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+            entity.HasIndex(item => item.PhotoTokenHash).HasDatabaseName("ix_customer_requests_photo_token_hash")
+                .HasFilter("photo_token_hash IS NOT NULL");
             entity.HasIndex(item => item.Code).IsUnique().HasDatabaseName("ux_customer_requests_code");
             entity.HasIndex(item => new { item.Status, item.CreatedAtUtc }).HasDatabaseName("ix_customer_requests_status_created");
             entity.HasIndex(item => new { item.Type, item.Status }).HasDatabaseName("ix_customer_requests_type_status");

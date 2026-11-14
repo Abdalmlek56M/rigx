@@ -10,6 +10,7 @@ public static class IdentityRateLimitPolicies
     public const string EmailCodeRequest = "identity-email-code-request";
     public const string EmailCodeVerify = "identity-email-code-verify";
     public const string CustomerRequest = "customer-request";
+    public const string RequestPhoto = "request-photo";
     public const string CatalogSuggest = "catalog-suggest";
     public const string Checkout = "order-checkout";
     public const string OrderTracking = "order-tracking";
@@ -30,6 +31,7 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeRequest, 10, TimeSpan.FromHours(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.EmailCodeVerify, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CustomerRequest, 5, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.RequestPhoto, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CatalogSuggest, 120, TimeSpan.FromMinutes(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Checkout, 10, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.OrderTracking, 60, TimeSpan.FromMinutes(1));
@@ -89,7 +91,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.EmailChangeConfirm or IdentityRateLimitPolicies.EmailCodeVerify => "600",
         IdentityRateLimitPolicies.CatalogSuggest or IdentityRateLimitPolicies.OrderTracking => "60",
         IdentityRateLimitPolicies.Checkout or IdentityRateLimitPolicies.WarrantyLookup or IdentityRateLimitPolicies.BuilderSave
-            or IdentityRateLimitPolicies.ArticleView => "600",
+            or IdentityRateLimitPolicies.ArticleView or IdentityRateLimitPolicies.RequestPhoto => "600",
         _ => "3600"
     };
 
@@ -100,6 +102,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.EmailCodeRequest => "Identity.EmailCode.Request.RateLimited",
         IdentityRateLimitPolicies.EmailCodeVerify => "Identity.EmailCode.Verify.RateLimited",
         IdentityRateLimitPolicies.CustomerRequest => "Request.Submit.RateLimited",
+        IdentityRateLimitPolicies.RequestPhoto => "Request.Photo.RateLimited",
         IdentityRateLimitPolicies.CatalogSuggest => "Catalog.Search.RateLimited",
         IdentityRateLimitPolicies.Checkout => "Sales.Checkout.RateLimited",
         IdentityRateLimitPolicies.WarrantyLookup => "Sales.WarrantyLookup.RateLimited",

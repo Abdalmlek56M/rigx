@@ -32,6 +32,11 @@ public sealed class CustomerRequest
     public decimal? OfferAmount { get; set; }
     public decimal? ExpectedResale { get; set; }
     public string? InternalNote { get; set; }
+    /// <summary>Photo upload: only the SHA-256 of the token the customer holds, and when it stops working.</summary>
+    public string? PhotoTokenHash { get; set; }
+    public DateTimeOffset? PhotoTokenExpiresAtUtc { get; set; }
+    /// <summary>Private storage keys of the photos the customer attached (see <see cref="RequestPhotoRules"/>).</summary>
+    public List<string> Photos { get; set; } = [];
     public Guid? PurchaseId { get; set; }
     public string? PurchaseCode { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }

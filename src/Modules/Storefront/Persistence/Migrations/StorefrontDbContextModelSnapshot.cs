@@ -512,6 +512,22 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("phone");
 
+                    b.Property<DateTimeOffset?>("PhotoTokenExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("photo_token_expires_at_utc");
+
+                    b.Property<string>("PhotoTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("photo_token_hash");
+
+                    b.PrimitiveCollection<List<string>>("Photos")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("photos")
+                        .HasDefaultValueSql("'{}'::text[]");
+
                     b.Property<DateOnly?>("PreferredDate")
                         .HasColumnType("date")
                         .HasColumnName("preferred_date");
@@ -572,6 +588,10 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique()
                         .HasDatabaseName("ux_customer_requests_code");
+
+                    b.HasIndex("PhotoTokenHash")
+                        .HasDatabaseName("ix_customer_requests_photo_token_hash")
+                        .HasFilter("photo_token_hash IS NOT NULL");
 
                     b.HasIndex("Phone", "CreatedAtUtc")
                         .HasDatabaseName("ix_customer_requests_phone_created");
@@ -752,6 +772,13 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("jsonb")
                         .HasColumnName("lead_sources")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
+                    b.Property<string>("Logos")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("logos")
                         .HasDefaultValueSql("'{}'::jsonb");
 
                     b.Property<string>("Payment")

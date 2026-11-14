@@ -407,7 +407,7 @@ public sealed class PreviewInitializationService(
                 await mediaStorage.DeleteAsync(
                     $"products/{productId:N}/{imageId:N}.webp", cancellationToken);
                 var stored = await mediaStorage.SaveImageAsync(
-                    productId, imageId, source, cancellationToken);
+                    productId, imageId, source, cancellationToken: cancellationToken);
                 db.ProductImages.Add(new CatalogProductImage
                 {
                     Id = imageId,

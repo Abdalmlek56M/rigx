@@ -264,6 +264,7 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
             Guid productId,
             Guid imageId,
             CatalogImageUpload image,
+            ImageWatermark? watermark = null,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(new CatalogStoredMedia(
                 $"products/{productId:N}/{imageId:N}.webp",
@@ -287,6 +288,7 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
             Guid assetId,
             CatalogImageUpload image,
             bool replace,
+            ImageWatermark? watermark = null,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(new CatalogStoredMedia(
                 $"content/{assetId:N}/{assetId:N}.webp",
@@ -297,6 +299,16 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
                 400,
                 267,
                 2048));
+
+        public Task<string> SaveSettingsLogoAsync(
+            string kind, CatalogImageUpload image, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<string> SavePrivateImageAsync(
+            string area, Guid ownerId, CatalogImageUpload image, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public bool Exists(string storageKey) => false;
 
         public Stream OpenRead(string storageKey) => new MemoryStream();
 

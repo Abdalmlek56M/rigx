@@ -26,7 +26,7 @@ public sealed class ProductImageService(
 
         var imageId = Guid.CreateVersion7();
         var stored = await mediaStorage.SaveImageAsync(
-            productId, imageId, image, cancellationToken);
+            productId, imageId, image, cancellationToken: cancellationToken);
         try
         {
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);

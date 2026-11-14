@@ -29,14 +29,19 @@ public sealed class CustomerRequestService(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var existing = target is null
             ? await RecentDuplicateAsync(db, draft, now, cancellationToken)
-            : await db.CustomerRequests.AsNoTracking().Where(NotifyMeRules.OpenFilter)
+            : await db.CustomerRequests.Where(NotifyMeRules.OpenFilter)
                 .Where(item => item.Phone == draft.Phone && item.ModelKey == target.ModelKey)
-                .Select(item => item.Code).FirstOrDefaultAsync(cancellationToken);
-        if (existing is not null) return new CustomerRequestReceipt(existing);
+                .FirstOrDefaultAsync(cancellationToken);
+        if (existing is not null)
+        {
+            var renewedToken = IssuePhotoToken(existing, now);
+            if (renewedToken is not null) await db.SaveChangesAsync(cancellationToken);
+            return new CustomerRequestReceipt(existing.Code, renewedToken);
+        }
         if (target is not null && (await stock.FindAvailableAsync([target.ModelKey], cancellationToken)).ContainsKey(target.ModelKey))
             throw NotifyMeRules.AvailableNow();
         var code = await NextCodeAsync(db, cancellationToken);
-        db.CustomerRequests.Add(new CustomerRequest
+        var request = new CustomerRequest
         {
             Id = Guid.CreateVersion7(), Code = code, Type = draft.Type, Status = CustomerRequestStatus.New, Name = draft.Name,
             Phone = draft.Phone, Email = draft.Email, Governorate = draft.Governorate, Source = draft.Source,
@@ -44,9 +49,21 @@ public sealed class CustomerRequestService(
             ModelName = target?.ModelName ?? draft.ModelName, OwnedFor = draft.OwnedFor, ItemCode = target is null ? draft.ItemCode : target.ItemCode,
             ModelKey = target?.ModelKey, CategoryId = target?.CategoryId, ServiceKind = draft.ServiceKind,
             PreferredDate = draft.PreferredDate, CreatedAtUtc = now, UpdatedAtUtc = now
-        });
+        };
+        var token = IssuePhotoToken(request, now);
+        db.CustomerRequests.Add(request);
         await db.SaveChangesAsync(cancellationToken);
-        return new CustomerRequestReceipt(code);
+        return new CustomerRequestReceipt(code, token);
+    }
+
+    /// <summary>Gives the request a fresh upload token (replacing any earlier one); null when its type takes no photos.</summary>
+    private static string? IssuePhotoToken(CustomerRequest request, DateTimeOffset now)
+    {
+        if (!RequestPhotoRules.AcceptsPhotos(request.Type)) return null;
+        var issued = RequestPhotoRules.IssueToken(now);
+        request.PhotoTokenHash = issued.Hash;
+        request.PhotoTokenExpiresAtUtc = issued.ExpiresAtUtc;
+        return issued.Token;
     }
 
     public async Task<CustomerRequestPage> ListAsync(CustomerRequestQuery query, CancellationToken cancellationToken = default)
@@ -82,15 +99,15 @@ public sealed class CustomerRequestService(
         return NotifyMeRules.Target(code, draft.ModelName, model);
     }
 
-    private static Task<string?> RecentDuplicateAsync(StorefrontDbContext db, CustomerRequestDraft draft, DateTimeOffset now,
+    private static Task<CustomerRequest?> RecentDuplicateAsync(StorefrontDbContext db, CustomerRequestDraft draft, DateTimeOffset now,
         CancellationToken cancellationToken)
     {
         var since = now - DuplicateWindow;
         var key = draft.Message ?? draft.ModelName ?? draft.ItemCode;
-        return db.CustomerRequests.AsNoTracking()
+        return db.CustomerRequests
             .Where(item => item.Phone == draft.Phone && item.Type == draft.Type && item.ServiceKind == draft.ServiceKind
                 && item.CreatedAtUtc >= since && (item.Message ?? item.ModelName ?? item.ItemCode) == key)
-            .Select(item => item.Code).FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     private static async Task<string> NextCodeAsync(StorefrontDbContext db, CancellationToken cancellationToken)

@@ -62,6 +62,8 @@ public sealed class CatalogMediaMaintenanceService(
         var orphans = files.Values
             .Where(file => !referenced.Contains(file.StorageKey) &&
                            file.LastModifiedUtc < oldestEligibleOrphan &&
+                           !CatalogMediaKeys.IsPrivate(file.StorageKey) &&
+                           !file.StorageKey.StartsWith(CatalogMediaKeys.SettingsPrefix, StringComparison.OrdinalIgnoreCase) &&
                            (file.StorageKey.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ||
                             file.StorageKey.EndsWith(".original", StringComparison.OrdinalIgnoreCase)))
             .Select(file => file.StorageKey)

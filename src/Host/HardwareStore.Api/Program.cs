@@ -51,6 +51,10 @@ builder.Services.AddSingleton(OrderLinks.FromConfiguration(builder.Configuration
 builder.Services.AddHostedService<ReservationExpiryJob>();
 builder.Services.AddHostedService<RecurringExpenseJob>();
 builder.Services.AddHostedService<BackInStockJob>();
+builder.Services.AddSingleton<WatermarkReapplyJob>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<WatermarkReapplyJob>());
+builder.Services.AddScoped<MediaWatermarkSource>();
+builder.Services.AddScoped<WatermarkReapplyService>();
 builder.Services.AddScoped<HardwareStore.Modules.Catalog.IMediaReferenceGuard, RetailMediaReferenceGuard>();
 builder.Services.AddSecurityAuditPersistence(builder.Configuration);
 var previewEnabled = builder.Environment.IsDevelopment() &&

@@ -1,3 +1,4 @@
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -25,6 +26,9 @@ public static class StorefrontEndpoints
         MapSection<LeadSourceSettings>(settings);
         MapSection<SalesSettings>(settings);
         MapSection<WarrantyOptionSettings>(settings);
+        settings.MapPut("/logos/{kind}", SetLogoAsync).RequirePermission(SettingsPermission);
+        settings.MapDelete("/logos/{kind}", RemoveLogoAsync).RequirePermission(SettingsPermission);
+        settings.MapPost("/watermark/reapply", ReapplyWatermark).RequirePermission(SettingsPermission);
 
         var wishlist = endpoints.MapGroup("/api/v1/wishlist").RequireAuthorization();
         wishlist.MapGet("", ListWishlistAsync);
@@ -133,6 +137,44 @@ public static class StorefrontEndpoints
     {
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await settings.GetAdminAsync(cancellationToken));
+    }
+
+    /// <summary>The logo is stored under a new key every time; the previous file is deleted only after the row points at the new one.</summary>
+    private static async Task<IResult> SetLogoAsync(string kind, HttpContext context, StoreSettingsService settings,
+        ICatalogMediaStorage storage, CatalogMediaOptions options, CancellationToken cancellationToken)
+    {
+        StoreLogoKind.Require(kind);
+        if (!context.TryGetUserId(out var actorId))
+            return Results.Unauthorized();
+        var (upload, problem) = await CatalogEndpoints.ReadSingleImageAsync(context, options, cancellationToken);
+        if (upload is null) return problem!;
+        var key = await storage.SaveSettingsLogoAsync(kind, upload, cancellationToken);
+        StoreLogoChange change;
+        try { change = await settings.SetLogoAsync(kind, key, actorId, cancellationToken); }
+        catch { await storage.DeleteStorageKeyAsync(key, CancellationToken.None); throw; }
+        return await FinishLogoChangeAsync(change, storage, cancellationToken);
+    }
+
+    private static async Task<IResult> RemoveLogoAsync(string kind, HttpContext context, StoreSettingsService settings,
+        ICatalogMediaStorage storage, CancellationToken cancellationToken)
+    {
+        if (!context.TryGetUserId(out var actorId))
+            return Results.Unauthorized();
+        return await FinishLogoChangeAsync(await settings.SetLogoAsync(kind, null, actorId, cancellationToken), storage, cancellationToken);
+    }
+
+    private static async Task<IResult> FinishLogoChangeAsync(StoreLogoChange change, ICatalogMediaStorage storage,
+        CancellationToken cancellationToken)
+    {
+        if (change.PreviousKey is not null)
+            await storage.DeleteStorageKeyAsync(change.PreviousKey, cancellationToken);
+        return Results.Ok(change.Settings);
+    }
+
+    private static IResult ReapplyWatermark(WatermarkReapplyJob job)
+    {
+        job.Signal();
+        return Results.Accepted();
     }
 
     private static async Task<IResult> UpdateSectionAsync<T>(

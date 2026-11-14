@@ -44,12 +44,12 @@ public static partial class RetailEndpoints
         Results.Ok(new StockVisibilityResult(await items.SetVisibilityAsync(request, ct)));
 
     private static async Task<IResult> AddStockItemPhotoAsync(Guid id, HttpContext context, StockItemAdminService items,
-        ICatalogMediaStorage storage, CatalogMediaOptions options, CancellationToken ct)
+        ICatalogMediaStorage storage, CatalogMediaOptions options, MediaWatermarkSource watermarks, CancellationToken ct)
     {
         await items.GetAsync(id, false, false, ct);
         var (upload, problem) = await CatalogEndpoints.ReadSingleImageAsync(context, options, ct);
         if (upload is null) return problem!;
-        var stored = await storage.SaveImageAsync(id, Guid.CreateVersion7(), upload, ct);
+        var stored = await storage.SaveImageAsync(id, Guid.CreateVersion7(), upload, await watermarks.ForPhotosAsync(ct), ct);
         return Results.Ok(await items.AddPhotoAsync(id, new StockItemPhoto(stored.StorageKey, stored.ThumbnailStorageKey), ct));
     }
 

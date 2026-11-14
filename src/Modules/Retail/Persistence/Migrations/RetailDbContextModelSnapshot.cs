@@ -1381,11 +1381,6 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assembly_id");
 
-                    b.Property<string>("AttachmentReference")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("attachment_reference");
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -1426,6 +1421,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Property<Guid?>("PaidByPartnerId")
                         .HasColumnType("uuid")
                         .HasColumnName("paid_by_partner_id");
+
+                    b.Property<string>("ReceiptStorageKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("receipt_storage_key");
 
                     b.Property<Guid?>("RecurringExpenseId")
                         .HasColumnType("uuid")

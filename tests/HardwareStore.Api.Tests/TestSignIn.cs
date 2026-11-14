@@ -59,6 +59,21 @@ internal static class TestSignIn
         return await client.SendAsync(request);
     }
 
+    /// <summary>Sends one image as a multipart form (the <c>image</c> file plus any extra text fields).</summary>
+    public static async Task<HttpResponseMessage> SendImageAsync(
+        HttpClient client, HttpMethod method, string url, byte[] png, params (string Name, string Value)[] fields)
+    {
+        using var content = new MultipartFormDataContent();
+        foreach (var (name, value) in fields)
+            content.Add(new StringContent(value), name);
+        var file = new ByteArrayContent(png);
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        content.Add(file, "image", "photo.png");
+        using var request = new HttpRequestMessage(method, url) { Content = content };
+        request.Headers.Add("X-CSRF-TOKEN", await CsrfAsync(client));
+        return await client.SendAsync(request);
+    }
+
     public static async Task<string> CsrfAsync(HttpClient client)
     {
         using var response = await client.GetAsync("/api/v1/identity/antiforgery");

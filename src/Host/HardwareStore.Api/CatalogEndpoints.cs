@@ -124,7 +124,7 @@ public static class CatalogEndpoints
     {
         try
         {
-            if (!storageKey.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
+            if (!storageKey.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) || CatalogMediaKeys.IsPrivate(storageKey))
                 return Results.NotFound();
             context.Response.Headers.XContentTypeOptions = "nosniff";
             context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
@@ -357,24 +357,34 @@ public static class CatalogEndpoints
         CatalogMediaOptions options,
         CancellationToken cancellationToken)
     {
+        var (_, upload, result) = await ReadImageFormAsync(context, options, cancellationToken);
+        return (upload, result);
+    }
+
+    /// <summary>The multipart form with its one <c>image</c> file; the form is returned too for endpoints that carry extra fields.</summary>
+    internal static async Task<(IFormCollection? Form, CatalogImageUpload? Upload, IResult? Result)> ReadImageFormAsync(
+        HttpContext context,
+        CatalogMediaOptions options,
+        CancellationToken cancellationToken)
+    {
         if (!context.Request.HasFormContentType)
-            return (null, Results.ValidationProblem(new Dictionary<string, string[]>
+            return (null, null, Results.ValidationProblem(new Dictionary<string, string[]>
             {
                 ["form"] = ["A multipart form is required."]
             }));
         LimitRequestSize(context, options);
         if (context.Request.ContentLength > options.MaxUploadBytes + 64 * 1024)
-            return (null, Results.Problem(
+            return (null, null, Results.Problem(
                 statusCode: StatusCodes.Status413PayloadTooLarge,
                 title: "The uploaded image is too large."));
         var form = await context.Request.ReadFormAsync(cancellationToken);
         var file = form.Files.GetFile("image");
         if (file is null)
-            return (null, Results.ValidationProblem(new Dictionary<string, string[]>
+            return (form, null, Results.ValidationProblem(new Dictionary<string, string[]>
             {
                 ["image"] = ["An image file is required."]
             }));
-        return (new CatalogImageUpload(
+        return (form, new CatalogImageUpload(
             file.OpenReadStream(), file.Length, file.FileName, file.ContentType), null);
     }
 

@@ -18,7 +18,6 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
         ExpenseRules.EnsureDirectLink(classification, request.OrderId, request.UnitId, request.AssemblyId);
         ExpenseRules.EnsureSinglePayer(request.MoneyAccountId, request.PaidByPartnerId);
         var note = OrderRules.Optional(request.Note, 1000, "Note");
-        var attachment = OrderRules.Optional(request.AttachmentReference, 512, "Attachment reference");
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -29,7 +28,7 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
             {
                 Id = Guid.CreateVersion7(), ExpenseDate = request.ExpenseDate ?? BusinessDay.Of(now, businessZone), Amount = amount,
                 Category = ExpenseRules.Category(request.Category, types), Classification = classification, Note = note,
-                OrderId = request.OrderId, UnitId = request.UnitId, AssemblyId = request.AssemblyId, AttachmentReference = attachment,
+                OrderId = request.OrderId, UnitId = request.UnitId, AssemblyId = request.AssemblyId,
                 MoneyAccountId = request.MoneyAccountId, PaidByPartnerId = request.PaidByPartnerId,
                 CreatedByUserAccountId = actorId, CreatedAtUtc = now
             };
@@ -41,6 +40,28 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
         }
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
+
+    /// <summary>Sets the receipt photo key and returns the key it replaced (null when there was none), so the caller can delete that file.</summary>
+    public async Task<string?> SetReceiptAsync(Guid id, string storageKey, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var expense = await db.Expenses.SingleOrDefaultAsync(item => item.Id == id, cancellationToken) ?? throw ExpenseNotFound();
+        var previous = expense.ReceiptStorageKey;
+        expense.ReceiptStorageKey = storageKey;
+        expense.RowVersion++;
+        await db.SaveChangesAsync(cancellationToken);
+        return previous;
+    }
+
+    public async Task<string> GetReceiptKeyAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var key = await db.Expenses.AsNoTracking().Where(item => item.Id == id).Select(item => new { item.ReceiptStorageKey })
+            .SingleOrDefaultAsync(cancellationToken) ?? throw ExpenseNotFound();
+        return key.ReceiptStorageKey ?? throw new RetailException(404, "The expense has no receipt.");
+    }
+
+    private static RetailException ExpenseNotFound() => new(404, "Expense was not found.");
 
     public async Task<IReadOnlyList<ExpenseView>> ListExpensesAsync(DateOnly? from, DateOnly? to, CancellationToken cancellationToken = default)
     {

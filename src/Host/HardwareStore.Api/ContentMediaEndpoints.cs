@@ -28,6 +28,7 @@ public static class ContentMediaEndpoints
         HttpContext context,
         ContentMediaService media,
         CatalogMediaOptions options,
+        MediaWatermarkSource watermarks,
         CancellationToken cancellationToken)
     {
         if (!context.TryGetUserId(out var actorId))
@@ -54,6 +55,7 @@ public static class ContentMediaEndpoints
                 new CatalogImageUpload(image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
                 metadata,
                 actorId,
+                await watermarks.ForArticlesAsync(cancellationToken),
                 cancellationToken);
             return Results.Created((string?)null, result);
         }
@@ -88,6 +90,7 @@ public static class ContentMediaEndpoints
         HttpContext context,
         ContentMediaService media,
         CatalogMediaOptions options,
+        MediaWatermarkSource watermarks,
         CancellationToken cancellationToken,
         long rowVersion = 0)
     {
@@ -112,6 +115,7 @@ public static class ContentMediaEndpoints
                 id,
                 new CatalogImageUpload(image.OpenReadStream(), image.Length, image.FileName, image.ContentType),
                 rowVersion,
+                await watermarks.ForArticlesAsync(cancellationToken),
                 cancellationToken));
         }
         catch (ContentMediaNotFoundException)

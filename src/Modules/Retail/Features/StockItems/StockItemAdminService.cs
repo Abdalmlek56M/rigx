@@ -107,6 +107,27 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         return item.Photos;
     }
 
+    public async Task<IReadOnlyList<OwnedPhoto>> ListPhotosAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.StockItems.AsNoTracking().Where(item => item.PhotoCount > 0)
+            .Select(item => new { item.Id, item.Photos }).ToListAsync(cancellationToken);
+        return rows.SelectMany(row => row.Photos.Select(photo => new OwnedPhoto(row.Id, photo))).ToList();
+    }
+
+    /// <summary>Swaps one photo for a re-rendered one in place; false when the old photo is no longer on the item (removed meanwhile).</summary>
+    public async Task<bool> ReplacePhotoAsync(Guid id, string oldStorageKey, StockItemPhoto replacement, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.StockItems.SingleOrDefaultAsync(row => row.Id == id, cancellationToken);
+        var index = item?.Photos.FindIndex(entry => entry.StorageKey == oldStorageKey) ?? -1;
+        if (item is null || index < 0) return false;
+        item.Photos = item.Photos.Select((entry, position) => position == index ? replacement : entry).ToList();
+        Touch(item);
+        await SaveAsync(db, cancellationToken);
+        return true;
+    }
+
     /// <summary>Removes the photo from the item and returns it, so the caller can delete the stored files.</summary>
     public async Task<StockItemPhoto> RemovePhotoAsync(Guid id, string storageKey, CancellationToken cancellationToken = default)
     {

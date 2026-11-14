@@ -7,5 +7,6 @@ internal static class CustomerRequestMapping
             request.Source, request.UserAccountId, request.Subject, request.Message, request.PartType, request.ModelName,
             request.OwnedFor, request.ItemCode, request.ServiceKind, request.PreferredDate, request.OfferAmount,
             request.ExpectedResale, request.InternalNote, request.PurchaseId, request.PurchaseCode, request.CreatedAtUtc,
-            request.UpdatedAtUtc, request.ClosedAtUtc, request.RowVersion, request.AvailableItemCode, request.AvailableAtUtc, request.NotifiedAtUtc);
+            request.UpdatedAtUtc, request.ClosedAtUtc, request.RowVersion, request.AvailableItemCode, request.AvailableAtUtc, request.NotifiedAtUtc,
+            request.Photos.Count);
 }

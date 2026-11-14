@@ -35,3 +35,6 @@ public sealed class StockItem
 }
 
 public sealed record StockItemPhoto(string StorageKey, string ThumbnailStorageKey);
+
+/// <summary>A photo with the id of the stock item or build that shows it.</summary>
+public sealed record OwnedPhoto(Guid OwnerId, StockItemPhoto Photo);

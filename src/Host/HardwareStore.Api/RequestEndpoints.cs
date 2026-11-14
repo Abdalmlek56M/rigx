@@ -1,4 +1,5 @@
 using HardwareStore.Common.Domain;
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -19,12 +20,16 @@ public static class RequestEndpoints
         endpoints.MapPost("/api/v1/requests", SubmitAsync)
             .AllowAnonymous()
             .RequireRateLimiting(IdentityRateLimitPolicies.CustomerRequest);
+        endpoints.MapPost("/api/v1/requests/photos", UploadPhotoAsync)
+            .AllowAnonymous()
+            .RequireRateLimiting(IdentityRateLimitPolicies.RequestPhoto);
         endpoints.MapGet("/api/v1/account/requests", ListMineAsync).RequireAuthorization();
         var admin = endpoints.MapGroup("/api/v1/admin/requests");
         admin.MapGet("", ListAsync).RequirePermission(View);
         admin.MapGet("/back-in-stock", BackInStockAsync).RequirePermission(View);
         admin.MapGet("/demand", DemandAsync).RequirePermission(View);
         admin.MapGet("/{id:guid}", GetAsync).RequirePermission(View);
+        admin.MapGet("/{id:guid}/photos/{index:int}", GetPhotoAsync).RequirePermission(View);
         admin.MapGet("/{id:guid}/whatsapp", WhatsAppAsync).RequirePermission(View);
         admin.MapPut("/{id:guid}/status", SetStatusAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/offer", OfferAsync).RequirePermission(Manage);
@@ -42,6 +47,27 @@ public static class RequestEndpoints
         Guid? userId = context.TryGetUserId(out var id) ? id : null;
         return Results.Accepted(value: await requests.SubmitAsync(request, userId, ct));
     }
+
+    /// <summary>
+    /// The customer attaches a photo with the token from the submission receipt. The photo is private and never watermarked; the token and
+    /// the photo limit are checked before the image is processed and again when it is attached.
+    /// </summary>
+    private static async Task<IResult> UploadPhotoAsync(HttpContext context, RequestPhotoService photos, ICatalogMediaStorage storage,
+        CatalogMediaOptions options, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        var (form, upload, problem) = await CatalogEndpoints.ReadImageFormAsync(context, options, ct);
+        if (upload is null) return problem!;
+        var token = form!["token"].ToString();
+        var requestId = await photos.AuthorizeAsync(token, ct);
+        var key = await storage.SavePrivateImageAsync("requests", requestId, upload, ct);
+        try { return Results.Ok(new RequestPhotoReceipt(await photos.AttachAsync(token, key, ct))); }
+        catch { await storage.DeleteStorageKeyAsync(key, CancellationToken.None); throw; }
+    }
+
+    private static async Task<IResult> GetPhotoAsync(Guid id, int index, HttpContext context, RequestPhotoService photos,
+        ICatalogMediaStorage storage, CancellationToken ct) =>
+        PrivateMediaResults.Image(context, storage, await photos.GetPhotoKeyAsync(id, index, ct));
 
     private static async Task<IResult> ListMineAsync(HttpContext context, AccountRequestService requests, CancellationToken ct)
     {

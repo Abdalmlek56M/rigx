@@ -433,8 +433,8 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 50m, "تغليف", "Direct", null, order.Id, null, null), Actor);
-        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 100m, "إنترنت", "GeneralOverhead", null, null, null, null), Actor);
+        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 50m, "تغليف", "Direct", null, order.Id, null), Actor);
+        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 100m, "إنترنت", "GeneralOverhead", null, null, null), Actor);
 
         var report = await retail.Reports.BuildReportAsync(today, today);
         Assert.Equal(290m, report.GrossSales);
@@ -448,7 +448,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         Assert.Equal(1, report.CompletedOrders);
         Assert.Equal(2, (await retail.Expenses.ListExpensesAsync(today, today)).Count);
         await Assert.ThrowsAsync<RetailException>(() => retail.Expenses.CreateExpenseAsync(
-            new ExpenseCreateRequest(today, -1m, "Bad", "GeneralOverhead", null, null, null, null), Actor));
+            new ExpenseCreateRequest(today, -1m, "Bad", "GeneralOverhead", null, null, null), Actor));
     }
 
     [Fact]

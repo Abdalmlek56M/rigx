@@ -15,9 +15,10 @@ public sealed record StoreSettingsAdminView(
     LeadSourceSettings LeadSources,
     WarrantyOptionSettings WarrantyOptions,
     SalesSettings Sales,
+    StoreLogos Logos,
     long RowVersion);
 
-/// <summary>What the storefront needs: only links shown on the site; no watermark, invoice or warranty-list settings.</summary>
+/// <summary>What the storefront needs: only links shown on the site; only the store logo (no watermark, invoice or warranty-list settings).</summary>
 public sealed record StoreSettingsPublicView(
     StoreInfoSettings StoreInfo,
     IReadOnlyList<ContactLink> ContactLinks,
@@ -27,7 +28,8 @@ public sealed record StoreSettingsPublicView(
     WhatsAppTemplateSettings WhatsAppTemplates,
     ReviewSettings Reviews,
     LanguageSettings Language,
-    IReadOnlyList<string> LeadSources);
+    IReadOnlyList<string> LeadSources,
+    string? StoreLogoKey);
 
 /// <summary>Replaces one section; <see cref="RowVersion"/> is the settings row version the admin edited.</summary>
 public sealed record StoreSettingsSectionUpdate<T>(T Value, long RowVersion);

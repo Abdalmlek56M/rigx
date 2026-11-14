@@ -88,12 +88,12 @@ public static partial class RetailEndpoints
         Results.Ok(await parts.ReplacePartAsync(id, unitId, request, context.HasPermission(ViewCosts), ct));
 
     private static async Task<IResult> AddAssemblyPhotoAsync(Guid id, HttpContext context, AssemblyService assemblies,
-        ICatalogMediaStorage storage, CatalogMediaOptions options, CancellationToken ct)
+        ICatalogMediaStorage storage, CatalogMediaOptions options, MediaWatermarkSource watermarks, CancellationToken ct)
     {
         await assemblies.GetAsync(id, false, ct);
         var (upload, problem) = await CatalogEndpoints.ReadSingleImageAsync(context, options, ct);
         if (upload is null) return problem!;
-        var stored = await storage.SaveImageAsync(id, Guid.CreateVersion7(), upload, ct);
+        var stored = await storage.SaveImageAsync(id, Guid.CreateVersion7(), upload, await watermarks.ForPhotosAsync(ct), ct);
         return Results.Ok(await assemblies.AddPhotoAsync(id, new StockItemPhoto(stored.StorageKey, stored.ThumbnailStorageKey), ct));
     }
 

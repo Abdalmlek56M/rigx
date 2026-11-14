@@ -40,10 +40,14 @@ public sealed record CatalogStoredMedia(
     int ThumbnailHeight,
     long FileSizeBytes);
 
+/// <summary>The logo drawn on stored images (full size and thumbnail, never the kept original).</summary>
+public sealed record ImageWatermark(byte[] Logo, string Position, int OpacityPercent, int SizePercent);
+
 public interface ICatalogImageProcessor
 {
     Task<ProcessedCatalogImage> ProcessAsync(
         CatalogImageUpload upload,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -53,6 +57,7 @@ public interface ICatalogMediaStorage
         Guid productId,
         Guid imageId,
         CatalogImageUpload image,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default);
 
     Task<string> SaveAssetImageAsync(
@@ -66,8 +71,23 @@ public interface ICatalogMediaStorage
         Guid assetId,
         CatalogImageUpload image,
         bool replace,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default);
 
+    /// <summary>A public store logo (kind <c>store</c> or <c>watermark</c>) under a new key every time; transparency is kept.</summary>
+    Task<string> SaveSettingsLogoAsync(
+        string kind,
+        CatalogImageUpload image,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>A private photo (re-encoded WebP, metadata stripped, never watermarked) that the public media route does not serve.</summary>
+    Task<string> SavePrivateImageAsync(
+        string area,
+        Guid ownerId,
+        CatalogImageUpload image,
+        CancellationToken cancellationToken = default);
+
+    bool Exists(string storageKey);
     Stream OpenRead(string storageKey);
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<StoredMediaFile>> ListFilesAsync(CancellationToken cancellationToken = default);
@@ -80,6 +100,7 @@ public sealed class SkiaCatalogImageProcessor(CatalogMediaOptions options) : ICa
 {
     public async Task<ProcessedCatalogImage> ProcessAsync(
         CatalogImageUpload upload,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default)
     {
         if (upload.Length <= 0 || upload.Length > options.MaxUploadBytes)
@@ -125,6 +146,12 @@ public sealed class SkiaCatalogImageProcessor(CatalogMediaOptions options) : ICa
         using var oriented = ApplyOrientation(decoded, codec.EncodedOrigin);
         using var full = ResizeToFit(oriented, options.StoredMaxDimension);
         using var thumbnail = ResizeToFit(oriented, options.ThumbnailMaxDimension);
+        if (watermark is not null)
+        {
+            using var logo = DecodeLogo(watermark);
+            DrawWatermark(full, logo, watermark);
+            DrawWatermark(thumbnail, logo, watermark);
+        }
         return new ProcessedCatalogImage(
             EncodeWebp(full, options.WebpQuality),
             full.Width,
@@ -133,6 +160,23 @@ public sealed class SkiaCatalogImageProcessor(CatalogMediaOptions options) : ICa
             thumbnail.Width,
             thumbnail.Height,
             bytes);
+    }
+
+    private static SKBitmap DecodeLogo(ImageWatermark watermark) =>
+        SKBitmap.Decode(watermark.Logo) ?? throw new CatalogValidationException("watermark", "The watermark logo could not be decoded.");
+
+    private static void DrawWatermark(SKBitmap target, SKBitmap logo, ImageWatermark watermark)
+    {
+        var rect = WatermarkPlacement.Compute(
+            target.Width, target.Height, logo.Width, logo.Height, watermark.Position, watermark.SizePercent);
+        using var canvas = new SKCanvas(target);
+        using var paint = new SKPaint { IsAntialias = true, Color = SKColors.White.WithAlpha((byte)(watermark.OpacityPercent * 255 / 100)) };
+        canvas.DrawBitmap(
+            logo,
+            SKRect.Create(rect.X, rect.Y, rect.Width, rect.Height),
+            new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+            paint);
+        canvas.Flush();
     }
 
     private async Task<byte[]> ReadBoundedAsync(CatalogImageUpload upload, CancellationToken cancellationToken)
@@ -245,12 +289,13 @@ public sealed class LocalCatalogMediaStorage(
         Guid productId,
         Guid imageId,
         CatalogImageUpload image,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default)
     {
         if (productId == Guid.Empty || imageId == Guid.Empty)
             throw new CatalogValidationException("image", "Product and image ids are required.");
 
-        var processed = await imageProcessor.ProcessAsync(image, cancellationToken);
+        var processed = await imageProcessor.ProcessAsync(image, watermark, cancellationToken);
         if (processed.Image.LongLength > options.MaxStoredBytes ||
             processed.Thumbnail.LongLength > options.MaxStoredBytes)
             throw new CatalogValidationException("image", "Processed image exceeds the storage size limit.");
@@ -299,25 +344,57 @@ public sealed class LocalCatalogMediaStorage(
         if (collection is not ("categories" or "brands" or "avatars") ||
             ownerId == Guid.Empty || assetId == Guid.Empty)
             throw new CatalogValidationException("image", "The media owner is invalid.");
-        var processed = await imageProcessor.ProcessAsync(image, cancellationToken);
+        return await SaveSingleImageAsync($"{collection}/{ownerId:N}/{assetId:N}.webp", image, cancellationToken);
+    }
+
+    public async Task<string> SaveSettingsLogoAsync(
+        string kind,
+        CatalogImageUpload image,
+        CancellationToken cancellationToken = default)
+    {
+        if (kind is not ("store" or "watermark"))
+            throw new CatalogValidationException("kind", "The logo kind is invalid.");
+        return await SaveSingleImageAsync($"settings/{kind}/{Guid.NewGuid():N}.webp", image, cancellationToken);
+    }
+
+    public async Task<string> SavePrivateImageAsync(
+        string area,
+        Guid ownerId,
+        CatalogImageUpload image,
+        CancellationToken cancellationToken = default)
+    {
+        if (area is not ("requests" or "receipts") || ownerId == Guid.Empty)
+            throw new CatalogValidationException("image", "The media owner is invalid.");
+        return await SaveSingleImageAsync(
+            $"{CatalogMediaKeys.PrivatePrefix}{area}/{ownerId:N}/{Guid.NewGuid():N}.webp", image, cancellationToken);
+    }
+
+    private async Task<string> SaveSingleImageAsync(
+        string storageKey,
+        CatalogImageUpload image,
+        CancellationToken cancellationToken)
+    {
+        var processed = await imageProcessor.ProcessAsync(image, null, cancellationToken);
         if (processed.Image.LongLength > options.MaxStoredBytes)
             throw new CatalogValidationException("image", "Processed image exceeds the storage size limit.");
-        var storageKey = $"{collection}/{ownerId:N}/{assetId:N}.webp";
         var path = ResolvePath(storageKey);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await WriteAtomicallyAsync(path, processed.Image, cancellationToken);
         return storageKey;
     }
 
+    public bool Exists(string storageKey) => File.Exists(ResolvePath(storageKey));
+
     public async Task<CatalogStoredMedia> SaveContentImageAsync(
         Guid assetId,
         CatalogImageUpload image,
         bool replace,
+        ImageWatermark? watermark = null,
         CancellationToken cancellationToken = default)
     {
         if (assetId == Guid.Empty)
             throw new CatalogValidationException("image", "A media asset id is required.");
-        var processed = await imageProcessor.ProcessAsync(image, cancellationToken);
+        var processed = await imageProcessor.ProcessAsync(image, watermark, cancellationToken);
         if (processed.Image.LongLength > options.MaxStoredBytes ||
             processed.Thumbnail.LongLength > options.MaxStoredBytes)
             throw new CatalogValidationException("image", "Processed image exceeds the storage size limit.");
@@ -374,7 +451,7 @@ public sealed class LocalCatalogMediaStorage(
 
         await DeletePathAsync(ResolvePath(storageKey));
         await DeletePathAsync(ResolvePath(ThumbnailKeyFor(storageKey)));
-        await DeletePathAsync(ResolvePath(OriginalKeyFor(storageKey)));
+        await DeletePathAsync(ResolvePath(CatalogMediaKeys.OriginalKeyFor(storageKey)));
     }
 
     public Task<IReadOnlyList<StoredMediaFile>> ListFilesAsync(CancellationToken cancellationToken = default)
@@ -407,11 +484,6 @@ public sealed class LocalCatalogMediaStorage(
     private static string ThumbnailKeyFor(string storageKey) =>
         storageKey.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)
             ? storageKey[..^5] + "-thumb.webp"
-            : throw new CatalogValidationException("storageKey", "Catalog media keys must end with .webp.");
-
-    private static string OriginalKeyFor(string storageKey) =>
-        storageKey.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)
-            ? storageKey[..^5] + ".original"
             : throw new CatalogValidationException("storageKey", "Catalog media keys must end with .webp.");
 
     private string ResolvePath(string storageKey)
