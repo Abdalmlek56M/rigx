@@ -602,6 +602,14 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         },
                         new
                         {
+                            Code = "Customers.Manage"
+                        },
+                        new
+                        {
+                            Code = "Customers.View"
+                        },
+                        new
+                        {
                             Code = "Finance.Disburse"
                         },
                         new
@@ -759,6 +767,11 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
+
+                    b.Property<string>("CustomerNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("customer_note");
 
                     b.Property<string>("Email")
                         .HasMaxLength(255)
@@ -937,6 +950,10 @@ namespace HardwareStore.Modules.Identity.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_email_verified");
+
+                    b.Property<Guid?>("MergedIntoAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("merged_into_account_id");
 
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()

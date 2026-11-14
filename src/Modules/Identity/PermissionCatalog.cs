@@ -16,6 +16,7 @@ public static class PermissionCatalog
         "Finance.ManagePartnerAgreements", "Finance.PostPartnerSettlements",
         "System.ManageUsers", "System.ViewAuditLogs", "System.ViewErrorLogs", "System.ExecuteAllowlistedAction",
         "System.ManageBackups", "System.StoreSettings",
-        "Requests.View", "Requests.Manage"
+        "Requests.View", "Requests.Manage",
+        "Customers.View", "Customers.Manage"
     }.ToFrozenSet(StringComparer.Ordinal);
 }

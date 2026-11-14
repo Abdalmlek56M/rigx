@@ -32,4 +32,11 @@ public static partial class RetailEndpoints
         context.Response.Headers.CacheControl = "no-store";
         return Results.Ok(await warranties.VoidAsync(id, request, actorId, ct));
     }
+
+    private static async Task<IResult> ExtendWarrantyAsync(Guid id, WarrantyExtendRequest request, HttpContext context, WarrantyService warranties, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var actorId)) return Results.Unauthorized();
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await warranties.ExtendAsync(id, request, actorId, ct));
+    }
 }

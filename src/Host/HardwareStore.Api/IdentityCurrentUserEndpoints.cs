@@ -58,20 +58,21 @@ public static class IdentityCurrentUserEndpoints
             return Results.Unauthorized();
 
         var user = await users.GetAsync(accountId, cancellationToken);
-        return user is null
-            ? Results.Unauthorized()
-            : Results.Ok(new
-            {
-                user.Username,
-                user.Email,
-                user.FullName,
-                user.PhoneNumber,
-                user.Roles,
-                user.Permissions,
-                user.IsEmailVerified,
-                user.AvatarStorageKey
-            });
+        return user is null ? Results.Unauthorized() : Results.Ok(ProfileResponse(user));
     }
+
+    /// <summary>The profile shape the signed-in user sees; "view as customer" returns the same shape.</summary>
+    public static object ProfileResponse(CurrentIdentityUser user) => new
+    {
+        user.Username,
+        user.Email,
+        user.FullName,
+        user.PhoneNumber,
+        user.Roles,
+        user.Permissions,
+        user.IsEmailVerified,
+        user.AvatarStorageKey
+    };
 
     public sealed record NewDeviceAlertsSetting(bool Enabled);
 }

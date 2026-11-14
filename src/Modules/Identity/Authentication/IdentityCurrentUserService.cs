@@ -15,14 +15,15 @@ public sealed record CurrentIdentityUser(
 
 public sealed class IdentityCurrentUserService(IDbContextFactory<IdentityDbContext> contextFactory)
 {
-    public async Task<CurrentIdentityUser?> GetAsync(Guid accountId, CancellationToken cancellationToken = default)
+    /// <param name="activeOnly">False lets staff read a deactivated customer's profile (view as customer).</param>
+    public async Task<CurrentIdentityUser?> GetAsync(Guid accountId, CancellationToken cancellationToken = default, bool activeOnly = true)
     {
         if (accountId == Guid.Empty)
             return null;
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await db.UserAccounts.AsNoTracking()
-            .Where(account => account.Id == accountId && account.IsActive)
+            .Where(account => account.Id == accountId && (account.IsActive || !activeOnly))
             .Select(account => new CurrentIdentityUser(
                 account.Username,
                 account.Email,

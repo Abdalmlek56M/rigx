@@ -58,6 +58,7 @@ public static partial class RetailEndpoints
         admin.MapGet("/orders/{id:guid}/invoice", GetOrderInvoiceAsync).RequirePermission("Sales.ViewOrders");
         admin.MapGet("/invoices", ListInvoicesAsync).RequirePermission("Sales.ViewOrders");
         admin.MapPost("/warranties/{id:guid}/void", VoidWarrantyAsync).RequirePermission("Sales.ProcessReturn");
+        admin.MapPost("/warranties/{id:guid}/extend", ExtendWarrantyAsync).RequirePermission("Sales.ProcessReturn");
         admin.MapGet("/partner/earnings", ListEarningsAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/expenses", ListExpensesAsync).RequirePermission("Finance.ViewReports");
         admin.MapPost("/expenses", CreateExpenseAsync).RequirePermission("Finance.ManageExpenses");

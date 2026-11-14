@@ -57,9 +57,20 @@ public sealed class WarrantyService(IDbContextFactory<RetailDbContext> contextFa
         var total = await warranties.CountAsync(cancellationToken);
         var rows = await warranties.OrderByDescending(w => w.StartsAtUtc).ThenBy(w => w.Code).Skip((number - 1) * PageSize).Take(PageSize)
             .Join(db.Orders, w => w.OrderId, o => o.Id, (w, o) => new { Warranty = w, o.Reference, o.CustomerName }).ToListAsync(cancellationToken);
-        var numbers = await InvoiceNumbersAsync(db, rows.Select(row => row.Warranty.OrderId), cancellationToken);
-        var items = rows.Select(row => AdminView(row.Warranty, row.Reference, numbers.GetValueOrDefault(row.Warranty.OrderId), row.CustomerName, now, includeContact, includeSerial)).ToList();
+        var items = await AdminViewsAsync(db, rows.Select(row => (row.Warranty, row.Reference, row.CustomerName)).ToList(), now, includeContact, includeSerial, cancellationToken);
         return new WarrantyAdminPage(items, number, PageSize, total);
+    }
+
+    /// <summary>The warranties of one customer account (see <see cref="CustomerOwnership"/>), newest first, for the customer 360 view.</summary>
+    public async Task<IReadOnlyList<WarrantyAdminView>> ListForCustomerAsync(Guid accountId, string? phoneKey, bool includeSerial,
+        CancellationToken cancellationToken = default)
+    {
+        var now = timeProvider.GetUtcNow();
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.Warranties.AsNoTracking().Where(CustomerOwnership.WarrantiesOf(accountId, phoneKey))
+            .OrderByDescending(w => w.StartsAtUtc).ThenBy(w => w.Code)
+            .Join(db.Orders, w => w.OrderId, o => o.Id, (w, o) => new { Warranty = w, o.Reference, o.CustomerName }).ToListAsync(cancellationToken);
+        return await AdminViewsAsync(db, rows.Select(row => (row.Warranty, row.Reference, row.CustomerName)).ToList(), now, false, includeSerial, cancellationToken);
     }
 
     /// <summary>Voids one warranty by hand (for example the RIGX sticker was removed or damaged).</summary>
@@ -71,9 +82,37 @@ public sealed class WarrantyService(IDbContextFactory<RetailDbContext> contextFa
         if (warranty.RowVersion != request.RowVersion) throw new RetailException(409, "The warranty was changed by another user.");
         WarrantyRules.Void(warranty, request.Reason, actorId, now);
         await db.SaveChangesAsync(cancellationToken);
+        return await FullAdminViewAsync(db, warranty, now, cancellationToken);
+    }
+
+    /// <summary>Adds months to a warranty that has an end date and records why (append-only history).</summary>
+    public async Task<WarrantyAdminView> ExtendAsync(Guid id, WarrantyExtendRequest request, Guid actorId, CancellationToken cancellationToken = default)
+    {
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var warranty = await db.Warranties.SingleOrDefaultAsync(w => w.Id == id, cancellationToken) ?? throw new RetailException(404, "Warranty was not found.");
+        db.WarrantyExtensions.Add(WarrantyRules.Extend(warranty, request.Months, request.Reason, actorId, now));
+        await db.SaveChangesAsync(cancellationToken);
+        return await FullAdminViewAsync(db, warranty, now, cancellationToken);
+    }
+
+    private static async Task<WarrantyAdminView> FullAdminViewAsync(RetailDbContext db, Warranty warranty, DateTimeOffset now, CancellationToken cancellationToken)
+    {
         var order = await db.Orders.AsNoTracking().Where(o => o.Id == warranty.OrderId).Select(o => new { o.Reference, o.CustomerName }).SingleAsync(cancellationToken);
-        var numbers = await InvoiceNumbersAsync(db, [warranty.OrderId], cancellationToken);
-        return AdminView(warranty, order.Reference, numbers.GetValueOrDefault(warranty.OrderId), order.CustomerName, now, includeContact: true, includeSerial: true);
+        return (await AdminViewsAsync(db, [(warranty, order.Reference, order.CustomerName)], now, true, true, cancellationToken)).Single();
+    }
+
+    private static async Task<IReadOnlyList<WarrantyAdminView>> AdminViewsAsync(RetailDbContext db,
+        IReadOnlyList<(Warranty Warranty, string Reference, string CustomerName)> rows, DateTimeOffset now, bool includeContact, bool includeSerial,
+        CancellationToken cancellationToken)
+    {
+        var numbers = await InvoiceNumbersAsync(db, rows.Select(row => row.Warranty.OrderId), cancellationToken);
+        var ids = rows.Select(row => row.Warranty.Id).ToList();
+        var extended = await db.WarrantyExtensions.AsNoTracking().Where(extension => ids.Contains(extension.WarrantyId))
+            .GroupBy(extension => extension.WarrantyId).Select(group => new { group.Key, Months = group.Sum(extension => extension.Months) })
+            .ToDictionaryAsync(group => group.Key, group => group.Months, cancellationToken);
+        return rows.Select(row => AdminView(row.Warranty, row.Reference, numbers.GetValueOrDefault(row.Warranty.OrderId), row.CustomerName, now,
+            includeContact, includeSerial, extended.GetValueOrDefault(row.Warranty.Id))).ToList();
     }
 
     private static IQueryable<Warranty> Matching(RetailDbContext db, WarrantyLookupKind kind, string value)
@@ -107,8 +146,8 @@ public sealed class WarrantyService(IDbContextFactory<RetailDbContext> contextFa
     private static WarrantyPublicView PublicView(Warranty w, DateTimeOffset now) => new(w.Code, w.Name, w.Condition, w.BuildCode, w.Label,
         w.StartsAtUtc, w.EndsAtUtc, WarrantyRules.Status(w, now), WarrantyRules.DaysLeft(w, now));
 
-    private static WarrantyAdminView AdminView(Warranty w, string orderReference, string? invoiceNumber, string customerName, DateTimeOffset now, bool includeContact, bool includeSerial) =>
+    private static WarrantyAdminView AdminView(Warranty w, string orderReference, string? invoiceNumber, string customerName, DateTimeOffset now, bool includeContact, bool includeSerial, int extendedMonths) =>
         new(w.Id, w.OrderId, orderReference, invoiceNumber, w.Code, w.Name, w.Condition, w.BuildCode, w.Label, w.StartsAtUtc, w.EndsAtUtc,
             WarrantyRules.Status(w, now), WarrantyRules.DaysLeft(w, now), includeContact ? customerName : null, includeContact ? w.PhoneNumber : null,
-            includeSerial ? w.SerialNumber : null, w.VoidedAtUtc, w.VoidReason, w.RowVersion);
+            includeSerial ? w.SerialNumber : null, w.VoidedAtUtc, w.VoidReason, w.RowVersion, extendedMonths);
 }

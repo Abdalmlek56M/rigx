@@ -41,6 +41,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.IsSupplier).HasColumnName("is_supplier").HasDefaultValue(false);
             e.Property(x => x.IsEmployee).HasColumnName("is_employee").HasDefaultValue(false);
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            e.Property(x => x.CustomerNote).HasColumnName("customer_note").HasMaxLength(2000);
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.HasOne(x => x.UserAccount).WithOne(x => x.Person).HasForeignKey<UserAccount>(x => x.PersonId).OnDelete(DeleteBehavior.Restrict);
         });
@@ -257,6 +258,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             e.Property(x => x.NotifyNewDeviceSignIn).HasColumnName("notify_new_device_sign_in").HasDefaultValue(true);
             e.Property(x => x.AuthorizationVersion).HasColumnName("authorization_version").HasDefaultValue(0);
+            e.Property(x => x.MergedIntoAccountId).HasColumnName("merged_into_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
         });
         model.Entity<Role>(e =>

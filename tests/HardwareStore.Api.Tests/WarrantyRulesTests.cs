@@ -98,4 +98,51 @@ public sealed class WarrantyRulesTests
     [InlineData(" ")]
     public void Void_needs_a_reason(string? reason) =>
         Assert.Equal(400, Assert.Throws<RetailException>(() => WarrantyRules.Void(Warranty(), reason, null, Start)).StatusCode);
+
+    [Fact]
+    public void Extend_moves_the_end_date_records_the_history_and_bumps_the_version()
+    {
+        var warranty = Warranty();
+        var actor = Guid.NewGuid();
+
+        var extension = WarrantyRules.Extend(warranty, 6, "  Goodwill  ", actor, Start.AddDays(10));
+
+        Assert.Equal(Start.AddMonths(9), warranty.EndsAtUtc);
+        Assert.Equal(2L, warranty.RowVersion);
+        Assert.Equal((warranty.Id, 6, Start.AddMonths(3), Start.AddMonths(9), "Goodwill", actor, Start.AddDays(10)),
+            (extension.WarrantyId, extension.Months, extension.PreviousEndUtc, extension.NewEndUtc, extension.Reason, extension.ActorUserAccountId, extension.CreatedAtUtc));
+    }
+
+    [Fact]
+    public void Extend_refuses_a_void_warranty_and_a_manufacturer_warranty_with_a_conflict()
+    {
+        Assert.Equal(409, Assert.Throws<RetailException>(() => WarrantyRules.Extend(Warranty(voidedAt: Start), 3, "Why", Guid.NewGuid(), Start)).StatusCode);
+        Assert.Equal(409, Assert.Throws<RetailException>(() => WarrantyRules.Extend(Warranty(months: null), 3, "Why", Guid.NewGuid(), Start)).StatusCode);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(37)]
+    public void Extend_needs_one_to_thirty_six_months(int months) =>
+        Assert.Equal(400, Assert.Throws<RetailException>(() => WarrantyRules.Extend(Warranty(), months, "Why", Guid.NewGuid(), Start)).StatusCode);
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("  ")]
+    public void Extend_needs_a_reason_of_at_most_500_characters(string? reason)
+    {
+        Assert.Equal(400, Assert.Throws<RetailException>(() => WarrantyRules.Extend(Warranty(), 3, reason, Guid.NewGuid(), Start)).StatusCode);
+        Assert.Equal(400, Assert.Throws<RetailException>(() => WarrantyRules.Extend(Warranty(), 3, new string('x', 501), Guid.NewGuid(), Start)).StatusCode);
+    }
+
+    [Fact]
+    public void Extend_must_end_after_now_and_changes_nothing_when_refused()
+    {
+        var warranty = Warranty();
+
+        Assert.Equal(400, Assert.Throws<RetailException>(() => WarrantyRules.Extend(warranty, 12, "Late", Guid.NewGuid(), Start.AddMonths(40))).StatusCode);
+        Assert.Equal((Start.AddMonths(3), 1L), (warranty.EndsAtUtc, warranty.RowVersion));
+        Assert.Equal(Start.AddMonths(15), WarrantyRules.Extend(warranty, 12, "In time", Guid.NewGuid(), Start.AddMonths(4)).NewEndUtc);
+    }
 }

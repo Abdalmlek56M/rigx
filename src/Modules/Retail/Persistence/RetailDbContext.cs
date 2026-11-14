@@ -23,6 +23,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<RetailExpense> Expenses => Set<RetailExpense>();
     public DbSet<OrderReturn> OrderReturns => Set<OrderReturn>();
     public DbSet<Warranty> Warranties => Set<Warranty>();
+    public DbSet<WarrantyExtension> WarrantyExtensions => Set<WarrantyExtension>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceCounter> InvoiceCounters => Set<InvoiceCounter>();
     public DbSet<MoneyAccount> MoneyAccounts => Set<MoneyAccount>();
@@ -452,6 +453,21 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.VoidedByUserAccountId).HasColumnName("voided_by_user_account_id");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+        });
+        model.Entity<WarrantyExtension>(e =>
+        {
+            e.ToTable("warranty_extensions", table => table.HasCheckConstraint("ck_warranty_extensions_months", "months BETWEEN 1 AND 36"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.WarrantyId).HasColumnName("warranty_id");
+            e.HasIndex(x => x.WarrantyId).HasDatabaseName("ix_warranty_extensions_warranty");
+            e.Property(x => x.Months).HasColumnName("months");
+            e.Property(x => x.PreviousEndUtc).HasColumnName("previous_end_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.NewEndUtc).HasColumnName("new_end_utc").HasColumnType("timestamp with time zone");
+            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(500).IsRequired();
+            e.Property(x => x.ActorUserAccountId).HasColumnName("actor_user_account_id");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
+            e.HasOne<Warranty>().WithMany().HasForeignKey(x => x.WarrantyId).OnDelete(DeleteBehavior.Restrict);
         });
         model.Entity<Invoice>(e =>
         {

@@ -1,0 +1,54 @@
+using HardwareStore.Modules.Identity;
+using HardwareStore.Modules.Identity.Authentication;
+using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
+
+/// <summary>
+/// Composes the customer pages across modules (decision 11): the list, the 360 view and "view as customer". Each module
+/// only supplies its own data through its services.
+/// </summary>
+public sealed class CustomerProfileComposer(
+    CustomerAdminService customers,
+    GoogleSignInService google,
+    AccountRestrictionService restrictions,
+    CustomerSalesService sales,
+    AccountRequestService requests,
+    CustomerAddressService addresses,
+    IdentityCurrentUserService currentUsers,
+    OrderService orders,
+    WarrantyService warranties,
+    InvoiceService invoices,
+    SavedBuildService builds)
+{
+    public async Task<CustomerPage> ListAsync(string? search, int page, CancellationToken cancellationToken)
+    {
+        var accounts = await customers.ListAsync(search, page, cancellationToken);
+        var keys = accounts.Items.Select(row => new CustomerSalesKey(row.Id, row.Phone)).ToList();
+        var stats = await sales.StatsAsync(keys, cancellationToken);
+        var items = accounts.Items.Select(row =>
+        {
+            var summary = stats[row.Id];
+            return new CustomerListItem(row, summary.OrderCount, summary.TotalSpent, summary.LastOrderAtUtc);
+        }).ToList();
+        return new CustomerPage(items, accounts.Page, accounts.PageSize, accounts.Total);
+    }
+
+    public async Task<CustomerProfile> GetAsync(Guid id, bool includeSerial, CancellationToken cancellationToken)
+    {
+        var account = await customers.GetAsync(id, cancellationToken);
+        var salesView = await sales.GetAsync(id, account.Phone, account.Email, includeSerial, cancellationToken);
+        var active = (await restrictions.ListAsync(id, cancellationToken)).Where(restriction => restriction.IsActive).ToList();
+        return new CustomerProfile(account, await google.GetLoginMethodsAsync(id, cancellationToken), active, salesView,
+            await requests.ListForCustomerAsync(id, account.Phone, cancellationToken), account.DefaultGovernorate ?? salesView.Stats.Governorate);
+    }
+
+    public async Task<CustomerViewAs> ViewAsAsync(Guid id, CancellationToken cancellationToken)
+    {
+        await customers.GetAsync(id, cancellationToken);
+        var profile = await currentUsers.GetAsync(id, cancellationToken, activeOnly: false);
+        return new CustomerViewAs(IdentityCurrentUserEndpoints.ProfileResponse(profile!), await addresses.ListAsync(id, cancellationToken),
+            await orders.ListMyOrdersAsync(id, cancellationToken), await warranties.ListMineAsync(id, cancellationToken),
+            await invoices.ListMineAsync(id, cancellationToken), await requests.ListMineAsync(id, cancellationToken),
+            await builds.ListMineAsync(id, cancellationToken));
+    }
+}

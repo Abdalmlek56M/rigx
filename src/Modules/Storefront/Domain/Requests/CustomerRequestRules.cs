@@ -93,6 +93,9 @@ public static class CustomerRequestRules
             throw new StorefrontException(409, "Only an accepted offer can become a purchase.");
     }
 
+    /// <summary>The customer sees the offered amount while it is on the table or accepted; staff estimates never reach the customer.</summary>
+    public static bool OfferVisibleToCustomer(string status) => status is CustomerRequestStatus.Offered or CustomerRequestStatus.Accepted;
+
     public static string? CheckNote(string? note) => Optional(note, MaxNoteLength, "Note");
 
     /// <summary>Moves to <paramref name="status"/>: Closed and Converted stamp the close time, anything else (a reopen or revised offer) clears it.</summary>

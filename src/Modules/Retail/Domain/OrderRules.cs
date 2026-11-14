@@ -63,13 +63,15 @@ public static class OrderRules
     /// Phone numbers are kept as digits only (8–15), and an Egyptian mobile in international form (+20 / 0020) is stored
     /// in its local form (01…), so blacklist, customer search and warranty lookup match any spelling.
     /// </summary>
-    public static string Phone(string? value)
+    public static string Phone(string? value) => TryPhone(value) ?? throw new RetailException(400, "Enter a valid phone number.");
+
+    /// <summary>The stored form of a phone number, or null when it is not a valid number (see <see cref="Phone"/>).</summary>
+    public static string? TryPhone(string? value)
     {
         var digits = new string((value ?? string.Empty).Where(char.IsAsciiDigit).ToArray());
         if (digits.Length == 14 && digits.StartsWith("00201", StringComparison.Ordinal)) digits = digits[3..];
         if (digits.Length == 12 && digits.StartsWith("201", StringComparison.Ordinal)) digits = "0" + digits[2..];
-        if (digits.Length is < 8 or > 15) throw new RetailException(400, "Enter a valid phone number.");
-        return digits;
+        return digits.Length is < 8 or > 15 ? null : digits;
     }
 
     public static string? Email(string? value)

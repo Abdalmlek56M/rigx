@@ -1983,6 +1983,53 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.ToTable("warranties", (string)null);
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.WarrantyExtension", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorUserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_account_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<int>("Months")
+                        .HasColumnType("integer")
+                        .HasColumnName("months");
+
+                    b.Property<DateTimeOffset>("NewEndUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("new_end_utc");
+
+                    b.Property<DateTimeOffset>("PreviousEndUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("previous_end_utc");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("WarrantyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("warranty_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WarrantyId")
+                        .HasDatabaseName("ix_warranty_extensions_warranty");
+
+                    b.ToTable("warranty_extensions", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_warranty_extensions_months", "months BETWEEN 1 AND 36");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.AssemblyUnit", b =>
                 {
                     b.HasOne("HardwareStore.Modules.Retail.Assembly", "Assembly")
@@ -2137,6 +2184,15 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("RecurringExpenseId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.WarrantyExtension", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.Warranty", null)
+                        .WithMany()
+                        .HasForeignKey("WarrantyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.Assembly", b =>

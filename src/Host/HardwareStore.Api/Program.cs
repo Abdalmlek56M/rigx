@@ -95,6 +95,8 @@ builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgs
 builder.Services.AddScoped<PurchaseReceiptService>();
 builder.Services.AddScoped<DashboardComposer>();
 builder.Services.AddScoped<RequestPurchaseConversion>();
+builder.Services.AddScoped<CustomerProfileComposer>();
+builder.Services.AddScoped<CustomerMergeOrchestrator>();
 builder.Services.AddScoped<BuilderCatalogLoader>();
 builder.Services.AddScoped<BuilderService>();
 builder.Services.AddScoped<SavedBuildService>();
@@ -154,6 +156,7 @@ app.MapEmailCodeSignInEndpoints();
 app.MapGoogleSignInEndpoints();
 app.MapStepUpEndpoints();
 app.MapRequestEndpoints();
+app.MapCustomerEndpoints();
 app.MapIdentityCurrentUserEndpoints();
 app.MapIdentitySessionEndpoints();
 app.MapProfileAvatarEndpoints();

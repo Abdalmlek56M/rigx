@@ -35,3 +35,10 @@ public sealed record RequestConvertRequest(long RowVersion);
 
 /// <summary>A prepared WhatsApp reply: the customer's number, the filled text and the wa.me link that opens it.</summary>
 public sealed record WhatsAppReplyView(string Phone, string Text, string Url);
+
+/// <summary>A request in the customer 360 view (staff).</summary>
+public sealed record CustomerRequestSummary(Guid Id, string Code, string Type, string Status, DateTimeOffset CreatedAtUtc);
+
+/// <summary>What the customer sees about their own request: no internal note, no expected resale; the offer only once it was made.</summary>
+public sealed record MyRequestView(string Code, string Type, string Status, DateTimeOffset CreatedAtUtc, DateTimeOffset? ClosedAtUtc,
+    string? Item, decimal? OfferAmount);

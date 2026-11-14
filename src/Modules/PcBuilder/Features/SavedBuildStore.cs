@@ -62,6 +62,14 @@ public sealed class SavedBuildStore(IDbContextFactory<PcBuilderDbContext> contex
             .OrderByDescending(build => build.UpdatedAtUtc).ThenByDescending(build => build.Id).ToListAsync(cancellationToken);
     }
 
+    /// <summary>Moves a merged account's saved builds to the account that was kept; safe to run again.</summary>
+    public async Task<int> MoveOwnerAsync(Guid sourceId, Guid targetId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.SavedBuilds.Where(build => build.UserAccountId == sourceId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(build => build.UserAccountId, targetId), cancellationToken);
+    }
+
     private static async Task<SavedBuild> OwnedAsync(PcBuilderDbContext db, string token, Guid userId, CancellationToken cancellationToken) =>
         await db.SavedBuilds.SingleOrDefaultAsync(build => build.Token == token && build.UserAccountId == userId, cancellationToken)
         ?? throw NotFound();

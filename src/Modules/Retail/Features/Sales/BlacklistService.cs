@@ -59,11 +59,18 @@ public sealed class BlacklistService(IDbContextFactory<RetailDbContext> contextF
             throw new RetailException(404, "Blacklist entry was not found.");
     }
 
-    internal static Task<bool> MatchesAsync(RetailDbContext db, StoreOrder order, CancellationToken cancellationToken)
+    internal static Task<bool> MatchesAsync(RetailDbContext db, StoreOrder order, CancellationToken cancellationToken) =>
+        AnyMatchAsync(db, order.PhoneNumber, order.CustomerEmail, OrderRules.AddressKey(order.Governorate, order.Area, order.Street, order.Building), cancellationToken);
+
+    /// <summary>True when the phone or the email is on the blacklist (the same matching as for an order).</summary>
+    public async Task<bool> MatchesContactAsync(string? phone, string? email, CancellationToken cancellationToken = default)
     {
-        var addressKey = OrderRules.AddressKey(order.Governorate, order.Area, order.Street, order.Building);
-        return db.Blacklist.AnyAsync(entry => entry.PhoneNumber == order.PhoneNumber ||
-            (order.CustomerEmail != null && entry.Email == order.CustomerEmail) ||
-            (addressKey != null && entry.AddressKey == addressKey), cancellationToken);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await AnyMatchAsync(db, phone, OrderRules.Email(email), null, cancellationToken);
     }
+
+    private static Task<bool> AnyMatchAsync(RetailDbContext db, string? phone, string? email, string? addressKey, CancellationToken cancellationToken) =>
+        db.Blacklist.AnyAsync(entry => (phone != null && entry.PhoneNumber == phone) ||
+            (email != null && entry.Email == email) ||
+            (addressKey != null && entry.AddressKey == addressKey), cancellationToken);
 }

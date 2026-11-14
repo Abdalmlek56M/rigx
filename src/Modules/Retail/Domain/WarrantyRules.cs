@@ -8,6 +8,7 @@ public static class WarrantyRules
 {
     private const int MaxQueryLength = 64;
     private const int MinSerialLength = 4;
+    public const int MaxExtensionMonths = 36;
     private const string QueryHint = "Enter a phone number, invoice number or item code.";
 
     public static DateTimeOffset? EndsAt(DateTimeOffset start, int? months) => months is null ? null : start.AddMonths(months.Value);
@@ -51,5 +52,22 @@ public static class WarrantyRules
         if (warranty.VoidedAtUtc is not null) throw new RetailException(409, "The warranty is already void.");
         warranty.VoidReason = OrderRules.Required(reason, 500, "Void reason");
         warranty.VoidedAtUtc = now; warranty.VoidedByUserAccountId = actorId; warranty.RowVersion++;
+    }
+
+    /// <summary>Adds months to the end date of a warranty that has one; the new end must still be in the future.</summary>
+    public static WarrantyExtension Extend(Warranty warranty, int months, string? reason, Guid actorId, DateTimeOffset now)
+    {
+        if (warranty.VoidedAtUtc is not null) throw new RetailException(409, "A void warranty cannot be extended.");
+        if (warranty.EndsAtUtc is not { } previousEnd) throw new RetailException(409, "A manufacturer warranty has no end date to extend.");
+        if (months is < 1 or > MaxExtensionMonths) throw new RetailException(400, $"Months must be between 1 and {MaxExtensionMonths}.");
+        var text = OrderRules.Required(reason, 500, "Reason");
+        var newEnd = previousEnd.AddMonths(months);
+        if (newEnd <= now) throw new RetailException(400, "The extended warranty must end in the future.");
+        warranty.EndsAtUtc = newEnd; warranty.RowVersion++;
+        return new WarrantyExtension
+        {
+            Id = Guid.CreateVersion7(), WarrantyId = warranty.Id, Months = months, PreviousEndUtc = previousEnd, NewEndUtc = newEnd,
+            Reason = text, ActorUserAccountId = actorId, CreatedAtUtc = now
+        };
     }
 }

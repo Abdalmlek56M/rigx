@@ -1,6 +1,7 @@
 namespace HardwareStore.Modules.Retail;
 
 public sealed record WarrantyVoidRequest(string? Reason, long RowVersion);
+public sealed record WarrantyExtendRequest(int Months, string? Reason);
 
 /// <summary>What anyone may see about a warranty: no customer name, full phone, serial, ids or prices.</summary>
 public sealed record WarrantyPublicView(string Code, string Name, string Condition, string? BuildCode, string Label,
@@ -15,5 +16,5 @@ public sealed record WarrantyAccountView(Guid OrderId, string OrderReference, st
 /// <summary>Admin row; the customer name/phone and the serial are only filled for staff who may see them.</summary>
 public sealed record WarrantyAdminView(Guid Id, Guid OrderId, string OrderReference, string? InvoiceNumber, string Code, string Name, string Condition, string? BuildCode,
     string Label, DateTimeOffset StartsAtUtc, DateTimeOffset? EndsAtUtc, string Status, int? DaysLeft, string? CustomerName, string? PhoneNumber,
-    string? SerialNumber, DateTimeOffset? VoidedAtUtc, string? VoidReason, long RowVersion);
+    string? SerialNumber, DateTimeOffset? VoidedAtUtc, string? VoidReason, long RowVersion, int ExtendedMonths);
 public sealed record WarrantyAdminPage(IReadOnlyList<WarrantyAdminView> Items, int Page, int PageSize, int Total);

@@ -32,3 +32,16 @@ public sealed class Warranty
     public DateTimeOffset CreatedAtUtc { get; set; }
     public long RowVersion { get; set; } = 1;
 }
+
+/// <summary>One manual extension of a warranty (append-only history: the owner added months after the sale).</summary>
+public sealed class WarrantyExtension
+{
+    public Guid Id { get; set; }
+    public Guid WarrantyId { get; set; }
+    public int Months { get; set; }
+    public DateTimeOffset PreviousEndUtc { get; set; }
+    public DateTimeOffset NewEndUtc { get; set; }
+    public required string Reason { get; set; }
+    public Guid ActorUserAccountId { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+}

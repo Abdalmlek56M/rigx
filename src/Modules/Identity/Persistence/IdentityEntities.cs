@@ -11,6 +11,8 @@ public sealed class Person
     public bool IsSupplier { get; set; }
     public bool IsEmployee { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>Staff-only note about a customer (customer admin).</summary>
+    public string? CustomerNote { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public UserAccount? UserAccount { get; set; }
 
@@ -30,6 +32,8 @@ public sealed class UserAccount
     public bool IsActive { get; set; } = true;
     public bool NotifyNewDeviceSignIn { get; set; } = true;
     public int AuthorizationVersion { get; set; }
+    /// <summary>Set when this customer account was merged into another one; the account is then inactive.</summary>
+    public Guid? MergedIntoAccountId { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public Person Person { get; set; } = null!;
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

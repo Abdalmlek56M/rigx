@@ -70,19 +70,39 @@ public sealed class IdentitySessionService
     }
 
     /// <summary>Signs out every session of the account, including the current one.</summary>
-    public async Task RevokeAllAsync(
+    public Task RevokeAllAsync(
         Guid accountId,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        RevokeAllCoreAsync(accountId, accountId, "Identity.Session.LoggedOutAll", "LogoutAll", correlationId, cancellationToken);
+
+    /// <summary>Staff signs a customer out everywhere; the audit actor is the staff member.</summary>
+    public Task RevokeAllByAdminAsync(
+        Guid accountId,
+        Guid actorId,
+        string correlationId,
+        CancellationToken cancellationToken = default) =>
+        RevokeAllCoreAsync(accountId, actorId, "Customer.SignedOutAll", "AdminSignOutAll", correlationId, cancellationToken);
+
+    private async Task RevokeAllCoreAsync(
+        Guid accountId,
+        Guid actorId,
+        string eventType,
+        string reason,
+        string correlationId,
+        CancellationToken cancellationToken)
     {
         await using var db = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         _ = await LockAccountAsync(db, accountId, cancellationToken) ?? throw InvalidSession();
         var revokedCount = await RevokeWhereAsync(db,
             session => session.UserAccountId == accountId && session.RevokedAtUtc == null,
-            "LogoutAll", cancellationToken);
-        await WriteAuditAsync(db, UserEntry(accountId, "Identity.Session.LoggedOutAll", correlationId,
-            JsonSerializer.Serialize(new { scope = "All", revokedCount })), cancellationToken);
+            reason, cancellationToken);
+        await WriteAuditAsync(db, new SecurityAuditEntry(eventType, "Succeeded", "User",
+            ActorUserAccountId: actorId,
+            SubjectUserAccountId: accountId,
+            CorrelationId: correlationId,
+            SafeMetadata: JsonSerializer.Serialize(new { scope = "All", revokedCount })), cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 

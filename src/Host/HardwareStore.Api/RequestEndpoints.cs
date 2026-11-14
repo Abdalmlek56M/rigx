@@ -17,6 +17,7 @@ public static class RequestEndpoints
         endpoints.MapPost("/api/v1/requests", SubmitAsync)
             .AllowAnonymous()
             .RequireRateLimiting(IdentityRateLimitPolicies.CustomerRequest);
+        endpoints.MapGet("/api/v1/account/requests", ListMineAsync).RequireAuthorization();
         var admin = endpoints.MapGroup("/api/v1/admin/requests");
         admin.MapGet("", ListAsync).RequirePermission(View);
         admin.MapGet("/{id:guid}", GetAsync).RequirePermission(View);
@@ -35,6 +36,13 @@ public static class RequestEndpoints
         context.Response.Headers.CacheControl = "no-store";
         Guid? userId = context.TryGetUserId(out var id) ? id : null;
         return Results.Accepted(value: await requests.SubmitAsync(request, userId, ct));
+    }
+
+    private static async Task<IResult> ListMineAsync(HttpContext context, AccountRequestService requests, CancellationToken ct)
+    {
+        if (!context.TryGetUserId(out var userId)) return Results.Unauthorized();
+        context.Response.Headers.CacheControl = "no-store";
+        return Results.Ok(await requests.ListMineAsync(userId, ct));
     }
 
     private static async Task<IResult> ListAsync(HttpContext context, CustomerRequestService requests, CancellationToken ct,
