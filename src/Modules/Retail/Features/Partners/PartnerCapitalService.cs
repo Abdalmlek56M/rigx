@@ -1,9 +1,10 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>Capital a partner puts in or takes out. Entries are never edited; the balance is deposits minus withdrawals.</summary>
-public sealed class PartnerCapitalService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class PartnerCapitalService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     public async Task<IReadOnlyList<PartnerCapitalEntryView>> ListAsync(Guid partnerId, CancellationToken cancellationToken = default)
     {
@@ -35,7 +36,7 @@ public sealed class PartnerCapitalService(IDbContextFactory<RetailDbContext> con
             var entry = new PartnerCapitalEntry
             {
                 Id = Guid.CreateVersion7(), PartnerId = partnerId, Kind = request.Kind!, Amount = amount,
-                EntryDate = request.EntryDate ?? DateOnly.FromDateTime(now.UtcDateTime), Method = method, Note = note,
+                EntryDate = request.EntryDate ?? BusinessDay.Of(now, businessZone), Method = method, Note = note,
                 ActorUserAccountId = actorId, CreatedAtUtc = now
             };
             db.PartnerCapitalEntries.Add(entry);

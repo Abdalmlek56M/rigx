@@ -42,13 +42,13 @@ public sealed class ContentMediaPostgreSqlTests(OwnerBootstrapPostgreSqlFixture 
             updated.RowVersion);
         Assert.Equal(updated.RowVersion + 1, replaced.RowVersion);
 
-        await media.RegisterAsync("Article", Guid.NewGuid(), "Published article", replaced.StorageKey, true);
+        await media.RegisterAsync("Article", Guid.NewGuid(), "Published article", [replaced.StorageKey, replaced.StorageKey], true);
         await Assert.ThrowsAsync<ContentMediaInUseException>(() =>
             media.DeleteAsync(asset.Id, replaced.RowVersion));
         Assert.Single(await media.ListUsagesAsync(asset.Id));
 
         var otherArticle = Guid.NewGuid();
-        await media.RegisterAsync("Article", otherArticle, "Draft article", replaced.StorageKey, false);
+        await media.RegisterAsync("Article", otherArticle, "Draft article", [replaced.StorageKey], false);
         Assert.Equal(2, (await media.ListUsagesAsync(asset.Id)).Count);
         await media.ClearAsync("Article", otherArticle);
         Assert.Single(await media.ListUsagesAsync(asset.Id));
@@ -126,10 +126,6 @@ public sealed class ContentMediaPostgreSqlTests(OwnerBootstrapPostgreSqlFixture 
                 400,
                 267,
                 2048));
-
-        public Task<CatalogStoredVideo> SaveContentVideoAsync(
-            Guid assetId, Stream content, long length, string extension, CancellationToken cancellationToken = default) =>
-            Task.FromResult(new CatalogStoredVideo($"videos/{assetId:N}/{assetId:N}.{extension}", length));
 
         public Stream OpenRead(string storageKey) => Stream.Null;
         public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default) =>

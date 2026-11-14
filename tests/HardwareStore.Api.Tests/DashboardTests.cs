@@ -49,6 +49,22 @@ public sealed class DashboardPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     }
 
     [Fact]
+    public async Task A_sale_just_after_cairo_midnight_counts_on_the_cairo_day()
+    {
+        var clock = new MutableTimeProvider(DateTimeOffset.Parse("2026-11-13T22:30:00Z"));
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices(clock);
+        var item = await retail.ReceiveItemAsync(new ReceiptLine("Late item", "New", 1, 50m, 100m));
+        await retail.CompletedSaleAsync(RetailMoney.PaidSale(item, 100m));
+
+        var cairoDay = await retail.Dashboard.BuildAsync(new DateOnly(2026, 11, 14), new DateOnly(2026, 11, 14), RetailSales.BusinessZone);
+        var utcDay = await retail.Dashboard.BuildAsync(new DateOnly(2026, 11, 13), new DateOnly(2026, 11, 13), RetailSales.BusinessZone);
+
+        Assert.Equal((100m, 1), (cairoDay.Current.GrossSales, cairoDay.Current.Orders));
+        Assert.Equal((0m, 0), (utcDay.Current.GrossSales, utcDay.Current.Orders));
+        Assert.Equal(100m, cairoDay.Days.Single(day => day.Date == new DateOnly(2026, 11, 14)).GrossSales);
+    }
+
+    [Fact]
     public async Task The_kpis_compare_the_period_with_the_previous_one()
     {
         var (_, _, view) = await BuildShopAsync();

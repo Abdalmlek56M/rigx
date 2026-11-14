@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -5,7 +6,7 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>
 /// Money received for an order (one or more methods), payment status changes and explicit payment waivers.
 /// </summary>
-public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     /// <summary>Records money received; the order turns Paid once the payments cover its total.</summary>
     public async Task<OrderView> AddPaymentAsync(Guid id, OrderPaymentRequest request, Guid actorId, CancellationToken cancellationToken = default)
@@ -17,7 +18,7 @@ public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> conte
         if (order.Status is OrderStatus.Cancelled or OrderStatus.Completed || order.PaymentStatus is PaymentStatus.Waived or PaymentStatus.Refunded)
             throw new RetailException(409, "This order cannot take payments.");
         await RecordAsync(db, order, OrderRules.PaymentMethod(request.Method, OrderChannel.Store), request.MoneyAccountId, request.Amount,
-            OrderRules.Optional(request.Note, 500, "Note"), actorId, timeProvider.GetUtcNow().ToUniversalTime(), cancellationToken);
+            OrderRules.Optional(request.Note, 500, "Note"), actorId, timeProvider.GetUtcNow().ToUniversalTime(), businessZone, cancellationToken);
         order.RowVersion++;
         await db.SaveChangesAsync(cancellationToken);
         return OrderMapping.ToView(order);
@@ -25,7 +26,7 @@ public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> conte
 
     /// <summary>Adds the payment to the order and the money to the account (the chosen one, else the first active account of the method kind).</summary>
     internal static async Task RecordAsync(RetailDbContext db, StoreOrder order, string method, Guid? accountId, decimal amount, string? note,
-        Guid actorId, DateTimeOffset now, CancellationToken cancellationToken)
+        Guid actorId, DateTimeOffset now, TimeZoneInfo zone, CancellationToken cancellationToken)
     {
         OrderRules.ValidatePayment(amount);
         if (amount > OrderRules.Remaining(order)) throw new RetailException(400, "The payment is more than what is left to pay.");
@@ -34,7 +35,7 @@ public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> conte
             Id = Guid.CreateVersion7(), OrderId = order.Id, Method = method, Amount = amount, Note = note,
             ActorUserAccountId = actorId, CreatedAtUtc = now
         };
-        var entry = new MoneyEntry(MoneySource.Sale, payment.Id, amount, order.Reference, note, DateOnly.FromDateTime(now.UtcDateTime), actorId, now);
+        var entry = new MoneyEntry(MoneySource.Sale, payment.Id, amount, order.Reference, note, BusinessDay.Of(now, zone), actorId, now);
         payment.MoneyAccountId = await MoneyLedger.PostInAsync(db, accountId, MoneyRules.KindForMethod(method), entry, cancellationToken);
         order.Payments.Add(payment);
         order.PaidAmount += amount;

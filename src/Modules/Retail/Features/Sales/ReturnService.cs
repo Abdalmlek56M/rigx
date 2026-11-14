@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -6,7 +7,7 @@ namespace HardwareStore.Modules.Retail;
 /// Returns: open (unit goes to PendingInspection), inspect (refund, unit back to stock or scrap,
 /// partner earnings reversed) or reject (unit stays sold).
 /// </summary>
-public sealed class ReturnService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class ReturnService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     public async Task<IReadOnlyList<ReturnView>> ListReturnsAsync(string? status, CancellationToken cancellationToken = default)
     {
@@ -101,7 +102,7 @@ public sealed class ReturnService(IDbContextFactory<RetailDbContext> contextFact
 
             if (entity.RefundAmount > 0)
                 await MoneyLedger.PostOutAsync(db, request.RefundAccountId, MoneyAccountKind.Cash, new MoneyEntry(MoneySource.Refund, entity.Id,
-                    entity.RefundAmount, order.Reference, null, DateOnly.FromDateTime(now.UtcDateTime), actorId, now), cancellationToken);
+                    entity.RefundAmount, order.Reference, null, BusinessDay.Of(now, businessZone), actorId, now), cancellationToken);
             await WarrantyRegistry.VoidForUnitAsync(db, order.Id, unit.Id, "Returned", actorId, now, cancellationToken);
             await PartnerEarningsPosting.ReverseForReturnAsync(db, entity, item, unit.Id, condition, now, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);

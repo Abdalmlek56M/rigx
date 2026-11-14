@@ -1,3 +1,4 @@
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -13,17 +14,17 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
     {
         var database = await fixture.CreateDatabaseAsync();
         var services = ContentServices.Create(database, TimeProvider.System);
-        var article = await services.Articles.CreateAsync(Article("first-post"), Guid.NewGuid());
+        var article = await services.Articles.CreateAsync(ContentArticles.Input("first-post"), Guid.NewGuid());
         Assert.Equal(ContentStatus.Draft, article.Status);
         Assert.Empty((await services.Articles.ListPublicAsync(1, 10, null)).Items);
 
         var updated = await services.Articles.UpdateAsync(
             article.Id,
-            Article("first-post") with { SummaryAr = "ملخص محدث", RowVersion = article.RowVersion },
+            ContentArticles.Input("first-post") with { SummaryAr = "ملخص محدث", RowVersion = article.RowVersion },
             Guid.NewGuid());
         Assert.Equal("ملخص محدث", updated.SummaryAr);
 
-        var published = await services.Articles.PublishAsync(updated.Id, updated.RowVersion, Guid.NewGuid());
+        var published = await services.Articles.PublishAsync(updated.Id, new ArticlePublishRequest(updated.RowVersion), Guid.NewGuid());
         Assert.Equal(ContentStatus.Published, published.Status);
         var publicPage = await services.Articles.ListPublicAsync(1, 10, null);
         Assert.Single(publicPage.Items);
@@ -39,15 +40,15 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         Assert.True(revisions.Count >= 4);
 
         await Assert.ThrowsAsync<StorefrontException>(() =>
-            services.Articles.CreateAsync(Article("first-post"), Guid.NewGuid()));
+            services.Articles.CreateAsync(ContentArticles.Input("first-post"), Guid.NewGuid()));
         await Assert.ThrowsAsync<StorefrontException>(() =>
             services.Articles.CreateAsync(
-                Article("bad-html") with { BodyEn = "<img src=x onerror=alert(1)>" },
+                ContentArticles.Input("bad-html") with { BlocksEn = [ContentArticles.Paragraph("<img src=x onerror=alert(1)>")] },
                 Guid.NewGuid()));
         await Assert.ThrowsAsync<StorefrontException>(() =>
             services.Articles.UpdateAsync(
                 article.Id,
-                Article("first-post") with { RowVersion = article.RowVersion - 1 },
+                ContentArticles.Input("first-post") with { RowVersion = article.RowVersion - 1 },
                 Guid.NewGuid()));
     }
 
@@ -57,8 +58,7 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var database = await fixture.CreateDatabaseAsync();
         var services = ContentServices.Create(database, TimeProvider.System);
 
-        var faq = await services.Faqs.CreateAsync(
-            new FaqInput("هل الشحن متاح؟", "Is shipping available?", "الإجابة", "The answer", null, 0));
+        var faq = await services.Faqs.CreateAsync(ContentFaqs.General("هل الشحن متاح؟", "Is shipping available?"));
         Assert.Empty(await services.Faqs.ListPublicAsync());
         var faqPublished = await services.Faqs.SetPublishedAsync(faq.Id, true, faq.RowVersion);
         Assert.Equal(ContentStatus.Published, faqPublished.Status);
@@ -96,16 +96,23 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         await Assert.ThrowsAsync<StorefrontException>(() =>
             services.Policies.GetPublicAsync("Unknown"));
     }
+}
 
-    private static ArticleInput Article(string slug) =>
+/// <summary>Article inputs for the content tests: a minimal valid article and one-paragraph bodies.</summary>
+internal static class ContentArticles
+{
+    public static ArticleBlock Paragraph(string text) =>
+        new(ArticleBlockType.Paragraph, Spans: [new ArticleSpan(text)]);
+
+    public static ArticleInput Input(string slug) =>
         new(
             slug,
             "عنوان عربي",
             "English title",
             "ملخص",
             "Summary",
-            "محتوى المقالة",
-            "Article body",
+            [Paragraph("محتوى المقالة")],
+            [Paragraph("Article body")],
             null,
             "graphics-cards",
             "gpu, guide",
@@ -115,20 +122,36 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             null,
             "/articles/" + slug,
             0);
+}
 
-    private sealed record ContentServices(
-        ContentArticleService Articles,
-        ContentFaqService Faqs,
-        ContentPolicyService Policies)
+internal static class ContentFaqs
+{
+    public static FaqInput General(string questionAr, string questionEn, bool helpPageOnly = false,
+        IReadOnlyList<string>? excludedItemCodes = null) =>
+        new(questionAr, questionEn, "الإجابة", "The answer", null, FaqScope.General, null, null, helpPageOnly, null, excludedItemCodes, null, 0);
+
+    public static FaqInput ForCategory(string question, Guid categoryId) =>
+        new(question, question, "الإجابة", "The answer", null, FaqScope.Category, categoryId, null, false, null, null, null, 0);
+
+    public static FaqInput ForItem(string question, string itemCode) =>
+        new(question, question, "الإجابة", "The answer", null, FaqScope.Product, null, itemCode, false, null, null, null, 0);
+}
+
+internal sealed record ContentServices(
+    ContentArticleService Articles,
+    ContentFaqService Faqs,
+    ContentPolicyService Policies,
+    TaxonomyService Taxonomy)
+{
+    public static ContentServices Create(OwnerBootstrapDatabase database, TimeProvider clock)
     {
-        public static ContentServices Create(OwnerBootstrapDatabase database, TimeProvider clock)
-        {
-            var factory = new StorefrontFactory(database.ConnectionString);
-            return new ContentServices(
-                new ContentArticleService(factory, clock, new NoopUsageSink()),
-                new ContentFaqService(factory, clock),
-                new ContentPolicyService(factory, clock));
-        }
+        var factory = new StorefrontFactory(database.ConnectionString);
+        var taxonomy = new TaxonomyService(new CatalogFactory(database.ConnectionString), clock);
+        return new ContentServices(
+            new ContentArticleService(factory, clock, new NoopUsageSink()),
+            new ContentFaqService(factory, taxonomy, clock),
+            new ContentPolicyService(factory, clock),
+            taxonomy);
     }
 
     private sealed class StorefrontFactory(string connectionString)
@@ -138,13 +161,20 @@ public sealed class ContentCmsPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
             new(new DbContextOptionsBuilder<StorefrontDbContext>().UseNpgsql(connectionString).Options);
     }
 
-    private sealed class NoopUsageSink : HardwareStore.Modules.Catalog.IContentMediaUsageSink
+    private sealed class CatalogFactory(string connectionString)
+        : IDbContextFactory<CatalogDbContext>
+    {
+        public CatalogDbContext CreateDbContext() =>
+            new(new DbContextOptionsBuilder<CatalogDbContext>().UseNpgsql(connectionString).Options);
+    }
+
+    private sealed class NoopUsageSink : IContentMediaUsageSink
     {
         public Task RegisterAsync(
             string referenceType,
             Guid referenceId,
             string referenceTitle,
-            string? storageKey,
+            IReadOnlyCollection<string> storageKeys,
             bool isPublished,
             CancellationToken cancellationToken = default) => Task.CompletedTask;
 

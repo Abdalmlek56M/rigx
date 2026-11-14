@@ -22,7 +22,6 @@ public static class StorefrontPersistenceRegistration
         services.AddScoped<OfferService>();
         services.AddScoped<CustomerRequestService>();
         services.AddScoped<RequestFollowUpService>();
-        services.AddScoped<ArticleVideoService>();
         return services;
     }
 }

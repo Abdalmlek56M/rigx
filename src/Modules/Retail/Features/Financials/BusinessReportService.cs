@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -5,13 +6,12 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>
 /// Business report for a date range: sales, refunds, cost of goods, expenses and partner balances.
 /// </summary>
-public sealed class BusinessReportService(IDbContextFactory<RetailDbContext> contextFactory)
+public sealed class BusinessReportService(IDbContextFactory<RetailDbContext> contextFactory, TimeZoneInfo businessZone)
 {
     public async Task<BusinessReportView> BuildReportAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         if (to < from) throw new RetailException(400, "Report end date cannot precede its start date.");
-        var fromUtc = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var toUtc = new DateTimeOffset(to.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var (fromUtc, toUtc) = BusinessDay.Range(from, to, businessZone);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var orders = await db.Orders.AsNoTracking()
             .Include(order => order.Items).ThenInclude(item => item.Components)

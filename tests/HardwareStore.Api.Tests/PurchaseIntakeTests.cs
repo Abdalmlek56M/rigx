@@ -18,7 +18,7 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
     private sealed class Harness(OwnerBootstrapDatabase database)
     {
         public SellerService Sellers { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System);
-        public PurchaseService Purchases { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System);
+        public PurchaseService Purchases { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System, RetailSales.BusinessZone);
         public RetailTestServices Retail { get; } = database.CreateRetailServices();
         public PurchaseReceiptService Receipts => new(Purchases, Retail.Units, Retail.Assemblies,
             new StoreSettingsService(Factory<StorefrontDbContext>(database), new SecurityAuditWriter(Factory<SecurityAuditDbContext>(database)), TimeProvider.System),

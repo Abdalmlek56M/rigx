@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +12,10 @@ internal static class DashboardBreakdowns
 
     private sealed record ComponentRow(Guid? CategoryId, string Condition, decimal Sales, decimal Cost, DateTimeOffset ReceivedAtUtc, DateTimeOffset SoldAtUtc);
 
-    /// <summary>Completed orders whose last update falls in the days (UTC days, like the business report).</summary>
-    public static IQueryable<StoreOrder> CompletedOrders(RetailDbContext db, DateOnly from, DateOnly to)
+    /// <summary>Completed orders whose last update falls in the days (business days, like the business report).</summary>
+    public static IQueryable<StoreOrder> CompletedOrders(RetailDbContext db, DateOnly from, DateOnly to, TimeZoneInfo zone)
     {
-        var fromUtc = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var toUtc = new DateTimeOffset(to.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var (fromUtc, toUtc) = BusinessDay.Range(from, to, zone);
         return db.Orders.AsNoTracking().Where(order => order.Status == OrderStatus.Completed && order.UpdatedAtUtc >= fromUtc && order.UpdatedAtUtc < toUtc);
     }
 

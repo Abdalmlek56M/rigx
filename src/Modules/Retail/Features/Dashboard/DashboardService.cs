@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -23,10 +24,10 @@ public sealed class DashboardService(IDbContextFactory<RetailDbContext> contextF
         var recurringDue = await recurring.CountDueAsync(zone, cancellationToken);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var orders = DashboardBreakdowns.CompletedOrders(db, from, to);
+        var orders = DashboardBreakdowns.CompletedOrders(db, from, to, zone);
         var (categories, conditions, daysToSellUsed) = await DashboardBreakdowns.ByComponentAsync(db, orders, cancellationToken);
         return new DashboardView(from, to, previousFrom, previousTo, current, previous, Changes(current, previous),
-            await DashboardShopState.SnapshotAsync(db, cancellationToken), await DailySeriesAsync(db, to, cancellationToken),
+            await DashboardShopState.SnapshotAsync(db, cancellationToken), await DailySeriesAsync(db, to, zone, cancellationToken),
             await DashboardShopState.TodoAsync(db, recurringDue, cancellationToken),
             await DashboardBreakdowns.BySourceAsync(orders, order => order.LeadSource, cancellationToken),
             await DashboardBreakdowns.BySourceAsync(orders, order => order.Usage, cancellationToken),
@@ -46,16 +47,16 @@ public sealed class DashboardService(IDbContextFactory<RetailDbContext> contextF
     private static decimal? Change(decimal current, decimal previous) =>
         previous == 0 ? null : decimal.Round((current - previous) / Math.Abs(previous) * 100, 1);
 
-    private static async Task<IReadOnlyList<DashboardDay>> DailySeriesAsync(RetailDbContext db, DateOnly to, CancellationToken cancellationToken)
+    private static async Task<IReadOnlyList<DashboardDay>> DailySeriesAsync(RetailDbContext db, DateOnly to, TimeZoneInfo zone, CancellationToken cancellationToken)
     {
         var first = to.AddDays(1 - ChartDays);
-        var orders = DashboardBreakdowns.CompletedOrders(db, first, to);
+        var orders = DashboardBreakdowns.CompletedOrders(db, first, to, zone);
         var rows = await orders.Select(order => new
         {
             order.UpdatedAtUtc, order.Total,
             Net = order.Items.SelectMany(item => item.Components).Sum(component => component.NetProfit)
         }).ToListAsync(cancellationToken);
-        var byDay = rows.GroupBy(row => DateOnly.FromDateTime(row.UpdatedAtUtc.UtcDateTime)).ToDictionary(group => group.Key);
+        var byDay = rows.GroupBy(row => BusinessDay.Of(row.UpdatedAtUtc, zone)).ToDictionary(group => group.Key);
         return Enumerable.Range(0, ChartDays).Select(offset =>
         {
             var date = first.AddDays(offset);

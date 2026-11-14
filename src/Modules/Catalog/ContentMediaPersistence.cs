@@ -92,8 +92,8 @@ public static class ContentMediaModelConfiguration
             entity.Property(usage => usage.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             entity.HasIndex(usage => new { usage.AssetId, usage.IsPublished })
                 .HasDatabaseName("ix_content_media_asset_usages_asset");
-            entity.HasIndex(usage => new { usage.ReferenceType, usage.ReferenceId })
-                .HasDatabaseName("ux_content_media_asset_usages_reference")
+            entity.HasIndex(usage => new { usage.ReferenceType, usage.ReferenceId, usage.AssetId })
+                .HasDatabaseName("ux_content_media_asset_usages_reference_asset")
                 .IsUnique();
             entity.HasOne<ContentMediaAsset>().WithMany().HasForeignKey(usage => usage.AssetId)
                 .OnDelete(DeleteBehavior.Cascade);

@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace HardwareStore.Modules.Storefront;
 
 /// <summary>
-/// Articles: public list/detail (published only), admin list/search, create/update (draft), publish/unpublish.
+/// Articles: public list/detail (live only: published and its publish time has come), admin list/search,
+/// create/update (draft), publish now or schedule, unpublish, view counter.
 /// Every write stores a revision snapshot and refreshes the media-usage index (best effort).
 /// </summary>
 public sealed class ContentArticleService(
@@ -22,8 +23,9 @@ public sealed class ContentArticleService(
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 50);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var now = Now();
         var rows = db.ContentArticles.AsNoTracking()
-            .Where(article => article.Status == ContentStatus.Published);
+            .Where(article => article.Status == ContentStatus.Published && article.PublishedAtUtc <= now);
         if (!string.IsNullOrWhiteSpace(category))
         {
             var slug = category.Trim();
@@ -37,7 +39,7 @@ public sealed class ContentArticleService(
             .Take(pageSize)
             .ToListAsync(cancellationToken);
         return new ContentPage<ArticleView>(
-            items.Select(Map).ToList(), page, pageSize, total);
+            items.Select(item => Map(item, now)).ToList(), page, pageSize, total);
     }
 
     public async Task<ArticleView> GetPublicAsync(
@@ -45,10 +47,23 @@ public sealed class ContentArticleService(
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var now = Now();
         var article = await db.ContentArticles.AsNoTracking().SingleOrDefaultAsync(
-            item => item.Slug == slug && item.Status == ContentStatus.Published,
+            item => item.Slug == slug && item.Status == ContentStatus.Published && item.PublishedAtUtc <= now,
             cancellationToken) ?? throw new StorefrontException(404, "Article was not found.");
-        return Map(article);
+        return Map(article, now);
+    }
+
+    /// <summary>Counts one view of a live article (404 when it is not live).</summary>
+    public async Task RecordViewAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var now = Now();
+        var updated = await db.ContentArticles
+            .Where(article => article.Slug == slug && article.Status == ContentStatus.Published && article.PublishedAtUtc <= now)
+            .ExecuteUpdateAsync(set => set.SetProperty(article => article.ViewCount, article => article.ViewCount + 1), cancellationToken);
+        if (updated == 0)
+            throw new StorefrontException(404, "Article was not found.");
     }
 
     public async Task<ContentPage<ArticleView>> ListAdminAsync(
@@ -61,11 +76,17 @@ public sealed class ContentArticleService(
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 100);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var now = Now();
         var rows = db.ContentArticles.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(status))
         {
             var value = status.Trim();
-            rows = rows.Where(article => article.Status == value);
+            rows = value switch
+            {
+                ArticleSchedule.Scheduled => rows.Where(article => article.Status == ContentStatus.Published && article.PublishedAtUtc > now),
+                ContentStatus.Published => rows.Where(article => article.Status == ContentStatus.Published && article.PublishedAtUtc <= now),
+                _ => rows.Where(article => article.Status == value)
+            };
         }
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -81,13 +102,13 @@ public sealed class ContentArticleService(
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-        return new ContentPage<ArticleView>(items.Select(Map).ToList(), page, pageSize, total);
+        return new ContentPage<ArticleView>(items.Select(item => Map(item, now)).ToList(), page, pageSize, total);
     }
 
     public async Task<ArticleView> GetAdminAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return Map(await FindAsync(db, id, cancellationToken));
+        return Map(await FindAsync(db, id, cancellationToken), Now());
     }
 
     public async Task<IReadOnlyList<ArticleRevisionView>> ListRevisionsAsync(
@@ -112,7 +133,7 @@ public sealed class ContentArticleService(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         if (await db.ContentArticles.AnyAsync(article => article.Slug == normalized.Slug, cancellationToken))
             throw new StorefrontException(409, "An article with this slug already exists.");
-        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        var now = Now();
         var article = new ContentArticle
         {
             Id = Guid.CreateVersion7(),
@@ -121,8 +142,8 @@ public sealed class ContentArticleService(
             TitleEn = normalized.TitleEn,
             SummaryAr = normalized.SummaryAr,
             SummaryEn = normalized.SummaryEn,
-            BodyAr = normalized.BodyAr,
-            BodyEn = normalized.BodyEn,
+            BlocksArJson = ArticleBlocksJson.Serialize(normalized.BlocksAr),
+            BlocksEnJson = ArticleBlocksJson.Serialize(normalized.BlocksEn),
             MainImageStorageKey = normalized.MainImageStorageKey,
             CategorySlug = normalized.CategorySlug,
             TagsCsv = string.Join(",", normalized.Tags),
@@ -140,7 +161,7 @@ public sealed class ContentArticleService(
         AddRevision(db, article, actorId, "Created", now);
         await db.SaveChangesAsync(cancellationToken);
         await SyncUsageAsync(article, cancellationToken);
-        return Map(article);
+        return Map(article, now);
     }
 
     public async Task<ArticleView> UpdateAsync(
@@ -162,8 +183,8 @@ public sealed class ContentArticleService(
         article.TitleEn = normalized.TitleEn;
         article.SummaryAr = normalized.SummaryAr;
         article.SummaryEn = normalized.SummaryEn;
-        article.BodyAr = normalized.BodyAr;
-        article.BodyEn = normalized.BodyEn;
+        article.BlocksArJson = ArticleBlocksJson.Serialize(normalized.BlocksAr);
+        article.BlocksEnJson = ArticleBlocksJson.Serialize(normalized.BlocksEn);
         article.MainImageStorageKey = normalized.MainImageStorageKey;
         article.CategorySlug = normalized.CategorySlug;
         article.TagsCsv = string.Join(",", normalized.Tags);
@@ -173,34 +194,34 @@ public sealed class ContentArticleService(
         article.SeoDescriptionEn = normalized.SeoDescriptionEn;
         article.CanonicalUrl = normalized.CanonicalUrl;
         article.SortOrder = normalized.SortOrder;
-        article.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
+        article.UpdatedAtUtc = Now();
         article.RowVersion++;
         AddRevision(db, article, actorId, "Saved", article.UpdatedAtUtc);
         await db.SaveChangesAsync(cancellationToken);
         await SyncUsageAsync(article, cancellationToken);
-        return Map(article);
+        return Map(article, article.UpdatedAtUtc);
     }
 
     public async Task<ArticleView> PublishAsync(
         Guid id,
-        long rowVersion,
+        ArticlePublishRequest request,
         Guid actorId,
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var article = await FindAsync(db, id, cancellationToken);
-        if (article.RowVersion != rowVersion)
+        if (article.RowVersion != request.RowVersion)
             throw new StorefrontException(409, "The article was changed by another user.");
         ArticleNormalization.Normalize(ArticleNormalization.ToInput(article), requireContent: true);
-        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        var now = Now();
         article.Status = ContentStatus.Published;
-        article.PublishedAtUtc ??= now;
+        article.PublishedAtUtc = ArticleSchedule.PublishAt(article.PublishedAtUtc, request.PublishAtUtc, now);
         article.UpdatedAtUtc = now;
         article.RowVersion++;
-        AddRevision(db, article, actorId, "Published", now);
+        AddRevision(db, article, actorId, article.PublishedAtUtc > now ? ArticleSchedule.Scheduled : "Published", now);
         await db.SaveChangesAsync(cancellationToken);
         await SyncUsageAsync(article, cancellationToken);
-        return Map(article);
+        return Map(article, now);
     }
 
     public async Task<ArticleView> UnpublishAsync(
@@ -214,12 +235,12 @@ public sealed class ContentArticleService(
         if (article.RowVersion != rowVersion)
             throw new StorefrontException(409, "The article was changed by another user.");
         article.Status = ContentStatus.Draft;
-        article.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
+        article.UpdatedAtUtc = Now();
         article.RowVersion++;
         AddRevision(db, article, actorId, "Unpublished", article.UpdatedAtUtc);
         await db.SaveChangesAsync(cancellationToken);
         await SyncUsageAsync(article, cancellationToken);
-        return Map(article);
+        return Map(article, article.UpdatedAtUtc);
     }
 
     private async Task SyncUsageAsync(ContentArticle article, CancellationToken cancellationToken)
@@ -230,7 +251,7 @@ public sealed class ContentArticleService(
                 "Article",
                 article.Id,
                 string.IsNullOrWhiteSpace(article.TitleEn) ? article.Slug : article.TitleEn,
-                article.MainImageStorageKey,
+                [.. ImageKeys(article)],
                 article.Status == ContentStatus.Published,
                 cancellationToken);
         }
@@ -240,6 +261,15 @@ public sealed class ContentArticleService(
             // article save must not fail because the usage index is unavailable.
         }
     }
+
+    /// <summary>The main image and every image block of both bodies.</summary>
+    private static IEnumerable<string> ImageKeys(ContentArticle article) =>
+        ArticleBlockRules.ImageKeys(ArticleBlocksJson.Deserialize(article.BlocksArJson))
+            .Concat(ArticleBlockRules.ImageKeys(ArticleBlocksJson.Deserialize(article.BlocksEnJson)))
+            .Concat(string.IsNullOrWhiteSpace(article.MainImageStorageKey) ? [] : [article.MainImageStorageKey])
+            .Distinct();
+
+    private DateTimeOffset Now() => timeProvider.GetUtcNow().ToUniversalTime();
 
     private static async Task<ContentArticle> FindAsync(
         StorefrontDbContext db,
@@ -266,8 +296,8 @@ public sealed class ContentArticleService(
                 article.TitleEn,
                 article.SummaryAr,
                 article.SummaryEn,
-                article.BodyAr,
-                article.BodyEn,
+                BlocksAr = ArticleBlocksJson.Deserialize(article.BlocksArJson),
+                BlocksEn = ArticleBlocksJson.Deserialize(article.BlocksEnJson),
                 article.SeoTitleAr,
                 article.SeoTitleEn,
                 article.SeoDescriptionAr,
@@ -276,26 +306,27 @@ public sealed class ContentArticleService(
                 article.CategorySlug,
                 article.TagsCsv,
                 article.Status
-            }),
+            }, ArticleBlocksJson.Options),
             Reason = reason,
             ActorUserAccountId = actorId,
             CreatedAtUtc = now
         });
     }
 
-    private static ArticleView Map(ContentArticle article) => new(
+    private static ArticleView Map(ContentArticle article, DateTimeOffset now) => new(
         article.Id,
         article.Slug,
         article.TitleAr,
         article.TitleEn,
         article.SummaryAr,
         article.SummaryEn,
-        article.BodyAr,
-        article.BodyEn,
+        ArticleBlocksJson.Deserialize(article.BlocksArJson),
+        ArticleBlocksJson.Deserialize(article.BlocksEnJson),
         article.MainImageStorageKey,
         article.CategorySlug,
         article.TagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries),
-        article.Status,
+        ArticleSchedule.DisplayStatus(article.Status, article.PublishedAtUtc, now),
+        article.ViewCount,
         article.SeoTitleAr,
         article.SeoTitleEn,
         article.SeoDescriptionAr,

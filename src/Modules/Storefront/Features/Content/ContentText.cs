@@ -36,6 +36,13 @@ internal static partial class ContentText
         return text;
     }
 
+    /// <summary>A run of text inside a line (spans are joined as written, so edge spaces are kept).</summary>
+    public static string Inline(string? value, int max, string field)
+    {
+        Required(value, max, field);
+        return value!.Normalize(System.Text.NormalizationForm.FormC);
+    }
+
     public static string Slug(string? value)
     {
         var slug = (value ?? string.Empty).Trim().ToLowerInvariant();

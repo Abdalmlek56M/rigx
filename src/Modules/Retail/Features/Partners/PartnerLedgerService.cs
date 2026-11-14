@@ -1,9 +1,10 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>Partner money: earnings and adjustments lists, and cash payouts (paid against the oldest earnings first, from a money account).</summary>
-public sealed class PartnerLedgerService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class PartnerLedgerService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     public async Task<IReadOnlyList<PartnerEarningView>> ListEarningsAsync(Guid? partnerId = null, CancellationToken cancellationToken = default)
     {
@@ -54,7 +55,7 @@ public sealed class PartnerLedgerService(IDbContextFactory<RetailDbContext> cont
         {
             var (settlement, partnerName) = await PartnerPayouts.PayAsync(db, partnerId, amount, method, reference, note, null, actorId, now, cancellationToken);
             await MoneyLedger.PostOutAsync(db, request.MoneyAccountId, method, new MoneyEntry(MoneySource.PartnerPayout, settlement.Id, amount,
-                reference, note, DateOnly.FromDateTime(now.UtcDateTime), actorId, now), cancellationToken);
+                reference, note, BusinessDay.Of(now, businessZone), actorId, now), cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return Map(settlement, partnerName);

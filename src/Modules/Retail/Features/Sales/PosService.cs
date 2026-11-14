@@ -7,7 +7,7 @@ namespace HardwareStore.Modules.Retail;
 /// Store sales (POS): the sale price is typed at sale time (business §5), a warning shows below cost, the discount is
 /// limited per permission, payments may be split, and a build may be sold whole or part by part.
 /// </summary>
-public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     /// <summary>Totals, cost/profit (with cost permission), warnings and the parts a split sale returns to stock; saves nothing.</summary>
     public async Task<PosPreview> PreviewAsync(PosSaleRequest request, PosPolicy policy, bool includeCosts, CancellationToken cancellationToken = default)
@@ -73,7 +73,7 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
             order.IsBlacklisted = await BlacklistService.MatchesAsync(db, order, cancellationToken);
             order.Events.Add(OrderMapping.Event("OrderCreated", OrderChannel.Store, actorId, now));
             foreach (var payment in payments)
-                await OrderPaymentService.RecordAsync(db, order, payment.Method, payment.MoneyAccountId, payment.Amount, null, actorId, now, cancellationToken);
+                await OrderPaymentService.RecordAsync(db, order, payment.Method, payment.MoneyAccountId, payment.Amount, null, actorId, now, businessZone, cancellationToken);
             if (request.Confirm)
             {
                 OrderRules.EnsureCanConfirm(order);

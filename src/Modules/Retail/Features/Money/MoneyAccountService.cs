@@ -1,9 +1,10 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>Money accounts (cash drawer, InstaPay, wallet, bank): list with balances, edit, movements and transfers between accounts.</summary>
-public sealed class MoneyAccountService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class MoneyAccountService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     public async Task<IReadOnlyList<MoneyAccountView>> ListAsync(CancellationToken cancellationToken = default)
     {
@@ -106,7 +107,7 @@ public sealed class MoneyAccountService(IDbContextFactory<RetailDbContext> conte
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
 
-    private DateOnly Today() => DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+    private DateOnly Today() => BusinessDay.Today(timeProvider, businessZone);
 
     private static MoneyAccountView View(MoneyAccount item, decimal balance) => new(item.Id, item.Name, item.Kind, item.OpeningBalance,
         item.OpeningDate, item.IsActive, item.SortOrder, decimal.Round(balance, 2), item.RowVersion);

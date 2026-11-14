@@ -36,13 +36,14 @@ public sealed record RetailTestServices(
 {
     public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time)
     {
-        var reports = new BusinessReportService(factory);
+        var zone = RetailSales.BusinessZone;
+        var reports = new BusinessReportService(factory, zone);
         var recurring = new RecurringExpenseService(factory, time);
         return new(new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-            new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
-            new(factory, reports, time), new(factory), new(factory), new(factory, reports, time), reports, new(factory, time), new(factory),
-            new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory), new(factory, time),
-            new(factory, time), new(factory, time), recurring, new(factory, reports, recurring, time));
+            new(factory, time, zone), new(factory, time, zone), new(factory, time, zone), new(factory, time, zone), new(factory, time, zone),
+            new(factory, reports, time), new(factory), new(factory), new(factory, reports, time, zone), reports, new(factory, time), new(factory),
+            new(factory, time), new(factory, time), new(factory, time), new(factory, time, zone), new(factory), new(factory, time),
+            new(factory, time, zone), new(factory, time), recurring, new(factory, reports, recurring, time));
     }
 }
 

@@ -45,6 +45,20 @@ public sealed class TaxonomyService(
             : [categoryId];
     }
 
+    /// <summary>A category and its parents up to the root (the category first); empty when the category does not exist.</summary>
+    public async Task<IReadOnlyList<Guid>> GetCategoryPathIdsAsync(
+        Guid categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var parents = await db.Categories.AsNoTracking()
+            .ToDictionaryAsync(category => category.Id, category => category.ParentId, cancellationToken);
+        var path = new List<Guid>();
+        for (Guid? current = categoryId; current is { } id && parents.TryGetValue(id, out var parent) && !path.Contains(id); current = parent)
+            path.Add(id);
+        return path;
+    }
+
     public async Task<IReadOnlyList<BrandView>> GetActiveBrandsAsync(
         CancellationToken cancellationToken = default)
     {

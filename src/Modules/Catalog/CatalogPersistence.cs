@@ -118,13 +118,11 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     public DbSet<ContentMediaAssetUsage> ContentMediaAssetUsages => Set<ContentMediaAssetUsage>();
     public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
     public DbSet<StoreReview> StoreReviews => Set<StoreReview>();
-    public DbSet<ContentVideoAsset> ContentVideos => Set<ContentVideoAsset>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
         ContentMediaModelConfiguration.Configure(model);
         ReviewModelConfiguration.Configure(model);
-        ContentVideoModelConfiguration.Configure(model);
         model.Entity<CatalogCategory>(entity =>
         {
             entity.ToTable("categories", table =>

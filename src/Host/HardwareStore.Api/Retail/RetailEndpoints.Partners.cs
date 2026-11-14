@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
 
@@ -31,11 +32,12 @@ public static partial class RetailEndpoints
         PartnerCapitalService capital, CancellationToken ct) =>
         context.TryGetUserId(out var actorId) ? Results.Ok(await capital.AddAsync(id, request, actorId, ct)) : Results.Unauthorized();
 
-    private static async Task<IResult> PartnerStatementAsync(Guid id, HttpContext context, PartnerStatementService statements, CancellationToken ct,
+    private static async Task<IResult> PartnerStatementAsync(Guid id, HttpContext context, PartnerStatementService statements, TimeProvider timeProvider,
+        TimeZoneInfo businessZone, CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        var end = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var end = to ?? BusinessDay.Today(timeProvider, businessZone);
         return Results.Ok(await statements.GetAsync(id, from ?? end.AddDays(-30), end, ct));
     }
 

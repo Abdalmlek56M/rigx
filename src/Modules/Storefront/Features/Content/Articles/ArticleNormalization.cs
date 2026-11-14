@@ -1,6 +1,6 @@
 namespace HardwareStore.Modules.Storefront;
 
-/// <summary>Article input rules (slug, bilingual text limits, tags, canonical URL). Body/summary are required only to publish.</summary>
+/// <summary>Article input rules (slug, bilingual text limits, tags, canonical URL). Body (blocks)/summary are required only to publish.</summary>
 internal static class ArticleNormalization
 {
     public static ArticleInput ToInput(ContentArticle article) =>
@@ -10,8 +10,8 @@ internal static class ArticleNormalization
             article.TitleEn,
             article.SummaryAr,
             article.SummaryEn,
-            article.BodyAr,
-            article.BodyEn,
+            ArticleBlocksJson.Deserialize(article.BlocksArJson),
+            ArticleBlocksJson.Deserialize(article.BlocksEnJson),
             article.MainImageStorageKey,
             article.CategorySlug,
             article.TagsCsv,
@@ -35,8 +35,8 @@ internal static class ArticleNormalization
             ContentText.Required(input.TitleEn, 200, "English title"),
             requireContent ? ContentText.Required(input.SummaryAr, 600, "Arabic summary") : ContentText.Optional(input.SummaryAr, 600, "Arabic summary") ?? "",
             requireContent ? ContentText.Required(input.SummaryEn, 600, "English summary") : ContentText.Optional(input.SummaryEn, 600, "English summary") ?? "",
-            requireContent ? ContentText.Required(input.BodyAr, 20000, "Arabic body") : ContentText.Optional(input.BodyAr, 20000, "Arabic body") ?? "",
-            requireContent ? ContentText.Required(input.BodyEn, 20000, "English body") : ContentText.Optional(input.BodyEn, 20000, "English body") ?? "",
+            Body(input.BlocksAr, "Arabic body", requireContent),
+            Body(input.BlocksEn, "English body", requireContent),
             ContentText.Optional(input.MainImageStorageKey, 512, "Main image"),
             ContentText.Optional(input.CategorySlug, 160, "Category"),
             tags,
@@ -46,6 +46,14 @@ internal static class ArticleNormalization
             ContentText.Optional(input.SeoDescriptionEn, 320, "English SEO description"),
             canonical,
             Math.Clamp(input.SortOrder, -10_000, 10_000));
+    }
+
+    private static IReadOnlyList<ArticleBlock> Body(IReadOnlyList<ArticleBlock>? blocks, string field, bool required)
+    {
+        var normalized = ArticleBlockRules.Normalize(blocks, field);
+        return required && normalized.Count == 0
+            ? throw new StorefrontException(400, $"{field} is required.")
+            : normalized;
     }
 
     private static void ValidateCanonical(string canonical)
@@ -67,8 +75,8 @@ internal sealed record NormalizedArticle(
     string TitleEn,
     string SummaryAr,
     string SummaryEn,
-    string BodyAr,
-    string BodyEn,
+    IReadOnlyList<ArticleBlock> BlocksAr,
+    IReadOnlyList<ArticleBlock> BlocksEn,
     string? MainImageStorageKey,
     string? CategorySlug,
     IReadOnlyList<string> Tags,

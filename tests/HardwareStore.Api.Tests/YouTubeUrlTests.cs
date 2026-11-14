@@ -1,4 +1,4 @@
-using HardwareStore.Modules.Catalog;
+using HardwareStore.Modules.Storefront;
 using Xunit;
 
 namespace HardwareStore.Api.Tests;
@@ -11,9 +11,10 @@ public sealed class YouTubeUrlTests
     [InlineData("https://youtube.com/embed/dQw4w9WgXcQ", "dQw4w9WgXcQ")]
     [InlineData("https://m.youtube.com/shorts/dQw4w9WgXcQ", "dQw4w9WgXcQ")]
     [InlineData("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ", "dQw4w9WgXcQ")]
+    [InlineData("dQw4w9WgXcQ", "dQw4w9WgXcQ")]
     public void Accepts_known_youtube_video_urls(string url, string expected)
     {
-        Assert.Equal(expected, YouTubeUrl.Normalize(url));
+        Assert.Equal(expected, YouTubeUrl.ToVideoId(url));
     }
 
     [Theory]
@@ -27,6 +28,6 @@ public sealed class YouTubeUrlTests
     [InlineData("")]
     public void Rejects_arbitrary_or_malformed_urls(string url)
     {
-        Assert.Throws<CatalogValidationException>(() => YouTubeUrl.Normalize(url));
+        Assert.Throws<StorefrontException>(() => YouTubeUrl.ToVideoId(url));
     }
 }

@@ -31,19 +31,19 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var shown = condition is null ? items : items.Where(item => item.Condition == condition);
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
-        var rows = await Sorted(shown, query.Sort).Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(item => new
-            {
-                item.Code, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
-                item.AloneExtra, item.CreatedAtUtc, item.Photos,
-                Available = item.Units.Count(unit => unit.Status == UnitStatus.Available)
-            }).ToListAsync(cancellationToken);
-        var cards = rows.Select(row => new StoreItemCard(row.Code, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
-            StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
-            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc)).ToList();
+        var cards = await ToCardsAsync(Sorted(shown, query.Sort).Skip((page - 1) * pageSize).Take(pageSize), cancellationToken);
         var total = condition is null ? counts.Sum(entry => entry.Count) : CountOf(counts, condition);
         return new StoreItemPage(cards, page, pageSize, total,
             new StoreConditionCounts(CountOf(counts, StockCondition.New), CountOf(counts, StockCondition.Used)));
+    }
+
+    /// <summary>The cards of the published items with these codes (hidden or unknown codes are simply missing).</summary>
+    public async Task<IReadOnlyList<StoreItemCard>> GetCardsAsync(IReadOnlyCollection<string> codes, CancellationToken cancellationToken = default)
+    {
+        if (codes.Count == 0) return [];
+        var wanted = codes.ToArray();
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await ToCardsAsync(db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter).Where(item => wanted.Contains(item.Code)), cancellationToken);
     }
 
     public async Task<StoreItemDetail> GetAsync(string code, CancellationToken cancellationToken = default)
@@ -56,6 +56,19 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var item = row.Item;
         return new StoreItemDetail(item.Code, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.WarrantyMonths,
             item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs);
+    }
+
+    private static async Task<List<StoreItemCard>> ToCardsAsync(IQueryable<StockItem> items, CancellationToken cancellationToken)
+    {
+        var rows = await items.Select(item => new
+        {
+            item.Code, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
+            item.AloneExtra, item.CreatedAtUtc, item.Photos,
+            Available = item.Units.Count(unit => unit.Status == UnitStatus.Available)
+        }).ToListAsync(cancellationToken);
+        return rows.Select(row => new StoreItemCard(row.Code, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
+            StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
+            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc)).ToList();
     }
 
     private static IQueryable<StockItem> Sorted(IQueryable<StockItem> items, string? sort) => sort switch

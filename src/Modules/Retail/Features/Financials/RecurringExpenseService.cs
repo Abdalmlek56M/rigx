@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -124,7 +125,7 @@ public sealed class RecurringExpenseService(IDbContextFactory<RetailDbContext> c
         template.MoneyAccountId = request.MoneyAccountId;
     }
 
-    private DateOnly Today(TimeZoneInfo zone) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow().ToUniversalTime(), zone).DateTime);
+    private DateOnly Today(TimeZoneInfo zone) => BusinessDay.Today(timeProvider, zone);
 
     private static RecurringExpenseView View(RecurringExpense item) => new(item.Id, item.Category, item.Amount, item.DayOfMonth,
         item.MoneyAccountId, item.Note, item.IsActive, item.StartMonth, item.LastPostedMonth, item.CreatedAtUtc, item.RowVersion);

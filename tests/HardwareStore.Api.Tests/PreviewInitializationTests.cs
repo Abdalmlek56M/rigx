@@ -298,14 +298,6 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
                 267,
                 2048));
 
-        public Task<CatalogStoredVideo> SaveContentVideoAsync(
-            Guid assetId,
-            Stream content,
-            long length,
-            string extension,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(new CatalogStoredVideo($"videos/{assetId:N}/{assetId:N}.{extension}", length));
-
         public Stream OpenRead(string storageKey) => new MemoryStream();
 
         public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default) =>

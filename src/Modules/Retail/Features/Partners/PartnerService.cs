@@ -1,9 +1,10 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>Partner cards: list, detail with the parts it finances, create and update (one basis per partner).</summary>
-public sealed class PartnerService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class PartnerService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     public async Task<IReadOnlyList<PartnerView>> ListAsync(CancellationToken cancellationToken = default)
     {
@@ -42,7 +43,7 @@ public sealed class PartnerService(IDbContextFactory<RetailDbContext> contextFac
         var partner = new Partner
         {
             Id = Guid.CreateVersion7(), Name = name, Phone = phone, Basis = request.Basis!,
-            JoinDate = request.JoinDate ?? DateOnly.FromDateTime(now.UtcDateTime), DefaultPercent = request.DefaultPercent,
+            JoinDate = request.JoinDate ?? BusinessDay.Of(now, businessZone), DefaultPercent = request.DefaultPercent,
             LossSharingEnabled = request.LossSharingEnabled, IsActive = request.IsActive, Notes = notes,
             CreatedAtUtc = now, UpdatedAtUtc = now
         };

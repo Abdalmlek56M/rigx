@@ -24,12 +24,14 @@ public sealed class ContentArticle
     public required string TitleEn { get; set; }
     public required string SummaryAr { get; set; }
     public required string SummaryEn { get; set; }
-    public required string BodyAr { get; set; }
-    public required string BodyEn { get; set; }
+    /// <summary>Article body as a JSON list of <see cref="ArticleBlock"/> (jsonb).</summary>
+    public string BlocksArJson { get; set; } = "[]";
+    public string BlocksEnJson { get; set; } = "[]";
     public string? MainImageStorageKey { get; set; }
     public string? CategorySlug { get; set; }
     public string TagsCsv { get; set; } = "";
     public required string Status { get; set; } = ContentStatus.Draft;
+    public long ViewCount { get; set; }
     public string? SeoTitleAr { get; set; }
     public string? SeoTitleEn { get; set; }
     public string? SeoDescriptionAr { get; set; }
@@ -59,7 +61,15 @@ public sealed class ContentFaq
     public required string QuestionEn { get; set; }
     public required string AnswerAr { get; set; }
     public required string AnswerEn { get; set; }
-    public string? Category { get; set; }
+    /// <summary>Free-text group on the help page.</summary>
+    public string? Topic { get; set; }
+    public string Scope { get; set; } = FaqScope.General;
+    public Guid? CategoryId { get; set; }
+    public string? ItemCode { get; set; }
+    public bool HelpPageOnly { get; set; }
+    public List<Guid> ExcludedCategoryIds { get; set; } = [];
+    public List<string> ExcludedItemCodes { get; set; } = [];
+    public string? YouTubeId { get; set; }
     public int SortOrder { get; set; }
     public required string Status { get; set; } = ContentStatus.Draft;
     public DateTimeOffset? PublishedAtUtc { get; set; }
@@ -104,8 +114,9 @@ public static class ContentModelConfiguration
             entity.Property(article => article.TitleEn).HasColumnName("title_en").HasMaxLength(200).IsRequired();
             entity.Property(article => article.SummaryAr).HasColumnName("summary_ar").HasMaxLength(600).IsRequired();
             entity.Property(article => article.SummaryEn).HasColumnName("summary_en").HasMaxLength(600).IsRequired();
-            entity.Property(article => article.BodyAr).HasColumnName("body_ar").HasMaxLength(20000).IsRequired();
-            entity.Property(article => article.BodyEn).HasColumnName("body_en").HasMaxLength(20000).IsRequired();
+            entity.Property(article => article.BlocksArJson).HasColumnName("blocks_ar").HasColumnType("jsonb").HasDefaultValueSql("'[]'::jsonb").IsRequired();
+            entity.Property(article => article.BlocksEnJson).HasColumnName("blocks_en").HasColumnType("jsonb").HasDefaultValueSql("'[]'::jsonb").IsRequired();
+            entity.Property(article => article.ViewCount).HasColumnName("view_count").HasDefaultValue(0L);
             entity.Property(article => article.MainImageStorageKey).HasColumnName("main_image_storage_key").HasMaxLength(512);
             entity.Property(article => article.CategorySlug).HasColumnName("category_slug").HasMaxLength(160);
             entity.Property(article => article.TagsCsv).HasColumnName("tags_csv").HasMaxLength(512).IsRequired();
@@ -141,14 +152,21 @@ public static class ContentModelConfiguration
 
         model.Entity<ContentFaq>(entity =>
         {
-            entity.ToTable("content_faqs");
+            entity.ToTable("content_faqs", table => table.HasCheckConstraint("ck_content_faqs_scope", "scope IN ('General','Category','Product')"));
             entity.HasKey(faq => faq.Id);
             entity.Property(faq => faq.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(faq => faq.QuestionAr).HasColumnName("question_ar").HasMaxLength(400).IsRequired();
             entity.Property(faq => faq.QuestionEn).HasColumnName("question_en").HasMaxLength(400).IsRequired();
             entity.Property(faq => faq.AnswerAr).HasColumnName("answer_ar").HasMaxLength(4000).IsRequired();
             entity.Property(faq => faq.AnswerEn).HasColumnName("answer_en").HasMaxLength(4000).IsRequired();
-            entity.Property(faq => faq.Category).HasColumnName("category").HasMaxLength(64);
+            entity.Property(faq => faq.Topic).HasColumnName("topic").HasMaxLength(64);
+            entity.Property(faq => faq.Scope).HasColumnName("scope").HasMaxLength(16).HasDefaultValue(FaqScope.General).IsRequired();
+            entity.Property(faq => faq.CategoryId).HasColumnName("category_id");
+            entity.Property(faq => faq.ItemCode).HasColumnName("item_code").HasMaxLength(16);
+            entity.Property(faq => faq.HelpPageOnly).HasColumnName("help_page_only").HasDefaultValue(false);
+            entity.Property(faq => faq.ExcludedCategoryIds).HasColumnName("excluded_category_ids").HasColumnType("uuid[]").HasDefaultValueSql("'{}'");
+            entity.Property(faq => faq.ExcludedItemCodes).HasColumnName("excluded_item_codes").HasColumnType("text[]").HasDefaultValueSql("'{}'");
+            entity.Property(faq => faq.YouTubeId).HasColumnName("youtube_id").HasMaxLength(16);
             entity.Property(faq => faq.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
             entity.Property(faq => faq.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
             entity.Property(faq => faq.PublishedAtUtc).HasColumnName("published_at_utc").HasColumnType("timestamp with time zone");
@@ -156,6 +174,7 @@ public static class ContentModelConfiguration
             entity.Property(faq => faq.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(faq => faq.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
             entity.HasIndex(faq => new { faq.Status, faq.SortOrder }).HasDatabaseName("ix_content_faqs_status_sort");
+            entity.HasIndex(faq => new { faq.Scope, faq.CategoryId, faq.ItemCode }).HasDatabaseName("ix_content_faqs_scope_target");
         });
 
         model.Entity<ContentPolicy>(entity =>

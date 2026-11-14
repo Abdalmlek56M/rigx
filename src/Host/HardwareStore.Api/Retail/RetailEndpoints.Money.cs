@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Text;
 using HardwareStore.Modules.Retail;
 using Microsoft.AspNetCore.Http;
@@ -59,20 +60,22 @@ public static partial class RetailEndpoints
         CancellationToken ct) =>
         Results.Ok(await recurring.UpdateAsync(id, request, ct));
 
-    private static async Task<IResult> ExpenseSummaryAsync(HttpContext context, ExpenseService expenses, CancellationToken ct,
+    private static async Task<IResult> ExpenseSummaryAsync(HttpContext context, ExpenseService expenses, TimeProvider timeProvider, TimeZoneInfo businessZone,
+        CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        var end = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var end = to ?? BusinessDay.Today(timeProvider, businessZone);
         return Results.Ok(await expenses.ExpenseSummaryAsync(from ?? end.AddDays(-30), end, ct));
     }
 
     /// <summary>UTF-8 CSV with a byte-order mark so spreadsheets read the Arabic text correctly.</summary>
-    private static async Task<IResult> ExportExpensesAsync(HttpContext context, ExpenseService expenses, CancellationToken ct,
+    private static async Task<IResult> ExportExpensesAsync(HttpContext context, ExpenseService expenses, TimeProvider timeProvider, TimeZoneInfo businessZone,
+        CancellationToken ct,
         DateOnly? from = null, DateOnly? to = null)
     {
         context.Response.Headers.CacheControl = "no-store";
-        var end = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var end = to ?? BusinessDay.Today(timeProvider, businessZone);
         var start = from ?? end.AddDays(-30);
         var csv = await expenses.ExportCsvAsync(start, end, ct);
         return Results.File([.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(csv)], "text/csv; charset=utf-8", $"expenses-{start:yyyy-MM-dd}-{end:yyyy-MM-dd}.csv");

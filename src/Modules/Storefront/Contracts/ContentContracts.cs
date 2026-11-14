@@ -7,12 +7,13 @@ public sealed record ArticleView(
     string TitleEn,
     string SummaryAr,
     string SummaryEn,
-    string BodyAr,
-    string BodyEn,
+    IReadOnlyList<ArticleBlock> BlocksAr,
+    IReadOnlyList<ArticleBlock> BlocksEn,
     string? MainImageStorageKey,
     string? CategorySlug,
     IReadOnlyList<string> Tags,
     string Status,
+    long ViewCount,
     string? SeoTitleAr,
     string? SeoTitleEn,
     string? SeoDescriptionAr,
@@ -30,8 +31,8 @@ public sealed record ArticleInput(
     string? TitleEn,
     string? SummaryAr,
     string? SummaryEn,
-    string? BodyAr,
-    string? BodyEn,
+    IReadOnlyList<ArticleBlock>? BlocksAr,
+    IReadOnlyList<ArticleBlock>? BlocksEn,
     string? MainImageStorageKey,
     string? CategorySlug,
     string? Tags,
@@ -42,6 +43,9 @@ public sealed record ArticleInput(
     string? CanonicalUrl,
     int SortOrder,
     long RowVersion = 0);
+
+/// <summary>Publish now, or at <paramref name="PublishAtUtc"/> when it is in the future (scheduled).</summary>
+public sealed record ArticlePublishRequest(long RowVersion, DateTimeOffset? PublishAtUtc = null);
 
 public sealed record ContentPage<T>(IReadOnlyList<T> Items, int Page, int PageSize, int Total);
 
@@ -57,7 +61,15 @@ public sealed record FaqView(
     string QuestionEn,
     string AnswerAr,
     string AnswerEn,
-    string? Category,
+    string? Topic,
+    string Scope,
+    Guid? CategoryId,
+    string? ItemCode,
+    bool HelpPageOnly,
+    IReadOnlyList<Guid> ExcludedCategoryIds,
+    IReadOnlyList<string> ExcludedItemCodes,
+    string? YouTubeId,
+    string? YouTubeEmbedUrl,
     int SortOrder,
     string Status,
     DateTimeOffset? PublishedAtUtc,
@@ -70,7 +82,14 @@ public sealed record FaqInput(
     string? QuestionEn,
     string? AnswerAr,
     string? AnswerEn,
-    string? Category,
+    string? Topic,
+    string? Scope,
+    Guid? CategoryId,
+    string? ItemCode,
+    bool HelpPageOnly,
+    IReadOnlyList<Guid>? ExcludedCategoryIds,
+    IReadOnlyList<string>? ExcludedItemCodes,
+    string? YouTubeUrl,
     int SortOrder);
 
 public sealed record PolicyView(

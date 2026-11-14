@@ -7,7 +7,6 @@ public sealed class CatalogMediaOptions
     public required string RootPath { get; init; }
     public int MaxUploadBytes { get; init; } = 12 * 1024 * 1024;
     public int MaxStoredBytes { get; init; } = 8 * 1024 * 1024;
-    public int MaxVideoBytes { get; init; } = 256 * 1024 * 1024;
     public int MaxSourceDimension { get; init; } = 8192;
     public long MaxSourcePixels { get; init; } = 40_000_000;
     public int StoredMaxDimension { get; init; } = 2000;
@@ -41,8 +40,6 @@ public sealed record CatalogStoredMedia(
     int ThumbnailHeight,
     long FileSizeBytes);
 
-public sealed record CatalogStoredVideo(string StorageKey, long FileSizeBytes);
-
 public interface ICatalogImageProcessor
 {
     Task<ProcessedCatalogImage> ProcessAsync(
@@ -69,13 +66,6 @@ public interface ICatalogMediaStorage
         Guid assetId,
         CatalogImageUpload image,
         bool replace,
-        CancellationToken cancellationToken = default);
-
-    Task<CatalogStoredVideo> SaveContentVideoAsync(
-        Guid assetId,
-        Stream content,
-        long length,
-        string extension,
         CancellationToken cancellationToken = default);
 
     Stream OpenRead(string storageKey);
@@ -367,46 +357,6 @@ public sealed class LocalCatalogMediaStorage(
             processed.ThumbnailWidth,
             processed.ThumbnailHeight,
             processed.Image.LongLength);
-    }
-
-    public async Task<CatalogStoredVideo> SaveContentVideoAsync(
-        Guid assetId,
-        Stream content,
-        long length,
-        string extension,
-        CancellationToken cancellationToken = default)
-    {
-        if (assetId == Guid.Empty || length <= 0 || length > options.MaxVideoBytes)
-            throw new CatalogValidationException("video", $"Video must be between 1 and {options.MaxVideoBytes} bytes.");
-        if (extension is not ("mp4" or "webm"))
-            throw new CatalogValidationException("video", "Only MP4 or WebM video is supported.");
-        var storageKey = $"videos/{assetId:N}/{assetId:N}.{extension}";
-        var path = ResolvePath(storageKey);
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-        try
-        {
-            await using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 64 * 1024, FileOptions.Asynchronous))
-            {
-                var buffer = new byte[128 * 1024];
-                long written = 0;
-                int read;
-                while ((read = await content.ReadAsync(buffer, cancellationToken)) > 0)
-                {
-                    written += read;
-                    if (written > options.MaxVideoBytes)
-                        throw new CatalogValidationException("video", "Video exceeds the storage limit.");
-                    await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-                }
-                await output.FlushAsync(cancellationToken);
-            }
-            File.Move(temporary, path, overwrite: false);
-            return new CatalogStoredVideo(storageKey, length);
-        }
-        finally
-        {
-            if (File.Exists(temporary)) File.Delete(temporary);
-        }
     }
 
     public Stream OpenRead(string storageKey)

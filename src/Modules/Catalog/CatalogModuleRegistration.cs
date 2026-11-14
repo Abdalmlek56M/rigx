@@ -43,7 +43,6 @@ public static class CatalogModuleRegistration
         services.AddScoped<CatalogMediaMaintenanceService>();
         services.AddScoped<ContentMediaService>();
         services.AddScoped<ReviewService>();
-        services.AddScoped<ContentVideoService>();
         services.AddScoped<IContentMediaUsageSink>(provider => provider.GetRequiredService<ContentMediaService>());
         return services;
     }

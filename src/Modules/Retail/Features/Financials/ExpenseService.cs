@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,8 @@ namespace HardwareStore.Modules.Retail;
 /// Store expenses (direct or general overhead): each one is paid from a money account or from a partner's own money,
 /// with a summary against the previous period and a CSV export.
 /// </summary>
-public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFactory, BusinessReportService reports, TimeProvider timeProvider)
+public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFactory, BusinessReportService reports, TimeProvider timeProvider,
+    TimeZoneInfo businessZone)
 {
     public async Task<ExpenseView> CreateExpenseAsync(ExpenseCreateRequest request, Guid actorId, CancellationToken cancellationToken = default)
     {
@@ -25,7 +27,7 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
             var types = (await db.ExpenseTypes.AsNoTracking().Where(item => item.IsActive).Select(item => item.Name).ToListAsync(cancellationToken)).ToHashSet();
             var entity = new RetailExpense
             {
-                Id = Guid.CreateVersion7(), ExpenseDate = request.ExpenseDate ?? DateOnly.FromDateTime(now.UtcDateTime), Amount = amount,
+                Id = Guid.CreateVersion7(), ExpenseDate = request.ExpenseDate ?? BusinessDay.Of(now, businessZone), Amount = amount,
                 Category = ExpenseRules.Category(request.Category, types), Classification = classification, Note = note,
                 OrderId = request.OrderId, UnitId = request.UnitId, AssemblyId = request.AssemblyId, AttachmentReference = attachment,
                 MoneyAccountId = request.MoneyAccountId, PaidByPartnerId = request.PaidByPartnerId,

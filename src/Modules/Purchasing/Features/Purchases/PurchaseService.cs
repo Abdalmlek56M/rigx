@@ -7,7 +7,7 @@ namespace HardwareStore.Modules.Purchasing;
 /// Purchases from sellers. A purchase is edited as a draft and then either cancelled or received into stock
 /// (the receipt itself is orchestrated by the Host, which calls <see cref="MarkReceivedAsync"/> at the end).
 /// </summary>
-public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> contextFactory, TimeProvider timeProvider)
+public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
     private const int MaxPageSize = 100;
 
@@ -48,7 +48,7 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
     public async Task<PurchaseView> CreateAsync(PurchaseRequest request, Guid actorId, CancellationToken cancellationToken = default)
     {
         var now = timeProvider.GetUtcNow().ToUniversalTime();
-        var checkedPurchase = PurchaseDraftRules.Check(request, DateOnly.FromDateTime(now.UtcDateTime));
+        var checkedPurchase = PurchaseDraftRules.Check(request, BusinessDay.Of(now, businessZone));
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var seller = await FindSellerAsync(db, request.SellerId, cancellationToken);
         var purchase = new Purchase
@@ -71,7 +71,7 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
     {
         var rowVersion = request.RowVersion ?? throw new PurchasingException(400, "The purchase version is required.");
         var now = timeProvider.GetUtcNow().ToUniversalTime();
-        var checkedPurchase = PurchaseDraftRules.Check(request, DateOnly.FromDateTime(now.UtcDateTime));
+        var checkedPurchase = PurchaseDraftRules.Check(request, BusinessDay.Of(now, businessZone));
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var purchase = await LoadAsync(db, id, track: true, cancellationToken);
         purchase.EnsureDraft();

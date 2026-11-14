@@ -52,7 +52,7 @@ public interface IContentMediaUsageSink
         string referenceType,
         Guid referenceId,
         string referenceTitle,
-        string? storageKey,
+        IReadOnlyCollection<string> storageKeys,
         bool isPublished,
         CancellationToken cancellationToken = default);
 
@@ -238,7 +238,7 @@ public sealed class ContentMediaService(
         string referenceType,
         Guid referenceId,
         string referenceTitle,
-        string? storageKey,
+        IReadOnlyCollection<string> storageKeys,
         bool isPublished,
         CancellationToken cancellationToken = default)
     {
@@ -249,28 +249,23 @@ public sealed class ContentMediaService(
             await db.ContentMediaAssetUsages
                 .Where(usage => usage.ReferenceType == referenceType && usage.ReferenceId == referenceId)
                 .ExecuteDeleteAsync(cancellationToken);
-            if (!string.IsNullOrWhiteSpace(storageKey))
+            var assetIds = await db.ContentMediaAssets.AsNoTracking()
+                .Where(asset => storageKeys.Contains(asset.StorageKey) && !asset.IsDeleted)
+                .Select(asset => asset.Id)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            var title = referenceTitle.Length <= 220 ? referenceTitle : referenceTitle[..220];
+            var now = timeProvider.GetUtcNow().ToUniversalTime();
+            db.ContentMediaAssetUsages.AddRange(assetIds.Select(assetId => new ContentMediaAssetUsage
             {
-                var assetId = await db.ContentMediaAssets.AsNoTracking()
-                    .Where(asset => asset.StorageKey == storageKey && !asset.IsDeleted)
-                    .Select(asset => (Guid?)asset.Id)
-                    .SingleOrDefaultAsync(cancellationToken);
-                if (assetId is not null)
-                {
-                    db.ContentMediaAssetUsages.Add(new ContentMediaAssetUsage
-                    {
-                        Id = Guid.CreateVersion7(),
-                        AssetId = assetId.Value,
-                        ReferenceType = referenceType,
-                        ReferenceId = referenceId,
-                        ReferenceTitle = referenceTitle.Length <= 220
-                            ? referenceTitle
-                            : referenceTitle[..220],
-                        IsPublished = isPublished,
-                        UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime()
-                    });
-                }
-            }
+                Id = Guid.CreateVersion7(),
+                AssetId = assetId,
+                ReferenceType = referenceType,
+                ReferenceId = referenceId,
+                ReferenceTitle = title,
+                IsPublished = isPublished,
+                UpdatedAtUtc = now
+            }));
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }

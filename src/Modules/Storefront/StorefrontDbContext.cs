@@ -36,13 +36,6 @@ public sealed class WishlistProductImageReference
     public bool IsPrimary { get; set; }
 }
 
-public sealed class ArticleVideoReference
-{
-    public Guid ArticleId { get; set; }
-    public Guid VideoId { get; set; }
-    public int SortOrder { get; set; }
-}
-
 public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> options) : DbContext(options)
 {
     public DbSet<StoreSettings> StoreSettings => Set<StoreSettings>();
@@ -58,21 +51,10 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
     public DbSet<Offer> Offers => Set<Offer>();
     public DbSet<OfferItem> OfferItems => Set<OfferItem>();
     public DbSet<CustomerRequest> CustomerRequests => Set<CustomerRequest>();
-    public DbSet<ArticleVideoReference> ArticleVideos => Set<ArticleVideoReference>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
         CustomerRequestConfiguration.Configure(model);
-        model.Entity<ArticleVideoReference>(entity =>
-        {
-            entity.ToTable("article_video_references");
-            entity.HasKey(item => new { item.ArticleId, item.VideoId });
-            entity.Property(item => item.ArticleId).HasColumnName("article_id");
-            entity.Property(item => item.VideoId).HasColumnName("video_id");
-            entity.Property(item => item.SortOrder).HasColumnName("sort_order");
-            entity.HasIndex(item => item.VideoId).HasDatabaseName("ix_article_video_references_video");
-            entity.HasOne<ContentArticle>().WithMany().HasForeignKey(item => item.ArticleId).OnDelete(DeleteBehavior.Cascade);
-        });
         model.Entity<WishlistItem>(entity =>
         {
             entity.ToTable("wishlist_items");

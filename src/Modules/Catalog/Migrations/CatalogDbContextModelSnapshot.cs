@@ -649,115 +649,11 @@ namespace HardwareStore.Modules.Catalog.Migrations
                     b.HasIndex("AssetId", "IsPublished")
                         .HasDatabaseName("ix_content_media_asset_usages_asset");
 
-                    b.HasIndex("ReferenceType", "ReferenceId")
+                    b.HasIndex("ReferenceType", "ReferenceId", "AssetId")
                         .IsUnique()
-                        .HasDatabaseName("ux_content_media_asset_usages_reference");
+                        .HasDatabaseName("ux_content_media_asset_usages_reference_asset");
 
                     b.ToTable("content_media_asset_usages", (string)null);
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Catalog.ContentVideoAsset", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<string>("DescriptionAr")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description_ar");
-
-                    b.Property<string>("DescriptionEn")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description_en");
-
-                    b.Property<long>("FileSizeBytes")
-                        .HasColumnType("bigint")
-                        .HasColumnName("file_size_bytes");
-
-                    b.Property<string>("MimeType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("mime_type");
-
-                    b.Property<string>("PosterStorageKey")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("poster_storage_key");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasDefaultValue("Uploaded")
-                        .HasColumnName("provider");
-
-                    b.Property<long>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1L)
-                        .HasColumnName("row_version");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("status");
-
-                    b.Property<string>("StorageKey")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("storage_key");
-
-                    b.Property<string>("TitleAr")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("title_ar");
-
-                    b.Property<string>("TitleEn")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("title_en");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at_utc");
-
-                    b.Property<string>("YouTubeVideoId")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("youtube_video_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_content_videos_status");
-
-                    b.HasIndex("StorageKey")
-                        .IsUnique()
-                        .HasDatabaseName("ux_content_videos_storage_key");
-
-                    b.ToTable("content_videos", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_content_videos_mime", "mime_type IN ('video/mp4','video/webm','video/youtube')");
-
-                            t.HasCheckConstraint("ck_content_videos_provider", "provider IN ('Uploaded','YouTube')");
-
-                            t.HasCheckConstraint("ck_content_videos_size", "file_size_bytes >= 0");
-
-                            t.HasCheckConstraint("ck_content_videos_status", "status IN ('Draft','Published')");
-                        });
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Catalog.ProductReview", b =>

@@ -1,4 +1,6 @@
+using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity.Authorization;
+using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
 
@@ -9,7 +11,10 @@ public static class ContentEndpoints
         var publicGroup = endpoints.MapGroup("/api/v1/content");
         publicGroup.MapGet("/articles", ListPublicArticlesAsync).AllowAnonymous();
         publicGroup.MapGet("/articles/{slug}", GetPublicArticleAsync).AllowAnonymous();
+        publicGroup.MapPost("/articles/{slug}/view", RecordArticleViewAsync).AllowAnonymous()
+            .RequireRateLimiting(IdentityRateLimitPolicies.ArticleView);
         publicGroup.MapGet("/faqs", ListPublicFaqsAsync).AllowAnonymous();
+        publicGroup.MapGet("/faqs/item/{code}", ListItemFaqsAsync).AllowAnonymous();
         publicGroup.MapGet("/policies/{kind}", GetPublicPolicyAsync).AllowAnonymous();
 
         var admin = endpoints.MapGroup("/api/v1/admin/content");
@@ -53,10 +58,29 @@ public static class ContentEndpoints
         string slug,
         HttpContext context,
         ContentArticleService service,
+        StoreItemService items,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
-        return Results.Ok(await service.GetPublicAsync(slug, cancellationToken));
+        return Results.Ok(await WithProductsAsync(await service.GetPublicAsync(slug, cancellationToken), items, cancellationToken));
+    }
+
+    private static async Task<IResult> RecordArticleViewAsync(
+        string slug,
+        ContentArticleService service,
+        CancellationToken cancellationToken)
+    {
+        await service.RecordViewAsync(slug, cancellationToken);
+        return Results.NoContent();
+    }
+
+    private static async Task<ArticleDetailView> WithProductsAsync(
+        ArticleView article,
+        StoreItemService items,
+        CancellationToken cancellationToken)
+    {
+        var codes = ArticleBlockRules.ItemCodes(article.BlocksAr.Concat(article.BlocksEn)).Distinct().ToList();
+        return new ArticleDetailView(article, await items.GetCardsAsync(codes, cancellationToken));
     }
 
     private static async Task<IResult> ListAdminArticlesAsync(
@@ -71,8 +95,9 @@ public static class ContentEndpoints
     private static async Task<IResult> GetAdminArticleAsync(
         Guid id,
         ContentArticleService service,
+        StoreItemService items,
         CancellationToken cancellationToken) =>
-        Results.Ok(await service.GetAdminAsync(id, cancellationToken));
+        Results.Ok(await WithProductsAsync(await service.GetAdminAsync(id, cancellationToken), items, cancellationToken));
 
     private static async Task<IResult> ListArticleRevisionsAsync(
         Guid id,
@@ -105,14 +130,14 @@ public static class ContentEndpoints
 
     private static async Task<IResult> PublishArticleAsync(
         Guid id,
-        ContentVersionRequest request,
+        ArticlePublishRequest request,
         HttpContext context,
         ContentArticleService service,
         CancellationToken cancellationToken)
     {
         if (!context.TryGetUserId(out var actorId))
             return Results.Unauthorized();
-        return Results.Ok(await service.PublishAsync(id, request.RowVersion, actorId, cancellationToken));
+        return Results.Ok(await service.PublishAsync(id, request, actorId, cancellationToken));
     }
 
     private static async Task<IResult> UnpublishArticleAsync(
@@ -136,10 +161,29 @@ public static class ContentEndpoints
         return Results.Ok(await service.ListPublicAsync(cancellationToken));
     }
 
+    private static async Task<IResult> ListItemFaqsAsync(
+        string code,
+        HttpContext context,
+        ContentFaqService service,
+        StoreItemService items,
+        TaxonomyService taxonomy,
+        CancellationToken cancellationToken)
+    {
+        var item = await items.GetAsync(code, cancellationToken);
+        var categoryPath = item.CategoryId is { } categoryId
+            ? await taxonomy.GetCategoryPathIdsAsync(categoryId, cancellationToken)
+            : [];
+        context.Response.Headers.CacheControl = "public, max-age=60";
+        return Results.Ok(await service.ListForItemAsync(item.Code, categoryPath, cancellationToken));
+    }
+
     private static async Task<IResult> ListAdminFaqsAsync(
         ContentFaqService service,
-        CancellationToken cancellationToken) =>
-        Results.Ok(await service.ListAdminAsync(cancellationToken));
+        CancellationToken cancellationToken,
+        string? scope = null,
+        Guid? categoryId = null,
+        string? itemCode = null) =>
+        Results.Ok(await service.ListAdminAsync(scope, categoryId, itemCode, cancellationToken));
 
     private static async Task<IResult> CreateFaqAsync(
         FaqInput request,
@@ -214,3 +258,6 @@ public static class ContentEndpoints
 }
 
 public sealed record ContentVersionRequest(long RowVersion);
+
+/// <summary>An article with the live cards of the store items its product blocks show (hidden or unknown codes are missing).</summary>
+public sealed record ArticleDetailView(ArticleView Article, IReadOnlyList<StoreItemCard> Products);
