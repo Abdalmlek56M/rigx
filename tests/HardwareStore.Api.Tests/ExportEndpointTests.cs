@@ -160,7 +160,7 @@ public sealed class ExportEndpointTests(OwnerBootstrapPostgreSqlFixture fixture)
         var metadata = events.Select(item => JsonDocument.Parse(item.SafeMetadata).RootElement).ToDictionary(item => item.GetProperty("dataset").GetString()!);
         Assert.Equal(("csv", 1), (metadata["customers"].GetProperty("format").GetString(), metadata["customers"].GetProperty("rows").GetInt32()));
         Assert.Equal("xml", metadata["expenses"].GetProperty("format").GetString());
-        Assert.Equal(DateTime.UtcNow.AddDays(-30).ToString("yyyy-MM-dd"), metadata["expenses"].GetProperty("from").GetString());
+        Assert.Equal(HardwareStore.Common.Domain.BusinessDay.Of(DateTimeOffset.UtcNow, RetailSales.BusinessZone).AddDays(-30).ToString("yyyy-MM-dd"), metadata["expenses"].GetProperty("from").GetString());
         Assert.All(events, item => Assert.Equal("User", item.ActorKind));
     }
 }

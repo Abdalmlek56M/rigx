@@ -432,7 +432,7 @@ public sealed class RetailCorePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         var order = await NewOrderAsync(retail, 10m, Sale(reportUnit, 300m));
         var confirmed = await retail.StatusAsync(order, OrderStatus.Confirmed);
         await CompleteAsync(retail, await DeliverAsync(retail, confirmed));
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = HardwareStore.Common.Domain.BusinessDay.Of(DateTimeOffset.UtcNow, RetailSales.BusinessZone);
         await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 50m, "تغليف", "Direct", null, order.Id, null), Actor);
         await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(today, 100m, "إنترنت", "GeneralOverhead", null, null, null), Actor);
 
