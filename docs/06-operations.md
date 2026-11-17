@@ -31,6 +31,33 @@ dotnet test HARDWARE_STORE.slnx            # needs Docker running (real PostgreS
 dotnet test --filter "FullyQualifiedName~Retail"   # one area only
 ```
 
+## Demo data (Development)
+The preview initializer can fill a local database with a realistic demo store for testing the storefront and the admin:
+~32 published stock items (`RX-…`, new and used, four of them sold out), 3 published builds (`BLD-…`), 10 customers with
+saved addresses, 12 online orders covering every customer status, 5 paid POS sales, 6 expenses, the five published policies
+and six general FAQs. Shipping rates, the pickup address and the demo payment methods are filled only while those settings
+are still empty.
+
+It runs through the real module services (stock, invoices, warranties, money, audit), so it behaves like real use.
+It is idempotent: calling it again creates nothing and reports 0 for the parts that already exist.
+
+Enable it in Development only (never production):
+```bash
+Preview__Enabled=true
+Preview__BootstrapKey=<a local key you choose>
+Preview__OwnerEmail=owner@example.com
+Preview__OwnerUsername=owner
+Preview__OwnerFullName="RIGX Owner"
+```
+The app also needs `ConnectionStrings:Migrations` (same host, port and database as `Default`, any username) because the
+initializer applies every module migration first. Then, with the API running:
+```bash
+curl -X POST http://localhost:8080/api/v1/development/preview/initialize \
+  -H "X-Preview-Bootstrap-Key: <the same local key>"
+```
+The response shows the counts of what this call created (0 for data that was already there). The seeded owner signs in with
+the usual email code; the demo customers use `demo1@example.com` … `demo10@example.com` with phones `01000000001` … `01000000010`.
+
 ## Configuration
 - Secrets only in `.env` locally / the host's secret store in production. Never committed.
 - SMTP variables are listed (commented) in `.env.example`; Development uses an in-memory email provider.

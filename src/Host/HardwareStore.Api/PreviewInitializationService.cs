@@ -13,6 +13,7 @@ using HardwareStore.Modules.Inventory;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SkiaSharp;
 
@@ -31,6 +32,12 @@ public sealed record PreviewInitializationResult(
     int Categories,
     int Brands,
     int Products,
+    int StockItems,
+    int Builds,
+    int Customers,
+    int OnlineOrders,
+    int PosSales,
+    int Expenses,
     string OwnerUsername);
 
 public sealed class PreviewInitializationService(
@@ -39,6 +46,7 @@ public sealed class PreviewInitializationService(
     TimeProvider timeProvider,
     TimeZoneInfo businessTimeZone,
     ICatalogMediaStorage mediaStorage,
+    IServiceScopeFactory scopeFactory,
     ILogger<PreviewInitializationService> logger)
 {
     private static readonly SemaphoreSlim Gate = new(1, 1);
@@ -66,11 +74,17 @@ public sealed class PreviewInitializationService(
 
             var owner = await EnsureOwnerAsync(identity, audit, cancellationToken);
             var seeded = await SeedCatalogAsync(catalog, cancellationToken);
+            var demo = await new PreviewDemoSeeder(scopeFactory, mediaStorage, businessTimeZone, timeProvider, logger)
+                .SeedAsync(owner.Id, owner.Person.FullName, cancellationToken);
             logger.LogInformation(
-                "Development preview initialized: {Categories} categories, {Brands} brands, {Products} products.",
-                seeded.Categories, seeded.Brands, seeded.Products);
+                "Development preview initialized: {Categories} categories, {Brands} brands, {Products} products, " +
+                "{StockItems} stock items, {Builds} builds, {Customers} customers, {Orders} online orders, {PosSales} POS sales, " +
+                "{Expenses} expenses.",
+                seeded.Categories, seeded.Brands, seeded.Products, demo.StockItems, demo.Builds, demo.Customers, demo.OnlineOrders,
+                demo.PosSales, demo.Expenses);
             return new PreviewInitializationResult(
-                seeded.Categories, seeded.Brands, seeded.Products, owner.Username);
+                seeded.Categories, seeded.Brands, seeded.Products, demo.StockItems, demo.Builds, demo.Customers,
+                demo.OnlineOrders, demo.PosSales, demo.Expenses, owner.Username);
         }
         finally
         {
@@ -432,7 +446,7 @@ public sealed class PreviewInitializationService(
         return (categories.Count, brands.Count, seeds.Length);
     }
 
-    private static CatalogImageUpload CreatePlaceholderUpload(int seed)
+    internal static CatalogImageUpload CreatePlaceholderUpload(int seed)
     {
         const int width = 1400;
         const int height = 900;

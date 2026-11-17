@@ -1,6 +1,14 @@
+using HardwareStore.Common.Infrastructure.Audit;
+using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Catalog;
+using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
 using HardwareStore.Modules.Identity.Persistence;
+using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Testcontainers.PostgreSql;
 using Microsoft.Extensions.Hosting;
@@ -124,6 +132,7 @@ public sealed class PreviewInitializationTests
             TimeProvider.System,
             TimeZoneInfo.Utc,
             null!,
+            null!,
             NullLogger<PreviewInitializationService>.Instance);
 
     private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment
@@ -158,20 +167,10 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
     [Fact]
     public async Task Initializes_all_module_schemas_and_repeats_without_duplicates()
     {
-        var databaseName = $"preview_{Guid.NewGuid():N}";
-        await using (var admin = new NpgsqlConnection(_connectionString))
-        {
-            await admin.OpenAsync();
-            await using var command = admin.CreateCommand();
-            command.CommandText = $"CREATE DATABASE \"{databaseName}\"";
-            await command.ExecuteNonQueryAsync();
-        }
+        var connectionString = await CreateDatabaseAsync();
 
-        var builder = new NpgsqlConnectionStringBuilder(_connectionString) { Database = databaseName };
-        var connectionString = builder.ConnectionString;
-        await CreateAuditRolesAsync(connectionString);
-
-        var service = CreateService(connectionString);
+        await using var provider = CreateServices(connectionString);
+        var service = CreateService(connectionString, provider.GetRequiredService<IServiceScopeFactory>());
         var first = await service.InitializeAsync("bootstrap-key");
         Assert.Equal(14, first.Products);
         Assert.Equal("preview-owner", first.OwnerUsername);
@@ -206,6 +205,95 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task Seeds_a_realistic_demo_store_and_repeats_without_duplicates()
+    {
+        var connectionString = await CreateDatabaseAsync();
+        await using var provider = CreateServices(connectionString);
+        var service = CreateService(connectionString, provider.GetRequiredService<IServiceScopeFactory>());
+
+        var first = await service.InitializeAsync("bootstrap-key");
+        Assert.Equal(32, first.StockItems);
+        Assert.Equal(3, first.Builds);
+        Assert.Equal(10, first.Customers);
+        Assert.Equal(12, first.OnlineOrders);
+        Assert.Equal(5, first.PosSales);
+        Assert.Equal(6, first.Expenses);
+
+        var retail = provider.GetRequiredService<IDbContextFactory<RetailDbContext>>();
+        var storefront = await new StoreItemService(retail).ListAsync(new StoreItemQuery(PageSize: 60));
+        Assert.Equal(32, storefront.Total);
+        Assert.Equal(4, storefront.Items.Count(item => item.Available == 0));
+        Assert.True(storefront.Counts.New > 0);
+        Assert.True(storefront.Counts.Used > 0);
+        Assert.Equal(3, (await new AssemblyService(retail, TimeProvider.System).ListPublishedAssembliesAsync()).Count);
+        await using (var retailDb = await retail.CreateDbContextAsync())
+        {
+            var soldOut = await retailDb.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter)
+                .Where(item => !item.Units.Any(unit => unit.Status == UnitStatus.Available))
+                .Select(item => item.ModelName)
+                .ToListAsync();
+            Assert.Equal(4, soldOut.Count);
+            Assert.Contains("NVIDIA GeForce GTX 1660 Super 6GB", soldOut);
+            Assert.Contains("Kingston 8GB DDR4-2666", soldOut);
+            Assert.Contains("WD Blue 1TB HDD", soldOut);
+            Assert.Contains("SeaSonic S12III 500W", soldOut);
+        }
+
+        var second = await service.InitializeAsync("bootstrap-key");
+        Assert.Equal(0, second.StockItems);
+        Assert.Equal(0, second.Builds);
+        Assert.Equal(0, second.Customers);
+        Assert.Equal(0, second.OnlineOrders);
+        Assert.Equal(0, second.PosSales);
+        Assert.Equal(0, second.Expenses);
+        Assert.Equal(14, second.Products);
+
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        Assert.Equal(32L, await ScalarAsync(connection, "SELECT COUNT(*) FROM stock_items"));
+        Assert.Equal(3L, await ScalarAsync(connection, "SELECT COUNT(*) FROM assemblies"));
+        Assert.Equal(17L, await ScalarAsync(connection, "SELECT COUNT(*) FROM store_orders"));
+        Assert.Equal(3L, await OnlineOrdersAsync(connection, "New"));
+        Assert.Equal(2L, await OnlineOrdersAsync(connection, "Confirmed"));
+        Assert.Equal(2L, await OnlineOrdersAsync(connection, "Preparing"));
+        Assert.Equal(2L, await OnlineOrdersAsync(connection, "Shipped"));
+        Assert.Equal(2L, await OnlineOrdersAsync(connection, "Delivered"));
+        Assert.Equal(1L, await OnlineOrdersAsync(connection, "Cancelled"));
+        Assert.Equal(5L, await ScalarAsync(connection,
+            "SELECT COUNT(*) FROM store_orders WHERE channel = 'Store' AND status = 'Confirmed' AND payment_status = 'Paid'"));
+        Assert.Equal(2L, await ScalarAsync(connection, "SELECT COUNT(*) FROM invoices"));
+        Assert.Equal(6L, await ScalarAsync(connection, "SELECT COUNT(*) FROM retail_expenses"));
+        Assert.Equal(5L, await ScalarAsync(connection, "SELECT COUNT(*) FROM content_policies WHERE status = 'Published'"));
+        Assert.Equal(6L, await ScalarAsync(connection, "SELECT COUNT(*) FROM content_faqs WHERE status = 'Published'"));
+        Assert.Equal(10L, await ScalarAsync(connection,
+            "SELECT COUNT(*) FROM user_accounts ua JOIN user_roles ur ON ur.user_account_id = ua.id JOIN roles r ON r.id = ur.role_id WHERE r.code = 'Customer'"));
+    }
+
+    private static async Task<long> OnlineOrdersAsync(NpgsqlConnection connection, string status)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM store_orders WHERE channel = 'Online' AND status = @status";
+        command.Parameters.AddWithValue("status", status);
+        return (long)(await command.ExecuteScalarAsync())!;
+    }
+
+    private async Task<string> CreateDatabaseAsync()
+    {
+        var databaseName = $"preview_{Guid.NewGuid():N}";
+        await using (var admin = new NpgsqlConnection(_connectionString))
+        {
+            await admin.OpenAsync();
+            await using var command = admin.CreateCommand();
+            command.CommandText = $"CREATE DATABASE \"{databaseName}\"";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var builder = new NpgsqlConnectionStringBuilder(_connectionString) { Database = databaseName };
+        await CreateAuditRolesAsync(builder.ConnectionString);
+        return builder.ConnectionString;
+    }
+
     private static async Task<long> ScalarAsync(NpgsqlConnection connection, string sql)
     {
         await using var command = connection.CreateCommand();
@@ -231,7 +319,7 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
         }
     }
 
-    private static PreviewInitializationService CreateService(string connectionString) =>
+    private static PreviewInitializationService CreateService(string connectionString, IServiceScopeFactory scopeFactory) =>
         new(
             new PreviewOptions
             {
@@ -247,7 +335,30 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
             TimeProvider.System,
             TimeZoneInfo.Utc,
             new FakeCatalogMediaStorage(),
+            scopeFactory,
             NullLogger<PreviewInitializationService>.Instance);
+
+    /// <summary>The module services the demo seed resolves, over the same test database.</summary>
+    private static ServiceProvider CreateServices(string connectionString)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Default"] = connectionString,
+                ["Business:TimeZone"] = "Africa/Cairo",
+                ["Catalog:MediaRoot"] = Path.Combine(Path.GetTempPath(), "rigx-preview-tests", Guid.NewGuid().ToString("N"))
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSecurityAuditPersistence(configuration);
+        services.AddIdentityPersistence(configuration);
+        services.AddIdentityAccounts(new TestHostEnvironment("Development"), configuration);
+        services.AddCatalogModule(configuration, AppContext.BaseDirectory);
+        services.AddStorefrontModule(configuration);
+        services.AddRetailModule(configuration);
+        return services.BuildServiceProvider();
+    }
 
     private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment
     {
