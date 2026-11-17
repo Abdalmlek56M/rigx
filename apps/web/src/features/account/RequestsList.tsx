@@ -5,7 +5,7 @@ import { formatDate, formatEgp } from "@/lib/format";
 import { fetchRequests } from "./account-api";
 import { requestStatusKey, requestTypeKey } from "./account-labels";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 /** "طلباتي الخاصة": the sell / trade / upgrade / service requests, each with where it stands and any offer. */
 export function RequestsList() {

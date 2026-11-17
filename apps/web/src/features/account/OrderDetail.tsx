@@ -11,7 +11,7 @@ import { mediaUrl } from "@/lib/media";
 import { paymentMethodKey } from "./account-labels";
 import { fetchOrder, type Order } from "./account-api";
 import { LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 const card = "flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:p-6";
 

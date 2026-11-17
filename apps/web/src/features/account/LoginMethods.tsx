@@ -9,7 +9,7 @@ import { fetchLoginMethods } from "./account-api";
 import { ConfirmButton } from "./ConfirmButton";
 import { LoadBoundary } from "./LoadBoundary";
 import { StepUpCode } from "./StepUpCode";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 function Row({ name, status, action }: { name: string; status: string; action?: React.ReactNode }) {
   return (

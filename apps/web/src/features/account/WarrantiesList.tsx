@@ -12,7 +12,7 @@ import { fetchInvoices, fetchWarranties } from "./account-api";
 import { invoiceTokenFor, warrantyStatusKey, WARRANTY_BADGE } from "./account-labels";
 import type { AccountContact } from "./account-page";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 type Warranty = Schemas["WarrantyAccountView"];
 type WhatsApp = Pick<AccountContact, "number" | "warrantyTemplate">;

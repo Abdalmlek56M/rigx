@@ -7,7 +7,7 @@ import { itemsPreview } from "./account-labels";
 import { fetchOrders, type Order } from "./account-api";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
 import { OrderProgress } from "./OrderProgress";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 const PREVIEW_ITEMS = 2;
 const linkClass = "inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover";

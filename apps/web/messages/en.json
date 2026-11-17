@@ -1169,5 +1169,192 @@
     "moreTitle": "Still have a question?",
     "moreLink": "Message us on WhatsApp",
     "moreMessage": "Hi RIGX, I have a question."
+  },
+  "admin": {
+    "shell": {
+      "title": "RIGX Admin",
+      "navLabel": "Admin menu",
+      "home": "Overview",
+      "store": "Store",
+      "signOut": "Sign out",
+      "openMenu": "Open menu",
+      "eyebrow": "Admin",
+      "roles": {
+        "Owner": "Owner",
+        "staff": "Staff"
+      },
+      "forbidden": {
+        "title": "You can't open this",
+        "body": "Your account has no permission for this page. Ask the owner if you need it.",
+        "store": "Back to the store"
+      },
+      "notFound": {
+        "title": "This page doesn't exist",
+        "home": "Back to the overview"
+      }
+    },
+    "nav": {
+      "groups": {
+        "home": "Home",
+        "sales": "Sales",
+        "stock": "Stock",
+        "money": "Money",
+        "customers": "Customers",
+        "content": "Content",
+        "system": "System"
+      },
+      "areas": {
+        "dashboard": "Overview",
+        "pos": "New sale",
+        "orders": "Orders",
+        "customers": "Customers",
+        "offers": "Offers & coupons",
+        "inventory": "Inventory",
+        "builds": "Builds",
+        "purchases": "Purchases",
+        "categories": "Categories",
+        "partners": "Partners",
+        "expenses": "Expenses",
+        "requests": "Requests inbox",
+        "campaigns": "Messages & campaigns",
+        "tiers": "Customer tiers",
+        "articles": "Articles",
+        "faq": "FAQ",
+        "users": "Users & roles",
+        "audit": "Activity log",
+        "system": "Trash & backups",
+        "settings": "Store settings"
+      }
+    },
+    "kit": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "stepUpTitle": "Confirm with a code",
+      "saved": "Saved",
+      "failed": "That didn't work. Try again.",
+      "loadFailed": "We couldn't load the data.",
+      "retry": "Try again",
+      "pager": {
+        "label": "Pages",
+        "range": "{from}–{to} of {total}",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "dashboard": {
+      "title": "Overview",
+      "receive": "Receive stock",
+      "newSale": "New sale",
+      "loading": "Loading",
+      "failed": "We couldn't load the numbers.",
+      "retry": "Try again",
+      "pickRange": "Pick a start and end date.",
+      "comparedWith": "Compared with {from} – {to}",
+      "empty": "No data yet.",
+      "unanswered": "Not answered",
+      "period": {
+        "label": "Period",
+        "today": "Today",
+        "week": "Last 7 days",
+        "month": "This month",
+        "year": "This year",
+        "custom": "Custom",
+        "from": "From",
+        "to": "To",
+        "apply": "Show"
+      },
+      "kpi": {
+        "sales": "Sales",
+        "netProfit": "Net profit",
+        "orders": "Orders",
+        "averageOrder": "Average order {amount}",
+        "stockValue": "Stock value",
+        "atCost": "At cost",
+        "partnerDues": "Partner dues",
+        "partnerDuesNote": "Not paid out yet",
+        "cash": "Cash available",
+        "cashNote": "Cash + wallets",
+        "change": "{arrow} {percent}% vs the previous period",
+        "noComparison": "No previous period to compare"
+      },
+      "chart": {
+        "title": "Sales and profit · last 30 days",
+        "granularity": "Chart view",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "sales": "Sales",
+        "profit": "Profit",
+        "date": "Day"
+      },
+      "todo": {
+        "title": "Needs you today",
+        "newOrders": "Orders waiting for confirmation",
+        "awaitingPayment": "Orders waiting for payment",
+        "expiredReservations": "Expired reservations",
+        "pendingReturns": "Returns waiting for inspection",
+        "newRequests": "New sell and upgrade requests",
+        "recurringExpensesDue": "Recurring expenses due"
+      },
+      "leadSources": {
+        "title": "Where customers come from",
+        "note": "From the \"How did you hear about us?\" question at checkout and in-store sales."
+      },
+      "usages": {
+        "title": "What PCs are bought for",
+        "note": "From the \"What will you use it for?\" question in the builder, builds and in-store sales."
+      },
+      "categories": {
+        "title": "Top categories",
+        "none": "No category",
+        "salesMargin": "{sales} · margin {margin}%"
+      },
+      "condition": {
+        "title": "New vs used",
+        "margin": "Margin {percent}%",
+        "fullBuilds": "Whole builds sold",
+        "splitParts": "Parts sold from builds",
+        "singleItems": "Single parts",
+        "daysToSellUsed": "Average days to sell used",
+        "builds": "{count} builds · {sales}",
+        "parts": "{count} parts · {sales}",
+        "days": "{count} days"
+      },
+      "demand": {
+        "title": "Wanted but missing",
+        "note": "From the \"Notify me\" button. When the part is in stock, open the requests and tell them.",
+        "part": "Part",
+        "waiting": "Waiting",
+        "stock": "Stock",
+        "customers": "{count} customers",
+        "available": "In stock now",
+        "missing": "Missing",
+        "open": "Requests",
+        "empty": "Nobody is waiting for a part."
+      },
+      "aging": {
+        "title": "Parts sitting in stock",
+        "summary": "· {count} parts at {cost}",
+        "all": "View all",
+        "code": "Code",
+        "part": "Part",
+        "condition": "Condition",
+        "days": "In stock",
+        "cost": "Cost",
+        "daysValue": "{count} days",
+        "empty": "No old stock."
+      },
+      "partners": {
+        "title": "Partner profits · this month",
+        "partner": "Partner",
+        "earned": "Share",
+        "empty": "No partner profits this month."
+      },
+      "accounts": {
+        "title": "Cash boxes and wallets",
+        "account": "Account",
+        "balance": "Balance",
+        "empty": "No accounts."
+      }
+    }
   }
 }

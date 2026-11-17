@@ -8,7 +8,7 @@ import { formatDateTime } from "@/lib/format";
 import { fetchSessions } from "./account-api";
 import { ConfirmButton } from "./ConfirmButton";
 import { LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 /** The devices signed in to this account: sign one out, or all the others at once. */
 export function SessionsList() {

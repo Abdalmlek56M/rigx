@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import type { Load } from "./use-load";
+import type { Load } from "@/lib/hooks/use-load";
 
 export function SkeletonRows({ count = 3 }: { count?: number }) {
   return (

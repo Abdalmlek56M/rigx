@@ -6,7 +6,7 @@ import { unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { fetchNewDeviceAlerts } from "./account-api";
 import { LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 function Toggle({ initial }: { initial: boolean }) {
   const t = useTranslations("account.profile.alerts");

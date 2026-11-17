@@ -10,7 +10,7 @@ import { AddressFormView } from "./AddressFormView";
 import { addressLine, emptyAddressForm, formFromAddress, toAddressRequest, toUpdateRequest, type AddressForm } from "./address-form";
 import { ConfirmButton } from "./ConfirmButton";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 type Address = Schemas["CustomerAddressView"];
 type Editing = { kind: "new" } | { kind: "edit"; address: Address } | null;

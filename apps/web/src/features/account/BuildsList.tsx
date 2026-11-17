@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/format";
 import { fetchBuilds } from "./account-api";
 import { ConfirmButton } from "./ConfirmButton";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 /** "تجميعاتي المحفوظة": open one in the builder, or delete it (after a confirmation). */
 export function BuildsList() {

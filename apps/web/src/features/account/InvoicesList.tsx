@@ -6,7 +6,7 @@ import { formatDate, formatEgp } from "@/lib/format";
 import { fetchInvoices } from "./account-api";
 import { invoiceKindKey } from "./account-labels";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
-import { useLoad } from "./use-load";
+import { useLoad } from "@/lib/hooks/use-load";
 
 /** "فواتيري": each invoice opens its own page; a cancelled order's invoice is marked void. */
 export function InvoicesList() {
