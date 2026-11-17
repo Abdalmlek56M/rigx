@@ -73,6 +73,38 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
     }
 
     [Fact]
+    public async Task Checkout_lines_by_public_code_and_the_customer_view_without_costs()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Code GPU", 2, 1000m);
+        var hidden = await retail.PublishedItemAsync("Code Hidden GPU", 1, 500m);
+        await retail.StockItems.SetVisibilityAsync(new StockVisibilityRequest([hidden.Id], true));
+        var parts = (await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null, [new ReceiptLine("Code CPU", "New", 1, 100m, 300m)]), Actor))
+            .SelectMany(entry => entry.Units).ToList();
+        var build = await BuildAsync(retail, "Code build", 1500m, parts.Select(unit => unit.Id));
+
+        var placed = await retail.Orders.CreateOnlineAsync(Checkout([
+            new OrderLineRequest(null, null, 2, Code: item.Code.ToLowerInvariant()),
+            new OrderLineRequest(null, null, Code: build.Code)]), Policy());
+
+        Assert.Contains(placed.Order.Items, line => line.StockItemId == item.Id && line.Quantity == 2);
+        Assert.Contains(placed.Order.Items, line => line.AssemblyId == build.Id);
+        var customer = placed.Customer;
+        Assert.Equal((placed.Order.Id, OrderStatus.New, 3500m, 3550m), (customer.Id, customer.Status, customer.Subtotal, customer.Total));
+        Assert.Equal($"{item.Code},{build.Code}", string.Join(',', customer.Items.Select(line => line.Code)));
+        Assert.Equal(OrderStatus.New, Assert.Single(customer.Timeline).Status);
+        var json = JsonSerializer.Serialize(customer, JsonSerializerOptions.Web);
+        Assert.DoesNotContain("cost", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("profit", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("blacklist", json, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.CheckoutAsync(Checkout([new OrderLineRequest(null, null, Code: hidden.Code)]))));
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.CheckoutAsync(Checkout([new OrderLineRequest(null, null, Code: "RX-9999")]))));
+        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.CheckoutAsync(Checkout([new OrderLineRequest(null, null, Code: "PO-0001")]))));
+        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.CheckoutAsync(Checkout([new OrderLineRequest(item.Id, null, Code: item.Code)]))));
+    }
+
+    [Fact]
     public async Task Checkout_can_pick_the_with_board_price_and_pickup_skips_fee_and_upfront()
     {
         var (retail, _, _) = await StartAsync();

@@ -5,7 +5,7 @@ Status: **current state** (what exists today) + **target** (what we are moving t
 ## 1. Shape of the system
 
 ```
-apps/web            Next.js 16 (App Router, TypeScript strict)   ← exists (roadmap 4.1); pages follow in 4.2+
+apps/web            Next.js 16 (App Router, TypeScript strict)   ← storefront, checkout and account done (4.1–4.3); admin in 4.4
 packages/api-client Typed API client: openapi.v1.json (the contract) + generated types + one fetch wrapper
 src/Host            ASP.NET Core minimal API host (composition root only)
 src/Modules/*       Feature modules — each owns its domain, use cases, persistence, endpoints
@@ -153,3 +153,5 @@ Rules:
 | 39 | Design tokens are the approved canvas names (carbon #15171B, paper #F4F2ED, sand #D8D3C8, orange #FF6A2B, orange-text #B84A12, success #1F8A55, plus the dark-mode table from the "الوضع الليلي" board); one UI font (IBM Plex Sans Arabic) for both languages + IBM Plex Mono; cart lives in the browser until checkout | matches the approved design exactly (no new colour names); no server cart endpoint exists and stock is claimed only at Confirmed (decision 5) |
 | 40 | Storefront URLs: `/products`, `/products/[code]` (RX), `/builds`, `/builds/[code]` (BLD), `/builder`, `/builder/quote`, `/services`, `/sold`; filters live in search params | shareable, server-rendered, matches the 4.1 header links |
 | 41 | Builder quote is a print-styled page (browser print → PDF); PNG export, wishlist heart, 'يركب معاه', 'same model new' and 'عايز توفّر؟' blocks deferred | no image library or API data for them yet; keeps 4.2 to existing endpoints |
+| 42 | Website order lines name items by public code (`OrderLineRequest.code`, RX-/BLD-, resolved in `OrderDrafting` before pricing); ids still work for POS. The customer reads orders only as `CustomerOrderView` (checkout response, my orders, view-as): customer status/timeline, prices and totals, no cost, profit, components, staff or blacklist fields | the cart knows codes only; one pricing path stays; customer endpoints must never leak cost or internal flags |
+| 43 | Account pages are client-rendered over the cookie session (`useSession` store on `/identity/me`, signed-out → `/login?next=`); public document pages (`/t`, `/i`, `/warranty`) are server-rendered with no-store fetches; the placed order reaches `/checkout/success` through `sessionStorage`; invoice QR is an SVG from `qrcode` rendered on the server | session cookies stay same-origin in the browser; public token pages need fresh data; no extra API call to show what checkout just returned |

@@ -172,7 +172,7 @@ public static partial class RetailEndpoints
     /// Website checkout (Storefront settings + published Terms + Retail, so it stays in Host): guests may order when
     /// guest checkout is on; fee, upfront part, enabled methods and the minimum come from the store settings.
     /// </summary>
-    private static async Task<Ok<OrderView>> CreateCustomerOrderAsync(CheckoutRequest request, HttpContext context, OrderService orders,
+    private static async Task<Ok<CustomerOrderView>> CreateCustomerOrderAsync(CheckoutRequest request, HttpContext context, OrderService orders,
         StoreSettingsService settings, ContentPolicyService policies, IdentityEmailOutboxWriter outbox, OrderLinks links,
         BuilderCatalogLoader builderCatalogs, CancellationToken ct)
     {
@@ -202,9 +202,9 @@ public static partial class RetailEndpoints
         var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, shipping,
             subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount,
             await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct));
-        var order = await orders.CreateOnlineAsync(request, policy, ct);
-        await OrderEmails.QueueAsync(outbox, links, order, OrderEmailMessage.Received, ct);
-        return TypedResults.Ok(order);
+        var placed = await orders.CreateOnlineAsync(request, policy, ct);
+        await OrderEmails.QueueAsync(outbox, links, placed.Order, OrderEmailMessage.Received, ct);
+        return TypedResults.Ok(placed.Customer);
     }
 
     private static async Task<Ok<TrackingView>> GetTrackingAsync(string token, HttpContext context, OrderTrackingService tracking, CancellationToken ct)
@@ -227,14 +227,14 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await sold.ListAsync(sales.SoldFeedShowGovernorate, kind, categoryIds, page, ct));
     }
 
-    private static async Task<Ok<IReadOnlyList<OrderView>>> ListMyOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct)
+    private static async Task<Ok<IReadOnlyList<CustomerOrderView>>> ListMyOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct)
     {
         var accountId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
         return TypedResults.Ok(await orders.ListMyOrdersAsync(accountId, ct));
     }
 
-    private static async Task<Ok<OrderView>> GetMyOrderAsync(Guid id, HttpContext context, OrderService orders, CancellationToken ct)
+    private static async Task<Ok<CustomerOrderView>> GetMyOrderAsync(Guid id, HttpContext context, OrderService orders, CancellationToken ct)
     {
         var accountId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";

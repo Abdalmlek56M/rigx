@@ -22,6 +22,21 @@ export interface WhatsAppTemplates {
   general: string;
   product: string;
   build: string;
+  order: string;
+  warranty: string;
+}
+
+/** Checkout rules from settings: who may order, the minimum, lead-source chips and what is paid upfront. */
+export interface CheckoutSettings {
+  guestCheckoutEnabled: boolean;
+  minimumOrderAmount: number;
+  leadSources: string[];
+  /** Orders above this subtotal also pay a deposit of `depositPercent` percent upfront. */
+  depositThreshold: number;
+  depositPercent: number;
+  shippingPaidUpfront: boolean;
+  instaPayAddress: string | null;
+  walletNumber: string | null;
 }
 
 export interface StorefrontData {
@@ -36,6 +51,7 @@ export interface StorefrontData {
   pickupEnabled: boolean;
   payment: PaymentMethods;
   whatsAppTemplates: WhatsAppTemplates;
+  checkout: CheckoutSettings;
   showSoldOut: boolean;
   categories: MenuCategory[];
   /** Every effectively active category with ids and specs (catalog filters, breadcrumbs, spec names). */
@@ -53,7 +69,11 @@ const FALLBACK: StorefrontData = {
   pickupAddress: null,
   pickupEnabled: false,
   payment: { cash: false, instaPay: false, wallet: false },
-  whatsAppTemplates: { general: "", product: "", build: "" },
+  whatsAppTemplates: { general: "", product: "", build: "", order: "", warranty: "" },
+  checkout: {
+    guestCheckoutEnabled: false, minimumOrderAmount: 0, leadSources: [], depositThreshold: 0, depositPercent: 0,
+    shippingPaidUpfront: false, instaPayAddress: null, walletNumber: null
+  },
   showSoldOut: true,
   categories: [],
   categoryTree: []
@@ -122,7 +142,19 @@ export async function loadStorefront(): Promise<StorefrontData> {
       whatsAppTemplates: {
         general: settings.whatsAppTemplates.general?.trim() ?? "",
         product: settings.whatsAppTemplates.product?.trim() ?? "",
-        build: settings.whatsAppTemplates.build?.trim() ?? ""
+        build: settings.whatsAppTemplates.build?.trim() ?? "",
+        order: settings.whatsAppTemplates.order?.trim() ?? "",
+        warranty: settings.whatsAppTemplates.warranty?.trim() ?? ""
+      },
+      checkout: {
+        guestCheckoutEnabled: settings.controls.guestCheckoutEnabled ?? false,
+        minimumOrderAmount: settings.controls.minimumOrderAmount ?? 0,
+        leadSources: settings.leadSources,
+        depositThreshold: settings.payment.depositThreshold ?? 0,
+        depositPercent: settings.payment.depositPercent ?? 0,
+        shippingPaidUpfront: settings.payment.shippingPaidUpfront ?? false,
+        instaPayAddress: settings.payment.instaPayAddress?.trim() || null,
+        walletNumber: settings.payment.walletNumber?.trim() || null
       },
       showSoldOut: settings.controls.showSoldOut ?? true,
       categories: toMenu(categories),

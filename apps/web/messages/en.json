@@ -632,5 +632,542 @@
     "wantOne": "Want one like it · tell me",
     "loadFailed": "We can't load the list right now. Please try again in a moment.",
     "empty": "Nothing here yet."
+  },
+  "auth": {
+    "title": "Sign in",
+    "aside": {
+      "kicker": "NEW · USED · BUILDS",
+      "line1": "Your orders and warranty",
+      "line2": "in one place."
+    },
+    "email": {
+      "title": "Sign in",
+      "subtitle": "Track your orders and your parts' warranty.",
+      "google": "or with a code",
+      "label": "Email",
+      "placeholder": "name@gmail.com",
+      "send": "Email me a code",
+      "sending": "Sending the code…",
+      "hint": "No password needed. We email you a 6-digit code every time you sign in.",
+      "invalid": "Enter a valid email."
+    },
+    "code": {
+      "title": "Enter the code",
+      "sentTo": "We sent it to {email}. Check Spam if you can't find it.",
+      "label": "6-digit code",
+      "submit": "Sign in",
+      "submitting": "Signing you in…",
+      "resendIn": "Resend in {time}",
+      "resend": "Send a new code",
+      "changeEmail": "Change email",
+      "remember": "Remember me on this device"
+    },
+    "errors": {
+      "wrongCode": "That code isn't right. {count, plural, one {1 attempt} other {# attempts}} left.",
+      "expired": "The code expired or is wrong. Send a new one.",
+      "tooManyAttempts": "Too many attempts. Send a new code.",
+      "rateLimited": "Please wait a moment and try again.",
+      "generic": "Something went wrong. Please try again shortly.",
+      "google": "We couldn't sign you in with Google. Try again or use a code."
+    }
+  },
+  "orderStatus": {
+    "New": "Order received",
+    "Confirmed": "Confirmed",
+    "Preparing": "Being prepared",
+    "Shipped": "Shipped",
+    "Delivered": "Delivered",
+    "Cancelled": "Order cancelled"
+  },
+  "cartPage": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "browse": "Browse products",
+    "removedNotice": "An item sold out and was removed from your cart",
+    "shipping": "Shipping",
+    "shippingNote": "Calculated at the next step",
+    "subtotal": "Items total",
+    "checkout": "Continue to checkout",
+    "continue": "Keep shopping"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "steps": {
+      "cart": "Cart",
+      "details": "Details and payment",
+      "confirmation": "Confirmation"
+    },
+    "empty": "Your cart is empty",
+    "browse": "Browse products",
+    "loginRequired": "Please sign in to continue with your order.",
+    "loginLink": "Sign in",
+    "loadFailed": "We could not load the shipping details. Please try again shortly.",
+    "redirecting": "Taking you to the confirmation page...",
+    "removedNotice": "An item sold out and was removed from your cart",
+    "problems": {
+      "incomplete": "Some details above are missing. Check them and try again.",
+      "gone": "An item in your order sold out or changed. Review your cart and continue.",
+      "signIn": "Please sign in to continue with your order.",
+      "failed": "Something went wrong and the order was not sent. Please try again shortly."
+    },
+    "errors": {
+      "name": "Enter your name.",
+      "phone": "Enter a valid Egyptian mobile number, like 01xxxxxxxxx.",
+      "governorate": "Choose the governorate.",
+      "area": "Enter the area.",
+      "street": "Enter the street name.",
+      "usageNote": "Tell us what you will use it for.",
+      "paymentMethod": "Choose a payment method.",
+      "terms": "You need to agree to continue."
+    },
+    "customer": {
+      "title": "Your details",
+      "haveAccount": "No account needed. Already have one?",
+      "login": "Sign in",
+      "name": "Name",
+      "phone": "Mobile number",
+      "whatsApp": "This number is on WhatsApp",
+      "email": "Email · optional",
+      "note": "We will call this number to confirm the order before preparing it."
+    },
+    "fulfillment": {
+      "title": "Receiving",
+      "pickup": "Pick up from {place}",
+      "pickupNoPlace": "Pick up yourself",
+      "pickupBody": "At a time we agree on. You can inspect the item when you collect it.",
+      "delivery": "Shipping to all governorates",
+      "deliveryBody": "With a courier. The fee appears once you choose the governorate.",
+      "governorate": "Governorate",
+      "governoratePlaceholder": "Choose the governorate",
+      "area": "Area",
+      "street": "Street name",
+      "building": "Building, floor and apartment",
+      "landmark": "Landmark"
+    },
+    "extras": {
+      "notes": "Order notes · optional",
+      "usage": "What will you use it for? · optional",
+      "usages": {
+        "Gaming": "Gaming",
+        "StudyWork": "Study and work",
+        "Editing": "Editing and design",
+        "Streaming": "Streaming",
+        "Upgrade": "Upgrading my PC",
+        "Other": "Something else"
+      },
+      "usageNote": "Tell us what you will use it for",
+      "leadSource": "How did you find us? · optional"
+    },
+    "payment": {
+      "title": "Payment",
+      "methods": {
+        "CashOnDelivery": "Cash on delivery",
+        "InstaPay": "InstaPay",
+        "Wallet": "Mobile wallet"
+      },
+      "note": {
+        "shipping": "Shipping is paid upfront",
+        "transfer": "Pay by InstaPay or wallet once we confirm the order with you.",
+        "deposit": "If the order is over {threshold}, a {percent}% deposit is also paid and deducted from the total.",
+        "depositAll": "A {percent}% deposit is paid and deducted from the total.",
+        "rest": "The rest is paid in cash on delivery.",
+        "pickup": "If you pick up yourself, nothing is paid upfront."
+      }
+    },
+    "summary": {
+      "title": "Your order",
+      "subtotal": "Items",
+      "shipping": "Shipping",
+      "shippingPending": "After you choose the governorate",
+      "freeShipping": "No charge",
+      "upfront": "Due upfront",
+      "total": "Total",
+      "terms": "I agree to the <terms>terms</terms>, the <warranty>warranty policy</warranty> and the <returns>returns policy</returns>.",
+      "minimum": "The minimum order is {amount}. Add something to your cart to continue.",
+      "confirm": "Confirm order",
+      "sending": "Sending your order...",
+      "callNote": "We will call you to confirm everything before preparing the order."
+    }
+  },
+  "orderSuccess": {
+    "pageTitle": "Order received",
+    "title": "We got your order",
+    "lead": "It is not confirmed yet. We will call you on <phone>x</phone> to confirm the items and details before preparing it.",
+    "missing": "There is no order to show here. If you just placed one, we will call your number.",
+    "home": "Home",
+    "trackingHelp": "Warranty and order tracking",
+    "steps": {
+      "title": "What happens next",
+      "confirmTitle": "Confirmation.",
+      "confirm": "We call or message you on WhatsApp to confirm the order.",
+      "confirmShipping": "We send you the shipping transfer details.",
+      "confirmDeposit": "We also send the deposit transfer details ({amount}).",
+      "prepareTitle": "Preparing.",
+      "prepare": "We prepare and pack the items, each with a sticker showing its code and warranty.",
+      "shipTitle": "Shipping.",
+      "ship": "We send you the waybill number and you follow it from your order link.",
+      "pickupTitle": "Pickup.",
+      "pickup": "We agree on a pickup time with you."
+    },
+    "summary": {
+      "title": "Order summary",
+      "shipping": "Shipping",
+      "total": "Total",
+      "upfront": "Due upfront"
+    },
+    "track": {
+      "title": "Track your order",
+      "accountHint": "Create an account with your email to follow the order and keep your warranties in one place.",
+      "track": "Track your order",
+      "createAccount": "Create an account",
+      "whatsApp": "Ask about the order on WhatsApp"
+    }
+  },
+  "tracking": {
+    "title": "Order tracking",
+    "headings": {
+      "New": "We got your order",
+      "Confirmed": "Your order is confirmed",
+      "Preparing": "Your order is being prepared",
+      "Shipped": "Your order has shipped",
+      "Delivered": "Your order was delivered",
+      "Cancelled": "The order was cancelled"
+    },
+    "expected": "Expected within {time}.",
+    "timeline": "Order progress",
+    "courier": "Courier",
+    "waybill": "Waybill number",
+    "address": "Address",
+    "remaining": "Due on delivery",
+    "upfrontDue": "Due upfront",
+    "ask": "I have a question about the order",
+    "items": "In the order",
+    "privateNote": "This link is private to your order. You do not need to sign in to open it.",
+    "whatsAppMessage": "Hello RIGX, about my order {reference}.",
+    "rating": {
+      "title": "How was your experience?",
+      "comment": "Comment · optional",
+      "submit": "Send rating",
+      "thanks": "Thank you for rating.",
+      "already": "Your rating:",
+      "failed": "The rating was not sent. Please try again."
+    }
+  },
+  "account": {
+    "greeting": "Hi, {name}",
+    "signOut": "Sign out",
+    "navLabel": "My account",
+    "nav": {
+      "orders": "My orders",
+      "warranties": "Warranties",
+      "invoices": "Invoices",
+      "requests": "Service requests",
+      "builds": "My builds",
+      "addresses": "Addresses",
+      "profile": "Profile and security"
+    },
+    "pages": {
+      "orders": "My orders",
+      "order": "Order details",
+      "warranties": "My warranties",
+      "invoices": "My invoices",
+      "requests": "Service requests",
+      "builds": "Saved builds",
+      "addresses": "Addresses",
+      "profile": "Profile and security"
+    },
+    "state": {
+      "loading": "Loading",
+      "failed": "We could not load this.",
+      "retry": "Try again",
+      "confirm": "Yes, I am sure",
+      "cancel": "No"
+    },
+    "orders": {
+      "title": "My orders",
+      "empty": "You have no orders yet.",
+      "browse": "Browse products",
+      "details": "Details",
+      "track": "Track order",
+      "more": "and {count} more"
+    },
+    "order": {
+      "back": "Back to my orders",
+      "timeline": "Order progress",
+      "items": "In this order",
+      "totals": "Summary",
+      "subtotal": "Items",
+      "shipping": "Shipping",
+      "total": "Total",
+      "paid": "Paid",
+      "refunded": "Refunded",
+      "remaining": "Due on receipt",
+      "upfrontDue": "Due upfront",
+      "pickupTitle": "Pickup",
+      "deliveryTitle": "Delivery",
+      "pickupFrom": "Pick up from",
+      "pickupShop": "The shop",
+      "address": "Address",
+      "deliveryTime": "Expected time",
+      "payment": "Payment",
+      "courier": "Courier",
+      "waybill": "Waybill number",
+      "ask": "I have a question about this order",
+      "track": "Track order",
+      "notFound": "This order does not exist."
+    },
+    "warranties": {
+      "title": "My warranties",
+      "empty": "There are no warranties on your account yet.",
+      "plan": "Warranty",
+      "from": "From",
+      "until": "Until",
+      "status": {
+        "Active": "Active",
+        "Expired": "Expired",
+        "Void": "Void"
+      },
+      "daysLeft": "{days, plural, one {{days} day left} other {{days} days left}}",
+      "invoice": "Invoice",
+      "problem": "I have a problem",
+      "whatsAppMessage": "Hi RIGX, I have a problem with {name} ({code}) and it is under warranty."
+    },
+    "invoices": {
+      "title": "My invoices",
+      "empty": "No invoices yet.",
+      "kind": {
+        "Build": "Complete build",
+        "Parts": "Single parts"
+      },
+      "void": "Void",
+      "open": "Open invoice"
+    },
+    "requests": {
+      "title": "Service requests",
+      "empty": "No service requests yet.",
+      "offer": "Offer:",
+      "type": {
+        "Sell": "Sell",
+        "TradeIn": "Trade-in",
+        "Upgrade": "Upgrade",
+        "NotifyMe": "Notify me",
+        "Support": "Support",
+        "Contact": "Contact",
+        "Service": "Service",
+        "Other": "Request"
+      },
+      "status": {
+        "New": "Received",
+        "Following": "We are following up",
+        "Offered": "Offer sent",
+        "Accepted": "Offer accepted",
+        "Rejected": "Offer declined",
+        "Converted": "Turned into an order",
+        "Closed": "Closed"
+      }
+    },
+    "builds": {
+      "title": "Saved builds",
+      "empty": "You have no saved builds.",
+      "start": "Start a build",
+      "unnamed": "Unnamed build",
+      "parts": "{count, plural, one {{count} part} other {{count} parts}}",
+      "open": "Open",
+      "delete": "Delete",
+      "deleteFailed": "It was not deleted. Try again."
+    },
+    "addresses": {
+      "title": "Addresses",
+      "add": "New address",
+      "empty": "No saved addresses.",
+      "default": "Default",
+      "edit": "Edit",
+      "setDefault": "Make default",
+      "delete": "Delete",
+      "label": "Address name",
+      "labelPlaceholder": "Home",
+      "recipientName": "Recipient name",
+      "phone": "Mobile",
+      "governorate": "Governorate",
+      "governoratePlaceholder": "Choose governorate",
+      "city": "Area",
+      "street": "Street",
+      "building": "Building",
+      "floor": "Floor",
+      "apartment": "Apartment",
+      "landmark": "Landmark",
+      "makeDefault": "Make this my default address",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saveFailed": "The address was not saved. Check the details and try again.",
+      "actionFailed": "That did not work. Try again.",
+      "floorShort": "floor",
+      "apartmentShort": "apt",
+      "errors": {
+        "label": "Enter a name for the address",
+        "recipientName": "Enter the recipient name",
+        "phone": "Enter a valid Egyptian mobile",
+        "governorate": "Choose the governorate",
+        "city": "Enter the area",
+        "street": "Enter the street"
+      }
+    },
+    "stepUp": {
+      "intro": "For your security we email you a code before this change.",
+      "send": "Send me the code",
+      "sent": "We emailed you a code. Enter it here.",
+      "code": "Code",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "errors": {
+        "send": "We could not send the code. Try again.",
+        "wrong": "The code is wrong or expired. Try again.",
+        "failed": "The change was not made. Try again."
+      }
+    },
+    "profile": {
+      "title": "Profile and security",
+      "security": "Security",
+      "form": {
+        "fullName": "Name",
+        "phone": "Mobile",
+        "phoneNote": "Your mobile is filled in automatically in enquiries and requests.",
+        "save": "Save",
+        "saved": "Your details are saved.",
+        "failed": "Not saved. Try again.",
+        "errors": {
+          "fullName": "Enter your name",
+          "phone": "Enter a valid Egyptian mobile"
+        }
+      },
+      "avatar": {
+        "upload": "Upload a photo",
+        "change": "Change photo",
+        "remove": "Remove photo",
+        "errors": {
+          "type": "The photo must be JPG, PNG or WebP.",
+          "size": "The photo is larger than 12 MB.",
+          "failed": "The photo was not saved. Try again."
+        }
+      },
+      "email": {
+        "label": "Email",
+        "change": "Change email",
+        "newEmail": "New email",
+        "invalid": "Enter a valid email",
+        "continue": "Continue",
+        "cancel": "Cancel",
+        "sent": "We sent a confirmation link to the new email."
+      },
+      "methods": {
+        "title": "Sign-in methods",
+        "emailCode": "Email code",
+        "on": "On",
+        "notLinked": "Not linked",
+        "unlink": "Unlink",
+        "unlinkFailed": "We could not unlink it. Try again."
+      },
+      "alerts": {
+        "label": "Email me when someone signs in from a new device",
+        "failed": "Not changed. Try again."
+      },
+      "sessions": {
+        "title": "Devices signed in",
+        "current": "This device",
+        "lastActive": "Last active:",
+        "signOut": "Sign out",
+        "signOutOthers": "Sign out of all other devices",
+        "failed": "That did not work. Try again."
+      }
+    }
+  },
+  "warranty": {
+    "title": "Your parts warranty",
+    "subtitle": "Search by phone number, invoice number or part code and see how long the warranty runs.",
+    "label": "Phone number, invoice number or part code",
+    "placeholder": "e.g. INV-2026-0143 or RX-0154",
+    "submit": "Search",
+    "phoneHint": "When you search by phone, only the last 3 digits of each number are shown.",
+    "resultsFor": "Results for {query}",
+    "empty": "We found no warranty for that. Check the number and try again, or message us on WhatsApp.",
+    "rateLimited": "Please wait a moment and try again.",
+    "badQuery": "Enter a valid phone number, invoice number (e.g. INV-2026-0143) or part code (e.g. RX-0154).",
+    "failed": "Something went wrong while searching. Please try again shortly.",
+    "order": "Order",
+    "invoice": "Invoice",
+    "purchased": "Bought on {date}",
+    "phone": "Phone {phone}",
+    "stickerNote": "The warranty needs an intact RIGX sticker on the part.",
+    "helpTitle": "Need help with a warranty?",
+    "helpLink": "Message us on WhatsApp",
+    "helpMessage": "Hi RIGX, I have a question about the warranty.",
+    "policy": "Full warranty policy"
+  },
+  "invoice": {
+    "title": "Invoice",
+    "kind": {
+      "Build": "Complete build",
+      "Parts": "Single parts"
+    },
+    "number": "Invoice number",
+    "date": "Date",
+    "order": "Order number",
+    "customer": "Customer",
+    "phone": "Phone",
+    "address": "Address",
+    "fulfillment": {
+      "label": "Receiving",
+      "Delivery": "Delivery",
+      "Pickup": "Pickup from the store"
+    },
+    "payment": "Payment",
+    "seller": "Seller",
+    "code": "Code",
+    "item": "Item",
+    "serial": "S/N {serial}",
+    "warranty": "Warranty",
+    "until": "until {date}",
+    "qty": "Qty",
+    "price": "Price",
+    "lineTotal": "Total",
+    "build": "Build {code}",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "delivery": "Shipping",
+    "total": "Total",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "refunded": "Refunded",
+    "void": "VOID",
+    "qrNote": "Scan the code to check your parts' warranty.",
+    "warrantyNote": "The warranty starts on the invoice date and needs the RIGX sticker to stay on the part.",
+    "electronic": "Electronic invoice",
+    "print": "Print / save as PDF"
+  },
+  "policies": {
+    "title": "Policies",
+    "navLabel": "RIGX policies",
+    "kinds": {
+      "shipping": "Shipping and deposit",
+      "returns": "Returns",
+      "exchanges": "Exchanges",
+      "warranty": "Warranty",
+      "terms": "Terms and conditions"
+    },
+    "version": "Version {version}",
+    "updated": "Last updated: {date}",
+    "helpTitle": "Still have a question?",
+    "helpLink": "Message us on WhatsApp",
+    "helpMessage": "Hi RIGX, I have a question about {policy}."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Quick answers to what customers ask most.",
+    "other": "General questions",
+    "empty": "No questions published yet.",
+    "video": "Video: {question}",
+    "moreTitle": "Still have a question?",
+    "moreLink": "Message us on WhatsApp",
+    "moreMessage": "Hi RIGX, I have a question."
   }
 }

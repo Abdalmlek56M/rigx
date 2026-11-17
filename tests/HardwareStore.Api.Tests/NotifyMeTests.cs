@@ -212,7 +212,7 @@ public sealed class NotifyMeTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         Assert.Equal(item.Code, (await env.StoredAsync(noEmail)).AvailableItemCode);
         Assert.Null((await env.StoredAsync(other)).AvailableItemCode);
         var email = Assert.Single(env.Emails);
-        Assert.Equal(("buyer@example.test", "Ahmed", "FUTURE GPU", $"http://localhost:3000/items/{item.Code}"),
+        Assert.Equal(("buyer@example.test", "Ahmed", "FUTURE GPU", $"http://localhost:3000/products/{item.Code}"),
             (email.Email, email.FullName, email.ItemName, email.ItemUrl));
     }
 
@@ -245,7 +245,7 @@ public sealed class NotifyMeTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         var list = await ReadAsync<List<BackInStockListItem>>(await manager.GetAsync($"{Admin}/back-in-stock"));
 
         var entry = Assert.Single(list);
-        var itemUrl = $"http://localhost:3000/items/{item.Code}";
+        var itemUrl = $"http://localhost:3000/products/{item.Code}";
         Assert.Equal((matched, "Ahmed", item.Code, "Future GPU"), (entry.Code, entry.Name, entry.ItemCode, entry.ItemName));
         Assert.StartsWith("https://wa.me/201012345678?text=", entry.WhatsApp.Url);
         Assert.Contains(Uri.EscapeDataString(itemUrl), entry.WhatsApp.Url);

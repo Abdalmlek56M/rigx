@@ -109,8 +109,8 @@ public static class RetailSales
     public static async Task<StockItemAdminView> ReceiveItemAsync(this RetailTestServices retail, ReceiptLine line) =>
         Assert.Single((await retail.Units.ReceiveAsync(RetailReceipts.Receipt(Guid.NewGuid(), null, [line]), Guid.NewGuid())).Items);
 
-    public static Task<OrderView> CheckoutAsync(this RetailTestServices retail, CheckoutRequest request, CheckoutPolicy? policy = null) =>
-        retail.Orders.CreateOnlineAsync(request, policy ?? Policy());
+    public static async Task<OrderView> CheckoutAsync(this RetailTestServices retail, CheckoutRequest request, CheckoutPolicy? policy = null) =>
+        (await retail.Orders.CreateOnlineAsync(request, policy ?? Policy())).Order;
 
     public static Task<OrderView> PosAsync(this RetailTestServices retail, PosSaleRequest request, PosPolicy? policy = null) =>
         retail.Pos.SellAsync(request, policy ?? PosUnlimited, Guid.NewGuid());

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
+import { AccountLink } from "@/features/auth/AccountLink";
 import { Link } from "@/i18n/navigation";
 import type { MenuCategory } from "@/lib/storefront";
 import { LocaleSwitch } from "./LocaleSwitch";
@@ -73,10 +74,10 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
                 </li>
               ))}
               <li>
-                <Link href="/account" className={`${itemClass} gap-2`}>
+                <AccountLink className={`${itemClass} gap-2`}>
                   <UserIcon size={18} />
                   {t("account")}
-                </Link>
+                </AccountLink>
               </li>
             </ul>
           </nav>

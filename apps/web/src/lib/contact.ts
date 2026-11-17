@@ -44,13 +44,15 @@ export interface TemplateValues {
   code?: string;
   price?: string;
   link?: string;
+  order?: string;
 }
 
 const PLACEHOLDERS: Record<keyof TemplateValues, string> = {
   item: "{القطعة}",
   code: "{الكود}",
   price: "{السعر}",
-  link: "{اللينك}"
+  link: "{اللينك}",
+  order: "{الطلب}"
 };
 
 /** Fills a template's placeholders; missing values become empty (with the parentheses around them) and the text is trimmed. Empty template → empty text. */

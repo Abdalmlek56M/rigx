@@ -22,6 +22,31 @@ internal static class OrderMapping
             .Select(payment => new OrderPaymentView(payment.Method, payment.Amount, payment.Note, payment.CreatedAtUtc)).ToList(),
         order.Events.OrderBy(entry => entry.CreatedAtUtc).Select(entry => new OrderEventView(entry.EventType, entry.Notes, entry.ActorUserAccountId, entry.CreatedAtUtc)).ToList());
 
+    public static CustomerOrderView ToCustomerView(StoreOrder order) => new(order.Id, order.Reference, order.TrackingToken,
+        CustomerStatus(order), order.FulfillmentMethod, order.CustomerName, order.PhoneNumber, order.CustomerEmail, AddressOf(order),
+        order.PaymentMethod, order.PaymentStatus, order.Subtotal, order.DeliveryFee, order.DeliveryTime, order.Total, order.UpfrontAmount,
+        OrderRules.UpfrontDue(order), order.PaidAmount, OrderRules.Remaining(order), order.RefundedAmount, order.CourierName,
+        order.WaybillNumber, order.SatisfactionScore, order.CreatedAtUtc,
+        order.Items.Select(item => new CustomerOrderItemView(item.Name, item.Code, item.ThumbnailStorageKeySnapshot, item.Quantity,
+            item.UnitPrice, item.LineTotal, item.DiscountAmount)).ToList(),
+        CustomerTimeline(order));
+
+    /// <summary>"Completed" stays internal (owner decision D2), so the customer sees it as delivered.</summary>
+    public static string CustomerStatus(StoreOrder order) => order.Status == OrderStatus.Completed ? OrderStatus.Delivered : order.Status;
+
+    /// <summary>Customer-facing steps: received, then every status change except "Completed".</summary>
+    public static IReadOnlyList<TrackingStep> CustomerTimeline(StoreOrder order)
+    {
+        var steps = new List<TrackingStep> { new(OrderStatus.New, order.CreatedAtUtc) };
+        steps.AddRange(order.Events.Where(entry => entry.EventType.StartsWith(StatusEventPrefix, StringComparison.Ordinal))
+            .OrderBy(entry => entry.CreatedAtUtc)
+            .Select(entry => new TrackingStep(entry.EventType[StatusEventPrefix.Length..], entry.CreatedAtUtc))
+            .Where(step => step.Status != OrderStatus.Completed));
+        return steps;
+    }
+
+    private const string StatusEventPrefix = "Status:";
+
     public static OrderAddress? AddressOf(StoreOrder order) => order.Governorate is null
         ? null
         : new OrderAddress(order.Governorate, order.Area, order.Street, order.Building, order.Landmark);

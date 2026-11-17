@@ -390,7 +390,7 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         using var response = await admin.GetAsync($"{Admin}/{customer}/view-as");
         var raw = await response.Content.ReadAsStringAsync();
         var view = System.Text.Json.JsonSerializer.Deserialize<CustomerViewAs>(raw, System.Text.Json.JsonSerializerOptions.Web)!;
-        var own = await ReadAsync<List<OrderView>>(await customerClient.GetAsync("/api/v1/orders/mine"));
+        var own = await ReadAsync<List<CustomerOrderView>>(await customerClient.GetAsync("/api/v1/orders/mine"));
 
         Assert.Contains("no-store", response.Headers.CacheControl!.ToString());
         Assert.Equal(own.Select(order => order.Id), view.Orders.Select(order => order.Id));

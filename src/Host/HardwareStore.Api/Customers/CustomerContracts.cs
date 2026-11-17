@@ -12,6 +12,6 @@ public sealed record CustomerProfile(CustomerAccountView Account, LoginMethodsVi
     CustomerSalesView Sales, IReadOnlyList<CustomerRequestSummary> Requests, string? Governorate);
 
 /// <summary>Exactly what the customer's own account pages show (read only).</summary>
-public sealed record CustomerViewAs(CurrentIdentityUser Profile, IReadOnlyList<CustomerAddressView> Addresses, IReadOnlyList<OrderView> Orders,
+public sealed record CustomerViewAs(CurrentIdentityUser Profile, IReadOnlyList<CustomerAddressView> Addresses, IReadOnlyList<CustomerOrderView> Orders,
     IReadOnlyList<WarrantyAccountView> Warranties, IReadOnlyList<InvoiceSummaryView> Invoices, IReadOnlyList<MyRequestView> Requests,
     IReadOnlyList<SavedBuildSummary> Builds);

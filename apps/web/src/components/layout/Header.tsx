@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { UserIcon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
+import { AccountLink } from "@/features/auth/AccountLink";
 import { CartButton } from "@/features/cart/CartButton";
 import type { StorefrontData } from "@/lib/storefront";
 import { CategoriesMenu } from "./CategoriesMenu";
@@ -37,13 +38,12 @@ export function Header({ storefront }: { storefront: StorefrontData }) {
           <SearchForm />
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/account"
-            aria-label={t("account")}
+          <AccountLink
+            ariaLabel={t("account")}
             className="hidden h-11 w-11 items-center justify-center rounded-control border border-header-line md:flex"
           >
             <UserIcon />
-          </Link>
+          </AccountLink>
           <ThemeToggle className="max-md:hidden" />
           {storefront.englishEnabled ? <LocaleSwitch className="max-md:hidden" /> : null}
           <CartButton />

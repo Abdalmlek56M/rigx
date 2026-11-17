@@ -11,7 +11,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
     /// Creates a <c>New</c> order from the cart: lines are re-priced from published items/builds, the fee and upfront part
     /// come from the store settings (<paramref name="policy"/>), and a blacklisted customer's order is flagged.
     /// </summary>
-    public async Task<OrderView> CreateOnlineAsync(CheckoutRequest request, CheckoutPolicy policy, CancellationToken cancellationToken = default)
+    public async Task<PlacedOrder> CreateOnlineAsync(CheckoutRequest request, CheckoutPolicy policy, CancellationToken cancellationToken = default)
     {
         if (request.TermsAccepted != true) throw new RetailException(400, "Terms and Privacy consent is required.");
         var fulfillment = OrderRules.Fulfillment(request.FulfillmentMethod);
@@ -38,7 +38,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         order.Events.Add(OrderMapping.Event("OrderCreated", OrderChannel.Online, policy.UserAccountId, now));
         db.Orders.Add(order);
         await db.SaveChangesAsync(cancellationToken);
-        return OrderMapping.ToView(order);
+        return new PlacedOrder(OrderMapping.ToView(order), OrderMapping.ToCustomerView(order));
     }
 
     public async Task<IReadOnlyList<OrderView>> ListOrdersAsync(string? status, bool includeContact = true, CancellationToken cancellationToken = default)
@@ -50,21 +50,21 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
             .Select(order => OrderMapping.ToView(order, includeContact)).ToList();
     }
 
-    public async Task<IReadOnlyList<OrderView>> ListMyOrdersAsync(Guid userAccountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CustomerOrderView>> ListMyOrdersAsync(Guid userAccountId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = await db.Orders.AsNoTracking().WithDetails()
             .Where(order => order.UserAccountId == userAccountId).OrderByDescending(order => order.CreatedAtUtc).ToListAsync(cancellationToken);
-        return rows.Select(order => OrderMapping.ToView(order, true)).ToList();
+        return rows.Select(OrderMapping.ToCustomerView).ToList();
     }
 
-    public async Task<OrderView> GetMyOrderAsync(Guid id, Guid userAccountId, CancellationToken cancellationToken = default)
+    public async Task<CustomerOrderView> GetMyOrderAsync(Guid id, Guid userAccountId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var order = await db.Orders.AsNoTracking().WithDetails()
             .SingleOrDefaultAsync(item => item.Id == id && item.UserAccountId == userAccountId, cancellationToken)
             ?? throw new RetailException(404, "Order was not found.");
-        return OrderMapping.ToView(order, true);
+        return OrderMapping.ToCustomerView(order);
     }
 
     public async Task<AdminOrderDetailView> GetAdminOrderDetailAsync(Guid id, bool includeSerials,

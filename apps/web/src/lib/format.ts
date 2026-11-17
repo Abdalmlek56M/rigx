@@ -18,3 +18,21 @@ export function formatMonth(iso: string, locale: string): string {
 export function formatDate(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(calendarLocale(locale), { day: "numeric", month: "long", year: "numeric", timeZone: CAIRO }).format(new Date(iso));
 }
+
+/** "13/11 · 14:22": day/month and 24-hour time in Cairo (Western digits). */
+export function formatDateTime(iso: string, locale: string): string {
+  const parts = new Intl.DateTimeFormat(calendarLocale(locale), {
+    day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: CAIRO
+  }).formatToParts(new Date(iso));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${part("day")}/${part("month")} · ${part("hour")}:${part("minute")}`;
+}
+
+/** "13/11/2026 · 14:22": day/month/year and 24-hour time in Cairo (Western digits), as printed on an invoice. */
+export function formatDateTimeFull(iso: string, locale: string): string {
+  const parts = new Intl.DateTimeFormat(calendarLocale(locale), {
+    day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: CAIRO
+  }).formatToParts(new Date(iso));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${part("day")}/${part("month")}/${part("year")} · ${part("hour")}:${part("minute")}`;
+}

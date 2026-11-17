@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Retail;
@@ -18,8 +19,9 @@ internal static class OrderDrafting
         var store = channel == OrderChannel.Store;
         var items = new List<OrderItem>();
         var inBuildCategories = new List<Guid?>();
-        foreach (var line in lines)
+        foreach (var requested in lines)
         {
+            var line = await ResolveCodeAsync(db, requested, cancellationToken);
             if ((line.StockItemId is null) == (line.AssemblyId is null))
                 throw new RetailException(400, "Each order line needs either a stock item or a build.");
             if (line.AssemblyId is Guid assemblyId) items.AddRange(await PriceBuildAsync(db, assemblyId, line, store, cancellationToken));
@@ -30,6 +32,27 @@ internal static class OrderDrafting
             throw new RetailException(400, "A part is listed twice.");
         return items;
     }
+
+    /// <summary>A line named by its public code gets the id of that stock item (<c>RX-…</c>) or build (<c>BLD-…</c>).</summary>
+    private static async Task<OrderLineRequest> ResolveCodeAsync(RetailDbContext db, OrderLineRequest line, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(line.Code)) return line;
+        if (line.StockItemId is not null || line.AssemblyId is not null)
+            throw new RetailException(400, "An order line names its item by id or by code, not both.");
+        if (PublicCode.TryNormalize(line.Code, PublicCode.Build, out var buildCode))
+        {
+            var assemblyId = await db.Assemblies.AsNoTracking().Where(assembly => assembly.Code == buildCode)
+                .Select(assembly => (Guid?)assembly.Id).SingleOrDefaultAsync(cancellationToken);
+            return line with { AssemblyId = assemblyId ?? throw Unavailable(), Code = null };
+        }
+        if (!PublicCode.TryNormalize(line.Code, PublicCode.StockItem, out var itemCode))
+            throw new RetailException(400, "An order line code must be an RX or BLD code.");
+        var stockItemId = await db.StockItems.AsNoTracking().Where(item => item.Code == itemCode)
+            .Select(item => (Guid?)item.Id).SingleOrDefaultAsync(cancellationToken);
+        return line with { StockItemId = stockItemId ?? throw Unavailable(), Code = null };
+    }
+
+    private static RetailException Unavailable() => new(409, "An item in the order is no longer available.");
 
     private static async Task<OrderItem> PriceStockItemAsync(RetailDbContext db, Guid stockItemId, OrderLineRequest line, bool store,
         List<Guid?> inBuildCategories, CancellationToken cancellationToken)

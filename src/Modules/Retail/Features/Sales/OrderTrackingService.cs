@@ -39,19 +39,11 @@ public sealed class OrderTrackingService(IDbContextFactory<RetailDbContext> cont
     private static bool CanRate(StoreOrder order) =>
         order.SatisfactionScore is null && order.Status is OrderStatus.Delivered or OrderStatus.Completed;
 
-    /// <summary>Customer-facing steps: "Completed" stays internal (owner decision D2), so it shows as delivered.</summary>
-    private static TrackingView ToView(StoreOrder order)
-    {
-        var steps = new List<TrackingStep> { new(OrderStatus.New, order.CreatedAtUtc) };
-        steps.AddRange(order.Events.Where(entry => entry.EventType.StartsWith("Status:", StringComparison.Ordinal))
-            .OrderBy(entry => entry.CreatedAtUtc)
-            .Select(entry => new TrackingStep(entry.EventType["Status:".Length..], entry.CreatedAtUtc))
-            .Where(step => step.Status != OrderStatus.Completed));
-        return new TrackingView(order.Reference, order.Status == OrderStatus.Completed ? OrderStatus.Delivered : order.Status,
-            order.FulfillmentMethod, steps, order.CourierName, order.WaybillNumber, order.Area, order.Street,
+    private static TrackingView ToView(StoreOrder order) =>
+        new(order.Reference, OrderMapping.CustomerStatus(order), order.FulfillmentMethod, OrderMapping.CustomerTimeline(order),
+            order.CourierName, order.WaybillNumber, order.Area, order.Street,
             order.Items.Select(item => new TrackingItem(item.Name, item.Code, item.Quantity)).ToList(), order.Total,
             OrderRules.Remaining(order), OrderRules.UpfrontDue(order), order.DeliveryTime, CanRate(order), order.SatisfactionScore);
-    }
 
     private static RetailException NotFound() => new(404, "The order was not found.");
 }

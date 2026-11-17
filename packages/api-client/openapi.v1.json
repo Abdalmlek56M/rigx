@@ -1296,7 +1296,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrderView"
+                  "$ref": "#/components/schemas/CustomerOrderView"
                 }
               }
             }
@@ -1416,7 +1416,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/OrderView"
+                    "$ref": "#/components/schemas/CustomerOrderView"
                   }
                 }
               }
@@ -1463,7 +1463,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrderView"
+                  "$ref": "#/components/schemas/CustomerOrderView"
                 }
               }
             }
@@ -18200,6 +18200,51 @@
           }
         }
       },
+      "CustomerOrderItemView": {
+        "required": [
+          "name",
+          "code",
+          "thumbnailStorageKey",
+          "quantity",
+          "unitPrice",
+          "lineTotal",
+          "discountAmount"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "thumbnailStorageKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "lineTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "CustomerOrderRow": {
         "required": [
           "id",
@@ -18286,6 +18331,156 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "CustomerOrderView": {
+        "required": [
+          "id",
+          "reference",
+          "trackingToken",
+          "status",
+          "fulfillmentMethod",
+          "customerName",
+          "phoneNumber",
+          "customerEmail",
+          "address",
+          "paymentMethod",
+          "paymentStatus",
+          "subtotal",
+          "deliveryFee",
+          "deliveryTime",
+          "total",
+          "upfrontAmount",
+          "upfrontDue",
+          "paidAmount",
+          "remaining",
+          "refundedAmount",
+          "courierName",
+          "waybillNumber",
+          "satisfactionScore",
+          "createdAtUtc",
+          "items",
+          "timeline"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "trackingToken": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "fulfillmentMethod": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "customerEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "address": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OrderAddress"
+              }
+            ]
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "paymentStatus": {
+            "type": "string"
+          },
+          "subtotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "deliveryFee": {
+            "type": "number",
+            "format": "double"
+          },
+          "deliveryTime": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "upfrontAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "upfrontDue": {
+            "type": "number",
+            "format": "double"
+          },
+          "paidAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "remaining": {
+            "type": "number",
+            "format": "double"
+          },
+          "refundedAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "courierName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "waybillNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "satisfactionScore": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerOrderItemView"
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackingStep"
+            }
           }
         }
       },
@@ -18861,7 +19056,7 @@
           "orders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OrderView"
+              "$ref": "#/components/schemas/CustomerOrderView"
             }
           },
           "warranties": {
@@ -21656,6 +21851,12 @@
             "items": {
               "$ref": "#/components/schemas/SplitPartRequest"
             }
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

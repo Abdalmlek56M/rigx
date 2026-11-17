@@ -7,6 +7,9 @@ describe("whatsapp helpers", () => {
     const text = fillTemplate("أهلًا، عايز أسأل على {القطعة} ({الكود}) بسعر {السعر}.\n{اللينك}", { item: "RTX 3060", code: "RX-1", price: "100 ج.م" });
     assert.equal(text, "أهلًا، عايز أسأل على RTX 3060 (RX-1) بسعر 100 ج.م.");
   });
+  it("fills the order reference", () => {
+    assert.equal(fillTemplate("بخصوص طلبي رقم {الطلب}.", { order: "RIGX-1043" }), "بخصوص طلبي رقم RIGX-1043.");
+  });
   it("returns empty text for an empty template", () => {
     assert.equal(fillTemplate("  ", { item: "x" }), "");
   });

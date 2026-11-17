@@ -18,6 +18,8 @@ interface CartApi {
   remove: (code: string, priceOption: PriceOption) => void;
   setQuantity: (code: string, priceOption: PriceOption, quantity: number) => void;
   clear: () => void;
+  /** Re-reads every line from the API, dropping sold-out ones; resolves with how many were dropped. */
+  refresh: () => Promise<number>;
   open: () => void;
   close: () => void;
   dismissToast: () => void;
@@ -31,15 +33,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [removedNotice, setRemovedNotice] = useState(false);
   const [addedModel, setAddedModel] = useState<string | null>(null);
 
+  const refresh = useCallback(async () => {
+    const { lines: fresh, removed } = await refreshLines(cartStore.getSnapshot());
+    cartStore.replace(fresh);
+    setRemovedNotice(removed > 0);
+    return removed;
+  }, []);
+
   const open = useCallback(() => {
     setIsOpen(true);
     setRemovedNotice(false);
     setAddedModel(null);
-    void refreshLines(cartStore.getSnapshot()).then(({ lines: fresh, removed }) => {
-      cartStore.replace(fresh);
-      setRemovedNotice(removed > 0);
-    });
-  }, []);
+    void refresh();
+  }, [refresh]);
 
   const api = useMemo<CartApi>(
     () => ({
@@ -57,11 +63,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setQuantity: (code, priceOption, quantity) =>
         cartStore.replace(setLineQuantity(cartStore.getSnapshot(), code, priceOption, quantity)),
       clear: () => cartStore.replace([]),
+      refresh,
       open,
       close: () => setIsOpen(false),
       dismissToast: () => setAddedModel(null)
     }),
-    [lines, isOpen, removedNotice, addedModel, open]
+    [lines, isOpen, removedNotice, addedModel, open, refresh]
   );
 
   return <CartContext value={api}>{children}</CartContext>;
