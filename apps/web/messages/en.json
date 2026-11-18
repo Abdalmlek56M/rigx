@@ -3335,6 +3335,284 @@
         "done": "Reset finished",
         "result": "{rows} rows deleted. The backup taken before it:"
       }
+    },
+    "settings": {
+      "title": "Store settings",
+      "sectionsLabel": "Settings sections",
+      "save": "Save",
+      "saved": "Settings saved.",
+      "failed": "We couldn't load the settings.",
+      "retry": "Try again",
+      "conflict": "Another user changed the settings. Reloading.",
+      "list": {
+        "item": "Item {number}",
+        "up": "Move up",
+        "down": "Move down",
+        "remove": "Remove"
+      },
+      "sections": {
+        "store-info": "Store data",
+        "contact-links": "Contact links",
+        "shipping": "Shipping & pickup",
+        "payment": "Payment & deposit",
+        "controls": "Store controls",
+        "whatsapp-templates": "WhatsApp messages",
+        "reviews": "Reviews",
+        "language": "Language",
+        "invoice": "Invoice",
+        "lead-sources": "Lead sources",
+        "warranty-options": "Warranty options",
+        "sales": "Reservations & sales",
+        "watermark": "Watermark",
+        "backup": "Backup"
+      },
+      "logo": {
+        "store": {
+          "title": "Store logo",
+          "alt": "Store logo",
+          "upload": "Upload logo",
+          "change": "Change logo",
+          "remove": "Remove logo",
+          "removeTitle": "Remove the store logo?",
+          "removeBody": "The site will use the name instead until you upload another one.",
+          "hint": "JPG, PNG or WebP, up to 12 MB.",
+          "saved": "Logo saved.",
+          "removed": "Logo removed.",
+          "failed": "We couldn't change the logo."
+        },
+        "watermark": {
+          "title": "Watermark logo",
+          "alt": "Watermark logo",
+          "upload": "Upload logo",
+          "change": "Change logo",
+          "remove": "Remove logo",
+          "removeTitle": "Remove the watermark logo?",
+          "removeBody": "New photos will use the store logo instead.",
+          "hint": "White on a transparent background works best. JPG, PNG or WebP, up to 12 MB.",
+          "saved": "Logo saved.",
+          "removed": "Logo removed.",
+          "failed": "We couldn't change the logo."
+        }
+      },
+      "storeInfo": {
+        "title": "Store data",
+        "hint": "Store name, domain, email, WhatsApp hours and pickup details.",
+        "name": "Store name",
+        "domain": "Domain",
+        "email": "Email",
+        "whatsAppHours": "WhatsApp hours",
+        "pickupTitle": "Pickup from the store",
+        "pickupAddress": "Pickup address",
+        "pickupHours": "Pickup hours",
+        "pickupInstructions": "Pickup instructions",
+        "pickupHint": "The address and hours show on the pickup page, footer and invoice.",
+        "summariesTitle": "Page summaries",
+        "warrantySummary": "Warranty summary",
+        "serviceSummary": "Service summary",
+        "consultationSummary": "Consultation summary"
+      },
+      "contactLinks": {
+        "title": "Contact links",
+        "hint": "These links show in the footer, contact page, floating button and invoice.",
+        "listLabel": "Contact links",
+        "add": "Add link",
+        "platform": "Platform",
+        "platforms": {
+          "WhatsApp": "WhatsApp",
+          "Phone": "Phone",
+          "Telegram": "Telegram",
+          "Facebook": "Facebook",
+          "Instagram": "Instagram",
+          "TikTok": "TikTok",
+          "YouTube": "YouTube"
+        },
+        "number": "Number",
+        "url": "URL",
+        "showOnSite": "Show on site",
+        "showOnInvoice": "Show on invoice",
+        "showInFloatingButton": "In the floating button",
+        "numberHint": "Mobile numbers are 8–15 digits, without + or spaces."
+      },
+      "shipping": {
+        "title": "Shipping & pickup",
+        "hint": "The fee and delivery time per governorate, and pickup from the store.",
+        "courier": "Courier name",
+        "pickup": "Pickup from the store",
+        "pickupHint": "Its address and hours are in Store data.",
+        "restTitle": "Every other governorate",
+        "defaultFee": "Default shipping fee",
+        "defaultTime": "Default delivery time",
+        "restHint": "Amounts are in EGP. Any governorate outside a group takes this fee and time.",
+        "groupsTitle": "Governorate groups",
+        "groupsLabel": "Groups",
+        "addGroup": "Add group",
+        "groupName": "Group name",
+        "groupFee": "Shipping fee",
+        "groupTime": "Delivery time",
+        "governorates": "Governorates",
+        "governoratesHint": "A governorate belongs to one group; the ones used in another group are locked."
+      },
+      "payment": {
+        "title": "Payment & deposit",
+        "hint": "The deposit applies above a set amount, and shipping can be paid upfront.",
+        "depositThreshold": "Deposit above",
+        "depositPercent": "Deposit percent %",
+        "shippingUpfront": "Shipping is paid upfront",
+        "shippingUpfrontHint": "Added to the upfront amount with the deposit.",
+        "depositHint": "Amounts are in EGP. Pickup from the store needs no deposit.",
+        "methodsTitle": "Payment methods",
+        "cash": "Cash on delivery",
+        "instaPay": "InstaPay",
+        "instaPayAddress": "InstaPay number or address",
+        "wallet": "E-wallet",
+        "walletNumber": "Wallet number",
+        "methodsHint": "At least one method must stay on."
+      },
+      "controls": {
+        "title": "Store controls",
+        "hint": "Maintenance, the announcement bar and what the homepage shows.",
+        "maintenance": "Maintenance mode",
+        "maintenanceHint": "The site closes and shows customers a message.",
+        "announcement": "Announcement bar text",
+        "announcementHint": "Empty means no bar.",
+        "showSoldOut": "Show sold-out items (with a notify button)",
+        "showCountdown": "Show the offer countdown on products",
+        "guestCheckout": "Order without an account",
+        "guestCheckoutHint": "Off means the customer must sign in before ordering.",
+        "minimumOrder": "Minimum order amount",
+        "homepageTitle": "Homepage section order",
+        "homepageHint": "Move up and down to reorder, and tick what shows.",
+        "homepageLabel": "Homepage sections",
+        "homepage": {
+          "hero": "Hero",
+          "categories": "Categories",
+          "brands": "Brands",
+          "offers": "Offers",
+          "discovery": "Discover",
+          "guide": "Guide",
+          "latest": "New arrivals",
+          "closing": "Before the footer"
+        },
+        "risk": {
+          "title": "Confirm the risky changes",
+          "maintenance": "The site closes to customers and shows them the maintenance message. Staff stay in.",
+          "guest": "Customers must create an account before ordering.",
+          "confirm": "Continue"
+        }
+      },
+      "whatsapp": {
+        "title": "WhatsApp messages",
+        "hint": "The ready messages; each button opens WhatsApp with this text.",
+        "general": "Floating button",
+        "product": "Product page",
+        "build": "Build / build your PC",
+        "order": "Order",
+        "warranty": "Warranty",
+        "requestReply": "Request reply",
+        "backInStock": "Back in stock",
+        "placeholders": "Allowed variables: {الاسم} {الموبايل} {القطعة} {الكود} {السعر} {اللينك} {الطلب} — filled automatically."
+      },
+      "reviews": {
+        "title": "Reviews",
+        "hint": "Reviews show after approval.",
+        "enabled": "Reviews are on",
+        "minimum": "Reviews before stars show",
+        "minimumHint": "Stars appear on a product only after this many reviews."
+      },
+      "language": {
+        "title": "Language",
+        "hint": "The default language and whether English is available.",
+        "default": "Default language",
+        "arabic": "Arabic",
+        "englishName": "English",
+        "english": "English is on",
+        "englishHint": "The EN button in the header.",
+        "note": "Part names and specs stay as they are. The interface, categories, policies and product description (when written in English) are translated.",
+        "risk": {
+          "title": "Turn English off?",
+          "body": "The site becomes Arabic only and the EN button disappears.",
+          "confirm": "Turn English off"
+        }
+      },
+      "invoice": {
+        "title": "Invoice",
+        "hint": "The invoice number prefix and look.",
+        "prefix": "Invoice number prefix",
+        "prefixHint": "2–6 English letters, e.g. INV.",
+        "backgroundLogo": "RIGX logo behind the invoice",
+        "warrantyQr": "Warranty verification QR",
+        "terms": "Terms line under the invoice",
+        "termsHint": "Optional; shows at the end of the invoice."
+      },
+      "leadSources": {
+        "title": "Lead sources",
+        "hint": "The 'how did you hear about us?' choices on an order.",
+        "listLabel": "Lead sources",
+        "add": "Add source",
+        "source": "Source"
+      },
+      "warranty": {
+        "title": "Warranty options",
+        "hint": "The choices the warranty field in stock offers.",
+        "listLabel": "Warranty options",
+        "add": "Add option",
+        "label": "Warranty label",
+        "months": "Months",
+        "monthsHint": "Leave months empty for the agent's warranty."
+      },
+      "sales": {
+        "title": "Reservations & sales",
+        "hint": "How long stock is held, the POS discount limit and the sold feed.",
+        "reservationHours": "Stock reservation (hours)",
+        "autoRelease": "Release the stock automatically",
+        "autoReleaseHint": "Off means staff are notified instead of releasing it.",
+        "reservationHint": "Stock is held for this long after an order is confirmed.",
+        "posTitle": "POS",
+        "posDiscount": "POS maximum discount %",
+        "posHint": "For staff without the price-override permission.",
+        "feedTitle": "Sold feed page",
+        "soldFeed": "The page is on",
+        "soldFeedHint": "Shows what was sold recently.",
+        "showGovernorate": "Show the governorate"
+      },
+      "watermark": {
+        "title": "Watermark",
+        "hint": "Applied automatically to item, build and article photos.",
+        "enabled": "Watermark is on",
+        "position": "Position",
+        "positions": {
+          "BottomLeft": "Bottom left",
+          "BottomRight": "Bottom right",
+          "TopLeft": "Top left",
+          "TopRight": "Top right",
+          "Center": "Center"
+        },
+        "opacity": "Opacity %",
+        "size": "Size % of the image width",
+        "articles": "Article photos too",
+        "fallback": "Without a watermark logo, the store logo is used.",
+        "oldImagesTitle": "Older photos",
+        "oldImagesHint": "The original is kept without the mark, so you can apply this setting to every old photo. Save the setting first if you changed it.",
+        "reapply": "Apply to older photos",
+        "reapplyTitle": "Reprocess every photo?",
+        "reapplyBody": "Every item, build and article photo is reprocessed with the current watermark. It runs in the background and may take a while.",
+        "reapplyStarted": "Photo processing started.",
+        "reapplyFailed": "We couldn't start photo processing."
+      },
+      "backup": {
+        "title": "Backup",
+        "hint": "The daily backup, its time and how many days are kept.",
+        "enabled": "Daily backup is on",
+        "enabledHint": "Runs automatically every day.",
+        "hour": "Backup time (Cairo hour)",
+        "retention": "Days kept",
+        "hint2": "The hour is 0–23. Archives older than the kept days are deleted.",
+        "risk": {
+          "title": "Turn the backup off?",
+          "body": "There will be no automatic daily backup.",
+          "confirm": "Turn it off"
+        }
+      }
     }
   }
 }
