@@ -25,7 +25,7 @@ public sealed class ExpenseService(IDbContextFactory<RetailDbContext> contextFac
             var types = (await db.ExpenseTypes.AsNoTracking().Where(item => item.IsActive).Select(item => item.Name).ToListAsync(cancellationToken)).ToHashSet();
             var entity = new RetailExpense
             {
-                Id = Guid.CreateVersion7(), ExpenseDate = request.ExpenseDate ?? BusinessDay.Of(now, businessZone), Amount = amount,
+                Id = Guid.CreateVersion7(), ExpenseDate = ExpenseRules.Date(request.ExpenseDate, BusinessDay.Of(now, businessZone)), Amount = amount,
                 Category = ExpenseRules.Category(request.Category, types), Classification = classification, Note = note,
                 OrderId = request.OrderId, UnitId = request.UnitId, AssemblyId = request.AssemblyId,
                 MoneyAccountId = request.MoneyAccountId, PaidByPartnerId = request.PaidByPartnerId,

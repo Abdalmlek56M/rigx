@@ -72,7 +72,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField label={t("amount")} name="amount" type="number" ltr value={form.amount} onChange={(amount) => set({ amount })} error={submit.errors.fields.amount} />
-          <TextField label={t("date")} name="expenseDate" type="date" ltr value={form.date} onChange={(date) => set({ date })} error={submit.errors.fields.expenseDate} />
+          <TextField label={t("date")} name="expenseDate" type="date" ltr max={today} value={form.date} onChange={(date) => set({ date })} error={submit.errors.fields.expenseDate} />
           <SelectField
             label={t("category")} name="category" value={form.category} onChange={(category) => set({ category })}
             options={[{ value: "", label: t("pickCategory") }, ...activeTypes.map((type) => ({ value: type.name, label: type.name }))]}

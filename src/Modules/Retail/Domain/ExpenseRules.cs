@@ -11,6 +11,11 @@ public static class ExpenseRules
         return rounded > 0 ? rounded : throw new RetailException(400, "Expense amount must be greater than zero.");
     }
 
+    /// <summary>No date means today; an expense cannot be dated after today (Cairo business day). Owner decision 18 Nov 2026.</summary>
+    public static DateOnly Date(DateOnly? value, DateOnly today) => value is DateOnly date
+        ? date <= today ? date : throw new RetailException(400, "An expense cannot be dated in the future.")
+        : today;
+
     /// <summary>The category must be the name of an active expense type.</summary>
     public static string Category(string? value, IReadOnlySet<string> activeTypes)
     {

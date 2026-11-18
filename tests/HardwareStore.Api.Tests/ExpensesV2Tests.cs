@@ -220,7 +220,7 @@ public sealed class ExpensesV2PostgreSqlTests(OwnerBootstrapPostgreSqlFixture fi
         await retail.FundAsync(1000m);
         await retail.Expenses.CreateExpenseAsync(Overhead(100m, date: new DateOnly(2026, 10, 5), note: "إيجار, شهر أكتوبر"), Actor);
         await retail.Expenses.CreateExpenseAsync(Overhead(25.5m, Internet, new DateOnly(2026, 10, 6), "=HYPERLINK(\"x\")"), Actor);
-        await retail.Expenses.CreateExpenseAsync(Overhead(5m, date: new DateOnly(2026, 11, 6)), Actor);
+        await retail.Expenses.CreateExpenseAsync(Overhead(5m, date: new DateOnly(2026, 9, 28)), Actor);
 
         var lines = Encoding.UTF8.GetString(CsvExportWriter.Write(await retail.Expenses.ExportAsync(new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 31))))
             .TrimStart('\uFEFF').Split("\r\n", StringSplitOptions.RemoveEmptyEntries);

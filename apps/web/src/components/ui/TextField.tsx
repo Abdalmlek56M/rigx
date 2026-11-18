@@ -14,10 +14,12 @@ interface TextFieldProps {
   error?: string | null;
   /** The text's own direction when it is in a fixed language (an Arabic or English copy), whatever the page language. */
   dir?: "ltr" | "rtl";
+  /** Upper bound for date/number inputs (e.g. no future date). */
+  max?: string;
 }
 
 /** A labelled text input; `error` is announced and linked to the input. */
-export function TextField({ label, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir }: TextFieldProps) {
+export function TextField({ label, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, max }: TextFieldProps) {
   const errorId = `${name}-error`;
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
@@ -27,6 +29,7 @@ export function TextField({ label, name, value, onChange, type = "text", ltr = f
         type={type}
         value={value}
         required={required}
+        max={max}
         autoComplete={autoComplete}
         placeholder={placeholder}
         dir={ltr ? "ltr" : dir}

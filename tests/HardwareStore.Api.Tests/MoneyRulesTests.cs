@@ -52,6 +52,10 @@ public sealed class MoneyRulesTests
     [Fact]
     public void An_expense_category_must_be_an_active_type()
     {
+        var today = new DateOnly(2026, 11, 18);
+        Assert.Equal(today, ExpenseRules.Date(null, today));
+        Assert.Equal(today.AddDays(-3), ExpenseRules.Date(today.AddDays(-3), today));
+        Assert.Equal(400, Assert.Throws<RetailException>(() => ExpenseRules.Date(today.AddDays(1), today)).StatusCode);
         Assert.Equal("إيجار", ExpenseRules.Category(" إيجار ", ActiveTypes));
         Assert.Equal(400, Assert.Throws<RetailException>(() => ExpenseRules.Category("غير موجود", ActiveTypes)).StatusCode);
         Assert.Equal(400, Assert.Throws<RetailException>(() => ExpenseRules.Category(" ", ActiveTypes)).StatusCode);
