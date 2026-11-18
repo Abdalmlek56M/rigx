@@ -3234,6 +3234,107 @@
           "System": "System"
         }
       }
+    },
+    "system": {
+      "title": "System",
+      "trash": {
+        "title": "Trash",
+        "hint": "Anything deleted lands here first. Deleting forever needs its own permission.",
+        "kindLabel": "Kind",
+        "allKinds": "All",
+        "kinds": {
+          "article": "Article",
+          "faq": "FAQ",
+          "media-asset": "Image",
+          "blacklist": "Blacklist"
+        },
+        "columns": {
+          "label": "Item",
+          "kind": "Kind",
+          "deletedBy": "Deleted by",
+          "deletedAt": "When",
+          "purgeAfter": "Deleted for good after"
+        },
+        "restore": "Restore",
+        "purge": "Delete forever",
+        "restored": "Restored",
+        "purged": "Deleted for good",
+        "empty": "The trash is empty.",
+        "purgeTitle": "Delete forever",
+        "purgeBody": "\"{label}\" will be deleted for good and cannot be restored. We will ask for a code sent to your email."
+      },
+      "backups": {
+        "title": "Backups",
+        "hint": "A full copy with the data, images and settings. Run one now and check it is sound.",
+        "runNow": "Back up now",
+        "started": "Backup finished",
+        "empty": "No backups yet.",
+        "columns": {
+          "started": "Started",
+          "trigger": "Trigger",
+          "status": "Status",
+          "size": "Size",
+          "verified": "Verified"
+        },
+        "verify": "Verify",
+        "verifiedDone": "Backup checked",
+        "notVerified": "Not yet",
+        "verifiedOk": "Sound ({tables} tables, {rows} rows)",
+        "verifiedFailed": "Has a problem",
+        "download": "Download",
+        "downloadTitle": "Download backup",
+        "downloadBody": "The backup holds all the store's data. We will ask for a code sent to your email.",
+        "downloaded": "Backup downloaded"
+      },
+      "export": {
+        "title": "Export data",
+        "hint": "Leave the dates empty to export the last 30 days.",
+        "dataset": "Data",
+        "format": "Format",
+        "from": "From",
+        "to": "To",
+        "datasets": {
+          "orders": "Orders and sales",
+          "stock-items": "Stock",
+          "expenses": "Expenses",
+          "purchases": "Purchases",
+          "money-movements": "Money movements",
+          "audit": "Audit log",
+          "customers": "Customers"
+        },
+        "badRange": "The start date is after the end date.",
+        "stepUpNote": "Exporting customers needs a code sent to your email.",
+        "download": "Export",
+        "downloaded": "File downloaded",
+        "audited": "Every export is recorded in the audit log."
+      },
+      "reset": {
+        "title": "Reset data",
+        "hint": "Deletes the data you pick for good. A backup is taken automatically first.",
+        "sections": "What to delete",
+        "options": {
+          "business": {
+            "title": "Business",
+            "body": "Orders, sales, stock, expenses and accounts."
+          },
+          "content": {
+            "title": "Content",
+            "body": "Articles, questions and images."
+          },
+          "customers": {
+            "title": "Customers",
+            "body": "Customer accounts and their data."
+          }
+        },
+        "customersNeedBusiness": "Deleting customers also deletes the business data, because orders and warranties point to them.",
+        "typeLabel": "Type {word} to confirm",
+        "button": "Reset data",
+        "stepUpNote": "Owner only, and needs a code sent to their email.",
+        "confirmTitle": "Reset data",
+        "confirmBody": "The data you picked will be deleted for good. A backup is taken first, then we will ask for a code sent to your email.",
+        "done": "Reset finished",
+        "result": "{rows} rows deleted. The backup taken before it:"
+      }
     }
   }
 }
