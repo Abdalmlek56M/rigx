@@ -2705,7 +2705,9 @@
         "name": "Build name",
         "cancel": "Cancel",
         "submit": "Create build",
-        "created": "Build created"
+        "created": "Build created",
+        "firstPart": "First part from stock",
+        "pick": "Pick"
       },
       "actions": {
         "preview": "Preview in store",

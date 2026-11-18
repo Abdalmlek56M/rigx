@@ -28,9 +28,12 @@ export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; t
   const { state, reload } = useLoad(load);
   // The partner as the last save or money movement left it (the rest of the screen stays as it is).
   const [saved, setSaved] = useState<Partner | null>(null);
+  // Bumped by every money movement, so the statement reads its range again.
+  const [movements, setMovements] = useState(0);
 
   /** Reads the partner again after a 409 or a capital or payout entry (balances changed); a failed read keeps what is shown. */
   const refresh = () => {
+    setMovements((count) => count + 1);
     fetchPartner(id).then((fresh) => setSaved(fresh.partner), () => undefined);
     onChanged();
   };
@@ -86,7 +89,7 @@ export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; t
       </div>
       <PartnerCapital partnerId={id} today={today} accounts={accounts} canPost={has("Finance.ManagePartnerAgreements")} onChanged={refresh} />
       <PartnerPayouts partnerId={id} accounts={accounts} canPost={has("Finance.PostPartnerSettlements")} onChanged={refresh} />
-      <PartnerStatement partnerId={id} today={today} />
+      <PartnerStatement partnerId={id} today={today} movements={movements} />
     </section>
   );
 }

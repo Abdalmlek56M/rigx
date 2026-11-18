@@ -17,8 +17,9 @@ export const fetchBuilds = () => required(unwrap(api().GET("/api/v1/admin/retail
 
 export const fetchBuild = (id: string) => required(unwrap(api().GET("/api/v1/admin/retail/assemblies/{id}", path(id))));
 
-export const createBuild = (name: string) =>
-  required(unwrap(api().POST("/api/v1/admin/retail/assemblies", { body: { name, unitIds: [] } })));
+/** A build starts with at least one part (the server refuses an empty one). */
+export const createBuild = (name: string, firstUnitId: string) =>
+  required(unwrap(api().POST("/api/v1/admin/retail/assemblies", { body: { name, unitIds: [firstUnitId] } })));
 
 export const editBuild = (id: string, body: BuildEditRequest) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}", { ...path(id), body })));

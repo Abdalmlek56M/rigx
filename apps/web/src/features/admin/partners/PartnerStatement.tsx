@@ -13,11 +13,16 @@ import { defaultStatementRange, statementRangeValid, type DateRange } from "./pa
  * The statement for a date range (this month so far to begin with). "PDF" prints the page's print view: a copy of the statement is added to the document
  * as the only printed content (`data-print-invoice`: A4, white paper, whatever the theme), the way the store's invoice prints.
  */
-export function PartnerStatement({ partnerId, today }: { partnerId: string; today: string }) {
+export function PartnerStatement({ partnerId, today, movements }: { partnerId: string; today: string; movements: number }) {
   const t = useTranslations("admin.partners.statement");
   const [draft, setDraft] = useState<DateRange>(() => defaultStatementRange(today));
   const [applied, setApplied] = useState<DateRange>(draft);
-  const { state, reload } = useLoad(useCallback(() => fetchStatement(partnerId, applied.from, applied.to), [partnerId, applied]));
+  // `movements` is only a trigger: a new capital entry or payout reads the statement again.
+  const { state, reload } = useLoad(useCallback(
+    () => fetchStatement(partnerId, applied.from, applied.to),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [partnerId, applied, movements]
+  ));
 
   return (
     <section className="flex min-w-0 flex-col gap-3">
@@ -26,7 +31,10 @@ export function PartnerStatement({ partnerId, today }: { partnerId: string; toda
         className="flex flex-wrap items-end gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          if (statementRangeValid(draft)) setApplied(draft);
+          if (!statementRangeValid(draft)) return;
+          // Same range again = read it again (a deposit or payout may have landed since).
+          if (draft.from === applied.from && draft.to === applied.to) reload();
+          else setApplied(draft);
         }}
       >
         <TextField label={t("from")} name="statementFrom" type="date" ltr value={draft.from} onChange={(from) => setDraft((current) => ({ ...current, from }))} />
