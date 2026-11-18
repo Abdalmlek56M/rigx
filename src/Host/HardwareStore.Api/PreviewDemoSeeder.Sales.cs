@@ -6,7 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 internal sealed partial class PreviewDemoSeeder
 {
-    /// <summary>Twelve online orders over the last 30 days, every customer status, delivery and pickup, COD/InstaPay/wallet.</summary>
+    /// <summary>
+    /// Sixteen online orders over the last 30 days, every customer status, delivery and pickup, COD/InstaPay/wallet;
+    /// the four completed ones are what the dashboard's sales and charts count.
+    /// </summary>
     private async Task<int> SeedOrdersAsync(CancellationToken cancellationToken)
     {
         var customerIds = customerIdsByEmail.Values.ToList();
@@ -60,7 +63,7 @@ internal sealed partial class PreviewDemoSeeder
             var steps = delivery
                 ? new[] { OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Shipped, OrderStatus.Delivered }
                 : new[] { OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Delivered };
-            var target = Array.IndexOf(steps, definition.Status);
+            var target = definition.Status == OrderStatus.Completed ? steps.Length - 1 : Array.IndexOf(steps, definition.Status);
             var paidMethod = order.PaymentMethod == OrderPaymentMethod.CashOnDelivery ? OrderPaymentMethod.Cash : order.PaymentMethod;
             for (var index = 0; index <= target; index++)
             {
@@ -71,15 +74,23 @@ internal sealed partial class PreviewDemoSeeder
                 order = await Statuses.UpdateStatusAsync(order.Id, new OrderStatusRequest(steps[index], null, order.RowVersion),
                     ownerId, reservation, invoice, cancellationToken);
             }
-            if (definition.Status == OrderStatus.Delivered && order.Remaining > 0)
+            if ((definition.Status is OrderStatus.Delivered or OrderStatus.Completed) && order.PaymentRequired && order.Remaining > 0)
                 order = await Payments.AddPaymentAsync(order.Id,
                     new OrderPaymentRequest(paidMethod, order.Remaining, null, order.RowVersion), ownerId, cancellationToken);
+            if (definition.Status == OrderStatus.Completed)
+            {
+                if (!order.PaymentRequired && order.PaymentStatus != PaymentStatus.Waived)
+                    order = await Payments.WaivePaymentAsync(order.Id,
+                        new WaivePaymentRequest("دفع عند الاستلام من المحل", order.RowVersion), ownerId, cancellationToken);
+                await Statuses.CompleteOrderAsync(order.Id, new CompleteOrderRequest(order.RowVersion, null), ownerId,
+                    cancellationToken);
+            }
             created++;
         }
         return created;
     }
 
-    /// <summary>Five paid store sales; their four used pieces are what makes the four demo items sold out.</summary>
+    /// <summary>Five paid store sales, handed over and completed like the real POS flow; their four used pieces are what makes the four demo items sold out.</summary>
     private async Task<int> SeedPosAsync(CancellationToken cancellationToken)
     {
         var phones = PreviewDemoDefinitions.Sales().Select(sale => sale.Phone).ToArray();
@@ -89,9 +100,9 @@ internal sealed partial class PreviewDemoSeeder
             return 0;
 
         var store = await Settings.GetAdminAsync(cancellationToken);
-        var policy = new PosPolicy(store.Sales.PosMaxDiscountPercent, true,
-            new ReservationPolicy(store.Sales.ReservationHours, store.Sales.ReservationAutoRelease),
-            code => Rate(store.Shipping, code));
+        var reservation = new ReservationPolicy(store.Sales.ReservationHours, store.Sales.ReservationAutoRelease);
+        var invoice = new InvoicePolicy(store.Invoice.NumberPrefix, ownerName, businessZone);
+        var policy = new PosPolicy(store.Sales.PosMaxDiscountPercent, true, reservation, code => Rate(store.Shipping, code));
         var created = 0;
         foreach (var sale in PreviewDemoDefinitions.Sales())
         {
@@ -99,11 +110,19 @@ internal sealed partial class PreviewDemoSeeder
             var request = new PosSaleRequest(new OrderCustomer(sale.CustomerName, sale.Phone), OrderFulfillment.Pickup, null,
                 Lines(sale.Lines));
             var preview = await Pos.PreviewAsync(request, policy, false, cancellationToken);
-            await Pos.SellAsync(request with
+            var order = await Pos.SellAsync(request with
             {
                 Payments = [new PosPaymentRequest(sale.Payment, preview.Total, null)],
                 Confirm = true
             }, policy, ownerId, cancellationToken);
+            clock.UtcNow = clock.UtcNow.AddHours(1);
+            order = await Statuses.UpdateStatusAsync(order.Id, new OrderStatusRequest(OrderStatus.Preparing, null, order.RowVersion),
+                ownerId, reservation, invoice, cancellationToken);
+            clock.UtcNow = clock.UtcNow.AddHours(1);
+            order = await Statuses.UpdateStatusAsync(order.Id, new OrderStatusRequest(OrderStatus.Delivered, null, order.RowVersion),
+                ownerId, reservation, invoice, cancellationToken);
+            clock.UtcNow = clock.UtcNow.AddHours(1);
+            await Statuses.CompleteOrderAsync(order.Id, new CompleteOrderRequest(order.RowVersion, null), ownerId, cancellationToken);
             created++;
         }
         return created;

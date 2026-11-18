@@ -216,14 +216,15 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
         Assert.Equal(32, first.StockItems);
         Assert.Equal(3, first.Builds);
         Assert.Equal(10, first.Customers);
-        Assert.Equal(12, first.OnlineOrders);
+        Assert.Equal(16, first.OnlineOrders);
         Assert.Equal(5, first.PosSales);
         Assert.Equal(6, first.Expenses);
 
         var retail = provider.GetRequiredService<IDbContextFactory<RetailDbContext>>();
         var storefront = await new StoreItemService(retail).ListAsync(new StoreItemQuery(PageSize: 60));
         Assert.Equal(32, storefront.Total);
-        Assert.Equal(4, storefront.Items.Count(item => item.Available == 0));
+        var soldOutCards = storefront.Items.Where(item => item.Available == 0).ToList();
+        Assert.Equal(4, soldOutCards.Count);
         Assert.True(storefront.Counts.New > 0);
         Assert.True(storefront.Counts.Used > 0);
         Assert.Equal(3, (await new AssemblyService(retail, TimeProvider.System).ListPublishedAssembliesAsync()).Count);
@@ -253,21 +254,31 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
         await connection.OpenAsync();
         Assert.Equal(32L, await ScalarAsync(connection, "SELECT COUNT(*) FROM stock_items"));
         Assert.Equal(3L, await ScalarAsync(connection, "SELECT COUNT(*) FROM assemblies"));
-        Assert.Equal(17L, await ScalarAsync(connection, "SELECT COUNT(*) FROM store_orders"));
+        Assert.Equal(21L, await ScalarAsync(connection, "SELECT COUNT(*) FROM store_orders"));
         Assert.Equal(3L, await OnlineOrdersAsync(connection, "New"));
         Assert.Equal(2L, await OnlineOrdersAsync(connection, "Confirmed"));
         Assert.Equal(2L, await OnlineOrdersAsync(connection, "Preparing"));
         Assert.Equal(2L, await OnlineOrdersAsync(connection, "Shipped"));
         Assert.Equal(2L, await OnlineOrdersAsync(connection, "Delivered"));
+        Assert.Equal(4L, await OnlineOrdersAsync(connection, "Completed"));
         Assert.Equal(1L, await OnlineOrdersAsync(connection, "Cancelled"));
         Assert.Equal(5L, await ScalarAsync(connection,
-            "SELECT COUNT(*) FROM store_orders WHERE channel = 'Store' AND status = 'Confirmed' AND payment_status = 'Paid'"));
-        Assert.Equal(2L, await ScalarAsync(connection, "SELECT COUNT(*) FROM invoices"));
+            "SELECT COUNT(*) FROM store_orders WHERE channel = 'Store' AND status = 'Completed' AND payment_status = 'Paid'"));
+        Assert.Equal(11L, await ScalarAsync(connection, "SELECT COUNT(*) FROM invoices"));
         Assert.Equal(6L, await ScalarAsync(connection, "SELECT COUNT(*) FROM retail_expenses"));
         Assert.Equal(5L, await ScalarAsync(connection, "SELECT COUNT(*) FROM content_policies WHERE status = 'Published'"));
         Assert.Equal(6L, await ScalarAsync(connection, "SELECT COUNT(*) FROM content_faqs WHERE status = 'Published'"));
         Assert.Equal(10L, await ScalarAsync(connection,
             "SELECT COUNT(*) FROM user_accounts ua JOIN user_roles ur ON ur.user_account_id = ua.id JOIN roles r ON r.id = ur.role_id WHERE r.code = 'Customer'"));
+
+        using (var scope = provider.CreateScope())
+        {
+            var reports = scope.ServiceProvider.GetRequiredService<BusinessReportService>();
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var report = await reports.BuildReportAsync(today.AddDays(-32), today);
+            Assert.True(report.CompletedOrders >= 9,
+                $"The dashboard counts completed sales; found {report.CompletedOrders} completed orders.");
+        }
     }
 
     private static async Task<long> OnlineOrdersAsync(NpgsqlConnection connection, string status)

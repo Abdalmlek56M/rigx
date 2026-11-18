@@ -45,7 +45,7 @@ internal static class PreviewDemoDefinitions
 
         S("ram-vengeance16", "Corsair Vengeance 16GB DDR4-3200", StockCondition.New, "memory", 6, 1450m, 2190m,
             specs: Specs(("Capacity", "16 GB"), ("Speed", "3200 MT/s"))),
-        S("ram-fury32", "Kingston Fury 32GB DDR5-6000", StockCondition.New, "memory", 3, 3900m, 5490m,
+        S("ram-fury32", "Kingston Fury 32GB DDR5-6000", StockCondition.New, "memory", 4, 3900m, 5490m,
             specs: Specs(("Capacity", "32 GB"), ("Speed", "6000 MT/s"))),
         S("ram-ddr4-8gb-used", "Kingston 8GB DDR4-2666", StockCondition.Used, "memory", 1, 350m, 650m,
             specs: Specs(("Capacity", "8 GB"))),
@@ -80,7 +80,7 @@ internal static class PreviewDemoDefinitions
         S("cool-kraken360", "NZXT Kraken 360 RGB", StockCondition.New, "cooling", 1, 8000m, 9890m,
             specs: Specs(("Type", "Liquid"), ("Radiator", "360 mm"))),
 
-        S("peripheral-redragon-k552", "Redragon K552 Keyboard", StockCondition.New, "peripherals", 3, 900m, 1450m),
+        S("peripheral-redragon-k552", "Redragon K552 Keyboard", StockCondition.New, "peripherals", 4, 900m, 1450m),
         S("peripheral-gpx2", "Logitech G Pro X Superlight 2", StockCondition.New, "peripherals", 1, 4200m, 5990m,
             specs: Specs(("Type", "Mouse")))
     ];
@@ -147,7 +147,14 @@ internal static class PreviewDemoDefinitions
             L("ram-fury32"), L("peripheral-redragon-k552")),
         O("demo1@example.com", 20, 0, OrderFulfillment.Delivery, OrderPaymentMethod.InstaPay, OrderStatus.Delivered,
             L("psu-cv650"), L("cool-ak400"), L("case-matrexx40")),
-        O("demo2@example.com", 15, 0, OrderFulfillment.Pickup, OrderPaymentMethod.CashOnDelivery, OrderStatus.Cancelled, L("peripheral-gpx2"))
+        O("demo2@example.com", 15, 0, OrderFulfillment.Pickup, OrderPaymentMethod.CashOnDelivery, OrderStatus.Cancelled, L("peripheral-gpx2")),
+        O("demo3@example.com", 24, 0, OrderFulfillment.Delivery, OrderPaymentMethod.CashOnDelivery, OrderStatus.Completed,
+            L("ram-vengeance16")),
+        O("demo6@example.com", 19, 0, OrderFulfillment.Pickup, OrderPaymentMethod.CashOnDelivery, OrderStatus.Completed, L("ssd-nv3-1tb")),
+        O("demo8@example.com", 12, 0, OrderFulfillment.Delivery, OrderPaymentMethod.InstaPay, OrderStatus.Completed,
+            L("ram-fury32")),
+        O("demo9@example.com", 5, 0, OrderFulfillment.Pickup, OrderPaymentMethod.CashOnDelivery, OrderStatus.Completed,
+            L("peripheral-redragon-k552"))
     ];
 
     public static PreviewDemoSale[] Sales() =>
