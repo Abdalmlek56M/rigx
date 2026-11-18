@@ -21,3 +21,6 @@ export const fetchAuditFilters = () => required(unwrap(api().GET("/api/v1/admin/
 
 export const fetchEvents = (query: { fromUtc?: string; toUtc?: string; eventType?: string; outcome?: string; search?: string; page: number }) =>
   required(unwrap(api().GET("/api/v1/admin/audit/events", { params: { query: { ...query, pageSize: PAGE_SIZE } } })));
+
+export const restoreEntry = (id: string, headers: Record<string, string>) =>
+  unwrap(browserApi().POST("/api/v1/admin/audit/entries/{id}/restore", { params: { path: { id } }, headers }));

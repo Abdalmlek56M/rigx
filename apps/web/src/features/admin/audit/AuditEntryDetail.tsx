@@ -7,13 +7,16 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { changeRows } from "./audit-rules";
 import { fetchEntry } from "./audit-api";
 import { AuditField as Row } from "./AuditField";
+import { AuditRestore } from "./AuditRestore";
+import { usePermissions } from "../use-permissions";
 
 /** One data-change entry: every field of the entry and its before → after rows. */
-export function AuditEntryDetail({ id, onClose }: { id: string; onClose: () => void }) {
+export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onClose: () => void; onRestored: () => void }) {
   const t = useTranslations("admin.audit");
   const locale = useLocale();
   const load = useCallback(() => fetchEntry(id), [id]);
   const { state, reload } = useLoad(load);
+  const { has } = usePermissions();
   if (state.status === "loading") return <div aria-hidden="true" className="h-40 animate-pulse rounded-[10px] border border-line bg-surface" />;
   if (state.status === "error") {
     return (
@@ -62,6 +65,7 @@ export function AuditEntryDetail({ id, onClose }: { id: string; onClose: () => v
           </ul>
         )}
       </div>
+      {has("Audit.Restore") && entry.canRestore && rows.length > 0 ? <AuditRestore id={entry.id} onRestored={() => { reload(); onRestored(); }} /> : null}
       <p className="m-0 text-xs text-ink-muted [overflow-wrap:anywhere]">{t("changes.idLine", { id: entry.id })}</p>
     </section>
   );

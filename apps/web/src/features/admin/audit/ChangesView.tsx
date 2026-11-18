@@ -89,7 +89,7 @@ export function ChangesView({ values, set }: { values: AuditValues; set: AuditSe
         <Pager info={{ page: entries.state.data.page, pageSize: entries.state.data.pageSize, total: entries.state.data.total }} onPage={(next) => set({ page: String(next) })} />
       ) : null}
       <div ref={detailRef} className="scroll-mt-20 empty:hidden">
-        {values.entry ? <AuditEntryDetail id={values.entry} onClose={() => set({ entry: "", page: values.page })} /> : null}
+        {values.entry ? <AuditEntryDetail id={values.entry} onClose={() => set({ entry: "", page: values.page })} onRestored={entries.reload} /> : null}
       </div>
     </>
   );

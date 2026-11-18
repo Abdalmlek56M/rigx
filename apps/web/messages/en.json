@@ -3097,6 +3097,142 @@
         "metadata": "Extra data",
         "noMetadata": "No extra data.",
         "notOnPage": "This record is not on the current page."
+      },
+      "restore": {
+        "button": "Restore these values",
+        "title": "Restore the old values",
+        "body": "The record goes back to the values it had before this change. The restore is logged too.",
+        "done": "Values restored"
+      }
+    },
+    "users": {
+      "title": "Users and roles",
+      "viewLabel": "View",
+      "views": {
+        "users": "Users",
+        "roles": "Roles"
+      },
+      "search": "Search name or email",
+      "activeLabel": "Status",
+      "active": {
+        "all": "All",
+        "true": "Active",
+        "false": "Inactive"
+      },
+      "empty": "No users.",
+      "emptyRoles": "No roles.",
+      "rolesHint": "Pick a role to change its permissions, or create a new one.",
+      "failed": "Could not load the data.",
+      "retry": "Try again",
+      "close": "Close",
+      "noRoles": "No role",
+      "columns": {
+        "name": "User",
+        "email": "Email",
+        "roles": "Roles",
+        "status": "Status",
+        "code": "Code",
+        "users": "Users",
+        "permissions": "Permissions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "invite": {
+        "open": "New user",
+        "title": "Add a user",
+        "fullName": "Full name",
+        "email": "Email",
+        "phone": "Phone (optional)",
+        "username": "Username",
+        "roles": "Roles",
+        "hint": "They get an invitation email to sign in with, or can use a Google account with the same email. No passwords.",
+        "submit": "Send invitation",
+        "created": "User added",
+        "queued": "The invitation email was queued."
+      },
+      "detail": {
+        "profile": "Details",
+        "fullName": "Full name",
+        "phone": "Phone",
+        "active": "Account is active",
+        "save": "Save",
+        "deactivate": "Deactivate",
+        "deactivateTitle": "Deactivate the account",
+        "deactivateBody": "They will be signed out and cannot sign in until you turn the account back on.",
+        "self": "This is your account: you cannot deactivate it, change its roles or restrict it from here."
+      },
+      "rolesCard": {
+        "title": "User roles",
+        "save": "Save roles",
+        "stepUpNote": "Changing roles needs the confirmation code sent to your email.",
+        "emptyTitle": "Remove every role",
+        "emptyBody": "The user will have no permissions and cannot work in the admin."
+      },
+      "restrictions": {
+        "title": "Suspension and ban",
+        "empty": "This account has no restrictions.",
+        "failed": "Could not load the restrictions.",
+        "retry": "Try again",
+        "types": {
+          "Suspension": "Suspension",
+          "Ban": "Ban"
+        },
+        "active": "Active",
+        "ended": "Ended",
+        "from": "From",
+        "untilLabel": "Until",
+        "forever": "No end",
+        "reinstatedBecause": "Reinstated: {reason}",
+        "reinstate": "Reinstate",
+        "reinstateReason": "Reason for reinstating",
+        "reinstated": "Restriction lifted",
+        "add": "New restriction",
+        "type": "Type",
+        "until": "Until day",
+        "reason": "Reason",
+        "added": "Restriction added",
+        "submit": {
+          "Suspension": "Suspend account",
+          "Ban": "Ban account"
+        },
+        "confirm": {
+          "Suspension": "The account is signed out and cannot sign in until the day you picked.",
+          "Ban": "The account is signed out and cannot sign in until someone lifts the ban.",
+          "reinstate": "The account can sign in again, and the reason is kept in the activity log."
+        }
+      },
+      "roleEditor": {
+        "open": "New role",
+        "newTitle": "New role",
+        "editTitle": "Permissions of {name}",
+        "close": "Close",
+        "code": "Code (English)",
+        "name": "Name",
+        "permissions": "Permissions",
+        "stepUpNote": "Saving needs the confirmation code sent to your email.",
+        "create": "Create role",
+        "save": "Save permissions",
+        "created": "Role created",
+        "saved": "Permissions saved",
+        "failed": "Could not load the permissions.",
+        "retry": "Try again"
+      },
+      "permissions": {
+        "selectGroup": "Select all",
+        "systemWarning": "This role gets system permissions (users, backups, data reset...). Make sure that is what you want.",
+        "groups": {
+          "Sales": "Sales",
+          "Inventory": "Inventory",
+          "Finance": "Finance",
+          "Purchasing": "Purchasing",
+          "Catalog": "Catalog",
+          "Customers": "Customers",
+          "Requests": "Requests",
+          "Audit": "Audit log",
+          "System": "System"
+        }
       }
     }
   }
