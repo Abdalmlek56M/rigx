@@ -6,6 +6,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { THEME_INIT_SCRIPT } from "@/components/layout/theme-script";
 import { localeDirection, routing } from "@/i18n/routing";
+import { openGraphBase } from "@/lib/seo/page-seo";
+import { siteOrigin } from "@/lib/seo/urls";
 import "../globals.css";
 
 const sans = IBM_Plex_Sans_Arabic({
@@ -36,7 +38,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "meta" });
-  return { title: { default: t("title"), template: "%s · RIGX" }, description: t("description") };
+  return {
+    metadataBase: new URL(siteOrigin()),
+    title: { default: t("title"), template: "%s · RIGX" },
+    description: t("description"),
+    openGraph: openGraphBase(locale),
+    twitter: { card: "summary_large_image" }
+  };
 }
 
 export default async function LocaleLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {

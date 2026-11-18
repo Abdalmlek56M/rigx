@@ -11,6 +11,7 @@ import { routing } from "@/i18n/routing";
 import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { loadStorefront } from "@/lib/storefront";
+import { pageSeo } from "@/lib/seo/page-seo";
 
 interface Props {
   params: Promise<{ locale: string; kind: string }>;
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const apiKind = policyApiKind(kind);
   if (!hasLocale(routing.locales, locale) || !apiKind) return {};
   const policy = await loadPolicy(apiKind);
-  return policy ? { title: localized(locale, policy.titleAr, policy.titleEn) } : {};
+  return policy ? { title: localized(locale, policy.titleAr, policy.titleEn), ...(await pageSeo(locale, `/policies/${kind}`)) } : {};
 }
 
 export default async function PolicyPage({ params }: Props) {

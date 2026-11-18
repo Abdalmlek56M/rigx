@@ -12,6 +12,7 @@ import { loadBuilds } from "@/features/builds/load-builds";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
+import { pageSeo } from "@/lib/seo/page-seo";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "builds" });
-  return { title: t("title") };
+  return { title: t("title"), ...(await pageSeo(locale, "/builds")) };
 }
 
 export default async function BuildsPage({ params, searchParams }: Props) {

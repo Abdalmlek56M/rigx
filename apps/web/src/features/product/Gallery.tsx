@@ -21,7 +21,7 @@ export function Gallery({ photos, alt }: { photos: Photo[]; alt: string }) {
       <div className="relative flex h-[300px] items-center justify-center rounded-[10px] border border-line bg-surface text-muted md:h-[430px]">
         {current ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(current.storageKey)} alt={alt} width={640} height={430} className="h-full w-full rounded-[10px] object-contain" />
+          <img src={mediaUrl(current.storageKey)} alt={alt} width={640} height={430} fetchPriority={selected === 0 ? "high" : "auto"} className="h-full w-full rounded-[10px] object-contain" />
         ) : (
           <ImagePlaceholderIcon size={220} />
         )}

@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using HardwareStore.Modules.Retail;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -215,5 +215,45 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         Assert.Equal(3, suggestion.ItemCount);
         Assert.Contains(suggestion.ModelName, new[] { "RX 6600", "rx6600", "RX-6600" });
         Assert.Empty(await retail.StockItems.SuggestModelsAsync("r", null));
+    }
+
+    [Fact]
+    public async Task Items_get_readable_slugs_and_are_found_by_slug_or_old_code()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var items = (await retail.Units.ReceiveAsync(Receive(UsedLine("RTX 3060 12GB PNY", 3)), Actor)).Items;
+        var ordered = items.OrderBy(item => item.Code).ToList();
+        foreach (var item in ordered) await PublishAsync(retail, item);
+        var slugs = new List<string>();
+        foreach (var item in ordered) slugs.Add((await retail.Store.GetAsync(item.Code)).Slug);
+        Assert.Equal(["rtx-3060-12gb-pny", "rtx-3060-12gb-pny-2", "rtx-3060-12gb-pny-3"], slugs);
+        var first = ordered[0];
+
+        var bySlug = await retail.Store.GetAsync("rtx-3060-12gb-pny");
+        var byCode = await retail.Store.GetAsync(first.Code.ToLowerInvariant());
+        Assert.Equal("rtx-3060-12gb-pny", bySlug.Slug);
+        Assert.Equal(bySlug.Slug, byCode.Slug);
+        Assert.Equal(404, (await Assert.ThrowsAsync<RetailException>(() => retail.Store.GetAsync("no-such-item"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Renaming_changes_the_slug_unless_only_spacing_or_case_changed()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var items = (await retail.Units.ReceiveAsync(Receive(UsedLine("Old Name"), UsedLine("New Name")), Actor)).Items;
+        var item = items.Single(i => i.ModelName == "Old Name");
+        StockItemUpdate Update(string name, long version) => new(name, null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
+
+        await PublishAsync(retail, item);
+        async Task<string> SlugAsync() => (await retail.Store.GetAsync(item.Code)).Slug;
+        Assert.Equal("old-name", await SlugAsync());
+
+        var current = await retail.StockItems.GetAsync(item.Id, false, false);
+        var same = await retail.StockItems.UpdateAsync(item.Id, Update("  OLD   name ", current.RowVersion));
+        Assert.Equal("old-name", await SlugAsync());
+        var renamed = await retail.StockItems.UpdateAsync(item.Id, Update("New Name", same.RowVersion));
+        Assert.Equal("new-name-2", await SlugAsync());
+        await retail.StockItems.UpdateAsync(item.Id, Update("Fresh Name", renamed.RowVersion));
+        Assert.Equal("fresh-name", await SlugAsync());
     }
 }

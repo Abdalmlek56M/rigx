@@ -11,6 +11,7 @@ import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
+import { pageSeo } from "@/lib/seo/page-seo";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -22,7 +23,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "warranty" });
   const query = parseLookupQuery((await searchParams).q);
-  return query ? { title: t("title"), robots: { index: false } } : { title: t("title") };
+  const seo = await pageSeo(locale, "/warranty");
+  return query ? { title: t("title"), ...seo, robots: { index: false } } : { title: t("title"), ...seo };
 }
 
 export default async function WarrantyPage({ params, searchParams }: Props) {

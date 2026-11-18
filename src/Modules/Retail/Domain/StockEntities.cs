@@ -15,6 +15,8 @@ public sealed class StockItem
     public Guid? ProductId { get; set; }
     public required string ModelName { get; set; }
     public required string ModelKey { get; set; }
+    /// <summary>Unique readable URL part, from the model name (<see cref="StockItemSlug"/>).</summary>
+    public string Slug { get; set; } = string.Empty;
     /// <summary>Base price = price inside a build.</summary>
     public decimal Price { get; set; }
     public decimal? WithBoardExtra { get; set; }

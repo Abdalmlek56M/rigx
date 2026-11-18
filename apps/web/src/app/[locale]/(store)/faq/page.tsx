@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { FaqList } from "@/components/ui/FaqList";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { loadFaqPage } from "@/features/faq/load-faq-page";
 import { routing } from "@/i18n/routing";
 import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
+import { pageSeo } from "@/lib/seo/page-seo";
+import { faqJsonLd } from "@/lib/seo/structured-data";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -17,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "faq" });
-  return { title: t("title") };
+  return { title: t("title"), ...(await pageSeo(locale, "/faq")) };
 }
 
 export default async function FaqPage({ params }: Props) {
@@ -35,6 +38,7 @@ export default async function FaqPage({ params }: Props) {
         <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
         <span className="text-[15px] text-ink-muted">{t("subtitle")}</span>
       </div>
+      {groups.length > 0 ? <JsonLd data={faqJsonLd(groups.flatMap((group) => group.entries))} /> : null}
       {groups.length === 0 ? (
         <p role="status" className="m-0 rounded-card border border-line bg-surface p-10 text-center text-ink-muted">{t("empty")}</p>
       ) : (

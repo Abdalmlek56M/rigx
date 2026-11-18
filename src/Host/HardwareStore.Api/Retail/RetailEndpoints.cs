@@ -92,7 +92,7 @@ public static partial class RetailEndpoints
         admin.MapPost("/partners/{id:guid}/payouts", PayoutPartnerAsync).RequirePermission("Finance.PostPartnerSettlements");
 
         endpoints.MapGet("/api/v1/store/items", ListStoreItemsAsync).AllowAnonymous();
-        endpoints.MapGet("/api/v1/store/items/{code}", GetStoreItemAsync).AllowAnonymous();
+        endpoints.MapGet("/api/v1/store/items/{key}", GetStoreItemAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/store/assemblies", ListPublishedAssembliesAsync).AllowAnonymous();
         endpoints.MapGet("/api/v1/store/assemblies/{code}", GetPublishedAssemblyAsync).AllowAnonymous();
         endpoints.MapPost("/api/v1/orders", CreateCustomerOrderAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.Checkout);

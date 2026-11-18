@@ -72,4 +72,39 @@ public sealed class StockItemRulesTests
     [Fact]
     public void Only_new_and_used_conditions_exist() =>
         Assert.Equal(400, Assert.Throws<RetailException>(() => StockCondition.Parse("Open Box")).StatusCode);
+
+    [Theory]
+    [InlineData("RTX 3060 12GB PNY", "rtx-3060-12gb-pny")]
+    [InlineData("  Ryzen 5 5600X + Cooler ", "ryzen-5-5600x-cooler")]
+    [InlineData("DDR4 2x8GB 3200MHz", "ddr4-2x8gb-3200mhz")]
+    [InlineData("كيسة جيمنج", "item")]
+    [InlineData("كيسة Lian Li O11", "lian-li-o11")]
+    public void Slug_base_keeps_only_latin_letters_and_digits(string name, string expected) =>
+        Assert.Equal(expected, StockItemSlug.Base(name));
+
+    [Fact]
+    public void Slug_base_is_capped_and_never_ends_with_a_hyphen()
+    {
+        var slug = StockItemSlug.Base(string.Join(' ', Enumerable.Repeat("abcdefghi", 20)));
+        Assert.True(slug.Length <= 160);
+        Assert.DoesNotContain(slug[^1], "-");
+    }
+
+    [Fact]
+    public void Slug_collisions_get_the_first_free_number()
+    {
+        Assert.Equal("gpu", StockItemSlug.FirstFree("gpu", new HashSet<string>()));
+        Assert.Equal("gpu-2", StockItemSlug.FirstFree("gpu", new HashSet<string> { "gpu" }));
+        Assert.Equal("gpu-3", StockItemSlug.FirstFree("gpu", new HashSet<string> { "gpu", "gpu-2" }));
+    }
+
+    [Theory]
+    [InlineData("gpu", true)]
+    [InlineData("gpu-3", true)]
+    [InlineData("gpu-02", false)]
+    [InlineData("gpu-1", false)]
+    [InlineData("gpu-x", false)]
+    [InlineData("cpu-3", false)]
+    public void A_slug_belongs_to_its_base_or_a_numbered_copy(string slug, bool expected) =>
+        Assert.Equal(expected, StockItemSlug.BelongsTo(slug, "gpu"));
 }

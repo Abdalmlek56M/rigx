@@ -414,7 +414,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
-                        .HasColumnName("access_token");
+                        .HasColumnName("access_token")
+                        .HasAnnotation("Rigx:AuditMasked", true);
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -477,6 +478,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.HasKey("Year");
 
                     b.ToTable("invoice_counters", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.MoneyAccount", b =>
@@ -635,6 +638,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("order_events", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.OrderItem", b =>
@@ -1557,6 +1562,12 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasDefaultValue(1L)
                         .HasColumnName("row_version");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)")
+                        .HasColumnName("slug");
+
                     b.Property<string>("Specs")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1590,6 +1601,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
 
                     b.HasIndex("ModelKey")
                         .HasDatabaseName("ix_stock_items_model_key");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ux_stock_items_slug");
 
                     b.HasIndex("IsHidden", "Condition", "CategoryId")
                         .HasDatabaseName("ix_stock_items_listing");
@@ -1812,7 +1827,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
-                        .HasColumnName("tracking_token");
+                        .HasColumnName("tracking_token")
+                        .HasAnnotation("Rigx:AuditMasked", true);
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone")

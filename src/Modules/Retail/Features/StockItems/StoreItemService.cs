@@ -46,15 +46,20 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         return await ToCardsAsync(db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter).Where(item => wanted.Contains(item.Code)), cancellationToken);
     }
 
-    public async Task<StoreItemDetail> GetAsync(string code, CancellationToken cancellationToken = default)
+    /// <summary>A published item by its slug, or by its old <c>RX-</c> code (the web app redirects those links to the slug).</summary>
+    public async Task<StoreItemDetail> GetAsync(string key, CancellationToken cancellationToken = default)
     {
-        if (!PublicCode.TryNormalize(code, PublicCode.StockItem, out var normalized)) throw ItemNotFound();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var row = await db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter).Where(item => item.Code == normalized)
+        var items = db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter);
+        var slug = key.Trim().ToLowerInvariant();
+        items = PublicCode.TryNormalize(key, PublicCode.StockItem, out var code)
+            ? items.Where(item => item.Code == code)
+            : items.Where(item => item.Slug == slug);
+        var row = await items
             .Select(item => new { Item = item, Available = item.Units.Count(unit => unit.Status == UnitStatus.Available) })
             .SingleOrDefaultAsync(cancellationToken) ?? throw ItemNotFound();
         var item = row.Item;
-        return new StoreItemDetail(item.Code, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.WarrantyMonths,
+        return new StoreItemDetail(item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.WarrantyMonths,
             item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs);
     }
 
@@ -62,11 +67,11 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
     {
         var rows = await items.Select(item => new
         {
-            item.Code, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
+            item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
             item.AloneExtra, item.CreatedAtUtc, item.Photos,
             Available = item.Units.Count(unit => unit.Status == UnitStatus.Available)
         }).ToListAsync(cancellationToken);
-        return rows.Select(row => new StoreItemCard(row.Code, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
+        return rows.Select(row => new StoreItemCard(row.Code, row.Slug, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
             StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
             row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc)).ToList();
     }

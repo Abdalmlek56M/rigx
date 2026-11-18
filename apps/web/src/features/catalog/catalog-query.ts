@@ -87,6 +87,15 @@ export function catalogHref(state: CatalogState, patch: CatalogPatch = {}): stri
   return query ? `/products?${query}` : "/products";
 }
 
+/** The canonical catalog address of a state: only the category and the page; filters, sort and search are views of it. */
+export function catalogCanonicalPath(state: CatalogState): string {
+  const query = new URLSearchParams();
+  if (state.category) query.set("category", state.category);
+  if (state.page > 1) query.set("page", String(state.page));
+  const text = query.toString();
+  return text ? `/products?${text}` : "/products";
+}
+
 export interface ApiItemsQuery {
   search?: string;
   categoryId?: string;

@@ -107,8 +107,8 @@ public static partial class RetailEndpoints
         return filters;
     }
 
-    private static async Task<Ok<StoreItemDetail>> GetStoreItemAsync(string code, StoreItemService items, CancellationToken ct) =>
-        TypedResults.Ok(await items.GetAsync(code, ct));
+    private static async Task<Ok<StoreItemDetail>> GetStoreItemAsync(string key, StoreItemService items, CancellationToken ct) =>
+        TypedResults.Ok(await items.GetAsync(key, ct));
 }
 
 public sealed record StockItemUpdateRequest(string? ModelName, Guid? CategoryId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,

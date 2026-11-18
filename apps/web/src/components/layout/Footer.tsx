@@ -102,7 +102,7 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
           </Link>
         </div>
       </div>
-      <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-2 border-t border-footer-line px-6 py-[18px] text-xs text-muted">
+      <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-2 border-t border-footer-line px-6 py-[18px] text-xs text-footer-text">
         <span>{t("copyright", { year: new Date().getFullYear() })}</span>
         {storefront.domain ? <span className="ltr-text text-[13px]">{storefront.domain}</span> : null}
       </div>

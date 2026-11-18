@@ -28,6 +28,8 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         e.Property(x => x.ModelName).HasColumnName("model_name").HasMaxLength(160).IsRequired();
         e.Property(x => x.ModelKey).HasColumnName("model_key").HasMaxLength(160).IsRequired();
         e.HasIndex(x => x.ModelKey).HasDatabaseName("ix_stock_items_model_key");
+        e.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(StockItemSlug.MaxLength).IsRequired();
+        e.HasIndex(x => x.Slug).IsUnique().HasDatabaseName("ux_stock_items_slug");
         e.Property(x => x.Price).HasColumnName("price").HasPrecision(18, 2);
         e.Property(x => x.WithBoardExtra).HasColumnName("with_board_extra").HasPrecision(18, 2);
         e.Property(x => x.AloneExtra).HasColumnName("alone_extra").HasPrecision(18, 2);

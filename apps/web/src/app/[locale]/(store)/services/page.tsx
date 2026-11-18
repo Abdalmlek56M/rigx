@@ -9,6 +9,7 @@ import { SERVICES } from "@/features/services/services-data";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
+import { pageSeo } from "@/lib/seo/page-seo";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: "services" });
-  return { title: t("title") };
+  return { title: t("title"), ...(await pageSeo(locale, "/services")) };
 }
 
 export default async function ServicesPage({ params }: Props) {

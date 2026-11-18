@@ -17,6 +17,8 @@ test("a new customer orders a part for pickup and follows it from the tracking l
   const link = card.getByRole("link").nth(1);
   const model = (await link.innerText()).trim();
   await link.click();
+  // Readable product address: the model name as a slug, no RX code.
+  await expect(page).toHaveURL(/\/p\/[a-z0-9]+(?:-[a-z0-9]+)*$/);
   await expect(page.getByRole("heading", { level: 1, name: model })).toBeVisible();
 
   await page.getByRole("button", { name: ar.cart.add, exact: true }).click();

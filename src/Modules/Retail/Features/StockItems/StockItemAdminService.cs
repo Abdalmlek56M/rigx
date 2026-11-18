@@ -56,6 +56,7 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         if (item.RowVersion != request.RowVersion) throw ChangedByAnotherUser();
         item.ModelName = modelName;
         item.ModelKey = ModelName.Key(modelName);
+        await StockItemSlugs.AssignAsync(db, item, cancellationToken);
         item.CategoryId = request.CategoryId;
         item.ProductId = request.ProductId;
         item.Price = request.Price;

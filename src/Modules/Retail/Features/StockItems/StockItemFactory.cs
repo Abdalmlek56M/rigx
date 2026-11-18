@@ -43,6 +43,7 @@ internal static class StockItemFactory
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now
             };
+            await StockItemSlugs.AssignAsync(db, item, cancellationToken);
             for (var index = 0; index < unitCount; index++)
                 item.Units.Add(new InventoryUnit
                 {

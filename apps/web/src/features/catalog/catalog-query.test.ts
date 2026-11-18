@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  catalogCanonicalPath,
   activeFilters, catalogHref, pageWindow, parseCatalogParams, toApiQuery, toSearchParams, withPatch
 } from "./catalog-query.ts";
 
@@ -66,5 +67,13 @@ describe("pageWindow", () => {
     assert.deepEqual(pageWindow(1, 3), [1, 2, 3]);
     assert.deepEqual(pageWindow(5, 10), [1, "gap", 4, 5, 6, "gap", 10]);
     assert.deepEqual(pageWindow(2, 10), [1, 2, 3, "gap", 10]);
+  });
+});
+
+describe("catalogCanonicalPath", () => {
+  it("keeps only the category and the page", () => {
+    const state = parseCatalogParams({ category: "gpu", condition: "Used", sort: "price_asc", search: "3060", page: "2", "spec.vram": "12GB" });
+    assert.equal(catalogCanonicalPath(state), "/products?category=gpu&page=2");
+    assert.equal(catalogCanonicalPath(parseCatalogParams({ stock: "in" })), "/products");
   });
 });

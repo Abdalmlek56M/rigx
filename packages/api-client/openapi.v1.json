@@ -1085,14 +1085,14 @@
         }
       }
     },
-    "/api/v1/store/items/{code}": {
+    "/api/v1/store/items/{key}": {
       "get": {
         "tags": [
           "store"
         ],
         "parameters": [
           {
-            "name": "code",
+            "name": "key",
             "in": "path",
             "required": true,
             "schema": {
@@ -26902,6 +26902,7 @@
       "StoreItemCard": {
         "required": [
           "code",
+          "slug",
           "modelName",
           "condition",
           "categoryId",
@@ -26914,6 +26915,9 @@
         "type": "object",
         "properties": {
           "code": {
+            "type": "string"
+          },
+          "slug": {
             "type": "string"
           },
           "modelName": {
@@ -26957,6 +26961,7 @@
       "StoreItemDetail": {
         "required": [
           "code",
+          "slug",
           "modelName",
           "condition",
           "categoryId",
@@ -26971,6 +26976,9 @@
         "type": "object",
         "properties": {
           "code": {
+            "type": "string"
+          },
+          "slug": {
             "type": "string"
           },
           "modelName": {

@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
+import { productPath } from "@/lib/seo/urls";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { itemLine } from "@/features/cart/cart-rules";
 import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
@@ -18,16 +19,18 @@ const buttonBase = "inline-flex h-11 items-center justify-center gap-2 rounded-c
  */
 export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const t = useTranslations("item");
+  const tc = useTranslations("common.condition");
   const locale = useLocale();
   const condition = parseCondition(item.condition);
   const soldOut = item.available <= 0;
-  const href = `/products/${item.code}`;
+  const href = productPath(item.slug);
 
   return (
     <article className="lift flex w-full flex-col overflow-hidden rounded-card border border-line bg-surface">
       <Link
         href={href}
-        aria-label={item.modelName}
+        // The accessible name includes the visible badge, code and "sold out" text (WCAG label-in-name).
+        aria-label={[item.modelName, condition ? tc(condition) : null, item.code, soldOut ? t("soldOutBadge") : null].filter(Boolean).join(" ")}
         className={`relative flex h-[170px] items-center justify-center text-muted ${condition === "New" ? "bg-paper" : "bg-sand"} ${soldOut ? "grayscale" : ""}`}
       >
         {item.thumbnailStorageKey ? (

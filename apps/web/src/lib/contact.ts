@@ -72,7 +72,7 @@ export function whatsAppUrl(number: string, text?: string): string {
   return text ? `https://wa.me/${number}?text=${encodeURIComponent(text)}` : `https://wa.me/${number}`;
 }
 
-/** Absolute public URL of a storefront path (`/products/RX-0142`), or "" when the store's domain is not set. */
+/** Absolute public URL of a storefront path (`/p/rtx-3060-12gb-pny`), or "" when the store's domain is not set. */
 export function siteUrl(domain: string | null, path: string): string {
   return domain ? `https://${domain.replace(/^https?:\/\//, "").replace(/\/+$/, "")}${path}` : "";
 }

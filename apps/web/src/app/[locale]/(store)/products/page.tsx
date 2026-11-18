@@ -13,12 +13,13 @@ import { catalogTitle } from "@/features/catalog/catalog-title";
 import { EmptyIcon } from "@/components/ui/EmptyIcon";
 import { SearchIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
-import { catalogHref, pageCount, parseCatalogParams, toApiQuery, toSearchParams, type RawParams } from "@/features/catalog/catalog-query";
+import { catalogCanonicalPath, catalogHref, pageCount, parseCatalogParams, toApiQuery, toSearchParams, type RawParams } from "@/features/catalog/catalog-query";
 import { required } from "@/lib/api/required";
 import { createServerApi } from "@/lib/api/server";
 import { categoryBySlug } from "@/lib/categories";
 import { routing } from "@/i18n/routing";
 import { loadStorefront } from "@/lib/storefront";
+import { pageSeo } from "@/lib/seo/page-seo";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -39,7 +40,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
   const { state, category } = await resolve(searchParams);
-  return { title: await catalogTitle(state, category) };
+  const seo = await pageSeo(locale, catalogCanonicalPath(state));
+  // Search results and filtered views point at their category page; search results stay out of the index.
+  return { title: await catalogTitle(state, category), ...seo, ...(state.search ? { robots: { index: false, follow: true } } : {}) };
 }
 
 async function loadItems(query: ReturnType<typeof toApiQuery>): Promise<Schemas["StoreItemPage"] | null> {

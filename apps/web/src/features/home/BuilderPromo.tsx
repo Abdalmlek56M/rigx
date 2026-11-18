@@ -14,7 +14,7 @@ export function BuilderPromo() {
       <p className="m-0 text-[15px] leading-[1.75] text-footer-text">{t("body")}</p>
       <ul aria-hidden="true" className="m-0 grid list-none grid-cols-4 gap-1.5 p-0">
         {SLOTS.map((slot) => (
-          <li key={slot} dir="ltr" className={`rounded bg-field px-1.5 py-2.5 text-center font-mono text-xs ${DONE.includes(slot) ? "" : "text-muted"}`}>
+          <li key={slot} dir="ltr" className={`rounded bg-field px-1.5 py-2.5 text-center font-mono text-xs ${DONE.includes(slot) ? "" : "text-footer-text"}`}>
             {slot}
             {DONE.includes(slot) ? " ✓" : ""}
           </li>

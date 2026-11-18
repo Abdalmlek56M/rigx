@@ -73,7 +73,7 @@ it through a local HTTP→HTTPS bridge, because the Next proxy rejects the untru
 on the same database first, or its outbox worker takes the email.
 
 ## End-to-end tests (Playwright)
-Critical flows run in Chromium against a local stack (never production): PostgreSQL, the API in Development with Preview enabled (see "Demo data"), and the web app (`npm run dev -w @rigx/web`, which proxies `/api` to the API). The specs live in `apps/web/e2e/`: sign-in with a wrong code, a new customer ordering and tracking, the owner taking an order to completed, a POS sale, a purchase received into stock, the warranty lookup, and sold-out parts listed last in the catalog (with the old `/sold` page gone). They are not part of `npm test`.
+Critical flows run in Chromium against a local stack (never production): PostgreSQL, the API in Development with Preview enabled (see "Demo data"), and the web app (`npm run dev -w @rigx/web`, which proxies `/api` to the API). The specs live in `apps/web/e2e/`: sign-in with a wrong code, a new customer ordering and tracking, the owner taking an order to completed, a POS sale, a purchase received into stock, the warranty lookup, sold-out parts listed last in the catalog (with the old `/sold` page gone), and SEO (old RX link → 301 to the slug, canonical, Product JSON-LD, sitemap, robots). They are not part of `npm test`.
 
 | Variable | Meaning | Default |
 |---|---|---|
@@ -89,6 +89,7 @@ A run seeds the demo data (idempotent; seeding signs every session out, so it co
 
 ## Configuration
 - Secrets only in `.env` locally / the host's secret store in production. Never committed.
+- `NEXT_PUBLIC_SITE_URL` (web): the public origin used for canonical URLs, hreflang, the sitemap, robots and Open Graph. It is baked in at `next build`, so set it for the production build (`https://rigxhardware.com`); unset means `http://localhost:3000`.
 - SMTP variables are listed (commented) in `.env.example`; Development uses an in-memory email provider.
 
 ## Backups and restore

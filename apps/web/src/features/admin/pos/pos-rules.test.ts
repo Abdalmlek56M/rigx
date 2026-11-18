@@ -34,7 +34,7 @@ const form: PosForm = { ...EMPTY_POS_FORM, name: "Ahmed", phone: "+20 101 234 57
 describe("search results", () => {
   it("keeps the stock item id from the inventory and sends public items by code", () => {
     const fromStore = toItemPick({
-      code: "RX-1", modelName: "GPU", condition: "New", categoryId: null, warrantyLabel: "سنة",
+      code: "RX-1", slug: "gpu", modelName: "GPU", condition: "New", categoryId: null, warrantyLabel: "سنة",
       prices: { alone: 1, withBoard: 1, inBuild: 1 }, available: 3, thumbnailStorageKey: null, listedAtUtc: ""
     });
     assert.equal(fromStore.stockItemId, null);
