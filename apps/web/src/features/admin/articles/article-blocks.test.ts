@@ -49,6 +49,13 @@ describe("article blocks", () => {
     assert.deepEqual(blockInput({ ...emptyBlock("youtube"), youTube: " https://youtu.be/x " }), { type: "youtube", youTubeId: "https://youtu.be/x" });
   });
 
+  it("saves an unchanged stored block as it was, so bold and links survive", () => {
+    const stored = { type: "paragraph", spans: [{ text: "Hi ", bold: false }, { text: "there", bold: true }] };
+    const [row] = blockRows([stored]);
+    assert.equal(blockInput(row!), stored);
+    assert.deepEqual(blockInput({ ...row!, text: "Hi you" }), { type: "paragraph", spans: [{ text: "Hi you", bold: false }] });
+  });
+
   it("adds, removes and moves rows", () => {
     const rows = [emptyBlock("paragraph"), emptyBlock("heading"), emptyBlock("list")];
     assert.equal(addBlock(rows, "callout").length, 4);

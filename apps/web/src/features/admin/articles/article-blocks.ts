@@ -22,6 +22,8 @@ export interface BlockRow {
   caption: string;
   itemCode: string;
   youTube: string;
+  /** The stored block this row was read from; saved back as it is while the row is unchanged (keeps bold and links). */
+  original: ArticleBlock | null;
 }
 
 function spansText(spans: readonly { text?: string | null }[] | null | undefined): string {
@@ -29,36 +31,44 @@ function spansText(spans: readonly { text?: string | null }[] | null | undefined
 }
 
 export function blockRows(blocks: readonly ArticleBlock[]): BlockRow[] {
-  return blocks.map((block) => {
-    const type = blockTypeKey(block.type);
-    return {
-      id: crypto.randomUUID(),
-      type,
-      text: type === "list"
-        ? (block.items ?? []).map((item) => spansText(item)).join("\n")
-        : type === "table"
-          ? (block.rows ?? []).map((row) => row.join(" | ")).join("\n")
-          : type === "heading"
-            ? block.text ?? ""
-            : type === "paragraph" || type === "callout"
-              ? spansText(block.spans)
-              : "",
-      level: String(block.level ?? 2),
-      ordered: block.ordered ?? false,
-      variant: block.variant ?? "info",
-      imageKey: block.imageKey ?? "",
-      alt: block.alt ?? "",
-      caption: block.caption ?? "",
-      itemCode: block.itemCode ?? "",
-      youTube: block.youTubeId ?? ""
-    };
-  });
+  return blocks.map((block) => ({ ...fieldsOf(block), id: crypto.randomUUID(), original: block }));
+}
+
+type BlockFields = Omit<BlockRow, "id" | "original">;
+
+function fieldsOf(block: ArticleBlock): BlockFields {
+  const type = blockTypeKey(block.type);
+  return {
+    type,
+    text: type === "list"
+      ? (block.items ?? []).map((item) => spansText(item)).join("\n")
+      : type === "table"
+        ? (block.rows ?? []).map((row) => row.join(" | ")).join("\n")
+        : type === "heading"
+          ? block.text ?? ""
+          : type === "paragraph" || type === "callout"
+            ? spansText(block.spans)
+            : "",
+    level: String(block.level ?? 2),
+    ordered: block.ordered ?? false,
+    variant: block.variant ?? "info",
+    imageKey: block.imageKey ?? "",
+    alt: block.alt ?? "",
+    caption: block.caption ?? "",
+    itemCode: block.itemCode ?? "",
+    youTube: block.youTubeId ?? ""
+  };
+}
+
+function unchanged(row: BlockRow, original: ArticleBlock): boolean {
+  const before = fieldsOf(original);
+  return (Object.keys(before) as (keyof BlockFields)[]).every((key) => before[key] === row[key]);
 }
 
 export function emptyBlock(type: ArticleBlockTypeKey): BlockRow {
   return {
     id: crypto.randomUUID(), type, text: "", level: "2", ordered: false, variant: "info",
-    imageKey: "", alt: "", caption: "", itemCode: "", youTube: ""
+    imageKey: "", alt: "", caption: "", itemCode: "", youTube: "", original: null
   };
 }
 
@@ -67,6 +77,7 @@ function lines(text: string): string[] {
 }
 
 export function blockInput(row: BlockRow): ArticleBlock {
+  if (row.original && unchanged(row, row.original)) return row.original;
   switch (row.type) {
     case "heading":
       return { type: "heading", level: Number(row.level) === 3 ? 3 : 2, text: row.text.trim() };
