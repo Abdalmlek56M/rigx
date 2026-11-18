@@ -7,6 +7,7 @@ namespace HardwareStore.Modules.Retail;
 public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) : DbContext(options)
 {
     public DbSet<StockItem> StockItems => Set<StockItem>();
+    public DbSet<StockItemOldSlug> OldSlugs => Set<StockItemOldSlug>();
     public DbSet<InventoryUnit> Units => Set<InventoryUnit>();
     public DbSet<PurchaseReceipt> Receipts => Set<PurchaseReceipt>();
     public DbSet<Assembly> Assemblies => Set<Assembly>();
@@ -36,6 +37,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.ApplyConfiguration(new StockItemConfiguration());
+        model.ApplyConfiguration(new StockItemOldSlugConfiguration());
         model.ApplyConfiguration(new MoneyAccountConfiguration());
         model.ApplyConfiguration(new MoneyMovementConfiguration());
         model.ApplyConfiguration(new ExpenseTypeConfiguration());

@@ -6,6 +6,20 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HardwareStore.Modules.Retail;
 
+/// <summary>Table mapping for <see cref="StockItemOldSlug"/>: one row per retired slug, unique across all items.</summary>
+internal sealed class StockItemOldSlugConfiguration : IEntityTypeConfiguration<StockItemOldSlug>
+{
+    public void Configure(EntityTypeBuilder<StockItemOldSlug> e)
+    {
+        e.ToTable("stock_item_old_slugs");
+        e.HasKey(x => x.Slug).HasName("pk_stock_item_old_slugs");
+        e.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(StockItemSlug.MaxLength);
+        e.Property(x => x.StockItemId).HasColumnName("stock_item_id");
+        e.HasOne<StockItem>().WithMany().HasForeignKey(x => x.StockItemId).OnDelete(DeleteBehavior.Cascade);
+        e.HasIndex(x => x.StockItemId).HasDatabaseName("ix_stock_item_old_slugs_stock_item_id");
+    }
+}
+
 /// <summary>Table mapping for <see cref="StockItem"/>; specs and photos are stored as jsonb documents (<see cref="Document{T}"/>).</summary>
 internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
 {

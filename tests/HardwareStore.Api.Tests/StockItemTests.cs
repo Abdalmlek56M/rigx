@@ -256,4 +256,28 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         await retail.StockItems.UpdateAsync(item.Id, Update("Fresh Name", renamed.RowVersion));
         Assert.Equal("fresh-name", await SlugAsync());
     }
+
+    [Fact]
+    public async Task An_old_slug_keeps_leading_to_the_renamed_item_and_is_never_given_to_another_item()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var item = Assert.Single((await retail.Units.ReceiveAsync(Receive(UsedLine("RTX 4070 Super")), Actor)).Items);
+        await PublishAsync(retail, item);
+        StockItemUpdate Update(string name, long version) => new(name, null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
+
+        var current = await retail.StockItems.GetAsync(item.Id, false, false);
+        var renamed = await retail.StockItems.UpdateAsync(item.Id, Update("RTX 4070 Super Gaming OC", current.RowVersion));
+        var byOldSlug = await retail.Store.GetAsync("rtx-4070-super");
+        Assert.Equal(item.Code, byOldSlug.Code);
+        Assert.Equal("rtx-4070-super-gaming-oc", byOldSlug.Slug);
+
+        var newcomer = Assert.Single((await retail.Units.ReceiveAsync(Receive(UsedLine("RTX 4070 Super")), Actor)).Items);
+        await PublishAsync(retail, newcomer);
+        Assert.Equal("rtx-4070-super-2", (await retail.Store.GetAsync(newcomer.Code)).Slug);
+        Assert.Equal(item.Code, (await retail.Store.GetAsync("rtx-4070-super")).Code);
+
+        await retail.StockItems.UpdateAsync(item.Id, Update("RTX 4070 Super", renamed.RowVersion));
+        Assert.Equal("rtx-4070-super", (await retail.Store.GetAsync(item.Code)).Slug);
+        Assert.Equal(item.Code, (await retail.Store.GetAsync("rtx-4070-super-gaming-oc")).Code);
+    }
 }

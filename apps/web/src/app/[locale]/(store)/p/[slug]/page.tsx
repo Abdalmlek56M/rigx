@@ -52,7 +52,7 @@ export default async function ProductPage({ params }: Props) {
   const item = await loadItem(slug);
   const condition = parseCondition(item?.condition);
   if (!item || !condition) notFound();
-  // Upper case or an RX code in the URL: send it to the one canonical address.
+  // Upper case, an RX code or a slug from before a rename in the URL: send it to the one canonical address.
   if (slug !== item.slug) permanentRedirect({ href: productPath(item.slug), locale });
 
   const t = await getTranslations("product");

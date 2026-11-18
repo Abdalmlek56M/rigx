@@ -46,7 +46,10 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         return await ToCardsAsync(db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter).Where(item => wanted.Contains(item.Code)), cancellationToken);
     }
 
-    /// <summary>A published item by its slug, or by its old <c>RX-</c> code (the web app redirects those links to the slug).</summary>
+    /// <summary>
+    /// A published item by its slug, a slug it had before a rename, or its old <c>RX-</c> code. The response carries the
+    /// current slug; the web app redirects every other key to it.
+    /// </summary>
     public async Task<StoreItemDetail> GetAsync(string key, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -54,7 +57,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var slug = key.Trim().ToLowerInvariant();
         items = PublicCode.TryNormalize(key, PublicCode.StockItem, out var code)
             ? items.Where(item => item.Code == code)
-            : items.Where(item => item.Slug == slug);
+            : items.Where(item => item.Slug == slug || db.OldSlugs.Any(old => old.Slug == slug && old.StockItemId == item.Id));
         var row = await items
             .Select(item => new { Item = item, Available = item.Units.Count(unit => unit.Status == UnitStatus.Available) })
             .SingleOrDefaultAsync(cancellationToken) ?? throw ItemNotFound();

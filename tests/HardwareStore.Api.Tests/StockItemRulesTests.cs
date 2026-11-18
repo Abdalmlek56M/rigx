@@ -98,6 +98,19 @@ public sealed class StockItemRulesTests
         Assert.Equal("gpu-3", StockItemSlug.FirstFree("gpu", new HashSet<string> { "gpu", "gpu-2" }));
     }
 
+    [Fact]
+    public void Old_slugs_of_other_items_stay_reserved_but_an_item_may_take_back_its_own()
+    {
+        var item = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        StockItemOldSlug Old(string slug, Guid owner) => new() { Slug = slug, StockItemId = owner };
+
+        Assert.Equal("gpu-2", StockItemSlug.Choose("gpu", item, [], [Old("gpu", other)]));
+        Assert.Equal("gpu-3", StockItemSlug.Choose("gpu", item, ["gpu-2"], [Old("gpu", other)]));
+        Assert.Equal("gpu", StockItemSlug.Choose("gpu", item, [], [Old("gpu", item)]));
+        Assert.Equal("gpu-2", StockItemSlug.Choose("gpu", item, ["gpu"], [Old("gpu", item)]));
+    }
+
     [Theory]
     [InlineData("gpu", true)]
     [InlineData("gpu-3", true)]

@@ -36,6 +36,16 @@ public sealed class StockItem
     public ICollection<InventoryUnit> Units { get; set; } = new List<InventoryUnit>();
 }
 
+/// <summary>
+/// A slug the item had before a rename (owner request 19 Nov 2026: a published link never breaks). It keeps leading to the
+/// item and stays reserved, so no other item can ever take it (<see cref="StockItemSlug.Choose"/>).
+/// </summary>
+public sealed class StockItemOldSlug
+{
+    public required string Slug { get; init; }
+    public Guid StockItemId { get; init; }
+}
+
 public sealed record StockItemPhoto(string StorageKey, string ThumbnailStorageKey);
 
 /// <summary>A photo with the id of the stock item or build that shows it.</summary>

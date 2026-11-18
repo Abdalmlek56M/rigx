@@ -40,6 +40,15 @@ public static class StockItemSlug
         }
     }
 
+    /// <summary>
+    /// The slug for <paramref name="itemId"/>: the first one not used by another item now and not one another item had before
+    /// (old slugs stay reserved so an old link never leads to a different product). The item may take back its own old slug.
+    /// </summary>
+    public static string Choose(string baseSlug, Guid itemId, IEnumerable<string> otherItemsSlugs, IEnumerable<StockItemOldSlug> oldSlugs) =>
+        FirstFree(baseSlug, otherItemsSlugs
+            .Concat(oldSlugs.Where(old => old.StockItemId != itemId).Select(old => old.Slug))
+            .ToHashSet(StringComparer.Ordinal));
+
     /// <summary>True when <paramref name="slug"/> already belongs to <paramref name="baseSlug"/> (the base or a numbered copy), so a rename keeps it.</summary>
     public static bool BelongsTo(string slug, string baseSlug) =>
         slug == baseSlug || (slug.StartsWith(baseSlug + "-", StringComparison.Ordinal) && IsSuffix(slug[(baseSlug.Length + 1)..]));

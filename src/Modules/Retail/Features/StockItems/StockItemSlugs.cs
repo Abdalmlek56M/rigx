@@ -6,8 +6,9 @@ namespace HardwareStore.Modules.Retail;
 internal static class StockItemSlugs
 {
     /// <summary>
-    /// Sets <see cref="StockItem.Slug"/> from the model name. A rename that keeps the same base keeps the current slug
-    /// (links stay valid). Items added to <paramref name="db"/> but not saved yet count as taken.
+    /// Sets <see cref="StockItem.Slug"/> from the model name. A rename that keeps the same base keeps the current slug.
+    /// A rename that changes it keeps the old slug as a <see cref="StockItemOldSlug"/> so published links still lead here;
+    /// other items' old slugs are never handed out. Items added to <paramref name="db"/> but not saved yet count as taken.
     /// </summary>
     public static async Task AssignAsync(RetailDbContext db, StockItem item, CancellationToken cancellationToken)
     {
@@ -18,6 +19,11 @@ internal static class StockItemSlugs
             .Where(other => other.Id != item.Id && (other.Slug == baseSlug || other.Slug.StartsWith(prefix)))
             .Select(other => other.Slug).ToListAsync(cancellationToken);
         var pending = db.StockItems.Local.Where(other => other.Id != item.Id).Select(other => other.Slug);
-        item.Slug = StockItemSlug.FirstFree(baseSlug, stored.Concat(pending).ToHashSet(StringComparer.Ordinal));
+        var oldSlugs = await db.OldSlugs
+            .Where(old => old.Slug == baseSlug || old.Slug.StartsWith(prefix)).ToListAsync(cancellationToken);
+        var slug = StockItemSlug.Choose(baseSlug, item.Id, stored.Concat(pending), oldSlugs);
+        if (oldSlugs.SingleOrDefault(old => old.Slug == slug) is { } reclaimed) db.OldSlugs.Remove(reclaimed);
+        if (item.Slug.Length > 0) db.OldSlugs.Add(new StockItemOldSlug { Slug = item.Slug, StockItemId = item.Id });
+        item.Slug = slug;
     }
 }

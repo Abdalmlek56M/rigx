@@ -1617,6 +1617,26 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.StockItemOldSlug", b =>
+                {
+                    b.Property<string>("Slug")
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)")
+                        .HasColumnName("slug");
+
+                    b.Property<Guid>("StockItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("stock_item_id");
+
+                    b.HasKey("Slug")
+                        .HasName("pk_stock_item_old_slugs");
+
+                    b.HasIndex("StockItemId")
+                        .HasDatabaseName("ix_stock_item_old_slugs_stock_item_id");
+
+                    b.ToTable("stock_item_old_slugs", (string)null);
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.StoreOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2208,6 +2228,15 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("RecurringExpenseId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.StockItemOldSlug", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.StockItem", null)
+                        .WithMany()
+                        .HasForeignKey("StockItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.WarrantyExtension", b =>
