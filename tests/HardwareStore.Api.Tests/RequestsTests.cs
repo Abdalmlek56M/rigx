@@ -132,6 +132,7 @@ public sealed class RequestsTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         var byCode = await ReadAsync<CustomerRequestPage>(await client.GetAsync($"{Admin}?q=req 1"));
         var byPhone = await ReadAsync<CustomerRequestPage>(await client.GetAsync($"{Admin}?q=1111"));
         var byName = await ReadAsync<CustomerRequestPage>(await client.GetAsync($"{Admin}?q=mon"));
+        var byModel = await ReadAsync<CustomerRequestPage>(await client.GetAsync($"{Admin}?q=rx 66"));
 
         Assert.Equal(3, all.Total);
         Assert.Equal("REQ-0003", all.Items[0].Code);
@@ -140,6 +141,7 @@ public sealed class RequestsTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         Assert.Equal(sell.Id, Assert.Single(byCode.Items).Id);
         Assert.Equal("RX 6600", Assert.Single(byPhone.Items).ModelName);
         Assert.Equal(contact.Id, Assert.Single(byName.Items).Id);
+        Assert.Equal("RX 6600", Assert.Single(byModel.Items).ModelName);
         Assert.Equal(2, all.NewByType[CustomerRequestType.Sell]);
         Assert.Equal(0, all.NewByType[CustomerRequestType.Contact]);
         Assert.Equal(0, all.NewByType[CustomerRequestType.Service]);

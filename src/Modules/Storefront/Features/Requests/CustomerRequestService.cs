@@ -123,7 +123,9 @@ public sealed class CustomerRequestService(
         if (PublicCode.TryNormalize(search, PublicCode.Request, out var code)) return rows.Where(item => item.Code == code);
         var pattern = "%" + search.Trim().Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "%";
         var digits = string.Concat(search.Where(char.IsAsciiDigit));
-        return rows.Where(item => EF.Functions.ILike(item.Name, pattern) || (digits.Length >= 3 && item.Phone.Contains(digits)));
+        return rows.Where(item => EF.Functions.ILike(item.Name, pattern)
+            || (item.ModelName != null && EF.Functions.ILike(item.ModelName, pattern))
+            || (digits.Length >= 3 && item.Phone.Contains(digits)));
     }
 
     private static async Task<IReadOnlyDictionary<string, int>> NewByTypeAsync(StorefrontDbContext db, CancellationToken cancellationToken)
