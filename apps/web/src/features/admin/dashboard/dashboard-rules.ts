@@ -1,8 +1,9 @@
 /** Dashboard period, chart and breakdown math. Dates are Cairo business days as `YYYY-MM-DD`. Pure, so it is tested. */
 export const PERIODS = ["today", "week", "month", "year", "custom"] as const;
-export type Period = (typeof PERIODS)[number];
+export type Period = (typeof PERIODS)[number] | "lastMonth";
 
 export function parsePeriod(value: string): Period {
+  if (value === "lastMonth") return "lastMonth";
   return PERIODS.find((period) => period === value) ?? "month";
 }
 
@@ -36,6 +37,10 @@ export function periodRange(period: Period, today: string, custom: { from: strin
       return { from: addDays(today, -6), to: today };
     case "month":
       return { from: `${today.slice(0, 8)}01`, to: today };
+    case "lastMonth": {
+      const previousMonthEnd = addDays(`${today.slice(0, 8)}01`, -1);
+      return { from: `${previousMonthEnd.slice(0, 8)}01`, to: previousMonthEnd };
+    }
     case "year":
       return { from: `${today.slice(0, 5)}01-01`, to: today };
     case "custom":

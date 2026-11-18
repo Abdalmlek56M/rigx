@@ -1665,6 +1665,353 @@
           "Text": "Text"
         }
       }
+    },
+    "faq": {
+      "title": "FAQ",
+      "new": "New question",
+      "newTitle": "New question",
+      "editTitle": "Edit a question",
+      "pick": "A question from the list",
+      "emptyEditor": "Pick a question or create a new one.",
+      "empty": "No questions match this filter.",
+      "none": "—",
+      "failed": "We couldn't load the questions.",
+      "retry": "Try again",
+      "save": "Save",
+      "saved": "Question saved",
+      "scopeFilter": "Shows on",
+      "scopes": {
+        "All": "All questions",
+        "General": "All products",
+        "Category": "One category",
+        "Product": "One product",
+        "Other": "Elsewhere"
+      },
+      "statuses": {
+        "Draft": "Draft",
+        "Review": "In review",
+        "Published": "Live",
+        "Archived": "Archived",
+        "Other": "Other"
+      },
+      "columns": {
+        "question": "Question",
+        "scope": "Shows on",
+        "excluded": "Excluded in",
+        "status": "Status"
+      },
+      "fields": {
+        "questionAr": "Question (Arabic)",
+        "questionEn": "Question (English)",
+        "answerAr": "Answer (Arabic)",
+        "answerEn": "Answer (English)",
+        "topic": "Topic · optional",
+        "sortOrder": "Sort order",
+        "scope": "Shows on",
+        "category": "Category",
+        "pickCategory": "Pick a category",
+        "itemCode": "Item code",
+        "helpPageOnly": "Help page only",
+        "youTube": "YouTube video · optional",
+        "youTubeHint": "Paste the link; the video plays inside the site."
+      },
+      "actions": {
+        "publish": "Publish",
+        "published": "Published",
+        "unpublish": "Unpublish",
+        "unpublished": "Unpublished",
+        "unpublishBody": "The question goes back to draft and disappears from the site.",
+        "delete": "Delete",
+        "deleted": "Deleted",
+        "deleteBody": "The question moves to the trash for 30 days.",
+        "failed": "That didn't work. Try again."
+      },
+      "exclusions": {
+        "title": "Excluded in",
+        "hint": "Pick categories or item codes where this question never shows.",
+        "category": "Category",
+        "pickCategory": "Pick a category",
+        "add": "Add",
+        "itemCode": "Item code",
+        "remove": "Remove {name}"
+      }
+    },
+    "offers": {
+      "title": "Offers",
+      "new": "New offer",
+      "newTitle": "New offer",
+      "editTitle": "Edit the offer",
+      "pick": "An offer from the list",
+      "pickHint": "Pick an offer or create a new one.",
+      "empty": "No offers yet.",
+      "failed": "We couldn't load the offers.",
+      "retry": "Try again",
+      "save": "Save the offer",
+      "saved": "Offer saved",
+      "none": "—",
+      "cancelledNote": "This offer is cancelled — it is read only.",
+      "products": "{count} products",
+      "datesHint": "Dates are Cairo time; the offer starts at the beginning of its first day and ends at the end of its last day.",
+      "columns": {
+        "title": "Offer",
+        "target": "On",
+        "discount": "Discount",
+        "period": "Period",
+        "status": "Status"
+      },
+      "statuses": {
+        "Draft": "Draft",
+        "Published": "Live",
+        "Cancelled": "Cancelled",
+        "Other": "Other"
+      },
+      "fields": {
+        "titleAr": "Offer name (Arabic)",
+        "titleEn": "Offer name (English)",
+        "descriptionAr": "Description (Arabic) · optional",
+        "descriptionEn": "Description (English) · optional",
+        "startDate": "From",
+        "endDate": "To · optional",
+        "priority": "Priority"
+      },
+      "items": {
+        "title": "Offer products",
+        "search": "Add a product",
+        "searchPlaceholder": "Product name or code",
+        "noMatches": "No product matches.",
+        "noCatalog": "Seeing the catalog is needed to pick products.",
+        "product": "Product",
+        "basePrice": "Base price",
+        "offerPrice": "Offer price",
+        "discount": "Discount",
+        "invalid": "Above base",
+        "remove": "Remove",
+        "add": "Add",
+        "empty": "Add at least one product."
+      },
+      "actions": {
+        "publish": "Publish",
+        "published": "Published",
+        "unpublish": "Unpublish",
+        "unpublished": "Unpublished",
+        "unpublishBody": "The offer goes back to draft and disappears from the site.",
+        "cancel": "Cancel the offer",
+        "cancelled": "Cancelled",
+        "cancelBody": "A cancelled offer cannot be edited or published again.",
+        "failed": "That didn't work. Try again."
+      }
+    },
+    "expenses": {
+      "title": "Expenses",
+      "failed": "We couldn't load the expenses.",
+      "retry": "Try again",
+      "pickRange": "Pick a start and end date.",
+      "empty": "No expenses in this period.",
+      "none": "—",
+      "defaultAccount": "Default account",
+      "automatic": "Automatic",
+      "partnerMoney": "Partner money ({name})",
+      "active": {
+        "yes": "Active",
+        "no": "Off"
+      },
+      "period": {
+        "label": "Period",
+        "month": "This month",
+        "lastMonth": "Last month",
+        "year": "This year",
+        "custom": "Custom",
+        "from": "From",
+        "to": "To",
+        "apply": "Show"
+      },
+      "kpi": {
+        "total": "Period expenses",
+        "change": "{percent}% vs the previous period",
+        "noComparison": "No previous period to compare",
+        "fixed": "Fixed monthly",
+        "fixedNote": "Repeats every month",
+        "percentOfSales": "Share of sales",
+        "sales": "Sales in the period"
+      },
+      "columns": {
+        "date": "Date",
+        "type": "Type",
+        "note": "Note",
+        "link": "Linked to",
+        "amount": "Amount",
+        "paidFrom": "Paid from",
+        "receipt": "Receipt"
+      },
+      "links": {
+        "order": "Order",
+        "unit": "Item",
+        "build": "Build"
+      },
+      "splits": {
+        "title": "How it splits",
+        "empty": "No expenses in this period."
+      },
+      "receipt": {
+        "open": "View",
+        "title": "Receipt photo",
+        "alt": "Expense receipt",
+        "close": "Close"
+      },
+      "form": {
+        "title": "New expense",
+        "amount": "Amount",
+        "date": "Date",
+        "category": "Type",
+        "pickCategory": "Pick a type",
+        "paidFrom": "Paid from",
+        "defaultAccount": "Default account",
+        "partnerMoney": "Partner money ({name})",
+        "note": "Note · optional",
+        "noteHint": "For example an order's shipping or packing boxes.",
+        "receipt": "Receipt photo · optional",
+        "receiptHint": "One image, up to 12 MB.",
+        "newType": "+ New type",
+        "save": "Add",
+        "saved": "Expense added",
+        "receiptFailed": "The expense was saved but the receipt didn't upload."
+      },
+      "types": {
+        "title": "Expense types",
+        "name": "Type",
+        "sortOrder": "Sort order",
+        "active": "Active",
+        "edit": "Edit",
+        "add": "New type",
+        "empty": "No types.",
+        "save": "Save",
+        "saved": "Type saved",
+        "newTitle": "New type",
+        "editTitle": "Edit the type"
+      },
+      "recurring": {
+        "title": "Fixed expenses",
+        "hint": "Rent and subscriptions; posted by themselves on their day every month.",
+        "category": "Type",
+        "pickCategory": "Pick a type",
+        "amount": "Amount",
+        "day": "Day of month",
+        "account": "Paid from",
+        "defaultAccount": "Default account",
+        "note": "Note · optional",
+        "noteHint": "For example the shop rent.",
+        "active": "Active",
+        "edit": "Edit",
+        "add": "New fixed expense",
+        "empty": "No fixed expenses.",
+        "save": "Save",
+        "saved": "Fixed expense saved",
+        "newTitle": "New fixed expense",
+        "editTitle": "Edit the fixed expense"
+      }
+    },
+    "articles": {
+      "title": "Articles",
+      "new": "New article",
+      "newTitle": "New article",
+      "pick": "Pick an article or create a new one.",
+      "empty": "No articles match this filter.",
+      "none": "—",
+      "failed": "We couldn't load the article.",
+      "retry": "Try again",
+      "save": "Save the article",
+      "saved": "Article saved",
+      "search": "Search by title or slug",
+      "columns": {
+        "title": "Article",
+        "category": "Category",
+        "status": "Status",
+        "views": "Views"
+      },
+      "statuses": {
+        "All": "All",
+        "Draft": "Draft",
+        "Published": "Published",
+        "Scheduled": "Scheduled",
+        "Archived": "Archived",
+        "Other": "Other"
+      },
+      "fields": {
+        "titleAr": "Title (Arabic)",
+        "titleEn": "Title (English)",
+        "slug": "Slug",
+        "summaryAr": "Summary (Arabic)",
+        "summaryEn": "Summary (English)"
+      },
+      "blocksArabic": "Arabic body",
+      "blocksEnglish": "English body",
+      "blocks": {
+        "type": "Block type",
+        "types": {
+          "heading": "Heading",
+          "paragraph": "Paragraph",
+          "list": "List",
+          "table": "Table",
+          "image": "Image",
+          "callout": "Callout",
+          "product": "Store product",
+          "youtube": "YouTube video"
+        },
+        "text": "Text",
+        "level": "Level",
+        "variant": "Callout kind",
+        "variants": {
+          "info": "Info",
+          "tip": "Tip",
+          "warning": "Warning"
+        },
+        "ordered": "Numbered list",
+        "listHint": "One item per line.",
+        "table": "Table",
+        "tableHint": "One row per line, columns separated by |.",
+        "imageKey": "Image key",
+        "alt": "Image description",
+        "caption": "Caption",
+        "itemCode": "Item code",
+        "youTube": "YouTube link",
+        "up": "Move up",
+        "down": "Move down",
+        "remove": "Remove",
+        "newBlock": "New block",
+        "add": "Add"
+      },
+      "publishing": {
+        "title": "Publishing",
+        "publish": "Publish",
+        "published": "Published",
+        "unpublish": "Unpublish",
+        "unpublished": "Unpublished",
+        "unpublishBody": "The article goes back to draft and disappears from the site.",
+        "delete": "Delete",
+        "deleted": "Deleted",
+        "deleteBody": "The article moves to the trash for 30 days.",
+        "saveFirst": "Save the changes before publishing.",
+        "publishedAt": "Published {date}",
+        "revisions": "Revisions",
+        "noRevisions": "No saved revisions.",
+        "products": "Products in the article",
+        "failed": "That didn't work. Try again."
+      },
+      "meta": {
+        "title": "Category and cover",
+        "category": "Category",
+        "noCategory": "No category",
+        "tags": "Tags",
+        "tagsPlaceholder": "gpu, used",
+        "image": "Cover image key",
+        "sortOrder": "Sort order",
+        "seo": "Search engines",
+        "seoTitleAr": "SEO title (Arabic)",
+        "seoTitleEn": "SEO title (English)",
+        "seoDescriptionAr": "SEO description (Arabic)",
+        "seoDescriptionEn": "SEO description (English)",
+        "canonical": "Canonical URL"
+      }
     }
   }
 }

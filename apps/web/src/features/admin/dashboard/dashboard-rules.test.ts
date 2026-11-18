@@ -5,6 +5,7 @@ import { addDays, cairoToday, changeDirection, niceMax, parsePeriod, periodRange
 describe("periods", () => {
   it("reads unknown values as this month", () => {
     assert.equal(parsePeriod("week"), "week");
+    assert.equal(parsePeriod("lastMonth"), "lastMonth");
     assert.equal(parsePeriod("decade"), "month");
   });
   it("uses the Cairo day", () => {
@@ -15,6 +16,8 @@ describe("periods", () => {
     assert.deepEqual(periodRange("today", "2026-11-18", none), { from: "2026-11-18", to: "2026-11-18" });
     assert.deepEqual(periodRange("week", "2026-11-18", none), { from: "2026-11-12", to: "2026-11-18" });
     assert.deepEqual(periodRange("month", "2026-11-18", none), { from: "2026-11-01", to: "2026-11-18" });
+    assert.deepEqual(periodRange("lastMonth", "2026-11-18", none), { from: "2026-10-01", to: "2026-10-31" });
+    assert.deepEqual(periodRange("lastMonth", "2026-01-15", none), { from: "2025-12-01", to: "2025-12-31" });
     assert.deepEqual(periodRange("year", "2026-11-18", none), { from: "2026-01-01", to: "2026-11-18" });
   });
   it("accepts only a complete, ordered custom range", () => {
