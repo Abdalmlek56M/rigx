@@ -3023,6 +3023,81 @@
         "nothingPosted": "ماتسجلش أرباح لأي شريك.",
         "posted": "{name} · {percent}٪"
       }
+    },
+    "audit": {
+      "title": "سجل النشاط",
+      "viewLabel": "العرض",
+      "views": {
+        "changes": "التغييرات",
+        "security": "الدخول والأمان"
+      },
+      "close": "قفل",
+      "empty": "مفيش سجلات في الفترة دي.",
+      "none": "—",
+      "failed": "ماقدرناش نحمّل السجل.",
+      "retry": "جرّب تاني",
+      "filters": {
+        "module": "الوحدة",
+        "entity": "الجدول",
+        "action": "الإجراء",
+        "from": "من",
+        "to": "لحد",
+        "eventType": "نوع الحدث",
+        "outcome": "النتيجة",
+        "search": "بحث",
+        "all": "الكل"
+      },
+      "outcomes": {
+        "Succeeded": "نجح",
+        "Failed": "فشل",
+        "Rejected": "مرفوض",
+        "Recorded": "مسجل",
+        "Other": "نتيجة تانية"
+      },
+      "columns": {
+        "time": "الوقت",
+        "who": "مين",
+        "module": "الوحدة",
+        "entity": "الجدول",
+        "action": "الإجراء",
+        "event": "الحدث",
+        "outcome": "النتيجة",
+        "actor": "الفاعل",
+        "subject": "الموضوع"
+      },
+      "changes": {
+        "title": "تفاصيل التغيير",
+        "time": "الوقت",
+        "actor": "الفاعل",
+        "actorKind": "نوع الفاعل",
+        "actorId": "رقم الفاعل",
+        "action": "الإجراء",
+        "module": "الوحدة",
+        "entity": "الجدول",
+        "entityId": "رقم السجل",
+        "ip": "IP",
+        "device": "الجهاز",
+        "correlation": "رقم العملية",
+        "restoredFrom": "مرجع الاسترجاع",
+        "fields": "القيم اللي اتغيرت",
+        "noChanges": "مفيش تغييرات مسجلة.",
+        "before": "قبل",
+        "after": "بعد",
+        "idLine": "رقم السجل: {id}"
+      },
+      "security": {
+        "title": "تفاصيل الحدث",
+        "id": "رقم الحدث",
+        "event": "الحدث",
+        "outcome": "النتيجة",
+        "actorKind": "نوع الفاعل",
+        "actorId": "رقم الفاعل",
+        "subjectId": "رقم الموضوع",
+        "correlation": "رقم العملية",
+        "metadata": "بيانات إضافية",
+        "noMetadata": "مفيش بيانات إضافية.",
+        "notOnPage": "السجل ده مش في الصفحة الحالية."
+      }
     }
   }
 }

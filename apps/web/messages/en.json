@@ -3023,6 +3023,81 @@
         "nothingPosted": "No earnings were posted to any partner.",
         "posted": "{name} · {percent}%"
       }
+    },
+    "audit": {
+      "title": "Activity log",
+      "viewLabel": "View",
+      "views": {
+        "changes": "Changes",
+        "security": "Sign-in & security"
+      },
+      "close": "Close",
+      "empty": "No records in this period.",
+      "none": "—",
+      "failed": "We couldn't load the log.",
+      "retry": "Try again",
+      "filters": {
+        "module": "Module",
+        "entity": "Table",
+        "action": "Action",
+        "from": "From",
+        "to": "To",
+        "eventType": "Event type",
+        "outcome": "Outcome",
+        "search": "Search",
+        "all": "All"
+      },
+      "outcomes": {
+        "Succeeded": "Succeeded",
+        "Failed": "Failed",
+        "Rejected": "Rejected",
+        "Recorded": "Recorded",
+        "Other": "Other"
+      },
+      "columns": {
+        "time": "Time",
+        "who": "Who",
+        "module": "Module",
+        "entity": "Table",
+        "action": "Action",
+        "event": "Event",
+        "outcome": "Outcome",
+        "actor": "Actor",
+        "subject": "Subject"
+      },
+      "changes": {
+        "title": "Change details",
+        "time": "Time",
+        "actor": "Actor",
+        "actorKind": "Actor kind",
+        "actorId": "Actor id",
+        "action": "Action",
+        "module": "Module",
+        "entity": "Table",
+        "entityId": "Record id",
+        "ip": "IP",
+        "device": "Device",
+        "correlation": "Correlation id",
+        "restoredFrom": "Restored from",
+        "fields": "Changed values",
+        "noChanges": "No changes recorded.",
+        "before": "Before",
+        "after": "After",
+        "idLine": "Entry id: {id}"
+      },
+      "security": {
+        "title": "Event details",
+        "id": "Event id",
+        "event": "Event",
+        "outcome": "Outcome",
+        "actorKind": "Actor kind",
+        "actorId": "Actor id",
+        "subjectId": "Subject id",
+        "correlation": "Correlation id",
+        "metadata": "Extra data",
+        "noMetadata": "No extra data.",
+        "notOnPage": "This record is not on the current page."
+      }
     }
   }
 }
