@@ -8,6 +8,7 @@ import { cairoToday } from "../dashboard/dashboard-rules";
 import { DataTable, type Column } from "../kit/DataTable";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
+import { useReveal } from "../kit/use-reveal";
 import { OfferStatusBadge } from "./OfferActions";
 import { OfferForm } from "./OfferForm";
 import { offerDiscount } from "./offer-rules";
@@ -29,6 +30,7 @@ export function Offers() {
   const data = state.status === "ready" ? state.data : { offers: [], products: [] };
   const activeId = creating ? null : values.id || null;
   const selected = data.offers.find((offer) => offer.id === activeId) ?? null;
+  const panelRef = useReveal<HTMLElement>(creating ? "new" : values.id || null);
   const today = cairoToday(new Date());
 
   function discount(offer: Offer): string {
@@ -78,7 +80,7 @@ export function Offers() {
           {state.status === "loading" ? <div aria-hidden="true" className="h-48 animate-pulse rounded-[10px] border border-line bg-surface" /> : (
             <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: data.offers }} onRetry={reload} rowKey={(offer) => offer.id} empty={t("empty")} />
           )}
-          <section className="flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
             <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
             {creating ? (
               <OfferForm key="new" offer={null} products={data.products} today={today} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => setCreating(false)} onReload={reload} />

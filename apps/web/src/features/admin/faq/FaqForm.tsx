@@ -65,10 +65,10 @@ export function FaqForm({ faq, categories, onSaved, onDeleted, onStale, onCancel
         }}
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label={t("fields.questionAr")} name="questionAr" value={form.questionAr} onChange={(questionAr) => set({ questionAr })} error={submit.errors.fields.questionAr} required />
+          <TextField label={t("fields.questionAr")} name="questionAr" dir="rtl" value={form.questionAr} onChange={(questionAr) => set({ questionAr })} error={submit.errors.fields.questionAr} required />
           <TextField label={t("fields.questionEn")} name="questionEn" value={form.questionEn} onChange={(questionEn) => set({ questionEn })} ltr error={submit.errors.fields.questionEn} required />
-          <TextAreaField label={t("fields.answerAr")} name="answerAr" value={form.answerAr} onChange={(answerAr) => set({ answerAr })} rows={4} error={submit.errors.fields.answerAr} />
-          <TextAreaField label={t("fields.answerEn")} name="answerEn" value={form.answerEn} onChange={(answerEn) => set({ answerEn })} rows={4} error={submit.errors.fields.answerEn} />
+          <TextAreaField label={t("fields.answerAr")} name="answerAr" dir="rtl" value={form.answerAr} onChange={(answerAr) => set({ answerAr })} rows={4} error={submit.errors.fields.answerAr} />
+          <TextAreaField label={t("fields.answerEn")} name="answerEn" dir="ltr" value={form.answerEn} onChange={(answerEn) => set({ answerEn })} rows={4} error={submit.errors.fields.answerEn} />
           <TextField label={t("fields.topic")} name="topic" value={form.topic} onChange={(topic) => set({ topic })} error={submit.errors.fields.topic} />
           <TextField label={t("fields.sortOrder")} name="sortOrder" type="number" ltr value={form.sortOrder} onChange={(sortOrder) => set({ sortOrder })} error={submit.errors.fields.sortOrder} />
         </div>

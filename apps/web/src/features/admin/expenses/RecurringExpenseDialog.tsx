@@ -95,7 +95,7 @@ export function RecurringExpenseDialog({ template, types, accounts, canSeeVaults
           <SelectField label={t("account")} name="moneyAccountId" value={accountId} onChange={setAccountId}
             options={[{ value: "", label: t("defaultAccount") }, ...accounts.map((account) => ({ value: account.id, label: `${account.name} · ${formatEgp(account.balance, locale)}` }))]} />
         ) : null}
-        <TextAreaField label={t("note")} name="note" value={note} onChange={setNote} rows={2} hint={t("noteHint")} />
+        <TextAreaField label={t("note")} name="note" value={note} onChange={setNote} rows={2} maxLength={1000} hint={t("noteHint")} />
         <Check label={t("active")} checked={isActive} onChange={setIsActive} />
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap justify-end gap-2">

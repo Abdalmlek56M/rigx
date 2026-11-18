@@ -89,10 +89,15 @@ export function toOfferInput(form: OfferForm): OfferInput {
   };
 }
 
+/** An end date set before the start date (shown on the end-date field; the save stays off). */
+export function endsBeforeStart(form: Pick<OfferForm, "startDate" | "endDate">): boolean {
+  return form.endDate !== "" && form.endDate < form.startDate;
+}
+
 export function offerValid(form: OfferForm): boolean {
   if (form.titleAr.trim() === "" || form.titleEn.trim() === "") return false;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(form.startDate)) return false;
-  if (form.endDate !== "" && (form.endDate < form.startDate || !/^\d{4}-\d{2}-\d{2}$/.test(form.endDate))) return false;
+  if (form.endDate !== "" && (endsBeforeStart(form) || !/^\d{4}-\d{2}-\d{2}$/.test(form.endDate))) return false;
   if (form.items.length === 0) return false;
   return form.items.every((item) => {
     const price = Number(item.offerPrice);

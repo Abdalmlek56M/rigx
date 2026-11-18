@@ -7,6 +7,7 @@ import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
 import { canClose, canDecide, canFollow, convertAllowed } from "./request-labels";
 import { convertRequest, decideRequest, setRequestStatus, type RequestDetail } from "./requests-api";
+import { isConflict } from "@/lib/api/conflict";
 
 /** Follow / close, accept / reject and "convert to purchase", each only where the API allows it. */
 export function RequestActions({ request, canManage, canConvert, onSaved, onStale }: {
@@ -28,7 +29,7 @@ export function RequestActions({ request, canManage, canConvert, onSaved, onStal
         await action();
         onSaved();
       } catch (error) {
-        onStale();
+        if (isConflict(error)) onStale();
         throw error;
       }
     }, success);
@@ -75,7 +76,7 @@ export function RequestActions({ request, canManage, canConvert, onSaved, onStal
             toast(t("convert.done"));
             onSaved();
           } catch (error) {
-            onStale();
+            if (isConflict(error)) onStale();
             toast(t("convert.failed"), "error");
             throw error;
           }

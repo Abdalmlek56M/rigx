@@ -9,6 +9,7 @@ import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
+import { useReveal } from "../kit/use-reveal";
 import { fetchFaqs, type Faq } from "./faq-api";
 import { FaqStatusBadge } from "./FaqActions";
 import { FaqForm } from "./FaqForm";
@@ -32,6 +33,7 @@ export function FaqScreen() {
   const data = state.status === "ready" ? state.data : { faqs: [], categories: [] };
   const activeId = creating ? null : values.id || data.faqs[0]?.id || null;
   const selected = data.faqs.find((faq) => faq.id === activeId) ?? null;
+  const panelRef = useReveal<HTMLElement>(creating ? "new" : values.id || null);
   const names = new Map(flattenTree(data.categories, new Set()).map(({ node }) => [node.id, node.name]));
   const select = (id: string) => { setCreating(false); set({ id }); };
 
@@ -87,12 +89,12 @@ export function FaqScreen() {
           {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" /> : (
             <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: data.faqs }} onRetry={reload} rowKey={(faq) => faq.id} empty={t("empty")} />
           )}
-          <section className="flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
             <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
             {creating ? (
               <FaqForm key="new" faq={null} categories={data.categories} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onDeleted={() => reload()} onStale={reload} onCancel={() => setCreating(false)} />
             ) : selected ? (
-              <FaqForm key={`${selected.id}-${selected.rowVersion}`} faq={selected} categories={data.categories} onSaved={() => { reload(); }} onDeleted={() => { set({ id: "" }); reload(); }} onStale={reload} onCancel={() => set({ id: "" })} />
+              <FaqForm key={`${selected.id}-${selected.rowVersion}`} faq={selected} categories={data.categories} onSaved={(saved) => { set({ id: saved.id }); reload(); }} onDeleted={() => { set({ id: "" }); reload(); }} onStale={reload} onCancel={() => set({ id: "" })} />
             ) : (
               <p className="m-0 text-sm text-ink-muted">{t("emptyEditor")}</p>
             )}

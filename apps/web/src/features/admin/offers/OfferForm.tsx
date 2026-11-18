@@ -10,7 +10,7 @@ import { useSubmit } from "../kit/use-submit";
 import { OfferActions } from "./OfferActions";
 import { OfferItems } from "./OfferItems";
 import { createOffer, updateOffer, type Offer, type ProductSummary } from "./offers-api";
-import { emptyOfferForm, offerForm, offerValid, toOfferInput, type OfferForm as Form } from "./offer-rules";
+import { emptyOfferForm, endsBeforeStart, offerForm, offerValid, toOfferInput, type OfferForm as Form } from "./offer-rules";
 import { isConflict } from "@/lib/api/conflict";
 
 function Summary({ offer }: { offer: Offer }) {
@@ -80,12 +80,12 @@ export function OfferForm({ offer, products, today, onSaved, onStale, onCancel, 
           }}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <TextField label={t("fields.titleAr")} name="titleAr" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={submit.errors.fields.titleAr} required />
+            <TextField label={t("fields.titleAr")} name="titleAr" dir="rtl" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={submit.errors.fields.titleAr} required />
             <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={submit.errors.fields.titleEn} required />
-            <TextAreaField label={t("fields.descriptionAr")} name="descriptionAr" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} rows={2} error={submit.errors.fields.descriptionAr} />
-            <TextAreaField label={t("fields.descriptionEn")} name="descriptionEn" value={form.descriptionEn} onChange={(descriptionEn) => set({ descriptionEn })} rows={2} error={submit.errors.fields.descriptionEn} />
+            <TextAreaField label={t("fields.descriptionAr")} name="descriptionAr" dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} rows={2} error={submit.errors.fields.descriptionAr} />
+            <TextAreaField label={t("fields.descriptionEn")} name="descriptionEn" dir="ltr" value={form.descriptionEn} onChange={(descriptionEn) => set({ descriptionEn })} rows={2} error={submit.errors.fields.descriptionEn} />
             <TextField label={t("fields.startDate")} name="startDate" type="date" ltr value={form.startDate} onChange={(startDate) => set({ startDate })} error={submit.errors.fields.startsAtUtc} required />
-            <TextField label={t("fields.endDate")} name="endDate" type="date" ltr value={form.endDate} onChange={(endDate) => set({ endDate })} error={submit.errors.fields.endsAtUtc} />
+            <TextField label={t("fields.endDate")} name="endDate" type="date" ltr value={form.endDate} onChange={(endDate) => set({ endDate })} error={submit.errors.fields.endsAtUtc ?? (endsBeforeStart(form) ? t("endBeforeStart") : undefined)} />
             <TextField label={t("fields.priority")} name="priority" type="number" ltr value={form.priority} onChange={(priority) => set({ priority })} error={submit.errors.fields.priority} />
           </div>
           <p className="m-0 text-xs text-ink-muted">{t("datesHint")}</p>

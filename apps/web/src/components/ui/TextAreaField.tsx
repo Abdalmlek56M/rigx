@@ -8,10 +8,14 @@ interface TextAreaFieldProps {
   required?: boolean;
   error?: string | null;
   hint?: string;
+  /** The server's length limit, so the field cannot go past it. */
+  maxLength?: number;
+  /** The text's own direction when it is in a fixed language (an Arabic or English copy), whatever the page language. */
+  dir?: "ltr" | "rtl";
 }
 
 /** A labelled multi-line input that matches `TextField`; `error` is announced and linked to the textarea. */
-export function TextAreaField({ label, name, value, onChange, rows = 3, placeholder, required, error, hint }: TextAreaFieldProps) {
+export function TextAreaField({ label, name, value, onChange, rows = 3, placeholder, required, error, hint, maxLength, dir }: TextAreaFieldProps) {
   const errorId = `${name}-error`;
   const hintId = `${name}-hint`;
   const describedBy = error ? errorId : hint ? hintId : undefined;
@@ -23,6 +27,8 @@ export function TextAreaField({ label, name, value, onChange, rows = 3, placehol
         value={value}
         rows={rows}
         required={required}
+        maxLength={maxLength}
+        dir={dir}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}

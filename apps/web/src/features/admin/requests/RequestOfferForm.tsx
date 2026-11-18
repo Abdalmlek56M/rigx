@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatEgp } from "@/lib/format";
 import { TextField } from "@/components/ui/TextField";
+import { isConflict } from "@/lib/api/conflict";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { canOffer } from "./request-labels";
@@ -27,7 +28,7 @@ export function RequestOfferForm({ request, canManage, onSaved, onStale }: { req
         await saveOffer(request.id, amountValue, Number.isFinite(resale) ? resale : null, request.rowVersion);
         onSaved();
       } catch (error) {
-        onStale();
+        if (isConflict(error)) onStale();
         throw error;
       }
     }, t("saved"));

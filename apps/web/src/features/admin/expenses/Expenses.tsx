@@ -78,7 +78,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
   }
 
   const columns: Column<Expense>[] = [
-    { key: "date", header: t("columns.date"), cell: (expense) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDate(`${expense.expenseDate}T00:00:00Z`, locale)}</span> },
+    { key: "date", header: t("columns.date"), cell: (expense) => <span className="whitespace-nowrap text-xs">{formatDate(`${expense.expenseDate}T00:00:00Z`, locale)}</span> },
     { key: "category", header: t("columns.type"), cell: (expense) => <span className="font-bold">{expense.category}</span> },
     { key: "note", header: t("columns.note"), cell: (expense) => <span dir="auto" className="block max-w-56 truncate text-sm [unicode-bidi:isolate]">{expense.note ?? t("none")}</span> },
     {

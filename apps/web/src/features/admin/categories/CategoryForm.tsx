@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
+import { isConflict } from "@/lib/api/conflict";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import {
@@ -70,7 +71,7 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
           : await createCategory(toCategoryInput(form, null));
         onSaved(saved);
       } catch (error) {
-        onStale();
+        if (isConflict(error)) onStale();
         throw error;
       }
     }, t("saved"));

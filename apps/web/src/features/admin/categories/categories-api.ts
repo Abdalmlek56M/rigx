@@ -1,6 +1,7 @@
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
+import { buildTree } from "./category-rules";
 
 export type Category = Schemas["CategoryView"];
 export type CategoryInput = Schemas["CategoryInput"];
@@ -8,7 +9,8 @@ export type SpecDefinition = Schemas["SpecDefinition"];
 
 const api = () => browserApi();
 
-export const fetchCategories = () => required(unwrap(api().GET("/api/v1/admin/catalog/categories")));
+/** The categories as a tree (the endpoint returns them flat). */
+export const fetchCategories = async () => buildTree(await required(unwrap(api().GET("/api/v1/admin/catalog/categories"))));
 
 export const createCategory = (input: CategoryInput) =>
   required(unwrap(api().POST("/api/v1/admin/catalog/categories", { body: input })));

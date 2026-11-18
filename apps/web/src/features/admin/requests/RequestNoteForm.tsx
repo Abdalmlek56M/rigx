@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextAreaField } from "@/components/ui/TextAreaField";
+import { isConflict } from "@/lib/api/conflict";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { saveRequestNote, type RequestDetail } from "./requests-api";
@@ -19,7 +20,7 @@ export function RequestNoteForm({ request, canManage, onSaved, onStale }: { requ
         await saveRequestNote(request.id, note, request.rowVersion);
         onSaved();
       } catch (error) {
-        onStale();
+        if (isConflict(error)) onStale();
         throw error;
       }
     }, t("saved"));

@@ -17,7 +17,8 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
 }
 
 /** One language's body: an ordered list of simple blocks with add / remove / move and the fields its type uses. */
-export function ArticleBlocksEditor({ title, rows, onChange }: { title: string; rows: readonly BlockRow[]; onChange: (rows: BlockRow[]) => void }) {
+/** `dir` is the body's language direction (the Arabic body stays right-to-left in the English admin and the other way round). */
+export function ArticleBlocksEditor({ title, rows, dir, onChange }: { title: string; rows: readonly BlockRow[]; dir: "ltr" | "rtl"; onChange: (rows: BlockRow[]) => void }) {
   const t = useTranslations("admin.articles.blocks");
   const [adding, setAdding] = useState<string>("paragraph");
   const update = (id: string, patch: Partial<BlockRow>) => onChange(rows.map((row) => row.id === id ? { ...row, ...patch } : row));
@@ -47,11 +48,11 @@ export function ArticleBlocksEditor({ title, rows, onChange }: { title: string; 
               <div className="grid gap-2 sm:grid-cols-[120px_minmax(0,1fr)]">
                 <SelectField label={t("level")} name={`level-${row.id}`} value={row.level} onChange={(level) => update(row.id, { level })}
                   options={[{ value: "2", label: "H2" }, { value: "3", label: "H3" }]} />
-                <TextField label={t("text")} name={`text-${row.id}`} value={row.text} onChange={(text) => update(row.id, { text })} />
+                <TextField label={t("text")} name={`text-${row.id}`} dir={dir} value={row.text} onChange={(text) => update(row.id, { text })} />
               </div>
             ) : null}
             {row.type === "paragraph" || row.type === "callout" ? (
-              <TextAreaField label={t("text")} name={`text-${row.id}`} value={row.text} onChange={(text) => update(row.id, { text })} rows={3} />
+              <TextAreaField label={t("text")} name={`text-${row.id}`} dir={dir} value={row.text} onChange={(text) => update(row.id, { text })} rows={3} />
             ) : null}
             {row.type === "callout" ? (
               <SelectField label={t("variant")} name={`variant-${row.id}`} value={row.variant} onChange={(variant) => update(row.id, { variant })}
@@ -63,18 +64,18 @@ export function ArticleBlocksEditor({ title, rows, onChange }: { title: string; 
             ) : null}
             {row.type === "list" ? (
               <div className="flex flex-col gap-2">
-                <TextAreaField label={t("text")} name={`text-${row.id}`} value={row.text} onChange={(text) => update(row.id, { text })} rows={4} hint={t("listHint")} />
+                <TextAreaField label={t("text")} name={`text-${row.id}`} dir={dir} value={row.text} onChange={(text) => update(row.id, { text })} rows={4} hint={t("listHint")} />
                 <Check label={t("ordered")} checked={row.ordered} onChange={(ordered) => update(row.id, { ordered })} />
               </div>
             ) : null}
             {row.type === "table" ? (
-              <TextAreaField label={t("table")} name={`text-${row.id}`} value={row.text} onChange={(text) => update(row.id, { text })} rows={4} hint={t("tableHint")} />
+              <TextAreaField label={t("table")} name={`text-${row.id}`} dir={dir} value={row.text} onChange={(text) => update(row.id, { text })} rows={4} hint={t("tableHint")} />
             ) : null}
             {row.type === "image" ? (
               <div className="grid gap-2 sm:grid-cols-2">
                 <TextField label={t("imageKey")} name={`image-${row.id}`} value={row.imageKey} onChange={(imageKey) => update(row.id, { imageKey })} ltr />
-                <TextField label={t("alt")} name={`alt-${row.id}`} value={row.alt} onChange={(alt) => update(row.id, { alt })} />
-                <TextField label={t("caption")} name={`caption-${row.id}`} value={row.caption} onChange={(caption) => update(row.id, { caption })} />
+                <TextField label={t("alt")} name={`alt-${row.id}`} dir={dir} value={row.alt} onChange={(alt) => update(row.id, { alt })} />
+                <TextField label={t("caption")} name={`caption-${row.id}`} dir={dir} value={row.caption} onChange={(caption) => update(row.id, { caption })} />
               </div>
             ) : null}
             {row.type === "product" ? <TextField label={t("itemCode")} name={`code-${row.id}`} value={row.itemCode} onChange={(itemCode) => update(row.id, { itemCode: itemCode.toUpperCase() })} ltr placeholder="RX-0154" /> : null}

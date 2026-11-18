@@ -35,7 +35,7 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle 
                   type="button" aria-expanded={open} aria-label={t("toggle", { name: node.name })} onClick={() => onToggle(node.id)}
                   className="flex h-8 w-6 shrink-0 items-center justify-center text-xs text-ink-muted"
                 >
-                  <span aria-hidden="true">{open ? "▾" : "◂"}</span>
+                  <span aria-hidden="true" className={open ? undefined : "rtl:-scale-x-100"}>{open ? "▾" : "▸"}</span>
                 </button>
               ) : (
                 <span className="w-6 shrink-0" aria-hidden="true" />

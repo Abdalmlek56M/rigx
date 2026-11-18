@@ -11,6 +11,7 @@ import { PageHeader } from "../kit/PageHeader";
 import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
+import { useReveal } from "../kit/use-reveal";
 import { ArticleEditor } from "./ArticleEditor";
 import { ArticlePanel } from "./ArticlePanel";
 import { ArticleStatusBadge } from "./ArticleStatusBadge";
@@ -38,6 +39,7 @@ export function Articles() {
   const { state, reload } = useLoad(load);
   const data = state.status === "ready" ? state.data : { articles: { items: [], page: 1, pageSize: PAGE_SIZE, total: 0 }, categories: [] };
   const names = new Map(flattenTree(data.categories, new Set()).map(({ node }) => [node.slug, node.name]));
+  const panelRef = useReveal<HTMLDivElement>(creating ? "new" : values.id || null);
   const tableState: Load<readonly Article[]> = state.status === "ready" ? { status: "ready", data: state.data.articles.items } : state;
 
   const columns: Column<Article>[] = [
@@ -83,20 +85,22 @@ export function Articles() {
         <Pager info={{ page: state.data.articles.page, pageSize: state.data.articles.pageSize, total: state.data.articles.total }} onPage={(next) => set({ page: String(next) })} />
       ) : null}
 
-      {creating ? (
-        <section className="flex flex-col gap-3">
-          <h2 className="m-0 text-[17px] font-bold">{t("newTitle")}</h2>
-          <ArticleEditor
-            key="new" detail={null} revisions={[]} categories={data.categories}
-            onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }}
-            onDeleted={() => reload()} onStale={reload} onCancel={() => setCreating(false)}
-          />
-        </section>
-      ) : values.id ? (
-        <ArticlePanel id={values.id} categories={data.categories} onChanged={(saved) => { if (!saved) set({ id: "" }); reload(); }} />
-      ) : (
-        <p className="m-0 text-sm text-ink-muted">{t("pick")}</p>
-      )}
+      <div ref={panelRef} className="scroll-mt-20">
+        {creating ? (
+          <section className="flex flex-col gap-3">
+            <h2 className="m-0 text-[17px] font-bold">{t("newTitle")}</h2>
+            <ArticleEditor
+              key="new" detail={null} revisions={[]} categories={data.categories}
+              onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }}
+              onDeleted={() => reload()} onStale={reload} onCancel={() => setCreating(false)}
+            />
+          </section>
+        ) : values.id ? (
+          <ArticlePanel id={values.id} categories={data.categories} onChanged={(saved) => { if (!saved) set({ id: "" }); reload(); }} />
+        ) : (
+          <p className="m-0 text-sm text-ink-muted">{t("pick")}</p>
+        )}
+      </div>
     </>
   );
 }

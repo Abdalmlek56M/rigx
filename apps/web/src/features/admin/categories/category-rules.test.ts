@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Category, SpecDefinition } from "./categories-api.ts";
 import {
+  buildTree,
   categoryForm,
   effectiveSpecs,
   emptyCategoryForm,
@@ -30,6 +31,13 @@ const gpu = cat("gpu", [cat("nvidia")], [spec("memory", "Memory")]);
 const tree = [processors, gpu];
 
 describe("category tree", () => {
+  it("nests the flat admin list by parent, keeping its order; an unknown parent becomes a root", () => {
+    const flat = [cat("gpu"), cat("intel", [], [], "processors"), cat("orphan", [], [], "gone"), cat("amd", [], [], "processors"), cat("processors")];
+    const nested = buildTree(flat);
+    assert.deepEqual(nested.map((node) => node.id), ["gpu", "orphan", "processors"]);
+    assert.deepEqual(nested[2]!.children.map((node) => node.id), ["intel", "amd"]);
+  });
+
   it("flattens the visible rows and hides collapsed subtrees", () => {
     assert.deepEqual(flattenTree(tree, new Set()).map((row) => [row.node.id, row.depth]), [
       ["processors", 0], ["intel", 1], ["amd", 1], ["gpu", 0], ["nvidia", 1]

@@ -35,7 +35,7 @@ function NoteEditor({ id, note, canManage, onSaved }: { id: string; note: string
         }, t("saved"));
       }}
     >
-      <TextAreaField label={t("title")} name="note" value={value} onChange={setValue} hint={t("hint")} error={submit.errors.fields.note} />
+      <TextAreaField label={t("title")} name="note" value={value} onChange={setValue} maxLength={2000} hint={t("hint")} error={submit.errors.fields.note} />
       <FormMessage message={submit.errors.general} />
       <button type="submit" disabled={submit.busy} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
       {submit.dialog}

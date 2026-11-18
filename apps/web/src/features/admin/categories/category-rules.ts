@@ -6,6 +6,22 @@ export interface FlatCategory {
   depth: number;
 }
 
+/**
+ * The admin endpoint returns every category flat (`parentId`, empty `children`), already in sort order.
+ * Nest them by `parentId`, keeping that order; a category whose parent is missing becomes a root.
+ */
+export function buildTree(list: readonly Category[]): Category[] {
+  const ids = new Set(list.map((category) => category.id));
+  const childrenOf = new Map<string | null, Category[]>();
+  for (const category of list) {
+    const parent = category.parentId && ids.has(category.parentId) ? category.parentId : null;
+    childrenOf.set(parent, [...(childrenOf.get(parent) ?? []), category]);
+  }
+  const nest = (parent: string | null): Category[] =>
+    (childrenOf.get(parent) ?? []).map((category) => ({ ...category, children: nest(category.id) }));
+  return nest(null);
+}
+
 /** The visible rows of the tree: a collapsed node hides its children. */
 export function flattenTree(nodes: readonly Category[], collapsed: ReadonlySet<string>): FlatCategory[] {
   const rows: FlatCategory[] = [];

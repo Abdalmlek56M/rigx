@@ -7,6 +7,7 @@ import {
   cairoDayEndUtc,
   cairoDayStartUtc,
   emptyOfferForm,
+  endsBeforeStart,
   filterProducts,
   itemDiscount,
   offerDiscount,
@@ -66,6 +67,7 @@ describe("offer form", () => {
     assert.equal(offerValid({ ...withItem, items: [{ ...withItem.items[0]!, offerPrice: "0" }] }), false);
     assert.equal(offerValid({ ...withItem, endDate: "2026-11-19" }), false);
     assert.equal(offerValid({ ...withItem, endDate: "2026-11-21" }), true);
+    assert.deepEqual([endsBeforeStart(base), endsBeforeStart({ ...base, endDate: "2026-11-19" }), endsBeforeStart({ ...base, endDate: "2026-11-20" })], [false, true, false]);
   });
 });
 

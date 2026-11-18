@@ -10,6 +10,7 @@ import { PageHeader } from "../kit/PageHeader";
 import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
+import { useReveal } from "../kit/use-reveal";
 import { BackInStockPanel } from "./BackInStockPanel";
 import { RequestDetail } from "./RequestDetail";
 import { RequestStatusBadge, RequestTabs, RequestTypeBadge } from "./RequestBadges";
@@ -31,17 +32,22 @@ export function Requests() {
   const { state, reload } = useLoad(load);
   const tableState: Load<readonly RequestRow[]> = state.status === "ready" ? { status: "ready", data: state.data.items } : state;
   const select = (id: string) => set({ id, page: values.page });
+  const detailRef = useReveal<HTMLDivElement>(values.id || null);
 
   const columns: Column<RequestRow>[] = [
     {
       key: "request",
       header: t("columns.request"),
-      cell: (row) => (
-        <button type="button" aria-current={values.id === row.id ? "true" : undefined} onClick={() => select(row.id)} className={`flex min-w-0 flex-col items-start gap-0.5 text-start ${values.id === row.id ? "text-orange-text" : ""}`}>
-          <span dir="auto" className="max-w-56 truncate font-bold [unicode-bidi:isolate]">{requestTitle(row)}</span>
-          <span dir="ltr" className="font-mono text-xs text-ink-muted">{row.code}</span>
-        </button>
-      )
+      cell: (row) => {
+        // The list has no subject/message, so a support or contact request would only repeat its code.
+        const title = requestTitle(row) === row.code ? null : requestTitle(row);
+        return (
+          <button type="button" aria-current={values.id === row.id ? "true" : undefined} onClick={() => select(row.id)} className={`flex min-w-0 flex-col items-start gap-0.5 text-start ${values.id === row.id ? "text-orange-text" : ""}`}>
+            {title ? <span dir="auto" className="max-w-56 truncate font-bold [unicode-bidi:isolate]">{title}</span> : null}
+            <span dir="ltr" className={`font-mono text-xs ${title ? "text-ink-muted" : "font-bold"}`}>{row.code}</span>
+          </button>
+        );
+      }
     },
     {
       key: "customer",
@@ -83,7 +89,9 @@ export function Requests() {
         empty={t("empty")}
       />
       {state.status === "ready" ? <Pager info={{ page: state.data.page, pageSize: state.data.pageSize, total: state.data.total }} onPage={(next) => set({ page: String(next) })} /> : null}
-      {values.id ? <RequestDetail key={values.id} id={values.id} onClose={() => set({ id: "", page: values.page })} onChanged={reload} /> : null}
+      <div ref={detailRef} className="scroll-mt-20 empty:hidden">
+        {values.id ? <RequestDetail key={values.id} id={values.id} onClose={() => set({ id: "", page: values.page })} onChanged={reload} /> : null}
+      </div>
       <BackInStockPanel onChanged={reload} />
     </>
   );

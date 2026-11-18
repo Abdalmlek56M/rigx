@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
 import { PageHeader } from "../kit/PageHeader";
+import { useReveal } from "../kit/use-reveal";
 import { usePermissions } from "../use-permissions";
 import { CategoryForm } from "./CategoryForm";
 import { CategoryImageCard } from "./CategoryImageCard";
@@ -26,6 +27,7 @@ export function Categories() {
   const tree = state.status === "ready" ? state.data : [];
   const activeId = creating ? null : selectedId ?? tree[0]?.id ?? null;
   const selected = findPath(tree, activeId ?? "").at(-1) ?? null;
+  const panelRef = useReveal<HTMLElement>(creating ? `new-${creating.parentId ?? "root"}` : selectedId);
 
   const toggle = (id: string) => setCollapsed((current) => {
     const next = new Set(current);
@@ -63,7 +65,7 @@ export function Categories() {
             )}
           </div>
 
-          <section className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
             {creating ? (
               <>
                 <h2 className="m-0 text-[17px] font-bold">

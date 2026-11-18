@@ -56,21 +56,21 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
       <div className="flex min-w-0 flex-col gap-4">
         <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
           <div className="grid gap-3 sm:grid-cols-2">
-            <TextField label={t("fields.titleAr")} name="titleAr" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={errors.titleAr} required />
+            <TextField label={t("fields.titleAr")} name="titleAr" dir="rtl" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={errors.titleAr} required />
             <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={errors.titleEn} required />
             <TextField label={t("fields.slug")} name="slug" value={form.slug} onChange={(slug) => set({ slug })} ltr required error={errors.slug} />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <TextAreaField label={t("fields.summaryAr")} name="summaryAr" value={form.summaryAr} onChange={(summaryAr) => set({ summaryAr })} rows={3} error={errors.summaryAr} />
-            <TextAreaField label={t("fields.summaryEn")} name="summaryEn" value={form.summaryEn} onChange={(summaryEn) => set({ summaryEn })} rows={3} error={errors.summaryEn} />
+            <TextAreaField label={t("fields.summaryAr")} name="summaryAr" dir="rtl" value={form.summaryAr} onChange={(summaryAr) => set({ summaryAr })} rows={3} error={errors.summaryAr} />
+            <TextAreaField label={t("fields.summaryEn")} name="summaryEn" dir="ltr" value={form.summaryEn} onChange={(summaryEn) => set({ summaryEn })} rows={3} error={errors.summaryEn} />
           </div>
         </section>
 
         <section className="flex flex-col gap-5 rounded-[10px] border border-line bg-surface p-5">
           <FormMessage message={errors.blocksAr ?? errors.blocksEn ?? null} />
-          <ArticleBlocksEditor title={t("blocksArabic")} rows={form.blocksAr} onChange={(blocksAr) => set({ blocksAr })} />
+          <ArticleBlocksEditor title={t("blocksArabic")} dir="rtl" rows={form.blocksAr} onChange={(blocksAr) => set({ blocksAr })} />
           <div className="border-t border-line pt-4">
-            <ArticleBlocksEditor title={t("blocksEnglish")} rows={form.blocksEn} onChange={(blocksEn) => set({ blocksEn })} />
+            <ArticleBlocksEditor title={t("blocksEnglish")} dir="ltr" rows={form.blocksEn} onChange={(blocksEn) => set({ blocksEn })} />
           </div>
         </section>
 

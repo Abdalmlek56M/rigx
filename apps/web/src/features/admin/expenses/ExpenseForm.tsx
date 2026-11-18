@@ -80,7 +80,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
           />
           {canSeeVaults ? <SelectField label={t("paidFrom")} name="paidFrom" value={form.paidFrom} onChange={(paidFrom) => set({ paidFrom })} options={payerOptions} /> : null}
         </div>
-        <TextAreaField label={t("note")} name="note" value={form.note} onChange={(note) => set({ note })} rows={2} hint={t("noteHint")} />
+        <TextAreaField label={t("note")} name="note" value={form.note} onChange={(note) => set({ note })} rows={2} maxLength={1000} hint={t("noteHint")} />
         <label className="flex flex-col gap-1.5 text-[13px] font-bold">
           {t("receipt")}
           <input

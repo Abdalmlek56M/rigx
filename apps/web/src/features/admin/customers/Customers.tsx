@@ -35,7 +35,7 @@ export function Customers() {
             <Link href={`/admin/customers/${row.customer.id}`} className="font-bold hover:underline">{row.customer.name}</Link>
             {row.customer.isActive ? null : <span className="rounded-[4px] bg-line px-2 py-[3px] text-xs font-bold text-ink-muted">{t("inactive")}</span>}
           </span>
-          <span dir="ltr" className="font-mono text-xs text-ink-muted">{row.customer.personCode}</span>
+          <span dir="ltr" className="whitespace-nowrap font-mono text-xs text-ink-muted">{row.customer.personCode}</span>
         </span>
       )
     },

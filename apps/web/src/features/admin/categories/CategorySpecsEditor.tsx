@@ -14,6 +14,7 @@ import {
   type SpecRow
 } from "./category-rules";
 import { saveCategorySpecs, type Category } from "./categories-api";
+import { isConflict } from "@/lib/api/conflict";
 
 const SPEC_TYPES = ["Choice", "Number", "YesNo", "Text"] as const;
 const inputClass = "h-9 rounded-control border border-input-line bg-surface px-2 text-sm";
@@ -56,7 +57,7 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
       try {
         onSaved(await saveCategorySpecs(category.id, toSpecDefinitions(rows), category.rowVersion));
       } catch (error) {
-        onStale();
+        if (isConflict(error)) onStale();
         throw error;
       }
     }, t("saved"));
