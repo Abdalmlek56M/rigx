@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { categoryHref } from "@/components/layout/nav-links";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { Link } from "@/i18n/navigation";
 import type { MenuCategory } from "@/lib/storefront";
 
@@ -16,8 +17,9 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
           <li key={category.slug}>
             <Link
               href={categoryHref(category.slug)}
-              className="flex min-h-14 items-center rounded-card border border-line bg-surface px-3.5 py-[18px] text-base font-bold"
+              className="lift press flex min-h-14 items-center gap-3 rounded-card border border-line bg-surface px-3.5 py-[18px] text-base font-bold"
             >
+              <span className="text-orange-text"><CategoryIcon slug={category.slug} size={22} /></span>
               {category.name}
             </Link>
           </li>

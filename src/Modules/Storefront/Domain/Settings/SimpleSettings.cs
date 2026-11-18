@@ -139,8 +139,7 @@ public sealed record WarrantyOptionSettings : IStoreSettingsSection<WarrantyOpti
 
 /// <summary>
 /// Orders and POS: how long a confirmed order holds its stock and what happens after (owner decision, 13 Nov 2026:
-/// 24 hours, notify only), the POS discount limit for staff without the price-override permission, and the public
-/// "اتباع قبل كده" page (governorate shown only when switched on).
+/// 24 hours, notify only) and the POS discount limit for staff without the price-override permission.
 /// </summary>
 public sealed record SalesSettings : IStoreSettingsSection<SalesSettings>
 {
@@ -151,8 +150,6 @@ public sealed record SalesSettings : IStoreSettingsSection<SalesSettings>
     public int ReservationHours { get; init; } = 24;
     public bool ReservationAutoRelease { get; init; }
     public decimal PosMaxDiscountPercent { get; init; } = 10m;
-    public bool SoldFeedEnabled { get; init; } = true;
-    public bool SoldFeedShowGovernorate { get; init; }
 
     public SalesSettings Normalize()
     {

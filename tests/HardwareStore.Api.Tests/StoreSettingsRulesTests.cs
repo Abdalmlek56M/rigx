@@ -226,7 +226,5 @@ public sealed class StoreSettingsRulesTests
     {
         var sales = new SalesSettings().Normalize();
         Assert.Equal((24, false, 10m), (sales.ReservationHours, sales.ReservationAutoRelease, sales.PosMaxDiscountPercent));
-        Assert.True(sales.SoldFeedEnabled);
-        Assert.False(sales.SoldFeedShowGovernorate);
     }
 }

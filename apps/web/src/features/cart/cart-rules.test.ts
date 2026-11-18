@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  addLine, buildFreshness, buildLine, clampQuantity, itemCount, itemLine, parseStoredLines, reconcile, removeLine, setLineQuantity,
+  addLine, buildFreshness, buildLine, cartWhatsAppText, clampQuantity, itemCount, itemLine, parseStoredLines, reconcile, removeLine, setLineQuantity,
   subtotal, type CartLine, type FreshItem
 } from "./cart-rules.ts";
 
@@ -112,5 +112,12 @@ describe("parseStoredLines", () => {
   it("drops malformed lines and keeps valid ones", () => {
     const raw = JSON.stringify([line(), { code: 5 }]);
     assert.equal(parseStoredLines(raw).length, 1);
+  });
+});
+
+describe("cartWhatsAppText", () => {
+  it("lists every line with its code, the quantity when above one, and the total", () => {
+    const text = cartWhatsAppText([line({ quantity: 2 }), build()], { intro: "Order:", total: "Total" }, (amount) => `EGP ${amount}`);
+    assert.equal(text, ["Order:", "- Ryzen 5 5600 (RX-0001) × 2", "- Gaming PC (BLD-01)", "Total: EGP 20200"].join("\n"));
   });
 });

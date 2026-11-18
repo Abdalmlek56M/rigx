@@ -2,13 +2,16 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { ModalSheet } from "@/components/ui/ModalSheet";
-import { CloseIcon } from "@/components/ui/icons";
+import { EmptyIcon } from "@/components/ui/EmptyIcon";
+import { CartIcon, CloseIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "./cart-context";
 import { CartLineRow } from "./CartLineRow";
+import { CartWhatsAppLink } from "./CartWhatsAppLink";
 
-export function CartDrawer() {
+/** The cart drawer; `whatsAppNumber` is the store number for "order on WhatsApp" (none = no button). */
+export function CartDrawer({ whatsAppNumber }: { whatsAppNumber: string | null }) {
   const t = useTranslations("cart");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -35,14 +38,15 @@ export function CartDrawer() {
 
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-            <p className="text-lg font-bold">{t("empty")}</p>
+            <EmptyIcon icon={CartIcon} />
+            <p className="m-0 text-lg font-bold">{t("empty")}</p>
             <Link href="/products" onClick={close} className="text-orange-text underline hover:text-orange-text-hover">
               {t("browse")}
             </Link>
           </div>
         ) : (
           <>
-            <ul className="min-h-0 flex-1 overflow-y-auto px-5 py-2">
+            <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-2">
               {lines.map((line) => (
                 <CartLineRow key={`${line.code}:${line.priceOption}`} line={line} />
               ))}
@@ -63,6 +67,7 @@ export function CartDrawer() {
               >
                 {t("checkout")}
               </Link>
+              <CartWhatsAppLink number={whatsAppNumber} onClick={close} />
               <Link
                 href="/cart"
                 onClick={close}

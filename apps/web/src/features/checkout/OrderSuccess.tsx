@@ -74,7 +74,7 @@ function Summary({ order }: { order: PlacedOrder }) {
   );
 }
 
-function TrackCard({ order, whatsApp }: { order: PlacedOrder; whatsApp: OrderWhatsApp }) {
+function TrackCard({ order }: { order: PlacedOrder }) {
   const t = useTranslations("orderSuccess.track");
   const session = useSession();
 
@@ -90,10 +90,6 @@ function TrackCard({ order, whatsApp }: { order: PlacedOrder; whatsApp: OrderWha
           {t("createAccount")}
         </Link>
       ) : null}
-      <OrderWhatsAppLink
-        whatsApp={whatsApp} reference={order.reference} label={t("whatsApp")}
-        className="flex h-12 items-center justify-center gap-2 rounded-control border border-footer-line font-bold"
-      />
     </section>
   );
 }
@@ -124,9 +120,13 @@ export function OrderSuccess({ whatsApp }: { whatsApp: OrderWhatsApp }) {
           {t.rich("lead", { phone: () => <bdi dir="ltr" className="font-mono">{displayPhone(order.phoneNumber)}</bdi> })}
         </p>
       </header>
+      <OrderWhatsAppLink
+        whatsApp={whatsApp} reference={order.reference} label={t("whatsApp")}
+        className="press flex h-[54px] items-center justify-center gap-2 rounded-control bg-orange font-bold text-on-orange"
+      />
       <NextSteps order={order} />
       <Summary order={order} />
-      <TrackCard order={order} whatsApp={whatsApp} />
+      <TrackCard order={order} />
     </div>
   );
 }

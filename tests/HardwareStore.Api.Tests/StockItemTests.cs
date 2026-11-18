@@ -79,7 +79,7 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     }
 
     [Fact]
-    public async Task Store_availability_filter_lists_in_stock_or_sold_out_items()
+    public async Task Store_availability_filter_lists_in_stock_or_sold_out_items_and_all_lists_sold_out_last()
     {
         var database = await fixture.CreateDatabaseAsync();
         var retail = database.CreateRetailServices();
@@ -91,7 +91,9 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
 
         Assert.Equal("Free GPU", Assert.Single((await retail.Store.ListAsync(new StoreItemQuery(InStock: true))).Items).ModelName);
         Assert.Equal("Gone GPU", Assert.Single((await retail.Store.ListAsync(new StoreItemQuery(InStock: false))).Items).ModelName);
-        Assert.Equal(2, (await retail.Store.ListAsync(new StoreItemQuery())).Total);
+        var all = await retail.Store.ListAsync(new StoreItemQuery());
+        Assert.Equal(["Free GPU", "Gone GPU"], all.Items.Select(item => item.ModelName));
+        Assert.Equal(["Free GPU", "Gone GPU"], (await retail.Store.ListAsync(new StoreItemQuery(Sort: "price_desc"))).Items.Select(item => item.ModelName));
     }
 
     [Fact]

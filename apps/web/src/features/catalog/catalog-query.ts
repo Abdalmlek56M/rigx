@@ -1,13 +1,14 @@
 import { parseCondition, type Condition } from "../../lib/condition.ts";
 
-export type StockFilter = "in" | "out" | "all";
+/** "all" lists sold-out items too (after the available ones, marked "خلص"); "in" hides them. */
+export type StockFilter = "all" | "in";
 export type SortKey = "newest" | "price_asc" | "price_desc";
 
 export const PAGE_SIZE = 24;
 const SORTS: readonly SortKey[] = ["newest", "price_asc", "price_desc"];
 const SPEC_PREFIX = "spec.";
 
-/** Everything the catalog URL says. Defaults (available only, newest first, page 1) are left out of the URL. */
+/** Everything the catalog URL says. Defaults (sold-out included, newest first, page 1) are left out of the URL. */
 export interface CatalogState {
   search: string;
   /** Category slug. */
@@ -32,8 +33,8 @@ function parseAmount(value: string | undefined): number | null {
   return Number.isFinite(amount) && amount >= 0 ? amount : null;
 }
 
-/** Reads the URL. With sold-out items hidden by the owner the availability filter is always "in". */
-export function parseCatalogParams(params: RawParams, options: { showSoldOut: boolean }): CatalogState {
+/** Reads the URL. */
+export function parseCatalogParams(params: RawParams): CatalogState {
   const stock = first(params.stock);
   const sort = first(params.sort);
   const page = Math.floor(Number(first(params.page)));
@@ -46,7 +47,7 @@ export function parseCatalogParams(params: RawParams, options: { showSoldOut: bo
     search: first(params.search)?.trim() ?? "",
     category: first(params.category)?.trim() || null,
     condition: parseCondition(first(params.condition)),
-    stock: options.showSoldOut && (stock === "out" || stock === "all") ? stock : "in",
+    stock: stock === "in" ? "in" : "all",
     min: parseAmount(first(params.min)),
     max: parseAmount(first(params.max)),
     sort: SORTS.find((key) => key === sort) ?? "newest",
@@ -61,7 +62,7 @@ export function toSearchParams(state: CatalogState): URLSearchParams {
   if (state.search) query.set("search", state.search);
   if (state.category) query.set("category", state.category);
   if (state.condition) query.set("condition", state.condition);
-  if (state.stock !== "in") query.set("stock", state.stock);
+  if (state.stock === "in") query.set("stock", "in");
   if (state.min !== null) query.set("min", String(state.min));
   if (state.max !== null) query.set("max", String(state.max));
   if (state.sort !== "newest") query.set("sort", state.sort);
@@ -99,8 +100,11 @@ export interface ApiItemsQuery {
   [spec: `spec.${string}`]: string;
 }
 
-/** The `/api/v1/store/items` query for a state; `categoryId` is the id of the state's category (null = none or unknown). */
-export function toApiQuery(state: CatalogState, categoryId: string | null): ApiItemsQuery {
+/**
+ * The `/api/v1/store/items` query for a state; `categoryId` is the id of the state's category (null = none or unknown).
+ * With sold-out items hidden by the owner (`showSoldOut` off) only available items are asked for.
+ */
+export function toApiQuery(state: CatalogState, categoryId: string | null, showSoldOut = true): ApiItemsQuery {
   const query: ApiItemsQuery = { sort: state.sort, page: state.page, pageSize: PAGE_SIZE };
   if (state.search) query.search = state.search;
   if (categoryId) {
@@ -108,7 +112,7 @@ export function toApiQuery(state: CatalogState, categoryId: string | null): ApiI
     for (const [key, value] of Object.entries(state.specs)) query[`spec.${key}`] = value;
   }
   if (state.condition) query.condition = state.condition;
-  if (state.stock !== "all") query.inStock = state.stock === "in";
+  if (state.stock === "in" || !showSoldOut) query.inStock = true;
   if (state.min !== null) query.minPrice = state.min;
   if (state.max !== null) query.maxPrice = state.max;
   return query;
@@ -124,13 +128,13 @@ export interface ActiveFilter {
   clear: CatalogPatch;
 }
 
-/** The filters that are on, as removable chips (the default availability "in" is not a chip). */
+/** The filters that are on, as removable chips (the default availability "all" is not a chip). */
 export function activeFilters(state: CatalogState): ActiveFilter[] {
   const chips: ActiveFilter[] = [];
   if (state.search) chips.push({ id: "search", kind: "search", value: state.search, clear: { search: "" } });
   if (state.category) chips.push({ id: "category", kind: "category", value: state.category, clear: { category: null } });
   if (state.condition) chips.push({ id: "condition", kind: "condition", value: state.condition, clear: { condition: null } });
-  if (state.stock !== "in") chips.push({ id: "stock", kind: "stock", value: state.stock, clear: { stock: "in" } });
+  if (state.stock === "in") chips.push({ id: "stock", kind: "stock", value: state.stock, clear: { stock: "all" } });
   if (state.min !== null || state.max !== null) {
     chips.push({ id: "price", kind: "price", value: `${state.min ?? ""}–${state.max ?? ""}`, clear: { min: null, max: null } });
   }

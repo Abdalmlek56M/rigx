@@ -27,7 +27,6 @@ public sealed record RetailTestServices(
     OrderTrackingService Tracking,
     BlacklistService Blacklist,
     PosService Pos,
-    SoldFeedService SoldFeed,
     WarrantyService Warranties,
     MoneyAccountService Money,
     ExpenseTypeService ExpenseTypes,
@@ -42,7 +41,7 @@ public sealed record RetailTestServices(
         return new(new(factory, time), new(factory, time), new(factory, time), new(factory, time), new(factory, time),
             new(factory, time, zone), new(factory, time, zone), new(factory, time, zone), new(factory, time, zone), new(factory, time, zone),
             new(factory, reports, time), new(factory), new(factory), new(factory, reports, time, zone), reports, new(factory, time), new(factory),
-            new(factory, time), new(factory, time), new(factory, time), new(factory, time, zone), new(factory), new(factory, time),
+            new(factory, time), new(factory, time), new(factory, time), new(factory, time, zone), new(factory, time),
             new(factory, time, zone), new(factory, time), recurring, new(factory, reports, recurring, time));
     }
 }

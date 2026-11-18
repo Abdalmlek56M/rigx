@@ -44,7 +44,7 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
               <CloseIcon size={18} />
             </button>
           </div>
-          <nav aria-label={t("navLabel")} onClick={(event) => (event.target as HTMLElement).closest("a") && close()} className="min-h-0 flex-1 overflow-y-auto p-3">
+          <nav aria-label={t("navLabel")} onClick={(event) => (event.target as HTMLElement).closest("a") && close()} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
             {categories.length > 0 ? (
               <ul className="mb-3 border-b border-line pb-3">
                 {categories.map((category) => (

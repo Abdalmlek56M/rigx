@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { EmptyIcon } from "@/components/ui/EmptyIcon";
+import { CaseIcon } from "@/components/ui/icons";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -45,6 +47,7 @@ export default async function BuildsPage({ params, searchParams }: Props) {
           <p role="alert" className="rounded-card border border-line bg-surface p-6 text-center">{t("loadFailed")}</p>
         ) : builds.length === 0 ? (
           <div className="flex flex-col items-center gap-2 rounded-card border border-line bg-surface p-10 text-center">
+            <EmptyIcon icon={CaseIcon} />
             <b className="text-lg">{t("empty.title")}</b>
             <p className="m-0 text-ink-muted">{t("empty.body")}</p>
           </div>

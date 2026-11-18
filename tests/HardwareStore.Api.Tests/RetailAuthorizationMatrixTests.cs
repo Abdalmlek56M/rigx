@@ -241,14 +241,12 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
     }
 
     [Fact]
-    public async Task Tracking_and_the_sold_feed_are_public_and_unknown_tokens_are_not_found()
+    public async Task Tracking_is_public_and_unknown_tokens_are_not_found()
     {
         var database = await fixture.CreateDatabaseAsync();
         await using var factory = CreateFactory(database.ConnectionString);
         using var client = factory.CreatePreflightedClient(new() { HandleCookies = true });
 
-        var feed = await client.GetAsync("/api/v1/store/sold");
-        Assert.Equal(HttpStatusCode.OK, feed.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/v1/track/unknown-token")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await PostAsync(client, "/api/v1/track/unknown-token/rating", new { score = 5 })).StatusCode);
     }

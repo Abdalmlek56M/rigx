@@ -33,7 +33,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
       {open ? (
         <ul
           id="categories-panel"
-          className="absolute start-0 top-full z-30 mt-1 max-h-[70vh] w-72 overflow-y-auto rounded-panel border border-line bg-surface p-2 text-ink shadow-[0_10px_30px_rgba(0,0,0,.15)]"
+          className="pop-down absolute start-0 top-full z-30 mt-1 max-h-[70vh] w-72 overflow-y-auto overscroll-contain rounded-panel border border-line bg-surface p-2 text-ink shadow-[0_10px_30px_rgba(0,0,0,.15)]"
         >
           {categories.map((category) => (
             <li key={category.slug}>

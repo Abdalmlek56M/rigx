@@ -50,6 +50,7 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
   const message = fillTemplate(whatsApp.template, { item: item.modelName, code: item.code, price: formatEgp(unitPrice, locale), link: pageUrl })
     || t("whatsApp", { item: item.modelName, code: item.code });
   const whatsAppHref = whatsApp.number ? whatsAppUrl(whatsApp.number, message) : null;
+  const whatsAppLabel = soldOut ? t("askWhatsApp") : t("orderWhatsApp");
   const notifyClass = "flex h-[54px] flex-1 items-center justify-center gap-2 rounded-control border-2 border-ink font-bold text-ink";
 
   return (
@@ -107,10 +108,10 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
           href={whatsAppHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden h-[50px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold md:flex"
+          className="press hidden h-[54px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold md:flex"
         >
-          <WhatsAppIcon size={18} />
-          {t("askWhatsApp", { code: item.code })}
+          <WhatsAppIcon size={20} />
+          {whatsAppLabel}
         </a>
       ) : null}
 
@@ -118,13 +119,13 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
         {t("fitsMyPc")}
       </Link>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pb-4 pt-2.5 md:hidden">
+      <div data-sticky-bar="md" className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
         {whatsAppHref ? (
           <a
             href={whatsAppHref}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={t("askWhatsApp", { code: item.code })}
+            aria-label={whatsAppLabel}
             className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-card border-[1.5px] border-ink"
           >
             <WhatsAppIcon size={22} />

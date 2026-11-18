@@ -55,9 +55,8 @@ export async function FilterPanel({ state, tree, categoryId, showSoldOut, idPref
   const specs = categoryId ? effectiveSpecs(tree, categoryId).filter((spec) => spec.isFilter && spec.options.length > 0) : [];
   const hidden = [...toSearchParams(state).entries()].filter(([name]) => name !== "min" && name !== "max" && name !== "page");
   const stocks = [
-    { value: "in", label: t("inStock") },
-    { value: "out", label: t("soldOut") },
-    { value: "all", label: t("allStock") }
+    { value: "all", label: t("allStock") },
+    { value: "in", label: t("inStock") }
   ] as const;
 
   return (

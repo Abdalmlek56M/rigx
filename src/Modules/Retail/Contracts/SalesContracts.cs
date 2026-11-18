@@ -92,7 +92,3 @@ public sealed record TrackingView(string Reference, string Status, string Fulfil
     decimal Remaining, decimal UpfrontDue, string? DeliveryTime, bool CanRate, int? SatisfactionScore);
 public sealed record TrackingStep(string Status, DateTimeOffset At);
 public sealed record TrackingItem(string Name, string? Code, int Quantity);
-
-/// <summary>Public "اتباع قبل كده" card: no price, no customer name.</summary>
-public sealed record SoldFeedItem(string Kind, string Title, string? Code, string Condition, Guid? CategoryId, string? ThumbnailStorageKey,
-    string FulfillmentMethod, string? Governorate, DateTimeOffset SoldAtUtc);

@@ -157,12 +157,10 @@ describe("list sections", () => {
     const sales = salesValue({
       reservationHours: "",
       reservationAutoRelease: true,
-      posMaxDiscountPercent: "7.5",
-      soldFeedEnabled: false,
-      soldFeedShowGovernorate: true
+      posMaxDiscountPercent: "7.5"
     });
     assert.deepEqual([sales.reservationHours, sales.posMaxDiscountPercent], [0, 7.5]);
-    assert.equal(salesForm({ soldFeedEnabled: true }).soldFeedEnabled, true);
+    assert.equal(salesForm({}).posMaxDiscountPercent, "10");
 
     const watermark = watermarkValue({
       ...watermarkForm({}),

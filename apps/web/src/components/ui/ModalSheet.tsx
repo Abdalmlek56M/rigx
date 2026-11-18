@@ -33,7 +33,7 @@ export function ModalSheet({ open, onClose, label, edge, fullHeight = false, chi
 
   const mobile = fullHeight
     ? "inset-y-0 h-full max-h-none w-[min(320px,88vw)]"
-    : "inset-x-0 bottom-0 top-auto h-auto max-h-[88dvh] w-full rounded-t-panel";
+    : "inset-x-0 bottom-0 top-auto h-auto max-h-[88dvh] w-full rounded-t-panel pb-[env(safe-area-inset-bottom)] md:pb-0";
   const desktop = `md:inset-y-0 md:h-full md:max-h-none md:w-[400px] md:rounded-none ${edge === "end" ? "md:end-0 md:start-auto" : "md:start-0 md:end-auto"}`;
   const mobileEdge = fullHeight ? (edge === "end" ? "end-0 start-auto" : "start-0 end-auto") : "";
 
@@ -41,6 +41,8 @@ export function ModalSheet({ open, onClose, label, edge, fullHeight = false, chi
     <dialog
       ref={ref}
       aria-label={label}
+      data-sheet={fullHeight ? "side" : "bottom"}
+      data-edge={edge}
       onClose={onClose}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();

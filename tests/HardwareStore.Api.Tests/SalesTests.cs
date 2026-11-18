@@ -905,45 +905,4 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Null(await retail.Pos.FindCustomerAsync("01234567890"));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Pos.FindCustomerAsync("12")));
     }
-
-    // ---------------------------------------------------------------- sold feed
-
-    [Fact]
-    public async Task Sold_feed_lists_delivered_lines_without_prices_and_shows_the_governorate_only_when_asked()
-    {
-        var (retail, _, clock) = await StartAsync();
-        var item = await retail.ReceiveItemAsync(new ReceiptLine("Feed Fan", "New", 5, 50m, 300m));
-        var units = (await retail.ReceiveItemsAsync(Receipt(Guid.NewGuid(), null,
-            [new ReceiptLine("Feed CPU", "Used", 1, 100m, 3000m), new ReceiptLine("Feed GPU", "New", 1, 100m, 2000m)]), Actor))
-            .Select(entry => entry.Units[0].Id).ToList();
-        var build = await BuildAsync(retail, "Feed build", 5000m, units);
-
-        await DeliverAsync(retail, await retail.PosAsync(Sale([StockLine(item.Id, 2)])));
-        clock.Advance(TimeSpan.FromMinutes(5));
-        await DeliverAsync(retail, await retail.PosAsync(Sale([BuildLine(build.Id)], fulfillment: OrderFulfillment.Delivery, fee: 60m)));
-        var pending = await retail.PosAsync(Sale([StockLine(item.Id)]));
-        Assert.Equal(OrderStatus.New, pending.Status);
-
-        var feed = await retail.SoldFeed.ListAsync(false, null, null, 1);
-        Assert.Equal(["Build", "Item"], feed.Items.Select(entry => entry.Kind));
-        var buildCard = feed.Items[0];
-        Assert.Equal((build.Code, "Used", OrderFulfillment.Delivery), (buildCard.Code, buildCard.Condition, buildCard.FulfillmentMethod));
-        Assert.Equal("عنوان", buildCard.Title);
-        var itemCard = feed.Items[1];
-        Assert.Equal(("Feed Fan", item.Code, "New"), (itemCard.Title, itemCard.Code, itemCard.Condition));
-        Assert.All(feed.Items, entry => Assert.Null(entry.Governorate));
-        Assert.Equal(2, feed.Total);
-        var json = JsonSerializer.Serialize(feed).ToLowerInvariant();
-        foreach (var secret in new[] { "price", "amount", "customer", "phone" }) Assert.DoesNotContain(secret, json);
-
-        var withGovernorate = await retail.SoldFeed.ListAsync(true, null, null, 1);
-        Assert.Equal("C", withGovernorate.Items.Single(entry => entry.Kind == "Build").Governorate);
-        Assert.Null(withGovernorate.Items.Single(entry => entry.Kind == "Item").Governorate);
-
-        Assert.Equal("Build", Assert.Single((await retail.SoldFeed.ListAsync(false, "Build", null, 1)).Items).Kind);
-        Assert.Equal("Item", Assert.Single((await retail.SoldFeed.ListAsync(false, "Item", null, 1)).Items).Kind);
-        Assert.Empty((await retail.SoldFeed.ListAsync(false, null, [Guid.NewGuid()], 1)).Items);
-        Assert.Empty((await retail.SoldFeed.ListAsync(false, null, null, 2)).Items);
-        Assert.Equal(1, (await retail.SoldFeed.ListAsync(false, null, null, 0)).Page);
-    }
 }

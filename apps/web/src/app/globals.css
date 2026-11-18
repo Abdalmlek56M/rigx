@@ -69,6 +69,10 @@ html {
   background: var(--paper);
   color: var(--ink);
   color-scheme: light;
+  /* Phone feel: no grey tap flash (every control has its own :active), no font inflation in landscape. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html[data-theme="dark"] {
@@ -79,6 +83,7 @@ body {
   margin: 0;
   font-family: var(--font-plex-sans), sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* In the base layer so text-* utilities on links win. */
@@ -99,9 +104,182 @@ body {
   font-family: var(--font-plex-mono), monospace;
 }
 
+/* —— Motion: short, ease-out, transform/opacity only. Everything below switches off with reduced motion. —— */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* 1 in LTR, -1 in RTL: side drawers slide in from their own edge in both directions. */
+  --dir: 1;
+}
+
+[dir="rtl"] {
+  --dir: -1;
+}
+
+@layer base {
+  /* Controls: no double-tap-zoom delay, no long-press text selection, instant press feedback. */
+  button,
+  a,
+  [role="button"],
+  summary,
+  label:has(> input[type="radio"], > input[type="checkbox"]) {
+    touch-action: manipulation;
+  }
+
+  button,
+  [role="button"],
+  summary {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  button:not(:disabled),
+  .press {
+    transition: transform 140ms var(--ease-out);
+  }
+
+  button:not(:disabled):active,
+  .press:active {
+    transform: scale(0.97);
+  }
+
+  /* iOS zooms the page into any field under 16px; keep fields at 16px on touch screens. */
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+}
+
+/* Floating buttons sit above a page's sticky buy bar (product, build) instead of covering it. */
+@media (max-width: 767px) {
+  body:has([data-sticky-bar="md"]) .floating-lift {
+    bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Cards that lift a little under a mouse (never on touch, where hover sticks). */
+.lift {
+  transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lift:hover {
+    transform: translateY(-2px);
+    border-color: var(--input-line);
+    box-shadow: 0 10px 24px -14px rgba(21, 23, 27, 0.35);
+  }
+
+  .lift:hover img {
+    transform: scale(1.03);
+  }
+}
+
+.lift img {
+  transition: transform 240ms var(--ease-out);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--pop-y, -4px)) scale(0.97);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translate(var(--sheet-x, 0), var(--sheet-y, 100%));
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0.4;
+  }
+}
+
+/* Menus and popovers grow out of their trigger: `.pop-down` opens below it, `.pop-up` above it. */
+.pop-down,
+.pop-up {
+  animation: pop-in 160ms var(--ease-out);
+}
+
+.pop-down {
+  transform-origin: top;
+}
+
+.pop-up {
+  --pop-y: 4px;
+  transform-origin: bottom;
+}
+
+.toast-in {
+  --pop-y: -8px;
+  animation: pop-in 220ms var(--ease-out);
+}
+
+/* A new page fades in (opacity only, so fixed bars inside it keep their place). */
+.page-in {
+  animation: page-in 180ms ease-out;
+}
+
+/* ModalSheet: a bottom sheet on phones, a side drawer from its own edge on wider screens. */
+dialog[data-sheet][open] {
+  animation: sheet-in 280ms var(--ease-drawer);
+}
+
+dialog[data-sheet][open]::backdrop {
+  animation: fade-in 200ms ease-out;
+}
+
+dialog[data-sheet="side"][data-edge="end"] {
+  --sheet-x: calc(var(--dir) * 100%);
+  --sheet-y: 0;
+}
+
+dialog[data-sheet="side"][data-edge="start"] {
+  --sheet-x: calc(var(--dir) * -100%);
+  --sheet-y: 0;
+}
+
+@media (min-width: 768px) {
+  dialog[data-sheet="bottom"][data-edge="end"] {
+    --sheet-x: calc(var(--dir) * 100%);
+    --sheet-y: 0;
+  }
+
+  dialog[data-sheet="bottom"][data-edge="start"] {
+    --sheet-x: calc(var(--dir) * -100%);
+    --sheet-y: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .lift:hover,
+  .press:active,
+  button:active {
+    transform: none !important;
   }
 }
 

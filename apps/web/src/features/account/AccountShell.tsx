@@ -6,8 +6,13 @@ import { loginHref } from "@/features/auth/auth-rules";
 import { signOut } from "@/features/auth/session-store";
 import { useSession } from "@/features/auth/use-session";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { BoxIcon, CaseIcon, DocumentIcon, InboxIcon, MapPinIcon, ShieldIcon, UserIcon } from "@/components/ui/icons";
 import { ACCOUNT_NAV, isActiveNav } from "./account-labels";
 import { SkeletonRows } from "./LoadBoundary";
+
+const NAV_ICONS = {
+  orders: BoxIcon, warranties: ShieldIcon, invoices: DocumentIcon, requests: InboxIcon, builds: CaseIcon, addresses: MapPinIcon, profile: UserIcon
+} as const;
 
 /** The frame of every account page: greeting, side nav (tabs on mobile), sign-out; sends signed-out visitors to sign-in. */
 export function AccountShell({ children }: { children: ReactNode }) {
@@ -44,11 +49,13 @@ export function AccountShell({ children }: { children: ReactNode }) {
         <nav aria-label={t("navLabel")} className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:flex-col md:overflow-visible md:px-0">
           {ACCOUNT_NAV.map((item) => {
             const active = isActiveNav(item.href, pathname);
+            const NavIcon = NAV_ICONS[item.key];
             return (
               <Link
                 key={item.href} href={item.href} aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-control px-4 text-sm font-bold ${active ? "bg-carbon text-on-carbon" : "text-ink hover:bg-line"}`}
+                className={`flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-4 text-sm font-bold ${active ? "bg-carbon text-on-carbon" : "text-ink hover:bg-line"}`}
               >
+                <NavIcon size={18} />
                 {t(`nav.${item.key}`)}
               </Link>
             );

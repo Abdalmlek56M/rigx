@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { CartDrawer } from "@/features/cart/CartDrawer";
 import { CartProvider } from "@/features/cart/cart-context";
 import { CartToast } from "@/features/cart/CartToast";
+import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
 import { BackToTop } from "./BackToTop";
 import { FloatingContact } from "./FloatingContact";
@@ -20,7 +21,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
       <Header storefront={storefront} />
       <main className="min-h-[60vh]">{children}</main>
       <Footer storefront={storefront} />
-      <CartDrawer />
+      <CartDrawer whatsAppNumber={whatsAppNumber(storefront.contactLinks)} />
       <CartToast />
       <FloatingContact links={floatingLinks} />
       <BackToTop />

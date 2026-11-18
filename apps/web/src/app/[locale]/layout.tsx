@@ -25,7 +25,8 @@ const mono = IBM_Plex_Mono({
 /** Static pages re-render at most every 5 minutes so storefront settings changes (and a recovered API) show up. */
 export const revalidate = 300;
 
-export const viewport: Viewport = { themeColor: "#15171B" };
+/** `viewportFit: "cover"` lets sticky bars pad themselves with the safe-area insets (notch, home bar). */
+export const viewport: Viewport = { themeColor: "#15171B", viewportFit: "cover" };
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

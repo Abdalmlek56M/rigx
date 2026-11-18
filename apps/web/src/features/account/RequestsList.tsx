@@ -1,5 +1,6 @@
 "use client";
 
+import { InboxIcon } from "@/components/ui/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate, formatEgp } from "@/lib/format";
 import { fetchRequests } from "./account-api";
@@ -19,7 +20,7 @@ export function RequestsList() {
       <LoadBoundary state={state} reload={reload}>
         {(requests) =>
           requests.length === 0 ? (
-            <EmptyState message={t("empty")} />
+            <EmptyState icon={InboxIcon} message={t("empty")} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {requests.map((request) => (

@@ -162,3 +162,12 @@ export function parseStoredLines(raw: string | null): CartLine[] {
     return [];
   }
 }
+
+/**
+ * The WhatsApp order message for a cart: the intro, one line per part or build ("- name (code) × qty") and the total.
+ * The code stays in the message so the shop knows which piece is meant.
+ */
+export function cartWhatsAppText(lines: CartLine[], text: { intro: string; total: string }, price: (amount: number) => string): string {
+  const rows = lines.map((line) => `- ${line.modelName} (${line.code})${line.quantity > 1 ? ` × ${line.quantity}` : ""}`);
+  return [text.intro, ...rows, `${text.total}: ${price(subtotal(lines))}`].join("\n");
+}

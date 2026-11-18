@@ -24,7 +24,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const href = `/products/${item.code}`;
 
   return (
-    <article className="flex w-full flex-col overflow-hidden rounded-card border border-line bg-surface">
+    <article className="lift flex w-full flex-col overflow-hidden rounded-card border border-line bg-surface">
       <Link
         href={href}
         aria-label={item.modelName}
@@ -41,7 +41,8 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
             <ConditionBadge condition={condition} />
           </span>
         ) : null}
-        <span dir="ltr" className="absolute end-3 top-3 font-mono text-xs text-ink-muted">{item.code}</span>
+        {/* The page direction places the code (opposite the condition badge); the inner span keeps it left-to-right. */}
+        <span className="absolute end-3 top-3 font-mono text-xs text-ink-muted"><span dir="ltr">{item.code}</span></span>
         {soldOut ? (
           <span className="absolute bottom-3 start-3 rounded bg-paper px-2 py-[3px] text-xs font-bold text-ink-muted">{t("soldOutBadge")}</span>
         ) : null}

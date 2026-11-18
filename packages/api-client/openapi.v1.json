@@ -1220,61 +1220,6 @@
         }
       }
     },
-    "/api/v1/store/sold": {
-      "get": {
-        "tags": [
-          "store"
-        ],
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "categoryId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 1
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PagedResultOfSoldFeedItem"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error (ProblemDetails).",
-            "content": {
-              "application/problem\u002Bjson": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/orders": {
       "post": {
         "tags": [
@@ -22609,35 +22554,6 @@
           }
         }
       },
-      "PagedResultOfSoldFeedItem": {
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SoldFeedItem"
-            }
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
       "PagedResultOfStockItemAdminView": {
         "required": [
           "items",
@@ -26016,12 +25932,6 @@
           "posMaxDiscountPercent": {
             "type": "number",
             "format": "double"
-          },
-          "soldFeedEnabled": {
-            "type": "boolean"
-          },
-          "soldFeedShowGovernorate": {
-            "type": "boolean"
           }
         }
       },
@@ -26426,63 +26336,6 @@
           },
           "isNewAccount": {
             "type": "boolean"
-          }
-        }
-      },
-      "SoldFeedItem": {
-        "required": [
-          "kind",
-          "title",
-          "code",
-          "condition",
-          "categoryId",
-          "thumbnailStorageKey",
-          "fulfillmentMethod",
-          "governorate",
-          "soldAtUtc"
-        ],
-        "type": "object",
-        "properties": {
-          "kind": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "code": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "condition": {
-            "type": "string"
-          },
-          "categoryId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
-          "thumbnailStorageKey": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "fulfillmentMethod": {
-            "type": "string"
-          },
-          "governorate": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "soldAtUtc": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },

@@ -1,5 +1,6 @@
 "use client";
 
+import { CaseIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
@@ -37,7 +38,7 @@ export function BuildsList() {
       <LoadBoundary state={state} reload={reload}>
         {(builds) =>
           builds.length === 0 ? (
-            <EmptyState message={t("empty")} action={<Link href="/builder" className="text-orange-text underline hover:text-orange-text-hover">{t("start")}</Link>} />
+            <EmptyState icon={CaseIcon} message={t("empty")} action={<Link href="/builder" className="text-orange-text underline hover:text-orange-text-hover">{t("start")}</Link>} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {builds.map((build) => {

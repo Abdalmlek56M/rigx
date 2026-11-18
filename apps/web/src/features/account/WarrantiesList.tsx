@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { WhatsAppIcon } from "@/components/ui/icons";
+import { ShieldIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
@@ -75,7 +75,7 @@ export function WarrantiesList({ whatsApp }: { whatsApp: WhatsApp }) {
       <LoadBoundary state={state} reload={reload}>
         {({ warranties, invoices }) =>
           warranties.length === 0 ? (
-            <EmptyState message={t("empty")} />
+            <EmptyState icon={ShieldIcon} message={t("empty")} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {warranties.map((warranty) => (

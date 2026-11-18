@@ -30,7 +30,7 @@ export function BackToTop() {
       type="button"
       aria-label={t("backToTop")}
       onClick={scrollTop}
-      className="fixed bottom-5 start-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-[0_8px_24px_rgba(0,0,0,.15)] md:bottom-6 md:start-6"
+      className="floating-lift fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] start-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-[0_8px_24px_rgba(0,0,0,.15)] md:bottom-6 md:start-6"
     >
       <ArrowUpIcon />
     </button>

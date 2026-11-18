@@ -73,7 +73,7 @@ it through a local HTTP→HTTPS bridge, because the Next proxy rejects the untru
 on the same database first, or its outbox worker takes the email.
 
 ## End-to-end tests (Playwright)
-Critical flows run in Chromium against a local stack (never production): PostgreSQL, the API in Development with Preview enabled (see "Demo data"), and the web app (`npm run dev -w @rigx/web`, which proxies `/api` to the API). The specs live in `apps/web/e2e/`: sign-in with a wrong code, a new customer ordering and tracking, the owner taking an order to completed, a POS sale, a purchase received into stock, and the warranty lookup. They are not part of `npm test`.
+Critical flows run in Chromium against a local stack (never production): PostgreSQL, the API in Development with Preview enabled (see "Demo data"), and the web app (`npm run dev -w @rigx/web`, which proxies `/api` to the API). The specs live in `apps/web/e2e/`: sign-in with a wrong code, a new customer ordering and tracking, the owner taking an order to completed, a POS sale, a purchase received into stock, the warranty lookup, and sold-out parts listed last in the catalog (with the old `/sold` page gone). They are not part of `npm test`.
 
 | Variable | Meaning | Default |
 |---|---|---|
@@ -85,7 +85,7 @@ Critical flows run in Chromium against a local stack (never production): Postgre
 npx playwright install chromium   # once, from apps/web
 E2E_PREVIEW_KEY=<the local key> npm run e2e -w @rigx/web
 ```
-A run seeds the demo data (idempotent; seeding signs every session out, so it comes first), signs the owner in through the login page once (`login.spec.ts`, saved to the git-ignored `apps/web/e2e/.auth`) and reads sign-in codes from the preview endpoint. After one full run, a single spec can be repeated with `npx playwright test <spec> --no-deps` (it reuses the saved owner state). Notes: every run uses a few demo parts and creates test orders, so reset the demo data now and then; the API allows 10 sign-in code requests per hour per IP, so avoid more than a few full runs an hour; guest checkout is off by default, so the storefront spec signs in as a new customer. The HTML report is written to `apps/web/playwright-report/` (git-ignored).
+A run seeds the demo data (idempotent; seeding signs every session out, so it comes first), signs the owner in through the login page once (`login.spec.ts`, saved to the git-ignored `apps/web/e2e/.auth`) and reads sign-in codes from the preview endpoint. After one full run, a single spec can be repeated with `npx playwright test <spec> --no-deps` (it reuses the saved owner state). Notes: every run uses a few demo parts and creates test orders, so reset the demo data now and then; the API allows 10 sign-in code requests per hour per IP, so avoid more than a few full runs an hour; guest checkout is off by default, so the storefront spec signs in as a new customer. While another `next dev` runs in `apps/web` (Next allows one per folder), run the specs against a production build instead: `next build` then `next start -p <port>` with `RIGX_API_ORIGIN` set for both, and an API with its own database (two APIs on one database steal each other's sign-in emails from the outbox). The HTML report is written to `apps/web/playwright-report/` (git-ignored).
 
 ## Configuration
 - Secrets only in `.env` locally / the host's secret store in production. Never committed.

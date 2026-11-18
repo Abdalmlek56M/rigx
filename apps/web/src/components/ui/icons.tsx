@@ -143,3 +143,188 @@ export const FilterIcon = (p: IconProps) => (
     <path d="M4 5h16l-6 8v6l-4-2v-4z" />
   </Icon>
 );
+
+// —— Parts and catalog categories (same 24px grid, 2px round stroke) ——————————————————
+export const GpuIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="6" width="20" height="11" rx="2" />
+    <circle cx="9" cy="11.5" r="2.5" />
+    <circle cx="16" cy="11.5" r="2.5" />
+    <path d="M5 17v3M9 17v2" />
+  </Icon>
+);
+export const CpuIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+    <rect x="9.5" y="9.5" width="5" height="5" rx="1" />
+    <path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" />
+  </Icon>
+);
+export const BoardIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <rect x="7" y="7" width="5" height="5" rx="1" />
+    <path d="M15 7h2M15 10h2M7 16h10" />
+  </Icon>
+);
+export const RamIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 7h18v9H3z" />
+    <path d="M7 10v3M11 10v3M15 10v3M5 16v3M9 16v3M15 16v3M19 16v3" />
+  </Icon>
+);
+export const StorageIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M7 15h6" />
+    <circle cx="17" cy="15" r="1" fill="currentColor" />
+  </Icon>
+);
+export const PowerIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
+  </Icon>
+);
+export const FanIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="1.5" />
+    <path d="M12 10.5c0-3 1-5 3.5-5M13.5 12c3 0 5 1 5 3.5M12 13.5c0 3-1 5-3.5 5M10.5 12c-3 0-5-1-5-3.5" />
+  </Icon>
+);
+export const CaseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="6" y="2" width="12" height="20" rx="2" />
+    <path d="M9 6h6M9 9h6" />
+    <circle cx="12" cy="16" r="2" />
+  </Icon>
+);
+export const MonitorIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="4" width="20" height="13" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </Icon>
+);
+
+// —— Account, admin areas, empty states ——————————————————————————————————————————
+export const BoxIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z" />
+    <path d="M3 7.5l9 4.5 9-4.5M12 12v9" />
+  </Icon>
+);
+export const ShieldIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z" />
+    <path d="M9 12l2 2 4-4" />
+  </Icon>
+);
+export const InboxIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 13l3-8h12l3 8v6H3z" />
+    <path d="M3 13h5l1 2h6l1-2h5" />
+  </Icon>
+);
+export const MapPinIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+    <circle cx="12" cy="9.5" r="2.5" />
+  </Icon>
+);
+export const GridIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </Icon>
+);
+export const RegisterIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="11" width="18" height="10" rx="2" />
+    <path d="M6 11V5h8v6M17 11V8M7 15h2M11 15h2M15 15h2M7 18h10" />
+  </Icon>
+);
+export const UsersIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.5A6.5 6.5 0 0 1 21.5 20" />
+  </Icon>
+);
+export const TagIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 3h8l10 10-8 8L3 11z" />
+    <circle cx="7.5" cy="7.5" r="1.5" />
+  </Icon>
+);
+export const TruckIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 6h12v10H2zM14 9h4l4 4v3h-8" />
+    <circle cx="6" cy="18" r="2" />
+    <circle cx="18" cy="18" r="2" />
+  </Icon>
+);
+export const FolderIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+  </Icon>
+);
+export const HandshakeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 12l4-5 4 2 2-1 2 1 4-2 4 5-7 6-2-1-2 1z" />
+    <path d="M10 9l-2 3 2 1 3-2" />
+  </Icon>
+);
+export const WalletIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4z" />
+    <path d="M4 6a2 2 0 0 1 2-2h10v2M15 13h5" />
+  </Icon>
+);
+export const MegaphoneIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 10v4h4l9 5V5L7 10z" />
+    <path d="M19 9a4 4 0 0 1 0 6M7 14l1 6h3l-1-5" />
+  </Icon>
+);
+export const StarIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+  </Icon>
+);
+export const HelpIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01" />
+  </Icon>
+);
+export const KeyIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="8" cy="15" r="4" />
+    <path d="M11 12l9-9M17 6l3 3M14 9l2 2" />
+  </Icon>
+);
+export const ClockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Icon>
+);
+export const DatabaseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <ellipse cx="12" cy="5.5" rx="8" ry="3" />
+    <path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />
+  </Icon>
+);
+export const GearIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" />
+  </Icon>
+);
+export const SearchIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-4-4" />
+  </Icon>
+);

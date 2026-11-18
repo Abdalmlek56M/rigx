@@ -2,14 +2,17 @@
 
 import { useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { EmptyIcon } from "@/components/ui/EmptyIcon";
+import { CartIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { useCart } from "./cart-context";
 import { CartLineRow } from "./CartLineRow";
+import { CartWhatsAppLink } from "./CartWhatsAppLink";
 
-/** The full cart: the same lines as the drawer, with the subtotal and the way on to checkout. */
-export function CartPage() {
+/** The full cart: the same lines as the drawer, with the subtotal, checkout and "order on WhatsApp". */
+export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) {
   const t = useTranslations("cartPage");
   const locale = useLocale();
   const mounted = useMounted();
@@ -23,6 +26,7 @@ export function CartPage() {
   if (lines.length === 0) {
     return (
       <div role="status" className="flex flex-col items-center gap-3 rounded-[10px] border border-line bg-surface p-10 text-center">
+        <EmptyIcon icon={CartIcon} />
         <p className="m-0 text-lg font-bold">{t("empty")}</p>
         <Link href="/products" className="text-orange-text underline hover:text-orange-text-hover">{t("browse")}</Link>
       </div>
@@ -51,6 +55,7 @@ export function CartPage() {
         <Link href="/checkout" className="flex h-[52px] items-center justify-center rounded-control bg-orange font-bold text-on-orange">
           {t("checkout")}
         </Link>
+        <CartWhatsAppLink number={whatsAppNumber} />
         <Link href="/products" className="flex h-11 items-center justify-center rounded-control border border-input-line bg-surface text-sm font-bold">
           {t("continue")}
         </Link>

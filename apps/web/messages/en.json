@@ -7,7 +7,7 @@
     "hero": {
       "title": "New and used PC parts,",
       "titleAccent": "and ready-made builds.",
-      "subtitle": "Graphics cards, processors, motherboards, RAM and storage. Plus assembly, repair, selling and trade-in.",
+      "subtitle": "Graphics cards, processors, motherboards, RAM and storage. We also assemble, clean, and buy or trade in old parts.",
       "browse": "Browse products",
       "recommend": "Recommend a build",
       "startHere": "Where do you start?",
@@ -31,7 +31,7 @@
       }
     },
     "categories": {
-      "title": "Browse by part"
+      "title": "Categories"
     },
     "latest": {
       "title": "Just arrived",
@@ -58,7 +58,7 @@
     "builderPromo": {
       "eyebrow": "Know what you want?",
       "title": "Build your own PC",
-      "body": "Pick every part, check compatibility, then send the build on WhatsApp or download a PDF quote.",
+      "body": "Pick the parts one by one and the site tells you if something doesn't fit. Then send it to us on WhatsApp or save it as a PDF.",
       "start": "Start building"
     },
     "services": {
@@ -69,11 +69,11 @@
       },
       "request": {
         "title": "Request a part we don't have",
-        "body": "Tell us the model, we'll look for it and confirm the price before you pay."
+        "body": "Tell us the model and we'll find it. The price is confirmed with you before you pay."
       },
       "assemble": {
         "title": "Assembly with your parts",
-        "body": "Bring your parts, we assemble and test them, and you get a working PC."
+        "body": "Bring your parts. We put them together, power it up, and hand you a working PC."
       },
       "maintain": {
         "title": "Cleaning and maintenance",
@@ -81,9 +81,9 @@
       }
     },
     "faq": {
-      "title": "Ask before you buy",
-      "body": "The questions we get most. If yours isn't here, <link>send it on WhatsApp</link>.",
-      "bodyNoLink": "The questions we get most."
+      "title": "Common questions",
+      "body": "If yours isn't here, <link>send it on WhatsApp</link>.",
+      "bodyNoLink": "What people ask most."
     }
   },
   "notFound": {
@@ -122,7 +122,7 @@
     "switchAria": "العربية"
   },
   "footer": {
-    "tagline": "New and used hardware, builds and services.",
+    "tagline": "New and used PC parts, and builds.",
     "follow": "Follow us",
     "shop": {
       "title": "Shop",
@@ -177,7 +177,12 @@
     "removedNotice": "An item sold out and was removed from your cart",
     "added": "Added to cart:",
     "openCart": "Open cart",
-    "add": "Add to cart"
+    "add": "Add to cart",
+    "whatsApp": {
+      "cta": "Order on WhatsApp",
+      "intro": "Hi RIGX, I'd like to order:",
+      "total": "Total"
+    }
   },
   "usage": {
     "Gaming": "Gaming",
@@ -196,9 +201,9 @@
     "phone": "Mobile / WhatsApp number",
     "email": "Email · optional",
     "submit": "Notify me",
-    "note": "As soon as it's available we'll contact you on this number, and by email too if you leave one.",
-    "sent": "Done. As soon as {model} is available we'll contact you on the number you entered.",
-    "availableNow": "This model is available right now, no need to wait.",
+    "note": "When it's back we'll contact you on this number, and by email if you leave one.",
+    "sent": "Done. When {model} is back we'll contact you.",
+    "availableNow": "This model is in stock now.",
     "seeAvailable": "See what's available",
     "errors": {
       "name": "Enter your name",
@@ -234,18 +239,16 @@
       "max": "To",
       "apply": "Apply",
       "availability": "Availability",
-      "inStock": "Available",
-      "soldOut": "Sold out",
+      "inStock": "In stock only",
       "allStock": "All"
     },
     "chips": {
       "search": "Search: {query}",
-      "stockOut": "Sold out",
-      "stockAll": "Available and sold out",
       "priceBetween": "{min} – {max} EGP",
       "priceFrom": "From {min} EGP",
       "priceTo": "Up to {max} EGP",
-      "remove": "Remove filter {label}"
+      "remove": "Remove filter {label}",
+      "inStock": "In stock only"
     },
     "sort": {
       "label": "Sort",
@@ -265,7 +268,7 @@
     "loadFailed": "We can't load the products right now. Please try again shortly.",
     "banner": {
       "title": "Can't find what you're looking for?",
-      "body": "Send us the model and we'll confirm the price and availability date before any payment.",
+      "body": "Send us the model and we'll find it. Price and timing are confirmed with you before you pay.",
       "cta": "Request a part"
     }
   },
@@ -292,9 +295,9 @@
       "increase": "Increase quantity"
     },
     "buyNow": "Buy now",
-    "askWhatsApp": "Ask on WhatsApp about {code}",
+    "askWhatsApp": "Ask about it on WhatsApp",
     "whatsApp": "Hello RIGX, I'd like to ask about {item} ({code}).",
-    "fitsMyPc": "Will it fit my PC? Try it in \"Build your PC\"",
+    "fitsMyPc": "Will it fit your PC? Try it in \"Build your PC\"",
     "specs": "Specifications",
     "faqs": "Questions about this part",
     "info": {
@@ -311,7 +314,8 @@
       "pickupTitle": "Pickup",
       "pickupAndShipping": "From {address}, or shipping to all governorates",
       "shippingOnly": "Shipping to all governorates"
-    }
+    },
+    "orderWhatsApp": "Order it on WhatsApp"
   },
   "builds": {
     "title": "Ready-made builds",
@@ -350,7 +354,7 @@
     },
     "soldOut": "This build is sold out",
     "buyNow": "Buy now",
-    "askWhatsApp": "Ask about {code} on WhatsApp",
+    "askWhatsApp": "Ask about it on WhatsApp",
     "whatsApp": "Hi RIGX, I'd like to ask about the build {item} ({code}).",
     "edit": "Tweak it",
     "parts": {
@@ -360,11 +364,12 @@
       "warranty": "Warranty",
       "price": "Price",
       "splitNote": "Want just one part of this build? Ask us on WhatsApp."
-    }
+    },
+    "orderWhatsApp": "Order it on WhatsApp"
   },
   "builder": {
     "title": "Build your own PC",
-    "subtitle": "Pick each part, new or used, and we'll check compatibility with you. Not sure?",
+    "subtitle": "Pick each part, new or used, and the site checks compatibility. Not sure?",
     "recommendLink": "let us recommend one",
     "quickStart": {
       "label": "Quick start",
@@ -454,9 +459,9 @@
   "services": {
     "title": "Our services",
     "hero": {
-      "line1": "With you before you buy,",
-      "line2": "and after you buy.",
-      "body": "Every service has clear steps and a price we confirm with you before we start. Message us on WhatsApp, or request a service from here."
+      "line1": "Assembly and repair,",
+      "line2": "selling and trade-in.",
+      "body": "The price is confirmed with you before we start. Request it here or message us on WhatsApp."
     },
     "items": {
       "consult": {
@@ -474,7 +479,7 @@
       "build": {
         "price": "Free",
         "title": "Assembly",
-        "body": "Whether the parts come from us or from you, we assemble the PC, tidy the cables, install Windows and drivers, and hand it over ready. If a part should be swapped, we suggest an alternative.",
+        "body": "Your parts or ours: we assemble the PC, route the cables, install Windows and drivers, and hand it over running. If a part doesn't suit the build, we tell you what to use instead.",
         "steps": [
           "You choose the parts or bring them",
           "Assembly and cable management",
@@ -486,9 +491,9 @@
       "test": {
         "price": "EGP 150 per part",
         "title": "Part check",
-        "body": "Have a part and not sure about its condition? Bring it and we'll stress-test it and give you a report with the result. If you sell it to us or buy a replacement from us, the check fee is deducted.",
+        "body": "Not sure about a part you have? Bring it in, we run it under load and give you a report. If you then sell it to us or buy a replacement from us, the fee comes off.",
         "steps": [
-          "Bring the part to Agami or ship it",
+          "Bring the part or ship it",
           "Stress test and trial",
           "Report with the result and photos"
         ],
@@ -498,7 +503,7 @@
       "maintenance": {
         "price": "Cleaning from EGP 200 · thermal paste from EGP 200",
         "title": "Maintenance and cleaning",
-        "body": "Full cleaning and thermal paste replacement, with temperatures measured before and after so you can see the difference yourself.",
+        "body": "Full cleaning and fresh thermal paste, with temperatures measured before and after.",
         "steps": [
           "Book a time",
           "Temperatures measured before",
@@ -511,11 +516,11 @@
       "sourcing": {
         "price": "Price confirmed before payment",
         "title": "Request a part we don't have",
-        "body": "Send us the model and we'll look for it and confirm the price and the time to get it before you pay anything.",
+        "body": "Send us the model and we'll find it. Price and timing are confirmed with you before you pay anything.",
         "steps": [
           "You send the model",
           "We confirm price and timing",
-          "We source and check it"
+          "We get it and let you know"
         ],
         "cta": "Request a part",
         "message": "I'd like to request a part you don't have."
@@ -523,7 +528,7 @@
       "upgrade": {
         "price": "Free consultation",
         "title": "Upgrade your PC",
-        "body": "Want more performance? We tell you which part will really make a difference, and work out the value of your old one.",
+        "body": "PC feeling slow? We tell you which part will actually make a difference, and price your old one.",
         "steps": [
           "You send your PC's specs",
           "We recommend the right upgrade",
@@ -586,7 +591,7 @@
     },
     "soon": {
       "title": "Coming soon",
-      "subtitle": "Services we'll add over time. Register your interest and we'll tell you when they start.",
+      "subtitle": "Sign up and we'll tell you when they start.",
       "badge": "Soon",
       "business": {
         "title": "Business and bulk orders",
@@ -620,19 +625,6 @@
       "failed": "Something went wrong. Please try again in a moment."
     }
   },
-  "sold": {
-    "title": "Sold before",
-    "subtitle": "Parts and builds that went to their owners. If you want something similar, tell us and we'll let you know when it's in.",
-    "filter": "Category",
-    "all": "All",
-    "builds": "Builds",
-    "soldBadge": "Sold ✓",
-    "pickup": "Picked up from Agami",
-    "shippedTo": "Shipped to {governorate}",
-    "wantOne": "Want one like it · tell me",
-    "loadFailed": "We can't load the list right now. Please try again in a moment.",
-    "empty": "Nothing here yet."
-  },
   "auth": {
     "title": "Sign in",
     "aside": {
@@ -648,7 +640,7 @@
       "placeholder": "name@gmail.com",
       "send": "Email me a code",
       "sending": "Sending the code…",
-      "hint": "No password needed. We email you a 6-digit code every time you sign in.",
+      "hint": "No password: we email you a 6-digit code.",
       "invalid": "Enter a valid email."
     },
     "code": {
@@ -728,7 +720,7 @@
       "phone": "Mobile number",
       "whatsApp": "This number is on WhatsApp",
       "email": "Email · optional",
-      "note": "We will call this number to confirm the order before preparing it."
+      "note": "We'll contact this number to confirm the order before we prepare it."
     },
     "fulfillment": {
       "title": "Receiving",
@@ -786,13 +778,13 @@
       "minimum": "The minimum order is {amount}. Add something to your cart to continue.",
       "confirm": "Confirm order",
       "sending": "Sending your order...",
-      "callNote": "We will call you to confirm everything before preparing the order."
+      "callNote": "After you confirm, we'll message you on WhatsApp to settle the details."
     }
   },
   "orderSuccess": {
     "pageTitle": "Order received",
     "title": "We got your order",
-    "lead": "It is not confirmed yet. We will call you on <phone>x</phone> to confirm the items and details before preparing it.",
+    "lead": "It isn't confirmed yet. We'll message you on WhatsApp at <phone>x</phone> to confirm the details. In a hurry? Message us first.",
     "missing": "There is no order to show here. If you just placed one, we will call your number.",
     "home": "Home",
     "trackingHelp": "Warranty and order tracking",
@@ -819,9 +811,9 @@
       "title": "Track your order",
       "accountHint": "Create an account with your email to follow the order and keep your warranties in one place.",
       "track": "Track your order",
-      "createAccount": "Create an account",
-      "whatsApp": "Ask about the order on WhatsApp"
-    }
+      "createAccount": "Create an account"
+    },
+    "whatsApp": "Finish the order on WhatsApp"
   },
   "tracking": {
     "title": "Order tracking",
@@ -840,7 +832,7 @@
     "address": "Address",
     "remaining": "Due on delivery",
     "upfrontDue": "Due upfront",
-    "ask": "I have a question about the order",
+    "ask": "Message us about this order on WhatsApp",
     "items": "In the order",
     "privateNote": "This link is private to your order. You do not need to sign in to open it.",
     "whatsAppMessage": "Hello RIGX, about my order {reference}.",
@@ -1162,7 +1154,7 @@
   },
   "faq": {
     "title": "Frequently asked questions",
-    "subtitle": "Quick answers to what customers ask most.",
+    "subtitle": "What people ask most.",
     "other": "General questions",
     "empty": "No questions published yet.",
     "video": "Video: {question}",
@@ -3727,18 +3719,14 @@
       },
       "sales": {
         "title": "Reservations & sales",
-        "hint": "How long stock is held, the POS discount limit and the sold feed.",
+        "hint": "How long stock is held and the POS discount limit.",
         "reservationHours": "Stock reservation (hours)",
         "autoRelease": "Release the stock automatically",
         "autoReleaseHint": "Off means staff are notified instead of releasing it.",
         "reservationHint": "Stock is held for this long after an order is confirmed.",
         "posTitle": "POS",
         "posDiscount": "POS maximum discount %",
-        "posHint": "For staff without the price-override permission.",
-        "feedTitle": "Sold feed page",
-        "soldFeed": "The page is on",
-        "soldFeedHint": "Shows what was sold recently.",
-        "showGovernorate": "Show the governorate"
+        "posHint": "For staff without the price-override permission."
       },
       "watermark": {
         "title": "Watermark",

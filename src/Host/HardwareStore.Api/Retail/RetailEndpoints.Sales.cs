@@ -216,17 +216,6 @@ public static partial class RetailEndpoints
     private static async Task<Ok<TrackingView>> RateOrderAsync(string token, OrderRatingRequest request, OrderTrackingService tracking, CancellationToken ct) =>
         TypedResults.Ok(await tracking.RateAsync(token, request, ct));
 
-    /// <summary>"اتباع قبل كده": off → 404; the governorate shows only when the sales settings allow it.</summary>
-    private static async Task<Ok<PagedResult<SoldFeedItem>>> ListSoldFeedAsync(SoldFeedService sold, StoreSettingsService settings, TaxonomyService taxonomy,
-        CancellationToken ct,
-        string? kind = null, Guid? categoryId = null, int page = 1)
-    {
-        var sales = (await settings.GetAdminAsync(ct)).Sales;
-        if (!sales.SoldFeedEnabled) throw new RetailException(StatusCodes.Status404NotFound, "The sold feed is not available.");
-        var categoryIds = categoryId is Guid category ? await taxonomy.GetCategoryWithDescendantIdsAsync(category, ct) : null;
-        return TypedResults.Ok(await sold.ListAsync(sales.SoldFeedShowGovernorate, kind, categoryIds, page, ct));
-    }
-
     private static async Task<Ok<IReadOnlyList<CustomerOrderView>>> ListMyOrdersAsync(HttpContext context, OrderService orders, CancellationToken ct)
     {
         var accountId = context.RequireUserId();

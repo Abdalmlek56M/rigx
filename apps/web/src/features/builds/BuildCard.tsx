@@ -22,7 +22,7 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
   const href = `/builds/${build.code}`;
 
   return (
-    <article className="flex w-full flex-col overflow-hidden rounded-panel border border-line bg-surface">
+    <article className="lift flex w-full flex-col overflow-hidden rounded-panel border border-line bg-surface">
       <Link href={href} aria-label={title} className="relative flex h-[180px] items-center justify-center bg-sand text-muted">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite

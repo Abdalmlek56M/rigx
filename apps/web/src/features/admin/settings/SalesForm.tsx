@@ -34,11 +34,6 @@ export function SalesForm({ view, onSaved, onStale }: SectionProps) {
         <p className="m-0 text-xs text-ink-muted">{t("posHint")}</p>
       </div>
 
-      <div className="flex flex-col gap-1 border-t border-line pt-3">
-        <h3 className="m-0 text-[15px] font-bold">{t("feedTitle")}</h3>
-        <CheckField label={t("soldFeed")} hint={t("soldFeedHint")} checked={form.soldFeedEnabled} onChange={(soldFeedEnabled) => set({ soldFeedEnabled })} />
-        <CheckField label={t("showGovernorate")} checked={form.soldFeedShowGovernorate} onChange={(soldFeedShowGovernorate) => set({ soldFeedShowGovernorate })} />
-      </div>
     </SectionForm>
   );
 }

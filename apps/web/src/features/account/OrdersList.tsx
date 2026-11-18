@@ -1,5 +1,6 @@
 "use client";
 
+import { BoxIcon } from "@/components/ui/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDate, formatEgp } from "@/lib/format";
@@ -50,7 +51,7 @@ export function OrdersList() {
       <LoadBoundary state={state} reload={reload}>
         {(orders) =>
           orders.length === 0 ? (
-            <EmptyState message={t("empty")} action={<Link href="/products" className="text-orange-text underline hover:text-orange-text-hover">{t("browse")}</Link>} />
+            <EmptyState icon={BoxIcon} message={t("empty")} action={<Link href="/products" className="text-orange-text underline hover:text-orange-text-hover">{t("browse")}</Link>} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {orders.map((order) => <OrderCard key={order.id} order={order} />)}

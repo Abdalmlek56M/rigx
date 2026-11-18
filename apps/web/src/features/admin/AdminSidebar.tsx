@@ -3,10 +3,23 @@
 import { useTranslations } from "next-intl";
 import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import {
+  BoxIcon, CaseIcon, ClockIcon, DatabaseIcon, DocumentIcon, FolderIcon, GearIcon, GridIcon, HandshakeIcon, HelpIcon, InboxIcon, KeyIcon,
+  MegaphoneIcon, RegisterIcon, StarIcon, StorageIcon, TagIcon, TruckIcon, UsersIcon, WalletIcon
+} from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
 import type { SessionUser } from "@/features/auth/session-store";
 import { Link } from "@/i18n/navigation";
-import type { AdminArea, AdminGroup } from "./admin-nav";
+import type { AdminArea, AdminAreaKey, AdminGroup } from "./admin-nav";
+
+const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
+  dashboard: GridIcon, pos: RegisterIcon, orders: BoxIcon, customers: UsersIcon, offers: TagIcon,
+  inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, categories: FolderIcon,
+  partners: HandshakeIcon, expenses: WalletIcon,
+  requests: InboxIcon, campaigns: MegaphoneIcon, tiers: StarIcon,
+  articles: DocumentIcon, faq: HelpIcon,
+  users: KeyIcon, audit: ClockIcon, system: DatabaseIcon, settings: GearIcon
+};
 
 interface AdminSidebarProps {
   user: SessionUser;
@@ -39,11 +52,13 @@ export function AdminSidebar({ user, groups, active, onNavigate, onSignOut }: Ad
           <span className="px-3 pb-1 pt-2.5 text-[11px] tracking-[.5px] text-muted">{t(`nav.groups.${group.key}`)}</span>
           {group.areas.map((area) => {
             const current = area === active;
+            const AreaIcon = AREA_ICONS[area.key];
             return (
               <Link
                 key={area.key} href={area.href} onClick={onNavigate} aria-current={current ? "page" : undefined}
-                className={`flex min-h-11 items-center rounded-control px-3 text-sm ${current ? "bg-orange font-bold text-on-orange" : "hover:bg-footer-line hover:text-on-carbon"}`}
+                className={`flex min-h-11 items-center gap-2.5 rounded-control px-3 text-sm ${current ? "bg-orange font-bold text-on-orange" : "hover:bg-footer-line hover:text-on-carbon"}`}
               >
+                <AreaIcon size={18} />
                 {t(`nav.areas.${area.key}`)}
               </Link>
             );

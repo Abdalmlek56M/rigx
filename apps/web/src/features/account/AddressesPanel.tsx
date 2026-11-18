@@ -1,5 +1,6 @@
 "use client";
 
+import { MapPinIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap, type Schemas } from "@rigx/api-client";
@@ -102,7 +103,7 @@ export function AddressesPanel({ governorates }: { governorates: readonly string
       <LoadBoundary state={state} reload={reload}>
         {(addresses) =>
           addresses.length === 0 && !editing ? (
-            <EmptyState message={t("empty")} />
+            <EmptyState icon={MapPinIcon} message={t("empty")} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {addresses.map((address) => (

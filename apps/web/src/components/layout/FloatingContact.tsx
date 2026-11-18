@@ -25,9 +25,9 @@ export function FloatingContact({ links }: { links: ContactLink[] }) {
   const label = (platform: string) => (platform === Platform.Phone ? t("call") : tf(platform as SocialPlatform));
 
   return (
-    <div ref={ref} className="fixed bottom-5 end-4 z-30 flex flex-col items-end gap-2.5 md:bottom-6 md:end-6">
+    <div ref={ref} className="floating-lift fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] end-4 z-30 flex flex-col items-end gap-2.5 md:bottom-6 md:end-6">
       {open ? (
-        <div id="floating-contact-menu" className="flex w-[220px] flex-col gap-1 rounded-panel border border-line bg-surface p-2.5 shadow-[0_10px_30px_rgba(0,0,0,.15)]">
+        <div id="floating-contact-menu" className="pop-up flex w-[220px] flex-col gap-1 rounded-panel border border-line bg-surface p-2.5 shadow-[0_10px_30px_rgba(0,0,0,.15)]">
           {links.map((link) => (
             <a key={link.platform} href={contactHref(link)} className={itemClass} onClick={close}>
               <PlatformIcon platform={link.platform} size={18} />

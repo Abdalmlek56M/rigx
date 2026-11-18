@@ -32,7 +32,7 @@ export async function CatalogToolbar({ state, tree, total, panel, queryKey }: Ca
       case "condition":
         return tc(filter.value === "New" ? "New" : "Used");
       case "stock":
-        return t(filter.value === "out" ? "chips.stockOut" : "chips.stockAll");
+        return t("chips.inStock");
       case "price":
         return state.min !== null && state.max !== null
           ? t("chips.priceBetween", { min: state.min, max: state.max })

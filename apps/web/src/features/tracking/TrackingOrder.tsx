@@ -46,7 +46,7 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
         </dl>
         <OrderWhatsAppLink
           whatsApp={whatsApp} reference={view.reference} label={t("ask")}
-          className="flex h-11 items-center justify-center gap-2 rounded-control bg-carbon font-bold text-on-carbon"
+          className="press flex h-[52px] items-center justify-center gap-2 rounded-control bg-carbon font-bold text-on-carbon"
         />
       </section>
 

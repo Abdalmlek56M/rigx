@@ -4,29 +4,27 @@ import {
   activeFilters, catalogHref, pageWindow, parseCatalogParams, toApiQuery, toSearchParams, withPatch
 } from "./catalog-query.ts";
 
-const parse = (params: Record<string, string>, showSoldOut = true) => parseCatalogParams(params, { showSoldOut });
+const parse = (params: Record<string, string>) => parseCatalogParams(params);
 
 describe("parseCatalogParams", () => {
-  it("defaults to available, newest, page 1", () => {
+  it("defaults to everything (sold-out included), newest, page 1", () => {
     const state = parse({});
-    assert.deepEqual([state.stock, state.sort, state.page, state.condition, state.category], ["in", "newest", 1, null, null]);
+    assert.deepEqual([state.stock, state.sort, state.page, state.condition, state.category], ["all", "newest", 1, null, null]);
   });
   it("reads every filter and ignores junk", () => {
-    const state = parse({ category: "gpu", condition: "used", stock: "out", min: "100", max: "x", sort: "price_asc", page: "3", "spec.vram": "8GB" });
+    const state = parse({ category: "gpu", condition: "used", stock: "in", min: "100", max: "x", sort: "price_asc", page: "3", "spec.vram": "8GB" });
     assert.deepEqual(
       [state.category, state.condition, state.stock, state.min, state.max, state.sort, state.page, state.specs],
-      ["gpu", "Used", "out", 100, null, "price_asc", 3, { vram: "8GB" }]
+      ["gpu", "Used", "in", 100, null, "price_asc", 3, { vram: "8GB" }]
     );
-    assert.equal(parse({ page: "-2", sort: "nope", stock: "weird" }).page, 1);
-  });
-  it("forces availability to in when sold-out items are hidden", () => {
-    assert.equal(parse({ stock: "all" }, false).stock, "in");
+    const junk = parse({ page: "-2", sort: "nope", stock: "out" });
+    assert.deepEqual([junk.page, junk.sort, junk.stock], [1, "newest", "all"]);
   });
 });
 
 describe("URL and API mapping", () => {
   it("leaves defaults out of the URL and round-trips", () => {
-    const state = parse({ category: "gpu", condition: "New", stock: "all", min: "500", sort: "price_desc", page: "2", "spec.vram": "8GB" });
+    const state = parse({ category: "gpu", condition: "New", stock: "in", min: "500", sort: "price_desc", page: "2", "spec.vram": "8GB" });
     const query = toSearchParams(state).toString();
     assert.deepEqual(parse(Object.fromEntries(new URLSearchParams(query))), state);
     assert.equal(toSearchParams(parse({})).toString(), "");
@@ -40,11 +38,14 @@ describe("URL and API mapping", () => {
     assert.equal(catalogHref(parse({}), { condition: "Used" }), "/products?condition=Used");
   });
   it("maps stock to inStock and adds spec params only with a category id", () => {
-    const state = parse({ stock: "out", min: "10", "spec.vram": "8GB", category: "gpu" });
+    const state = parse({ stock: "in", min: "10", "spec.vram": "8GB", category: "gpu" });
     const query = toApiQuery(state, "cat-1");
-    assert.deepEqual([query.inStock, query.minPrice, query.categoryId, query["spec.vram"]], [false, 10, "cat-1", "8GB"]);
+    assert.deepEqual([query.inStock, query.minPrice, query.categoryId, query["spec.vram"]], [true, 10, "cat-1", "8GB"]);
     assert.equal(toApiQuery(state, null)["spec.vram"], undefined);
-    assert.equal(toApiQuery(parse({ stock: "all" }), null).inStock, undefined);
+    assert.equal(toApiQuery(parse({}), null).inStock, undefined);
+  });
+  it("asks only for available items when the owner hides sold-out ones", () => {
+    assert.equal(toApiQuery(parse({}), null, false).inStock, true);
   });
 });
 
@@ -56,6 +57,7 @@ describe("activeFilters", () => {
     const vram = chips.find((c) => c.id === "spec.vram");
     assert.deepEqual(vram?.clear, { specs: { bus: "pcie" } });
     assert.deepEqual(activeFilters(parse({})), []);
+    assert.deepEqual(activeFilters(parse({ stock: "in" }))[0]?.clear, { stock: "all" });
   });
 });
 

@@ -71,12 +71,17 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
             row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc)).ToList();
     }
 
-    private static IQueryable<StockItem> Sorted(IQueryable<StockItem> items, string? sort) => sort switch
+    /// <summary>Sold-out items stay listed (marked "خلص") but always come after the available ones.</summary>
+    private static IQueryable<StockItem> Sorted(IQueryable<StockItem> items, string? sort)
     {
-        SortPriceAscending => items.OrderBy(item => item.Price).ThenByDescending(item => item.CreatedAtUtc),
-        SortPriceDescending => items.OrderByDescending(item => item.Price).ThenByDescending(item => item.CreatedAtUtc),
-        _ => items.OrderByDescending(item => item.CreatedAtUtc).ThenByDescending(item => item.Id)
-    };
+        var availableFirst = items.OrderByDescending(item => item.Units.Any(unit => unit.Status == UnitStatus.Available));
+        return sort switch
+        {
+            SortPriceAscending => availableFirst.ThenBy(item => item.Price).ThenByDescending(item => item.CreatedAtUtc),
+            SortPriceDescending => availableFirst.ThenByDescending(item => item.Price).ThenByDescending(item => item.CreatedAtUtc),
+            _ => availableFirst.ThenByDescending(item => item.CreatedAtUtc).ThenByDescending(item => item.Id)
+        };
+    }
 
     private static int CountOf(List<ConditionCount> counts, string condition) =>
         counts.Where(entry => entry.Condition == condition).Select(entry => entry.Count).FirstOrDefault();

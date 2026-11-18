@@ -31,7 +31,6 @@ public static class RetailRegistration
         services.AddScoped<ITrashSource, BlacklistTrashSource>();
         services.AddScoped<IDataResetSource, RetailDataReset>();
         services.AddScoped<PosService>();
-        services.AddScoped<SoldFeedService>();
         services.AddScoped<ReturnService>();
         services.AddScoped<WarrantyService>();
         services.AddScoped<CustomerSalesService>();

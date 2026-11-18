@@ -10,6 +10,8 @@ import { ItemCard } from "@/features/catalog/ItemCard";
 import { Pagination } from "@/features/catalog/Pagination";
 import { RequestPartBanner } from "@/features/catalog/RequestPartBanner";
 import { catalogTitle } from "@/features/catalog/catalog-title";
+import { EmptyIcon } from "@/components/ui/EmptyIcon";
+import { SearchIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { catalogHref, pageCount, parseCatalogParams, toApiQuery, toSearchParams, type RawParams } from "@/features/catalog/catalog-query";
 import { required } from "@/lib/api/required";
@@ -26,7 +28,7 @@ interface Props {
 /** The catalog state from the URL; an unknown category slug is ignored (with its spec filters). */
 async function resolve(searchParams: Promise<RawParams>) {
   const storefront = await loadStorefront();
-  const parsed = parseCatalogParams(await searchParams, { showSoldOut: storefront.showSoldOut });
+  const parsed = parseCatalogParams(await searchParams);
   const category = parsed.category ? categoryBySlug(storefront.categoryTree, parsed.category) : undefined;
   const state = parsed.category && !category ? { ...parsed, category: null, specs: {} } : parsed;
   return { storefront, state, category };
@@ -55,7 +57,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("catalog");
   const { storefront, state, category } = await resolve(searchParams);
-  const result = await loadItems(toApiQuery(state, category?.id ?? null));
+  const result = await loadItems(toApiQuery(state, category?.id ?? null, storefront.showSoldOut));
   const queryKey = toSearchParams({ ...state, page: 1 }).toString();
   const panel = (idPrefix: string) => (
     <FilterPanel state={state} tree={storefront.categoryTree} categoryId={category?.id ?? null} showSoldOut={storefront.showSoldOut} idPrefix={idPrefix} />
@@ -80,6 +82,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
             <p role="alert" className="rounded-card border border-line bg-surface p-6 text-center">{t("loadFailed")}</p>
           ) : result.items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-10 text-center">
+              <EmptyIcon icon={SearchIcon} />
               <b className="text-lg">{t("empty.title")}</b>
               <p className="m-0 text-ink-muted">{t("empty.body")}</p>
               <Link href="/products" className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("empty.clear")}</Link>

@@ -222,24 +222,18 @@ export interface SalesForm {
   reservationHours: string;
   reservationAutoRelease: boolean;
   posMaxDiscountPercent: string;
-  soldFeedEnabled: boolean;
-  soldFeedShowGovernorate: boolean;
 }
 
 export const salesForm = (value: SalesSettings): SalesForm => ({
   reservationHours: String(value.reservationHours ?? 24),
   reservationAutoRelease: value.reservationAutoRelease ?? false,
-  posMaxDiscountPercent: String(value.posMaxDiscountPercent ?? 10),
-  soldFeedEnabled: value.soldFeedEnabled ?? true,
-  soldFeedShowGovernorate: value.soldFeedShowGovernorate ?? false
+  posMaxDiscountPercent: String(value.posMaxDiscountPercent ?? 10)
 });
 
 export const salesValue = (form: SalesForm): SalesSettings => ({
   reservationHours: numberValue(form.reservationHours),
   reservationAutoRelease: form.reservationAutoRelease,
-  posMaxDiscountPercent: numberValue(form.posMaxDiscountPercent),
-  soldFeedEnabled: form.soldFeedEnabled,
-  soldFeedShowGovernorate: form.soldFeedShowGovernorate
+  posMaxDiscountPercent: numberValue(form.posMaxDiscountPercent)
 });
 
 // —— Watermark ————————————————————————————————————————————————————————————————
