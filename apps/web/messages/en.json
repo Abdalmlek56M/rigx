@@ -1355,6 +1355,316 @@
         "balance": "Balance",
         "empty": "No accounts."
       }
+    },
+    "requests": {
+      "title": "Sell, upgrade and support requests",
+      "tabsLabel": "Request type",
+      "newCount": "{count} new",
+      "search": "Search by code, name or phone",
+      "statusLabel": "Status",
+      "columns": {
+        "request": "Request",
+        "customer": "Customer",
+        "type": "Type",
+        "status": "Status",
+        "date": "Date",
+        "offer": "Offer"
+      },
+      "empty": "No requests match this filter.",
+      "none": "—",
+      "loading": "Loading the request",
+      "close": "Close the details",
+      "types": {
+        "All": "All",
+        "Sell": "Sell",
+        "TradeIn": "Trade-in",
+        "Upgrade": "Upgrade",
+        "NotifyMe": "Notify me",
+        "Support": "Support",
+        "Contact": "Contact us",
+        "Service": "Service",
+        "Other": "Request"
+      },
+      "statuses": {
+        "All": "All statuses",
+        "New": "New",
+        "Following": "Following",
+        "Offered": "Offer sent",
+        "Accepted": "Accepted",
+        "Rejected": "Rejected",
+        "Converted": "Converted",
+        "Closed": "Closed",
+        "Other": "Other"
+      },
+      "detail": {
+        "heading": "{type} request",
+        "request": "Item / request",
+        "itemCode": "Item code",
+        "ownedFor": "Owned for",
+        "partType": "Part type",
+        "service": "Service",
+        "preferredDate": "Preferred date",
+        "customer": "Customer",
+        "email": "Email",
+        "governorate": "Governorate",
+        "source": "Source",
+        "created": "Received",
+        "offer": "Current offer",
+        "message": "Message",
+        "failed": "We couldn't load the request.",
+        "retry": "Try again"
+      },
+      "trail": {
+        "label": "Request trail",
+        "New": "New",
+        "Offered": "Offer sent",
+        "Accepted": "Accepted",
+        "Converted": "Converted",
+        "Closed": "Closed"
+      },
+      "photos": {
+        "title": "Customer photos",
+        "alt": "{name} — photo {index}"
+      },
+      "offer": {
+        "title": "Offer",
+        "current": "Offer: {offer} · Expected resale: {resale}",
+        "none": "—",
+        "amount": "Offer",
+        "expected": "Expected resale",
+        "expectedHint": "Internal, so you know the margin.",
+        "save": "Save the offer",
+        "saved": "Offer saved",
+        "notAllowed": "You can't change the offer."
+      },
+      "note": {
+        "title": "Internal note",
+        "hint": "Never shown to the customer.",
+        "save": "Save the note",
+        "saved": "Note saved"
+      },
+      "actions": {
+        "title": "Actions",
+        "follow": "Follow",
+        "close": "Close the request",
+        "followed": "Now following",
+        "closed": "Closed"
+      },
+      "decision": {
+        "accept": "Accept",
+        "reject": "Reject",
+        "accepted": "Recorded as accepted",
+        "rejected": "Recorded as rejected"
+      },
+      "convert": {
+        "button": "Convert to purchase",
+        "title": "Convert to a purchase?",
+        "body": "A purchase order opens with the customer details; complete it from the purchases page.",
+        "done": "Converted to a purchase",
+        "failed": "It didn't convert. Try again.",
+        "purchase": "Purchase: {code}"
+      },
+      "whatsapp": {
+        "title": "Reply to the customer",
+        "note": "The message comes from the store settings; WhatsApp opens with it filled in.",
+        "open": "Send on WhatsApp"
+      },
+      "backInStock": {
+        "panelTitle": "Back in stock",
+        "panelNote": "Notify-me requests whose item is available again and were not messaged yet.",
+        "requestLine": "{code} · {name} · available {date}",
+        "openWhatsApp": "WhatsApp",
+        "title": "The item is back",
+        "available": "Code {code} is available since {date}. Message the customer from the back-in-stock list below.",
+        "markSent": "Mark as messaged",
+        "marked": "Marked as messaged"
+      }
+    },
+    "customers": {
+      "title": "Customers",
+      "search": "Search by name, phone or code",
+      "empty": "No customers.",
+      "columns": {
+        "name": "Customer",
+        "phone": "Phone",
+        "orders": "Orders",
+        "spent": "Total spent",
+        "lastOrder": "Last order"
+      },
+      "never": "Never",
+      "inactive": "Suspended",
+      "detailTitle": "Customer details",
+      "back": "All customers",
+      "memberSince": "Customer since {date}",
+      "loginMethods": "Sign-in methods",
+      "email": "Email",
+      "governorate": "Governorate",
+      "emailCode": "Email code",
+      "google": "Google",
+      "leadSource": "Lead source",
+      "usage": "Uses the PC for",
+      "totalSpent": "Total spent",
+      "orderCount": "Orders",
+      "activeSessions": "Signed-in devices",
+      "none": "—",
+      "loading": "Loading…",
+      "partsCount": "{count} parts",
+      "viewAs": "See it as the customer",
+      "viewAsTitle": "Their account view",
+      "viewAsNote": "Read only — changes made here are not saved.",
+      "tabs": {
+        "orders": "Orders · {count}",
+        "warranties": "Warranties · {count}",
+        "requests": "Requests · {count}",
+        "notes": "Notes"
+      },
+      "orders": {
+        "empty": "No orders.",
+        "reference": "Order",
+        "date": "Date",
+        "channel": "Channel",
+        "total": "Total",
+        "paid": "Paid",
+        "status": "Status",
+        "online": "Online",
+        "store": "Store"
+      },
+      "warranties": {
+        "empty": "No warranties.",
+        "code": "Code",
+        "name": "Item",
+        "ends": "Warranty",
+        "status": "Status",
+        "until": "Until {date}",
+        "active": "Active",
+        "expired": "Expired",
+        "void": "Void",
+        "daysLeft": "{count} days",
+        "unknown": "Other"
+      },
+      "requests": {
+        "empty": "No requests.",
+        "code": "Code",
+        "type": "Type",
+        "status": "Status",
+        "date": "Date"
+      },
+      "notes": {
+        "title": "Internal notes",
+        "hint": "Never shown to the customer.",
+        "save": "Save the note",
+        "saved": "Note saved",
+        "empty": "No notes."
+      },
+      "account": {
+        "title": "Account controls",
+        "sendCode": "Send a sign-in code by email",
+        "codeSent": "A code was sent to their email",
+        "unlinkGoogle": "Unlink Google",
+        "unlinkConfirm": "Google sign-in is removed; the customer signs in with an email code only.",
+        "signOutAll": "Sign out of all devices",
+        "signOutConfirm": "They will be signed out of every open device.",
+        "blacklist": "Add to the blacklist",
+        "blacklistRemove": "Remove from the blacklist",
+        "blacklistConfirm": "The customer is removed from the blacklist.",
+        "blacklistState": "On the blacklist",
+        "auditNote": "Every action here is written to the activity log."
+      },
+      "blacklist": {
+        "title": "Blacklist",
+        "reason": "Reason",
+        "reasonPlaceholder": "For example: fake orders or refused delivery",
+        "save": "Add to the blacklist",
+        "saved": "Added to the blacklist",
+        "removed": "Removed from the blacklist",
+        "failed": "That didn't work. Try again."
+      },
+      "viewAsSections": {
+        "profile": "Profile",
+        "addresses": "Addresses",
+        "orders": "Latest orders",
+        "warranties": "Warranties",
+        "invoices": "Invoices",
+        "requests": "Requests",
+        "builds": "Builds",
+        "empty": "Nothing here."
+      },
+      "failed": "We couldn't load the customer.",
+      "retry": "Try again"
+    },
+    "categories": {
+      "title": "Categories",
+      "newRoot": "New root category",
+      "newChild": "New sub-category",
+      "treeLabel": "Category tree",
+      "emptyTree": "No categories yet.",
+      "empty": "Pick a category from the tree or create a new one.",
+      "retry": "Try again",
+      "hidden": "Hidden",
+      "toggle": "Expand or collapse {name}",
+      "createTitle": "New category",
+      "createChildTitle": "New sub-category under {parent}",
+      "editTitle": "Edit: {name}",
+      "under": "under {parent}",
+      "root": "None (root category)",
+      "none": "—",
+      "fields": {
+        "name": "Name",
+        "slug": "Slug",
+        "parent": "Under",
+        "code": "Code",
+        "description": "Description",
+        "sortOrder": "Sort order",
+        "active": "Visible",
+        "showInMenu": "Show in the menu",
+        "showInBuilder": "Show in the builder"
+      },
+      "save": "Save the category",
+      "saved": "Category saved",
+      "failed": "The category wasn't saved. Check the data.",
+      "validation": {
+        "name": "Enter the category name",
+        "slug": "Enter the slug"
+      },
+      "image": {
+        "title": "Category image",
+        "hint": "Shown in the menu and on the category page.",
+        "upload": "Upload an image",
+        "change": "Change the image",
+        "remove": "Remove the image",
+        "removeTitle": "Remove the category image?",
+        "removeBody": "The image disappears from the menu.",
+        "removed": "Image removed",
+        "failed": "The image didn't upload. Try another one.",
+        "alt": "Image of {name}"
+      },
+      "specs": {
+        "title": "Specs",
+        "inheritedNote": "Inherited from the parent; you can add your own.",
+        "inheritedFrom": "from {parent}",
+        "key": "Key",
+        "name": "Spec",
+        "type": "Type",
+        "options": "Options",
+        "optionsHint": "Separate them with a comma.",
+        "keyHint": "The key is short lower-case English without spaces, such as socket or power_w.",
+        "unit": "Unit",
+        "filter": "Store filter",
+        "compatibility": "Compatibility",
+        "add": "Add a spec",
+        "remove": "Remove",
+        "save": "Save the specs",
+        "saved": "Specs saved",
+        "empty": "This category has no specs of its own.",
+        "note": "Compatibility feeds the PC builder: it offers boards with the same socket and a PSU that covers the power draw.",
+        "inherited": "Inherited",
+        "types": {
+          "Choice": "Choice",
+          "Number": "Number",
+          "YesNo": "Yes/no",
+          "Text": "Text"
+        }
+      }
     }
   }
 }
