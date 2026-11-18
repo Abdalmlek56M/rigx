@@ -161,7 +161,8 @@ public sealed class AuditLogTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         var secondPage = (await client.GetFromJsonAsync<EntryPage>($"{Api}/entries?pageSize=1&page=2"))!;
         Assert.Equal([older], secondPage.Items.Select(entry => entry.Id));
         Assert.Equal(2, secondPage.Total);
-        var wide = (await client.GetFromJsonAsync<EntryPage>($"{Api}/entries?from={now.AddDays(-60):yyyy-MM-dd}&to={now:yyyy-MM-dd}"))!;
+        var today = BusinessDay.Of(now, RetailSales.BusinessZone);
+        var wide = (await client.GetFromJsonAsync<EntryPage>($"{Api}/entries?from={today.AddDays(-60):yyyy-MM-dd}&to={today:yyyy-MM-dd}"))!;
         Assert.Equal(3, wide.Total);
         Assert.Equal(older, (await client.GetFromJsonAsync<Entry>($"{Api}/entries/{older}"))!.Id);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"{Api}/entries/{Guid.NewGuid()}")).StatusCode);
