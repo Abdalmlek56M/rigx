@@ -17,6 +17,7 @@
 **/coverage/
 **/playwright-report/
 **/test-results/
+**/e2e/.auth/
 .playwright-browsers/
 npm-debug.log*
 
