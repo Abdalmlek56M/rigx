@@ -55,6 +55,7 @@ Order matters: we restructure before adding features, so new features land in cl
 4. Admin: dashboard, POS, orders, purchase intake, inventory, build editor, partners, categories, customers, offers/coupons, expenses, requests inbox, campaigns, tiers, FAQ/articles, users/roles, audit log, trash/backup/export, settings.
 5. Playwright: the critical flows listed in `04-engineering-standards.md`.
 6. **Polish** (owner request 18 Nov 2026, before launch): light, fast motion (cart drawer, menus, dialogs, list and page transitions, button feedback; always honours `prefers-reduced-motion`, nothing that slows a page), a fuller icon set in the same stroke style (admin sidebar areas, catalog categories, account sections, empty states), and a phone-feel pass (tap states, sticky bars, safe areas). Design stays the approved canvas; no new colours.
+7. **Design system v2 + brand** (owner request 18 Nov 2026, after 4.5 and 4.6): follow `docs/08-brand-direction.md`. Audit, 2–3 directions for the owner to pick, new `DESIGN.md` tokens, hover mega menu, no product codes shown to customers (readable product links, confirm with owner first), rewrite all customer text in the brand voice, new brand book and social templates.
 
 ## Phase 5 — Growth features (after the core works)
 - Offers engine + coupons, customer tiers + perks, reviews (off by default), campaigns & subscriptions, browse-based suggestions + "محتار؟ كلمنا" nudge (first-party, once per session).
