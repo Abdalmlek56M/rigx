@@ -1356,6 +1356,246 @@
         "empty": "No accounts."
       }
     },
+    "orders": {
+      "title": "Orders",
+      "tabsLabel": "Order status",
+      "search": "Search by reference, name or phone",
+      "channelLabel": "Channel",
+      "channels": {
+        "All": "All channels",
+        "Online": "Online",
+        "Store": "In store"
+      },
+      "statuses": {
+        "All": "All",
+        "New": "Awaiting review",
+        "Confirmed": "Confirmed",
+        "Preparing": "Preparing",
+        "Shipped": "Shipped",
+        "Delivered": "Delivered",
+        "Completed": "Completed",
+        "Cancelled": "Cancelled"
+      },
+      "paymentStatuses": {
+        "Unpaid": "Unpaid",
+        "PendingVerification": "Awaiting verification",
+        "Paid": "Paid",
+        "Refunded": "Refunded",
+        "Waived": "Waived"
+      },
+      "methods": {
+        "Cash": "Cash",
+        "CashOnDelivery": "Cash on delivery",
+        "InstaPay": "InstaPay",
+        "Wallet": "E-wallet",
+        "BankTransfer": "Bank transfer",
+        "Split": "Split"
+      },
+      "fulfillmentKinds": {
+        "Delivery": "Delivery",
+        "Pickup": "Store pickup"
+      },
+      "fulfillment": {
+        "reservation": {
+          "title": "Reservation",
+          "until": "Held until {date}",
+          "hours": "Hold hours",
+          "hoursHint": "Leave empty to keep the current end.",
+          "whenEnds": "When the hold ends",
+          "notify": "Only notify me",
+          "release": "Release automatically",
+          "save": "Save reservation",
+          "done": "Reservation updated"
+        },
+        "shipping": {
+          "title": "Shipping",
+          "courier": "Courier",
+          "waybill": "Waybill number",
+          "save": "Save shipping",
+          "done": "Shipping details saved"
+        }
+      },
+      "columns": {
+        "order": "Order",
+        "customer": "Customer",
+        "content": "Contents",
+        "total": "Total",
+        "status": "Status",
+        "payment": "Payment",
+        "reservation": "Reservation",
+        "date": "Date"
+      },
+      "empty": "No orders match this filter.",
+      "none": "—",
+      "blacklisted": "Blacklisted",
+      "moreItems": "+{count}",
+      "reservation": {
+        "held": "Held · {hours} h",
+        "expired": "Hold ended"
+      },
+      "newestOnly": "Showing the newest {count} orders only. Use search or filters for the rest.",
+      "loading": "Loading the order",
+      "close": "Close",
+      "detail": {
+        "heading": "Order",
+        "created": "Placed {date}",
+        "failed": "We could not load the order.",
+        "retry": "Try again",
+        "trailLabel": "Order steps",
+        "cancelled": "This order was cancelled and its pieces went back to stock.",
+        "blacklistWarning": "This customer is blacklisted. The order is confirmed only after full upfront payment.",
+        "reservationExpired": "The hold has ended. Extend it or cancel the order.",
+        "items": {
+          "title": "Items",
+          "name": "Item",
+          "code": "Code",
+          "quantity": "Qty",
+          "price": "Price",
+          "discount": "Discount",
+          "total": "Total"
+        },
+        "units": {
+          "title": "Reserved pieces",
+          "code": "Code",
+          "name": "Piece",
+          "condition": "Condition",
+          "serial": "Serial",
+          "status": "State"
+        },
+        "customer": {
+          "title": "Customer",
+          "name": "Name",
+          "phone": "Phone",
+          "email": "Email",
+          "address": "Address",
+          "fulfillment": "Fulfilment",
+          "leadSource": "Heard about us",
+          "usage": "Use",
+          "notes": "Notes",
+          "satisfaction": "Customer rating"
+        },
+        "money": {
+          "title": "Money",
+          "subtotal": "Items",
+          "deliveryFee": "Delivery",
+          "total": "Total",
+          "upfrontDue": "Upfront due",
+          "paid": "Paid",
+          "remaining": "Remaining",
+          "refunded": "Refunded",
+          "method": "Payment method",
+          "waived": "Payment waived {date} · {reason}"
+        },
+        "payments": {
+          "title": "Payments",
+          "empty": "No payments yet."
+        },
+        "tracking": {
+          "title": "Customer tracking link",
+          "open": "Open",
+          "copy": "Copy",
+          "copied": "Copied"
+        },
+        "timeline": {
+          "title": "Order history",
+          "created": "Order placed",
+          "status": "Status became \"{status}\"",
+          "payment": "{method} payment · {amount}",
+          "paymentStatus": "Payment status became \"{status}\"",
+          "shipping": "Shipping details updated",
+          "reservation": "Hold updated",
+          "reservationExpired": "The hold ended",
+          "reservationReleased": "The hold was released and the pieces went back to stock",
+          "other": "{type}"
+        }
+      },
+      "actions": {
+        "title": "Actions",
+        "next": {
+          "Confirmed": "Confirm the order",
+          "Preparing": "Start preparing",
+          "Shipped": "Mark as shipped",
+          "Delivered": "Mark as delivered"
+        },
+        "noteLabel": "Note · optional",
+        "statusDone": "Status updated",
+        "blocks": {
+          "blacklist": "Blacklisted customer: the order is confirmed only after full payment.",
+          "upfront": "Waiting for the upfront payment ({amount}) before preparing."
+        },
+        "complete": {
+          "button": "Complete the order",
+          "done": "Order completed",
+          "blocks": {
+            "notDelivered": "The order is not delivered yet.",
+            "unpaid": "The order is not fully paid yet.",
+            "notWaived": "An order without payment needs an explicit waiver."
+          }
+        },
+        "cancel": {
+          "button": "Cancel the order",
+          "title": "Cancel this order?",
+          "body": "The reserved pieces go back to stock.",
+          "confirm": "Cancel the order",
+          "notes": "Reason · optional",
+          "done": "Order cancelled"
+        },
+        "invoice": {
+          "open": "Open the invoice",
+          "whatsapp": "Send the invoice on WhatsApp"
+        },
+        "whatsapp": "Chat with the customer on WhatsApp",
+        "blacklistAdd": {
+          "button": "Add the customer to the blacklist",
+          "title": "Add the customer to the blacklist?",
+          "body": "Their future orders arrive marked and are confirmed only after full upfront payment.",
+          "reason": "Reason",
+          "confirm": "Add",
+          "done": "Customer added to the blacklist"
+        }
+      },
+      "payment": {
+        "title": "Payment",
+        "record": {
+          "title": "Record a payment",
+          "method": "Method",
+          "amount": "Amount",
+          "hint": "Remaining {amount}",
+          "note": "Note · optional",
+          "submit": "Record payment",
+          "done": "Payment recorded"
+        },
+        "status": {
+          "title": "Payment status",
+          "label": "Status",
+          "hint": "\"Paid\" here means a transfer you verified. It does not record money.",
+          "note": "Note · optional",
+          "submit": "Update status",
+          "done": "Payment status updated"
+        },
+        "waive": {
+          "button": "Waive payment",
+          "title": "Waive the payment?",
+          "body": "The order will be delivered and completed without taking its money.",
+          "reason": "Reason (at least 5 characters)",
+          "confirm": "Waive",
+          "done": "Payment waived"
+        }
+      },
+      "blacklist": {
+        "title": "Blacklist",
+        "note": "They are recognised by phone, email or address. Their orders arrive as usual but marked, and are confirmed only after full upfront payment.",
+        "empty": "The blacklist is empty.",
+        "failed": "We could not load the blacklist.",
+        "retry": "Try again",
+        "remove": "Remove",
+        "removeTitle": "Remove {name} from the blacklist?",
+        "removeBody": "Their future orders will be ordinary.",
+        "removed": "Removed from the blacklist",
+        "removeFailed": "We could not remove it. Try again.",
+        "unnamed": "Customer"
+      }
+    },
     "requests": {
       "title": "Sell, upgrade and support requests",
       "tabsLabel": "Request type",
@@ -2012,6 +2252,137 @@
         "seoDescriptionAr": "SEO description (Arabic)",
         "seoDescriptionEn": "SEO description (English)",
         "canonical": "Canonical URL"
+      }
+    },
+    "pos": {
+      "title": "New sale",
+      "recent": "Recent sales",
+      "picker": {
+        "title": "What are you selling?",
+        "kinds": {
+          "item": "Item",
+          "build": "Build"
+        },
+        "search": "Search by code or name",
+        "empty": "No results.",
+        "failed": "Could not load the list.",
+        "retry": "Try again",
+        "loading": "Loading…",
+        "available": "{count} available",
+        "add": "Add",
+        "parts": "{count, plural, one {# part} other {# parts}}",
+        "prices": {
+          "Alone": "Alone",
+          "WithBoard": "With board",
+          "InBuild": "In a build"
+        },
+        "buildPrice": "Build price"
+      },
+      "cart": {
+        "title": "Cart",
+        "empty": "Nothing in the cart yet. Add an item or a build.",
+        "note": "The sale price is always typed at the time of sale. A price below cost shows a warning.",
+        "columns": {
+          "item": "Item",
+          "condition": "Type",
+          "warranty": "Warranty",
+          "option": "Price type",
+          "quantity": "Quantity",
+          "shown": "Listed price",
+          "sale": "Sale price"
+        },
+        "noWarranty": "—",
+        "remove": "Remove {name}",
+        "belowCost": "Below cost",
+        "saleOf": "Sale price of {name}",
+        "selectPart": "Select {name}",
+        "mode": {
+          "label": "How to sell",
+          "whole": "Whole build",
+          "split": "Part by part"
+        },
+        "splitHint": "Pick the parts being sold; the rest return to stock by themselves.",
+        "wholeHint": "The whole build at one price.",
+        "build": "Build"
+      },
+      "customer": {
+        "title": "Customer details",
+        "name": "Name",
+        "phone": "Mobile",
+        "whatsapp": "This number has WhatsApp",
+        "email": "Email · optional",
+        "find": "Find the customer",
+        "finding": "Searching…",
+        "found": "Found {name} · {orders} before",
+        "orders": "{count, plural, one {# order} other {# orders}}",
+        "use": "Use their details",
+        "none": "New customer: no orders before with this number.",
+        "failed": "Could not search right now."
+      },
+      "fulfillment": {
+        "title": "Handover",
+        "deliveryFee": "Delivery fee",
+        "deliveryFeeHint": "Leave empty to use the fee from the shipping settings.",
+        "noRates": "The governorate list is not available right now. Reload the page."
+      },
+      "payments": {
+        "title": "Payment",
+        "method": "Payment method",
+        "amount": "Amount",
+        "add": "Add a payment method",
+        "remove": "Remove payment",
+        "fill": "Fill the rest",
+        "discount": "Discount",
+        "paid": "Paid",
+        "remaining": "Remaining"
+      },
+      "summary": {
+        "title": "Summary",
+        "lines": "Lines",
+        "sale": "Sale total",
+        "discount": "Discount",
+        "delivery": "Delivery",
+        "total": "Total",
+        "cost": "Total cost",
+        "profit": "Profit",
+        "partners": "Partner shares",
+        "returning": "The other {count, plural, one {part} other {# parts}} of the build will return to stock as available: {codes}",
+        "warnings": "Warnings",
+        "confirm": "Confirm the sale",
+        "pending": "Save as pending order",
+        "empty": "Add something to the cart to see the summary.",
+        "calculating": "Calculating…",
+        "previewFailed": "Could not update the summary: {message}"
+      },
+      "errors": {
+        "lines": "Add at least one item or build.",
+        "salePrice": "Enter a valid sale price for every line.",
+        "parts": "Pick at least one part of the build.",
+        "name": "Enter the customer's name.",
+        "phone": "Enter a valid mobile number.",
+        "email": "The email is not valid.",
+        "governorate": "Choose the governorate.",
+        "area": "Enter the area.",
+        "street": "Enter the street.",
+        "deliveryFee": "The delivery fee is not valid.",
+        "discount": "The discount is not valid.",
+        "usageNote": "Enter what they will use it for.",
+        "payments": "Every payment needs an amount above zero.",
+        "overpaid": "The paid amount is more than the sale total."
+      },
+      "sold": {
+        "confirmed": "Sale confirmed",
+        "pending": "Saved as a pending order",
+        "reference": "Order",
+        "status": "Status",
+        "total": "Total",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "openOrder": "Open the order",
+        "newSale": "New sale",
+        "deliver": "Hand over and print the invoice",
+        "delivered": "Handed over; the invoice is ready",
+        "savedToast": "Sale recorded"
       }
     }
   }
