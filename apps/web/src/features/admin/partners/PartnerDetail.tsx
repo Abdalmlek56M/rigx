@@ -1,0 +1,92 @@
+"use client";
+
+import { useCallback, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { formatEgp } from "@/lib/format";
+import { useLoad } from "@/lib/hooks/use-load";
+import { fetchMoneyAccounts, type Partner } from "../expenses/expenses-api";
+import { usePermissions } from "../use-permissions";
+import { PartnerCapital } from "./PartnerCapital";
+import { PartnerForm } from "./PartnerForm";
+import { PartnerParts } from "./PartnerParts";
+import { PartnerPayouts } from "./PartnerPayouts";
+import { PartnerStatement } from "./PartnerStatement";
+import { basisKey } from "./partner-rules";
+import { fetchPartner } from "./partners-api";
+
+/** The picked partner: balances, the agreement form, financed parts, capital, payouts and the statement. */
+export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; today: string; onClose: () => void; onChanged: () => void }) {
+  const t = useTranslations("admin.partners.detail");
+  const basis = useTranslations("admin.partners.form.bases");
+  const locale = useLocale();
+  const { has } = usePermissions();
+  const canSeeVaults = has("Finance.ViewVaults");
+  const load = useCallback(async () => {
+    const [detail, accounts] = await Promise.all([fetchPartner(id), canSeeVaults ? fetchMoneyAccounts().catch(() => null) : Promise.resolve(null)]);
+    return { detail, accounts: accounts?.filter((account) => account.isActive) ?? null };
+  }, [id, canSeeVaults]);
+  const { state, reload } = useLoad(load);
+  // The partner as the last save or money movement left it (the rest of the screen stays as it is).
+  const [saved, setSaved] = useState<Partner | null>(null);
+
+  /** Reads the partner again after a 409 or a capital or payout entry (balances changed); a failed read keeps what is shown. */
+  const refresh = () => {
+    fetchPartner(id).then((fresh) => setSaved(fresh.partner), () => undefined);
+    onChanged();
+  };
+
+  if (state.status === "loading") return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" />;
+  if (state.status === "error") {
+    return (
+      <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-5">
+        <p className="m-0 font-bold">{t("failed")}</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+        </div>
+      </div>
+    );
+  }
+
+  const { detail, accounts } = state.data;
+  const partner = saved ?? detail.partner;
+  const figures = [
+    { key: "capital", label: t("capital"), value: partner.capitalBalance },
+    { key: "due", label: t("due"), value: partner.due },
+    { key: "recoverable", label: t("recoverable"), value: partner.recoverable }
+  ];
+
+  return (
+    <section className="flex min-w-0 flex-col gap-5 rounded-[10px] border border-line bg-surface p-5">
+      <header className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h2 className="m-0 text-[17px] font-bold"><span dir="auto" className="[unicode-bidi:isolate]">{partner.name}</span></h2>
+          <span className="text-xs text-ink-muted">{t("summary", { percent: partner.defaultPercent, basis: basis(basisKey(partner.basis)) })}{partner.isActive ? "" : ` · ${t("inactive")}`}</span>
+        </div>
+        <button type="button" onClick={onClose} aria-label={t("close")} className="h-11 w-11 rounded-control text-xl leading-none text-ink-muted hover:bg-line">×</button>
+      </header>
+      <dl className="m-0 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {figures.map((figure) => (
+          <div key={figure.key} className="flex flex-col gap-0.5 rounded-control border border-line bg-paper p-3">
+            <dt className="text-xs text-ink-muted">{figure.label}</dt>
+            <dd className="m-0 text-[17px] font-bold">{formatEgp(figure.value, locale)}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <PartnerForm
+          key={partner.rowVersion} partner={partner} today={today} canEdit={has("Finance.ManagePartnerAgreements")}
+          onSaved={(next) => {
+            setSaved(next);
+            onChanged();
+          }}
+          onStale={refresh}
+        />
+        <PartnerParts parts={detail.financedParts} />
+      </div>
+      <PartnerCapital partnerId={id} today={today} accounts={accounts} canPost={has("Finance.ManagePartnerAgreements")} onChanged={refresh} />
+      <PartnerPayouts partnerId={id} accounts={accounts} canPost={has("Finance.PostPartnerSettlements")} onChanged={refresh} />
+      <PartnerStatement partnerId={id} today={today} />
+    </section>
+  );
+}

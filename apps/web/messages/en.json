@@ -2384,6 +2384,643 @@
         "delivered": "Handed over; the invoice is ready",
         "savedToast": "Sale recorded"
       }
+    },
+    "inventory": {
+      "title": "Inventory",
+      "search": "Search by code or model",
+      "none": "—",
+      "pickRow": "Select {code}",
+      "newPurchase": "Buy and receive",
+      "newBuild": "New build",
+      "hidden": "Hidden",
+      "shown": "Shown",
+      "hiddenNote": "Hidden items still count as stock, can go into a build and can be sold from \"New sale\", but do not show in the store.",
+      "empty": "No items match.",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "partnerShare": "{name} · {percent}%",
+      "columns": {
+        "pick": "Select",
+        "code": "Code",
+        "model": "Model",
+        "category": "Category",
+        "condition": "Type",
+        "count": "Available",
+        "cost": "Cost",
+        "price": "Price",
+        "profit": "Profit",
+        "partner": "Partner",
+        "status": "Status",
+        "visibility": "Visibility",
+        "days": "In stock"
+      },
+      "state": {
+        "available": "Available",
+        "inBuild": "In a build",
+        "soldOut": "Sold out"
+      },
+      "filters": {
+        "category": "Category",
+        "allCategories": "All categories",
+        "condition": "Type",
+        "allConditions": "All types",
+        "new": "New",
+        "used": "Used",
+        "stock": {
+          "label": "Availability",
+          "all": "All",
+          "yes": "Available",
+          "no": "Sold out"
+        },
+        "hidden": {
+          "label": "Visibility",
+          "all": "Shown and hidden",
+          "yes": "Hidden only",
+          "no": "Shown only"
+        }
+      },
+      "bulk": {
+        "selectAll": "Select all",
+        "picked": "{count, plural, =0 {No items selected} one {# item selected} other {# items selected}}",
+        "hide": "Hide",
+        "show": "Show",
+        "hiddenDone": "{count, plural, one {# item hidden} other {# items hidden}}",
+        "shownDone": "{count, plural, one {# item shown} other {# items shown}}",
+        "failed": "Could not change visibility. Try again."
+      },
+      "fields": {
+        "category": "Category",
+        "pickCategory": "Pick a category",
+        "warranty": "Warranty",
+        "noWarranty": "No warranty",
+        "partner": "Partner",
+        "noPartner": "No partner",
+        "percent": "Partner share %",
+        "percentDefault": "The partner's default share"
+      },
+      "detail": {
+        "loading": "Loading the item",
+        "failed": "Could not load the item.",
+        "retry": "Try again",
+        "close": "Close",
+        "published": "Shown in the store",
+        "notPublished": "Not shown in the store"
+      },
+      "form": {
+        "title": "Item details",
+        "model": "Model",
+        "price": "Price (in a build)",
+        "withBoardExtra": "Extra with a board",
+        "aloneExtra": "Extra when alone",
+        "priceHint": "Extras are optional and shown to the customer by buying option.",
+        "hasBox": "Comes with its box",
+        "isHidden": "Hidden from the store",
+        "internalNote": "Internal note",
+        "internalNoteHint": "Never shown to customers.",
+        "save": "Save"
+      },
+      "photos": {
+        "title": "Photos ({count})",
+        "empty": "No photos yet.",
+        "alt": "Photo of {model}",
+        "remove": "Delete photo",
+        "add": "Add a photo",
+        "hint": "The watermark is added automatically.",
+        "failed": "The photo was not changed. Try again.",
+        "removeTitle": "Delete this photo?",
+        "removeBody": "The photo will be removed from the item.",
+        "removed": "Photo deleted"
+      },
+      "units": {
+        "title": "{count, plural, one {# unit} other {# units}}",
+        "none": "—",
+        "empty": "No units.",
+        "partnerShare": "{name} · {percent}%",
+        "changePartner": "Change partner",
+        "columns": {
+          "status": "Status",
+          "serial": "Serial",
+          "cost": "Cost",
+          "partner": "Partner",
+          "received": "Received",
+          "actions": "Action"
+        },
+        "status": {
+          "Available": "Available",
+          "InAssembly": "In a build",
+          "Sold": "Sold",
+          "PendingInspection": "Pending inspection",
+          "Scrapped": "Scrapped",
+          "Returned": "Returned",
+          "other": "Unknown"
+        },
+        "partnerDialog": {
+          "title": "Unit partner",
+          "saved": "Unit partner changed",
+          "cancel": "Cancel",
+          "save": "Save"
+        }
+      }
+    },
+    "purchases": {
+      "title": "Buy and receive",
+      "new": "New purchase",
+      "newTitle": "New purchase",
+      "detailTitle": "Purchase details",
+      "back": "Purchase log",
+      "loading": "Loading the purchase",
+      "failed": "Could not load the page.",
+      "retry": "Try again",
+      "cancelledNote": "This purchase was cancelled and cannot be changed.",
+      "search": "Search by code, seller name or phone",
+      "statusLabel": "Status",
+      "empty": "No purchases match.",
+      "statuses": {
+        "all": "All statuses",
+        "Draft": "Draft",
+        "Received": "Received",
+        "Cancelled": "Cancelled",
+        "other": "Other status"
+      },
+      "kinds": {
+        "Parts": "Parts",
+        "FullPc": "Whole PC",
+        "other": "Other kind"
+      },
+      "columns": {
+        "code": "Code",
+        "seller": "Seller",
+        "kind": "Kind",
+        "date": "Date",
+        "lines": "Lines",
+        "total": "Total",
+        "remaining": "Remaining",
+        "status": "Status"
+      },
+      "seller": {
+        "title": "Seller",
+        "kinds": {
+          "Person": "Person",
+          "Trader": "Trader",
+          "Company": "Company"
+        },
+        "search": "Search by phone or name",
+        "noMatch": "No seller with that number.",
+        "searchFailed": "The search failed. Try again.",
+        "loadFailed": "Could not open the seller.",
+        "new": "New seller",
+        "edit": "Edit details",
+        "change": "Change seller",
+        "newTitle": "New seller",
+        "editTitle": "Seller details",
+        "created": "Seller added",
+        "updated": "Seller details saved",
+        "kind": "Kind",
+        "name": "Name",
+        "phone": "Phone",
+        "nationalId": "National ID (optional)",
+        "nationalIdHint": "The national ID is kept internally only.",
+        "governorate": "Governorate",
+        "area": "Area",
+        "source": "How they found us",
+        "sources": {
+          "Website": "Sell request on the site",
+          "Facebook": "Facebook",
+          "Marketplace": "Marketplace",
+          "Referral": "Referral",
+          "RegularTrader": "Regular trader"
+        },
+        "notes": "Notes about the seller",
+        "pick": "Pick",
+        "save": "Save seller",
+        "cancel": "Cancel"
+      },
+      "form": {
+        "kindTitle": "Kind of purchase",
+        "kind": "What did you buy",
+        "kinds": {
+          "Parts": "Parts",
+          "FullPc": "I bought a whole PC"
+        },
+        "keepAsBuild": "Keep it as a ready build",
+        "buildName": "Build name",
+        "fullPcHint": "\"I bought a whole PC\": record it once and split it into parts, or keep it as a ready build."
+      },
+      "lines": {
+        "title": "What you bought",
+        "lineTitle": "Item {number}",
+        "lineTotal": "Item total",
+        "remove": "Remove",
+        "add": "Add an item",
+        "needMore": "A whole PC needs at least {count} parts.",
+        "modelHint": "Type the model yourself: pick the category and write the name, even if it was never registered. If the name looks like an existing item we suggest it, for the filters.",
+        "model": "Model",
+        "modelPlaceholder": "e.g. RX 6600",
+        "suggestions": "Suggested models",
+        "inStock": "{count, plural, =0 {none} one {# item} other {# items}}",
+        "condition": "Type",
+        "used": "Used",
+        "new": "New",
+        "quantity": "Quantity",
+        "serial": "Serial",
+        "unitCost": "Purchase price",
+        "price": "Sale price (in a build)",
+        "withBoardExtra": "Extra with a board",
+        "aloneExtra": "Extra when alone",
+        "hasBox": "Comes with its box",
+        "isHidden": "Hidden from the store",
+        "internalNote": "Internal note"
+      },
+      "payment": {
+        "title": "Paying the seller",
+        "total": "Purchase total",
+        "remaining": "Still owed",
+        "method": "Payment method",
+        "methods": {
+          "Cash": "Cash",
+          "InstaPay": "InstaPay",
+          "Wallet": "Wallet",
+          "TradeIn": "Trade-in",
+          "CashAndTradeIn": "Cash + trade-in"
+        },
+        "paid": "Paid",
+        "tradeInValue": "Trade-in value",
+        "tradeInNote": "What the seller took from us",
+        "tradeInHint": "Write the item the seller took as part of the payment.",
+        "date": "Purchase date",
+        "overpaid": "Paid money plus trade-in is more than the purchase total.",
+        "notes": "Notes"
+      },
+      "actions": {
+        "saveDraft": "Save draft",
+        "receive": "Receive into stock",
+        "cancel": "Cancel purchase",
+        "saved": "Draft saved",
+        "receivedToast": "Purchase received into stock",
+        "cancelledToast": "Purchase cancelled",
+        "failed": "That did not work. Try again.",
+        "receiveTitle": "Receive this purchase?",
+        "receiveBody": "RX codes are created for the items and they join the stock. The purchase can no longer be edited.",
+        "cancelTitle": "Cancel this purchase?",
+        "cancelBody": "The draft is cancelled and nothing is added to the stock."
+      },
+      "received": {
+        "title": "{count, plural, one {# item added to stock} other {# items added to stock}}",
+        "photosHint": "Add photos to each item from the inventory so it shows in the store.",
+        "openBuild": "Open the build"
+      }
+    },
+    "builds": {
+      "title": "Builds",
+      "detailTitle": "Edit build",
+      "new": "New build",
+      "search": "Search by code or name",
+      "statusLabel": "Status",
+      "statuses": {
+        "all": "All statuses",
+        "Draft": "Draft",
+        "Published": "Published",
+        "Sold": "Sold",
+        "Disassembled": "Disassembled",
+        "other": "Unknown"
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "usage": "Usage",
+        "status": "Status",
+        "parts": "Parts",
+        "copies": "Copies",
+        "price": "Sale price",
+        "partsTotal": "Parts total"
+      },
+      "none": "—",
+      "empty": "No builds.",
+      "back": "All builds",
+      "loading": "Loading the build",
+      "failed": "Could not load the build.",
+      "retry": "Try again",
+      "lockedNote": "This build was sold or disassembled, so it can no longer be edited.",
+      "create": {
+        "title": "New build",
+        "name": "Build name",
+        "cancel": "Cancel",
+        "submit": "Create build",
+        "created": "Build created"
+      },
+      "actions": {
+        "preview": "Preview in store",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "disassemble": "Disassemble",
+        "publishDone": "The build is published",
+        "unpublishDone": "The build is no longer in the store",
+        "disassembleDone": "The build was disassembled and its parts are back in stock",
+        "disassembleTitle": "Disassemble this build?",
+        "disassembleBody": "Every part goes back to stock as available, and the build can no longer be edited."
+      },
+      "card": {
+        "title": "Build details",
+        "name": "Build name",
+        "titleAr": "Customer title (Arabic)",
+        "titleEn": "Customer title (English)",
+        "salePrice": "Sale price",
+        "salePriceHint": "Empty = the parts total",
+        "copies": "Copies available",
+        "usage": "Usage",
+        "noUsage": "No usage",
+        "sellMode": "Sell mode",
+        "sellModes": {
+          "Full": "Whole build only",
+          "FullOrSplit": "Whole or part by part"
+        },
+        "eachPartWarranty": "Each part's own",
+        "warrantyHint": "The build's warranty applies to every part, and any part can set its own.",
+        "suitableAr": "Suitable for (Arabic)",
+        "suitableEn": "Suitable for (English)",
+        "save": "Save"
+      },
+      "summary": {
+        "title": "Figures",
+        "cost": "Total purchase cost",
+        "partsTotal": "Parts at their own prices",
+        "salePrice": "Build sale price",
+        "profit": "Total profit",
+        "hint": "Profit before the partners' shares."
+      },
+      "parts": {
+        "title": "{count, plural, =0 {Parts} one {# part} other {# parts}}",
+        "columns": {
+          "part": "Part",
+          "condition": "Condition",
+          "cost": "Cost",
+          "price": "Price",
+          "warranty": "Warranty",
+          "partner": "Partner",
+          "allocation": "Share of the sale",
+          "actions": "Actions"
+        },
+        "ownWarranty": "Part's own warranty",
+        "percent": "{percent}%",
+        "none": "—",
+        "edit": "Edit",
+        "replace": "Replace",
+        "remove": "Remove",
+        "addFromStock": "Add a part from stock",
+        "addNew": "Add a new part (not in stock)",
+        "empty": "No parts yet.",
+        "hint": "A partner percent in orange was changed for this part only. Remove asks whether the part goes back to stock or to another build."
+      },
+      "partDialog": {
+        "title": "Edit {name}",
+        "price": "Part price in the build",
+        "buildWarranty": "The build's warranty",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "picker": {
+        "search": "Search stock",
+        "loading": "Loading stock",
+        "failed": "Could not load stock.",
+        "retry": "Try again",
+        "empty": "No available parts match.",
+        "noSerial": "No serial",
+        "cost": "Cost {amount}",
+        "price": "Price {amount}",
+        "picked": "Picked",
+        "narrow": "Showing {shown} of {total}. Narrow the search."
+      },
+      "addStock": {
+        "title": "Add a part from stock",
+        "close": "Close",
+        "add": "Add",
+        "added": "Part added"
+      },
+      "addNew": {
+        "title": "Add a new part",
+        "hint": "The part is recorded in stock with an RX code and joins the build right away.",
+        "cost": "Purchase cost",
+        "add": "Add part",
+        "close": "Cancel",
+        "added": "Part added"
+      },
+      "removeDialog": {
+        "title": "Remove {name}",
+        "toStock": "Back to stock as available",
+        "toBuild": "Move to another build",
+        "targetBuild": "Build",
+        "pickBuild": "Pick a build",
+        "loadFailed": "Could not load the builds.",
+        "loading": "Loading builds",
+        "cancel": "Cancel",
+        "confirm": "Remove part",
+        "done": "Part removed"
+      },
+      "replaceDialog": {
+        "title": "Replace {name}",
+        "source": "Where the replacement comes from",
+        "fromStock": "From stock",
+        "fromBuild": "From another build",
+        "pick": "Pick",
+        "picked": "Picked",
+        "otherBuild": "Build",
+        "pickBuild": "Pick a build",
+        "loadFailed": "Could not load the builds.",
+        "loading": "Loading builds",
+        "stockNote": "The old part {code} goes back to stock as available.",
+        "buildNote": "The two parts swap places between the two builds.",
+        "cancel": "Cancel",
+        "confirm": "Confirm replacement",
+        "done": "Part replaced"
+      },
+      "split": {
+        "title": "Revenue split between parts",
+        "hint": "The share of the sale price each part gets. It must add up to 100%.",
+        "sum": "Total {sum}%",
+        "missing": "{amount}% missing",
+        "over": "{amount}% over",
+        "save": "Save the split",
+        "reset": "Reset to default"
+      }
+    },
+    "partners": {
+      "title": "Partners",
+      "new": "New partner",
+      "empty": "No partners yet.",
+      "percent": "{percent}%",
+      "active": "Active",
+      "inactive": "Inactive",
+      "columns": {
+        "name": "Partner",
+        "basis": "Paid from",
+        "percent": "Share",
+        "capital": "Capital",
+        "units": "Working parts",
+        "due": "Due",
+        "active": "Status"
+      },
+      "kpi": {
+        "capital": "Partners' capital",
+        "due": "Due for payout",
+        "recoverable": "To be recovered",
+        "units": "Financed units not sold yet"
+      },
+      "detail": {
+        "loading": "Loading the partner",
+        "failed": "Could not load the partner.",
+        "retry": "Try again",
+        "close": "Close",
+        "capital": "Capital",
+        "due": "Due",
+        "recoverable": "To recover",
+        "summary": "{percent}% · {basis}",
+        "inactive": "Inactive"
+      },
+      "form": {
+        "newTitle": "Add a partner",
+        "name": "Name",
+        "phone": "Phone",
+        "joinDate": "Join date",
+        "defaultPercent": "Share of the profit %",
+        "basis": "Paid from",
+        "bases": {
+          "FinancedParts": "The parts they financed",
+          "WholeShop": "The whole shop's profit",
+          "other": "Unknown"
+        },
+        "basisHint": {
+          "FinancedParts": "This is the default for every part they finance, and it can be changed for one part.",
+          "WholeShop": "This is a share of the shop's whole net profit, posted at each month close."
+        },
+        "lossSharing": "Bears a share of losses",
+        "isActive": "Active partner",
+        "notes": "Notes",
+        "save": "Save",
+        "create": "Add",
+        "cancel": "Cancel",
+        "created": "Partner added"
+      },
+      "parts": {
+        "title": "Parts they financed ({count})",
+        "columns": {
+          "code": "Code",
+          "name": "Part",
+          "status": "Status",
+          "cost": "Cost",
+          "percent": "Share"
+        },
+        "percent": "{percent}%",
+        "changed": "Changed",
+        "empty": "No financed parts.",
+        "hint": "Change the share of one part from the inventory (open the part by its code) or from the build page. Changed shares show in orange."
+      },
+      "money": {
+        "amount": "Amount",
+        "method": "Method",
+        "account": "Money box",
+        "defaultAccount": "The method's default box",
+        "methods": {
+          "Cash": "Cash",
+          "InstaPay": "InstaPay",
+          "Wallet": "Wallet",
+          "BankTransfer": "Bank transfer",
+          "other": "Unknown"
+        }
+      },
+      "capital": {
+        "title": "Capital movements",
+        "columns": {
+          "date": "Date",
+          "kind": "Movement",
+          "amount": "Amount",
+          "method": "Method",
+          "note": "Note"
+        },
+        "kinds": {
+          "Deposit": "Deposit",
+          "Withdrawal": "Withdrawal",
+          "other": "Unknown"
+        },
+        "none": "—",
+        "empty": "No movements yet.",
+        "formTitle": "Deposit / withdrawal",
+        "kind": "Movement",
+        "date": "Date",
+        "note": "Note",
+        "hint": "A movement is recorded for good: it cannot be edited or deleted.",
+        "save": "Record movement",
+        "saved": "Movement recorded"
+      },
+      "payouts": {
+        "title": "Profit payouts",
+        "columns": {
+          "date": "Date",
+          "amount": "Amount",
+          "offset": "Set off",
+          "method": "Method",
+          "reference": "Reference",
+          "note": "Note"
+        },
+        "none": "—",
+        "empty": "No payouts yet.",
+        "formTitle": "Record a payout",
+        "reference": "Reference",
+        "note": "Note",
+        "hint": "If the partner owes an amount (for example after a return), it is set off against the payout and shown in the Set off column.",
+        "save": "Record payout",
+        "saved": "Payout recorded"
+      },
+      "statement": {
+        "title": "Statement",
+        "from": "From",
+        "to": "To",
+        "show": "Show",
+        "print": "PDF",
+        "loading": "Loading the statement",
+        "failed": "Could not load the statement.",
+        "retry": "Try again",
+        "heading": "Statement for {name}",
+        "range": "From {from} to {to}",
+        "opening": "Opening capital",
+        "earned": "Earned",
+        "paid": "Paid out",
+        "recovered": "Set off",
+        "closing": "Closing capital",
+        "linesLabel": "Account movements",
+        "columns": {
+          "date": "Date",
+          "kind": "Movement",
+          "detail": "Details",
+          "amount": "Amount"
+        },
+        "kinds": {
+          "CapitalDeposit": "Capital deposit",
+          "CapitalWithdrawal": "Capital withdrawal",
+          "Earning": "Share of a sold part",
+          "MonthlyShare": "Share of the month's profit",
+          "Reversal": "Share reversed",
+          "Payout": "Profit payout",
+          "Recovery": "Amount set off",
+          "other": "Movement"
+        },
+        "none": "—",
+        "empty": "No movements in this range."
+      },
+      "monthClose": {
+        "title": "Month close",
+        "hint": "Works out the share of the partners paid from the whole shop's profit from the net result and posts it once for the month.",
+        "month": "Month (1–12)",
+        "year": "Year",
+        "close": "Close the month",
+        "confirmTitle": "Close month {month} / {year}?",
+        "confirmBody": "The earnings are posted to the partners and cannot be changed afterwards.",
+        "failed": "The month was not closed. Try again.",
+        "resultTitle": "{month} {year} closed",
+        "storeNet": "Shop's net result",
+        "financedShares": "Shares of financed parts",
+        "base": "Base the shares are taken from",
+        "nothingPosted": "No earnings were posted to any partner.",
+        "posted": "{name} · {percent}%"
+      }
     }
   }
 }

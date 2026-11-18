@@ -1,0 +1,88 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { mediaUrl } from "@/lib/media";
+import { ConfirmDialog } from "../kit/ConfirmDialog";
+import { toFormErrors } from "../kit/form-errors";
+import { useToast } from "../kit/Toast";
+import type { Schemas } from "@rigx/api-client";
+
+type Photo = Schemas["StockItemPhoto"];
+
+const button = "inline-flex h-11 cursor-pointer items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
+
+/**
+ * The photos of a stock item or a build: upload and remove. The server's own message (for example the minimum photo count to publish) is shown as it comes.
+ * `onChanged` runs after every change so the owner can take the fresh copy.
+ */
+export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, remove, onChanged }: {
+  photos: readonly Photo[];
+  /** What the photos show (the model or build name), for the image description. */
+  name: string;
+  canManage: boolean;
+  upload: (file: File) => Promise<unknown>;
+  remove: (storageKey: string) => Promise<unknown>;
+  onChanged: () => Promise<void>;
+}) {
+  const t = useTranslations("admin.inventory.photos");
+  const toast = useToast();
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [removing, setRemoving] = useState<Photo | null>(null);
+
+  async function change(action: () => Promise<unknown>, success?: string) {
+    setBusy(true);
+    try {
+      await action();
+      await onChanged();
+      if (success) toast(success);
+    } catch (error) {
+      toast(toFormErrors(error, t("failed")).general ?? t("failed"), "error");
+      throw error;
+    } finally {
+      setBusy(false);
+      if (input.current) input.current.value = "";
+    }
+  }
+
+  async function upload(file: File | undefined) {
+    if (!file) return;
+    await change(() => uploadPhoto(file)).catch(() => undefined);
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-control border border-line bg-paper p-3">
+      <h3 className="m-0 text-[15px] font-bold">{t("title", { count: photos.length })}</h3>
+      {photos.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("empty")}</p> : null}
+      <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+        {photos.map((photo) => (
+          <li key={photo.storageKey} className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
+            <img src={mediaUrl(photo.thumbnailStorageKey)} alt={t("alt", { model: name })} className="h-20 w-20 rounded-control border border-line object-cover" />
+            {canManage ? (
+              <button
+                type="button" disabled={busy} onClick={() => setRemoving(photo)} aria-label={t("remove")}
+                className="absolute end-1 top-1 h-7 w-7 rounded-full bg-carbon/80 text-sm leading-none text-on-carbon disabled:opacity-50"
+              >
+                ×
+              </button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {canManage ? (
+        <label className={`${button} self-start ${busy ? "opacity-60" : ""}`}>
+          {t("add")}
+          <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => void upload(event.target.files?.[0])} className="sr-only" />
+        </label>
+      ) : null}
+      <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
+      <ConfirmDialog
+        open={removing !== null} title={t("removeTitle")} body={t("removeBody")} confirmLabel={t("remove")} danger
+        onClose={() => setRemoving(null)}
+        onConfirm={() => (removing ? change(() => remove(removing.storageKey), t("removed")) : Promise.resolve())}
+      />
+    </div>
+  );
+}

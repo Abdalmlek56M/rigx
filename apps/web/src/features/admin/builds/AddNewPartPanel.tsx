@@ -1,0 +1,100 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { SelectField } from "@/components/ui/SelectField";
+import { TextAreaField } from "@/components/ui/TextAreaField";
+import { TextField } from "@/components/ui/TextField";
+import { formMessage } from "../form-message";
+import { FormMessage } from "../kit/PageHeader";
+import { ModelInput } from "../purchases/ModelInput";
+import { CategorySelect } from "../stock/CategorySelect";
+import { PartnerFields } from "../stock/PartnerFields";
+import { applySuggestion, editModel, financingPartners } from "../stock/stock-fields";
+import { WarrantyField } from "../stock/WarrantyField";
+import type { BuildLookups } from "./BuildParts";
+import { addNewPart } from "./builds-api";
+import { emptyNewPart, newPartValid, toNewPartBody, type NewPartForm } from "./build-rules";
+import { useBuildAction, type BuildActionProps } from "./use-build-action";
+
+const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
+
+const SHOWN_FIELDS = [
+  "categoryId", "modelName", "condition", "serialNumber", "acquisitionCost", "price", "withBoardExtra", "aloneExtra", "partnerId", "partnerPercentOverride",
+  "warrantyLabel", "internalNote"
+];
+
+/** A part that is not in stock yet: the same facts as a purchase line plus what it cost; it is created as a new RX unit and joins this build. */
+export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProps & { lookups: BuildLookups; onClose: () => void }) {
+  const t = useTranslations("admin.builds.addNew");
+  const lines = useTranslations("admin.purchases.lines");
+  const { build } = action;
+  const { submit, run } = useBuildAction(action);
+  const [form, setForm] = useState<NewPartForm>(emptyNewPart);
+  const set = (patch: Partial<NewPartForm>) => setForm((current) => ({ ...current, ...patch }));
+  const error = (field: string) => submit.errors.fields[field];
+  const isUsed = form.condition === "Used";
+
+  async function add() {
+    if (!newPartValid(form)) return;
+    await run(async () => {
+      const saved = await addNewPart(build.id, toNewPartBody(form, build.rowVersion));
+      onClose();
+      return saved;
+    }, t("added"));
+  }
+
+  return (
+    <form
+      className="flex flex-col gap-3 rounded-control border border-line bg-paper p-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void add();
+      }}
+    >
+      <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
+      <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <CategorySelect tree={lookups.tree} name="newPartCategory" value={form.categoryId} onChange={(categoryId) => set({ categoryId })} error={error("categoryId")} />
+        <ModelInput
+          name="newPartModel" value={form.modelName} categoryId={form.categoryId} error={error("modelName")}
+          onType={(text) => setForm((current) => editModel(current, text))} onPick={(suggestion) => setForm((current) => applySuggestion(current, suggestion))}
+        />
+        <SelectField
+          label={lines("condition")} name="newPartCondition" value={form.condition} onChange={(condition) => set({ condition, ...(condition === "New" ? { serialNumber: "" } : {}) })} error={error("condition")}
+          options={[{ value: "Used", label: lines("used") }, { value: "New", label: lines("new") }]}
+        />
+        {isUsed ? <TextField label={lines("serial")} name="newPartSerial" ltr value={form.serialNumber} onChange={(serialNumber) => set({ serialNumber })} error={error("serialNumber")} /> : null}
+        <TextField label={t("cost")} name="newPartCost" type="number" ltr value={form.acquisitionCost} onChange={(acquisitionCost) => set({ acquisitionCost })} error={error("acquisitionCost")} />
+        <TextField label={lines("price")} name="newPartPrice" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />
+        <TextField label={lines("withBoardExtra")} name="newPartWithBoard" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} />
+        <TextField label={lines("aloneExtra")} name="newPartAlone" type="number" ltr value={form.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={error("aloneExtra")} />
+        {lookups.partners ? (
+          <PartnerFields
+            partners={financingPartners(lookups.partners)} partnerId={form.partnerId} percent={form.partnerPercent} namePrefix="newPartPartner"
+            onChange={(patch) => set({ ...(patch.partnerId !== undefined ? { partnerId: patch.partnerId } : {}), ...(patch.percent !== undefined ? { partnerPercent: patch.percent } : {}) })}
+            errors={{ partnerId: error("partnerId"), percent: error("partnerPercentOverride") }}
+          />
+        ) : null}
+        <WarrantyField name="newPartWarranty" value={form.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={lookups.warrantyLabels} error={error("warrantyLabel")} />
+      </div>
+      <div className="flex flex-wrap gap-x-6">
+        <label className={checkbox}>
+          <input type="checkbox" checked={form.hasBox} onChange={(event) => set({ hasBox: event.target.checked })} className="h-5 w-5" />
+          {lines("hasBox")}
+        </label>
+        <label className={checkbox}>
+          <input type="checkbox" checked={form.isHidden} onChange={(event) => set({ isHidden: event.target.checked })} className="h-5 w-5" />
+          {lines("isHidden")}
+        </label>
+      </div>
+      <TextAreaField label={lines("internalNote")} name="newPartNote" value={form.internalNote} onChange={(internalNote) => set({ internalNote })} rows={2} maxLength={1000} error={error("internalNote")} />
+      <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" disabled={submit.busy || !newPartValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("add")}</button>
+        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+      </div>
+      {submit.dialog}
+    </form>
+  );
+}
