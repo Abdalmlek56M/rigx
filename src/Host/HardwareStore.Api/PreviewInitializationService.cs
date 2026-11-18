@@ -40,7 +40,7 @@ public sealed record PreviewInitializationResult(
     int Expenses,
     string OwnerUsername);
 
-public sealed class PreviewInitializationService(
+public sealed partial class PreviewInitializationService(
     PreviewOptions options,
     IHostEnvironment environment,
     TimeProvider timeProvider,

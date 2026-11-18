@@ -58,8 +58,15 @@ curl -X POST http://localhost:8080/api/v1/development/preview/initialize \
 The response shows the counts of what this call created (0 for data that was already there). The seeded owner signs in with
 the usual email code; the demo customers use `demo1@example.com` … `demo10@example.com` with phones `01000000001` … `01000000010`.
 
-Reading the sign-in code locally: in Development the API keeps emails in memory (never sent), so for a browser check run the
-API under any other environment name with `Identity:Email:Smtp` pointed at a local SMTP sink (no TLS), plus the non-Development
+Reading the sign-in code locally (Development with Preview enabled): ask for the code on the login page, then
+```bash
+curl "http://localhost:8080/api/v1/development/preview/email-code?email=owner@example.com" \
+  -H "X-Preview-Bootstrap-Key: <the same local key>"
+```
+returns the newest code sent to that address (`code`, `purpose` = sign-in or step-up, `expiresAtUtc`; 404 when none). Same guards
+as the seed; it does not exist outside Development. Playwright signs in this way.
+
+To test real email delivery instead: Development keeps emails in memory (never sent), so run the API under any other environment name with `Identity:Email:Smtp` pointed at a local SMTP sink (no TLS), plus the non-Development
 requirements: `DataProtection:KeyRingPath`, `DataProtection:CertificatePath`/`CertificatePassword` (a throwaway self-signed PFX)
 and HTTPS (the `__Host-` cookies and CSRF need it; serve on `https://localhost` with the dev certificate). Point the web app at
 it through a local HTTP→HTTPS bridge, because the Next proxy rejects the untrusted dev certificate. Stop any other local API

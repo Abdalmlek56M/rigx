@@ -42,6 +42,26 @@ public sealed class PreviewInitializationTests
     }
 
     [Fact]
+    public async Task Preview_email_code_returns_the_newest_code_for_that_address_only_in_development()
+    {
+        var inbox = new InMemoryTestEmailProvider();
+        await using var services = new ServiceCollection().AddSingleton(inbox).BuildServiceProvider();
+        var factory = services.GetRequiredService<IServiceScopeFactory>();
+        var expires = DateTimeOffset.UtcNow.AddMinutes(10);
+        await inbox.SendEmailCodeAsync(new EmailCodeMessage("owner@example.test", "Owner", "111111", expires, "SignIn"));
+        await inbox.SendEmailCodeAsync(new EmailCodeMessage("Owner@Example.test", "Owner", "222222", expires, "StepUp"));
+        await inbox.SendEmailCodeAsync(new EmailCodeMessage("demo1@example.com", "Demo", "333333", expires, "SignIn"));
+
+        var service = CreateService("Development", enabled: true, scopeFactory: factory);
+
+        Assert.Equal(new PreviewEmailCode("222222", "StepUp", expires), service.LatestEmailCode("bootstrap-key", " owner@example.test "));
+        Assert.Null(service.LatestEmailCode("bootstrap-key", "nobody@example.com"));
+        Assert.Throws<UnauthorizedAccessException>(() => service.LatestEmailCode("wrong-key", "owner@example.test"));
+        Assert.Throws<InvalidOperationException>(() =>
+            CreateService("Production", enabled: true, scopeFactory: factory).LatestEmailCode("bootstrap-key", "owner@example.test"));
+    }
+
+    [Fact]
     public async Task Preview_bootstrap_rejects_a_migration_target_that_differs_from_runtime()
     {
         var service = CreateService(
@@ -116,7 +136,8 @@ public sealed class PreviewInitializationTests
         string environmentName,
         bool enabled,
         string runtimeConnectionString = "Host=localhost;Port=5432;Database=unused;Username=unused",
-        string migrationConnectionString = "Host=localhost;Port=5432;Database=unused;Username=unused") =>
+        string migrationConnectionString = "Host=localhost;Port=5432;Database=unused;Username=unused",
+        IServiceScopeFactory? scopeFactory = null) =>
         new(
             new PreviewOptions
             {
@@ -132,7 +153,7 @@ public sealed class PreviewInitializationTests
             TimeProvider.System,
             TimeZoneInfo.Utc,
             null!,
-            null!,
+            scopeFactory!,
             NullLogger<PreviewInitializationService>.Instance);
 
     private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment

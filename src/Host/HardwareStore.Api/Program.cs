@@ -210,7 +210,10 @@ app.MapPurchasingEndpoints();
 app.MapInventoryEndpoints();
 app.MapStorefrontEndpoints();
 if (previewEnabled)
+{
     app.MapPreviewInitializationEndpoints();
+    app.MapPreviewEmailCodeEndpoints();
+}
 
 app.Run();
 
