@@ -71,8 +71,9 @@ public sealed class OrderStatusService(IDbContextFactory<RetailDbContext> contex
                 throw new RetailException(409, "Only a delivered order can be completed.");
             if (order.PaymentRequired && order.PaymentStatus != PaymentStatus.Paid)
                 throw new RetailException(409, "Payment must be confirmed before completion.");
-            if (!order.PaymentRequired && order.PaymentStatus != PaymentStatus.Waived)
-                throw new RetailException(409, "Record an explicit payment waiver before completion.");
+            // Pickup: the customer pays at the store (cash recorded → Paid), or the owner waives it explicitly (owner decision 18 Nov 2026).
+            if (!order.PaymentRequired && order.PaymentStatus is not (PaymentStatus.Paid or PaymentStatus.Waived))
+                throw new RetailException(409, "Record the payment or an explicit waiver before completion.");
 
             await PartnerEarningsPosting.PostForOrderAsync(db, order, timeProvider, cancellationToken);
             order.Status = OrderStatus.Completed;

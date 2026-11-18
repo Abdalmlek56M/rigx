@@ -6,16 +6,7 @@ import { formatDateTime } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { changeRows } from "./audit-rules";
 import { fetchEntry } from "./audit-api";
-
-function Row({ label, value, mono = false }: { label: string; value: string | null; mono?: boolean }) {
-  if (!value) return null;
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs text-ink-muted">{label}</dt>
-      <dd dir={mono ? "ltr" : "auto"} className={`m-0 text-sm ${mono ? "font-mono text-[13px]" : ""} [overflow-wrap:anywhere]`}>{value}</dd>
-    </div>
-  );
-}
+import { AuditField as Row } from "./AuditField";
 
 /** One data-change entry: every field of the entry and its before → after rows. */
 export function AuditEntryDetail({ id, onClose }: { id: string; onClose: () => void }) {
@@ -63,8 +54,8 @@ export function AuditEntryDetail({ id, onClose }: { id: string; onClose: () => v
               <li key={row.field} className="flex flex-col gap-1 rounded-control border border-line bg-paper p-2.5">
                 <span dir="ltr" className="font-mono text-xs font-bold text-ink-muted">{row.field}</span>
                 <div className="grid gap-1 text-sm sm:grid-cols-2">
-                  <span className="flex flex-col gap-0.5"><span className="text-xs text-ink-muted">{t("changes.before")}</span><span dir="auto" className="[overflow-wrap:anywhere]">{row.before || t("empty")}</span></span>
-                  <span className="flex flex-col gap-0.5"><span className="text-xs text-ink-muted">{t("changes.after")}</span><span dir="auto" className="font-bold [overflow-wrap:anywhere]">{row.after || t("empty")}</span></span>
+                  <span className="flex flex-col gap-0.5"><span className="text-xs text-ink-muted">{t("changes.before")}</span><span dir="auto" className="[overflow-wrap:anywhere]">{row.before || t("none")}</span></span>
+                  <span className="flex flex-col gap-0.5"><span className="text-xs text-ink-muted">{t("changes.after")}</span><span dir="auto" className="font-bold [overflow-wrap:anywhere]">{row.after || t("none")}</span></span>
                 </div>
               </li>
             ))}

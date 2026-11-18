@@ -498,6 +498,22 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
     }
 
     [Fact]
+    public async Task A_pickup_order_paid_in_cash_at_the_store_completes_without_a_waiver()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Pickup GPU", 2, 500m);
+        var order = await DeliverAsync(retail, await retail.CheckoutAsync(Checkout([StockLine(item.Id)], OrderFulfillment.Pickup)));
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() =>
+            retail.OrderStatus.CompleteOrderAsync(order.Id, new CompleteOrderRequest(order.RowVersion, null), Actor)));
+
+        var paid = await retail.Payments.AddPaymentAsync(order.Id,
+            new OrderPaymentRequest(OrderPaymentMethod.Cash, order.Total, null, order.RowVersion), Actor);
+        var completed = await retail.OrderStatus.CompleteOrderAsync(order.Id, new CompleteOrderRequest(paid.RowVersion, null), Actor);
+
+        Assert.Equal((OrderStatus.Completed, PaymentStatus.Paid), (completed.Status, completed.PaymentStatus));
+    }
+
+    [Fact]
     public async Task A_completed_order_shows_as_delivered_on_the_tracking_page()
     {
         var (retail, _, _) = await StartAsync();

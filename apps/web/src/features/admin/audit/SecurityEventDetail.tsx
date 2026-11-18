@@ -4,16 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatDateTime } from "@/lib/format";
 import { AuditOutcomeBadge } from "./AuditOutcomeBadge";
 import type { SecurityEvent } from "./audit-api";
-
-function Row({ label, value, mono = false }: { label: string; value: string | null; mono?: boolean }) {
-  if (!value) return null;
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs text-ink-muted">{label}</dt>
-      <dd dir={mono ? "ltr" : "auto"} className={`m-0 text-sm ${mono ? "font-mono text-[13px]" : ""} [overflow-wrap:anywhere]`}>{value}</dd>
-    </div>
-  );
-}
+import { AuditField as Row } from "./AuditField";
 
 /** One sign-in/security event: every field of the row and its safe metadata. */
 export function SecurityEventDetail({ event, onClose }: { event: SecurityEvent; onClose: () => void }) {

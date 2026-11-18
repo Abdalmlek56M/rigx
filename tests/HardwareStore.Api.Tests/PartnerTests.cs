@@ -173,7 +173,7 @@ public sealed class PartnerPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
         var financed = await retail.ReceiveItemAsync(Line("Financed", 100m, 300m, financer.Id));
         var own = await retail.ReceiveItemAsync(Line("Own", 100m, 200m));
         await SellAsync(retail, (financed, 300m), (own, 200m));
-        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(new DateOnly(2026, 9, 20), 30m, "إيجار", "GeneralOverhead", null, null, null), Actor);
+        await retail.Expenses.CreateExpenseAsync(new ExpenseCreateRequest(new DateOnly(2026, 9, 10), 30m, "إيجار", "GeneralOverhead", null, null, null), Actor);
 
         Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.MonthClose.CloseMonthAsync(new PartnerMonthCloseRequest(2026, 9), RetailSales.BusinessZone)));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.MonthClose.CloseMonthAsync(new PartnerMonthCloseRequest(2026, 13), RetailSales.BusinessZone)));

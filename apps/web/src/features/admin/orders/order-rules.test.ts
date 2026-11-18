@@ -44,6 +44,7 @@ describe("order workflow", () => {
     assert.equal(completeBlock(order({ status: "Delivered" })), "unpaid");
     assert.equal(completeBlock(order({ status: "Delivered", paymentStatus: "Paid" })), null);
     assert.equal(completeBlock(order({ status: "Delivered", paymentRequired: false, paymentStatus: "Unpaid" })), "notWaived");
+    assert.equal(completeBlock(order({ status: "Delivered", paymentRequired: false, paymentStatus: "Paid" })), null);
     assert.equal(completeBlock(order({ status: "Delivered", paymentRequired: false, paymentStatus: "Waived" })), null);
   });
 });

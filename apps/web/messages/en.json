@@ -1529,7 +1529,7 @@
           "blocks": {
             "notDelivered": "The order is not delivered yet.",
             "unpaid": "The order is not fully paid yet.",
-            "notWaived": "An order without payment needs an explicit waiver."
+            "notWaived": "Record the payment first, or waive it explicitly."
           }
         },
         "cancel": {

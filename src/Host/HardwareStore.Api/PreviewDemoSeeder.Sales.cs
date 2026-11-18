@@ -74,17 +74,13 @@ internal sealed partial class PreviewDemoSeeder
                 order = await Statuses.UpdateStatusAsync(order.Id, new OrderStatusRequest(steps[index], null, order.RowVersion),
                     ownerId, reservation, invoice, cancellationToken);
             }
-            if ((definition.Status is OrderStatus.Delivered or OrderStatus.Completed) && order.PaymentRequired && order.Remaining > 0)
+            // A completed pickup order was paid at the store, like a delivery order is paid on delivery.
+            var paysNow = definition.Status == OrderStatus.Completed || (definition.Status == OrderStatus.Delivered && order.PaymentRequired);
+            if (paysNow && order.Remaining > 0)
                 order = await Payments.AddPaymentAsync(order.Id,
                     new OrderPaymentRequest(paidMethod, order.Remaining, null, order.RowVersion), ownerId, cancellationToken);
             if (definition.Status == OrderStatus.Completed)
-            {
-                if (!order.PaymentRequired && order.PaymentStatus != PaymentStatus.Waived)
-                    order = await Payments.WaivePaymentAsync(order.Id,
-                        new WaivePaymentRequest("دفع عند الاستلام من المحل", order.RowVersion), ownerId, cancellationToken);
-                await Statuses.CompleteOrderAsync(order.Id, new CompleteOrderRequest(order.RowVersion, null), ownerId,
-                    cancellationToken);
-            }
+                await Statuses.CompleteOrderAsync(order.Id, new CompleteOrderRequest(order.RowVersion, null), ownerId, cancellationToken);
             created++;
         }
         return created;

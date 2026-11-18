@@ -63,11 +63,11 @@ export function nextStatusBlock(order: OrderState): "blacklist" | "upfront" | nu
   return null;
 }
 
-/** Complete is offered from Delivered; it needs Paid when payment is required, else an explicit waiver. */
+/** Complete is offered from Delivered; it needs Paid when payment is required, else Paid (pickup paid at the store) or an explicit waiver. */
 export function completeBlock(order: OrderState): "notDelivered" | "unpaid" | "notWaived" | null {
   if (order.status !== "Delivered") return "notDelivered";
   if (order.paymentRequired && order.paymentStatus !== "Paid") return "unpaid";
-  if (!order.paymentRequired && order.paymentStatus !== "Waived") return "notWaived";
+  if (!order.paymentRequired && order.paymentStatus !== "Paid" && order.paymentStatus !== "Waived") return "notWaived";
   return null;
 }
 
