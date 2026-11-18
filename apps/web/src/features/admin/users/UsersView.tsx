@@ -9,6 +9,7 @@ import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { useReveal } from "../kit/use-reveal";
 import { InviteUserDialog } from "./InviteUserDialog";
+import { useBuiltInRoleLabel } from "./use-role-label";
 import { UserDetail } from "./UserDetail";
 import { ACTIVE_FILTERS, activeFilter, roleNames, type UserSet, type UserValues } from "./user-rules.ts";
 import { fetchRoles, fetchUsers, type StaffUser } from "./users-api";
@@ -16,6 +17,7 @@ import { fetchRoles, fetchUsers, type StaffUser } from "./users-api";
 /** The staff list with search, the active filter and paging; the picked user's detail below. */
 export function UsersView({ values, set }: { values: UserValues; set: UserSet }) {
   const t = useTranslations("admin.users");
+  const builtIn = useBuiltInRoleLabel();
   const [inviting, setInviting] = useState(false);
   const page = pageNumber(values.page);
   const roles = useLoad(useCallback(() => fetchRoles(), []));
@@ -41,7 +43,7 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
     { key: "email", header: t("columns.email"), cell: (user) => <span dir="ltr" className="block break-all font-mono text-xs">{user.email}</span> },
     {
       key: "roles", header: t("columns.roles"), cell: (user) => {
-        const names = roleNames(user, roleList);
+        const names = roleNames(user, roleList, builtIn);
         return names.length === 0 ? <span className="text-ink-muted">{t("noRoles")}</span> : <span className="[overflow-wrap:anywhere]">{names.join("، ")}</span>;
       }
     },

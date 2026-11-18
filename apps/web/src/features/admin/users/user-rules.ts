@@ -32,9 +32,37 @@ export function isSameAccount(email: string, other: string | null | undefined): 
   return other != null && email.trim().toLowerCase() === other.trim().toLowerCase();
 }
 
+/** The built-in roles the server creates; their stored names are English, so the screen shows its own label. */
+export const BUILT_IN_ROLES = ["Owner", "Customer"] as const;
+export type BuiltInRole = (typeof BUILT_IN_ROLES)[number];
+
+export function builtInRole(code: string): BuiltInRole | null {
+  return BUILT_IN_ROLES.find((role) => role === code) ?? null;
+}
+
+/** A role's display name: the label of a built-in role, else the name the owner gave it. */
+export function roleLabel(role: Pick<StaffRole, "code" | "name">, builtIn: (role: BuiltInRole) => string): string {
+  const known = builtInRole(role.code);
+  return known ? builtIn(known) : role.name;
+}
+
 /** The role names of a user in their own order; a role the list does not know shows its code. */
-export function roleNames(user: Pick<StaffUser, "roleIds" | "roleCodes">, roles: readonly Pick<StaffRole, "id" | "name">[]): string[] {
-  return user.roleIds.map((id, index) => roles.find((role) => role.id === id)?.name ?? user.roleCodes[index] ?? id);
+export function roleNames(
+  user: Pick<StaffUser, "roleIds" | "roleCodes">,
+  roles: readonly Pick<StaffRole, "id" | "code" | "name">[],
+  builtIn: (role: BuiltInRole) => string
+): string[] {
+  return user.roleIds.map((id, index) => {
+    const role = roles.find((entry) => entry.id === id);
+    return role ? roleLabel(role, builtIn) : user.roleCodes[index] ?? id;
+  });
+}
+
+/** A permission's readable label from the grouped messages (`Sales.ViewOrders` → labels.Sales.ViewOrders), or null when there is none. */
+export function permissionLabel(code: string, labels: Readonly<Record<string, Readonly<Record<string, string>>>>): string | null {
+  const [group = "", name = ""] = code.split(".");
+  const names = Object.hasOwn(labels, group) ? labels[group] : undefined;
+  return (names && Object.hasOwn(names, name) ? names[name] : undefined) ?? null;
 }
 
 /** Adds or removes one value from a checkbox selection. */

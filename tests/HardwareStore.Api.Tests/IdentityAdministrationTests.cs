@@ -361,6 +361,12 @@ public sealed class IdentityAdministrationPostgreSqlTests(OwnerBootstrapPostgreS
                 ownerId));
         Assert.Equal(409, reserved.StatusCode);
 
+        var arabicCode = await Assert.ThrowsAsync<IdentityException>(() =>
+            admin.CreateRoleAsync(
+                new CreateAdminIdentityRoleRequest("بياع", "Seller", []),
+                ownerId));
+        Assert.Equal(400, arabicCode.StatusCode);
+
         var roles = await admin.GetRolesAsync();
         var ownerRole = roles.Single(role => role.Code == "Owner");
         var ownerEdit = await Assert.ThrowsAsync<IdentityException>(() =>

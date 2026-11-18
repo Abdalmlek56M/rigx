@@ -51,6 +51,23 @@ export function exportFileName(dataset: ExportDataset, from: string, to: string,
   return `${["rigx", dataset, from, to].filter(Boolean).join("-")}.${format}`;
 }
 
+export const BACKUP_TRIGGERS = ["Scheduled", "Manual", "BeforeReset"] as const;
+export const BACKUP_STATUSES = ["Succeeded", "Failed"] as const;
+
+/** The label key of a backup trigger or status the screen knows; anything new shows as the server sent it. */
+export function backupTriggerKey(trigger: string): (typeof BACKUP_TRIGGERS)[number] | null {
+  return BACKUP_TRIGGERS.find((known) => known === trigger) ?? null;
+}
+
+export function backupStatusKey(status: string): (typeof BACKUP_STATUSES)[number] | null {
+  return BACKUP_STATUSES.find((known) => known === status) ?? null;
+}
+
+/** Only a finished backup has a file to verify or download. */
+export function backupSucceeded(run: { status: string }): boolean {
+  return run.status === "Succeeded";
+}
+
 /** The backup's saved name, or a stable one when the run has none. */
 export function backupFileName(fileName: string | null | undefined, id: string): string {
   return fileName || `rigx-backup-${id}.zip`;

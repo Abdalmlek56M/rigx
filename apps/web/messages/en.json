@@ -653,11 +653,11 @@
     },
     "code": {
       "title": "Enter the code",
-      "sentTo": "We sent it to {email}. Check Spam if you can't find it.",
+      "sentTo": "We sent it to <email>x</email>. Check Spam if you can't find it.",
       "label": "6-digit code",
       "submit": "Sign in",
       "submitting": "Signing you in…",
-      "resendIn": "Resend in {time}",
+      "resendIn": "Resend in <time>x</time>",
       "resend": "Send a new code",
       "changeEmail": "Change email",
       "remember": "Remember me on this device"
@@ -3103,6 +3103,89 @@
         "title": "Restore the old values",
         "body": "The record goes back to the values it had before this change. The restore is logged too.",
         "done": "Values restored"
+      },
+      "labels": {
+        "modules": {
+          "Identity": "Accounts",
+          "Purchasing": "Purchasing",
+          "Retail": "Sales and stock",
+          "Storefront": "Storefront",
+          "Catalog": "Catalog",
+          "Content": "Content",
+          "Auditing": "System"
+        },
+        "actions": {
+          "Created": "Added",
+          "Updated": "Changed",
+          "Deleted": "Deleted",
+          "SoftDeleted": "Moved to trash",
+          "Restored": "Restored from trash",
+          "ValuesRestored": "Old values restored"
+        },
+        "actors": {
+          "User": "User",
+          "System": "System",
+          "Anonymous": "Visitor"
+        },
+        "entities": {
+          "account_restrictions": "Account restrictions",
+          "assemblies": "Builds",
+          "assembly_units": "Build parts",
+          "blacklist_entries": "Blacklist",
+          "brands": "Brands",
+          "categories": "Categories",
+          "content_article_revisions": "Article revisions",
+          "content_articles": "Articles",
+          "content_faqs": "FAQs",
+          "content_media_asset_usages": "Image usage",
+          "content_media_assets": "Images",
+          "content_policies": "Policies",
+          "customer_addresses": "Customer addresses",
+          "customer_requests": "Incoming requests",
+          "expense_types": "Expense types",
+          "external_logins": "Google sign-in",
+          "inventory_units": "Stock units",
+          "invoices": "Invoices",
+          "money_accounts": "Money accounts",
+          "money_movements": "Money movements",
+          "offer_items": "Offer items",
+          "offers": "Offers",
+          "order_events": "Order events",
+          "order_item_components": "Order line parts",
+          "order_items": "Order lines",
+          "order_payments": "Order payments",
+          "order_returns": "Returns",
+          "partner_adjustments": "Partner adjustments",
+          "partner_capital_entries": "Partner capital",
+          "partner_earnings": "Partner earnings",
+          "partner_settlements": "Partner payouts",
+          "partners": "Partners",
+          "persons": "People",
+          "product_images": "Product images",
+          "product_reviews": "Product reviews",
+          "product_specifications": "Product specs",
+          "products": "Products",
+          "purchase_lines": "Purchase lines",
+          "purchase_receipts": "Purchase receipts",
+          "purchases": "Purchases",
+          "recurring_expenses": "Recurring expenses",
+          "retail_expenses": "Expenses",
+          "role_permissions": "Role permissions",
+          "roles": "Roles",
+          "saved_builds": "Saved builds",
+          "sellers": "Sellers",
+          "stock_items": "Stock items",
+          "store_orders": "Orders",
+          "store_reviews": "Store reviews",
+          "store_settings": "Store settings",
+          "user_accounts": "Accounts",
+          "user_notifications": "Notifications",
+          "user_roles": "User roles",
+          "warehouses": "Warehouses",
+          "warranties": "Warranties",
+          "warranty_extensions": "Warranty extensions",
+          "wishlist_items": "Wishlist"
+        }
       }
     },
     "users": {
@@ -3128,6 +3211,7 @@
       "noRoles": "No role",
       "columns": {
         "name": "User",
+        "role": "Role",
         "email": "Email",
         "roles": "Roles",
         "status": "Status",
@@ -3232,7 +3316,79 @@
           "Requests": "Requests",
           "Audit": "Audit log",
           "System": "System"
+        },
+        "labels": {
+          "Audit": {
+            "Restore": "Restore old values from the log"
+          },
+          "Catalog": {
+            "View": "View the catalog",
+            "ManageProducts": "Add and edit items and builds",
+            "ManageMedia": "Upload and remove photos",
+            "ManageTaxonomy": "Edit categories and their specs"
+          },
+          "Customers": {
+            "View": "View customers",
+            "Manage": "Manage customer accounts"
+          },
+          "Finance": {
+            "Disburse": "Pay partners",
+            "ManageExpenses": "Record expenses",
+            "ManagePartnerAgreements": "Manage partners and their shares",
+            "PostPartnerSettlements": "Close the month for partners",
+            "VerifyPayment": "Confirm payments",
+            "ViewReports": "View reports and profit",
+            "ViewVaults": "View cash and account balances"
+          },
+          "Inventory": {
+            "ManageSerials": "Edit serial numbers",
+            "ManageWarehouses": "Manage storage places",
+            "StockAdjust": "Adjust stock",
+            "StockCount": "Count stock",
+            "Transfer": "Move stock",
+            "View": "View stock",
+            "ViewCosts": "See purchase prices",
+            "ViewSerials": "See serial numbers"
+          },
+          "Purchasing": {
+            "CreateOrder": "Create purchases",
+            "ManageSuppliers": "Manage sellers and suppliers",
+            "PostBill": "Record purchase bills",
+            "ReceiveGoods": "Receive goods",
+            "View": "View purchases"
+          },
+          "Requests": {
+            "View": "View incoming requests",
+            "Manage": "Handle incoming requests"
+          },
+          "Sales": {
+            "ApproveOrder": "Confirm orders and move their status",
+            "CompleteOrder": "Mark orders completed",
+            "CreatePOS": "Sell at the counter",
+            "FulfillStorePickup": "Hand over pickup orders",
+            "LogCommunication": "Log customer contact",
+            "OverrideMinimumPrice": "Change prices beyond the discount limit",
+            "ProcessReturn": "Process returns",
+            "ViewCustomerContact": "See customer phone and address",
+            "ViewOrders": "View orders"
+          },
+          "System": {
+            "BackupDownload": "Download backups",
+            "ExecuteAllowlistedAction": "Run allowed system actions",
+            "ManageBackups": "Manage backups",
+            "ManageUsers": "Manage users and roles",
+            "Purge": "Delete from the trash for good",
+            "ResetData": "Reset data",
+            "StoreSettings": "Edit store settings",
+            "Trash": "View and restore the trash",
+            "ViewAuditLogs": "View the activity log",
+            "ViewErrorLogs": "View error logs"
+          }
         }
+      },
+      "builtInRoles": {
+        "Owner": "Owner",
+        "Customer": "Customer"
       }
     },
     "system": {
@@ -3284,7 +3440,16 @@
         "download": "Download",
         "downloadTitle": "Download backup",
         "downloadBody": "The backup holds all the store's data. We will ask for a code sent to your email.",
-        "downloaded": "Backup downloaded"
+        "downloaded": "Backup downloaded",
+        "trigger": {
+          "Scheduled": "Scheduled",
+          "Manual": "Manual",
+          "BeforeReset": "Before reset"
+        },
+        "status": {
+          "Succeeded": "Done",
+          "Failed": "Failed"
+        }
       },
       "export": {
         "title": "Export data",
@@ -3345,7 +3510,7 @@
       "retry": "Try again",
       "conflict": "Another user changed the settings. Reloading.",
       "list": {
-        "item": "Item {number}",
+        "item": "No. {number}",
         "up": "Move up",
         "down": "Move down",
         "remove": "Remove"
@@ -3510,7 +3675,7 @@
         "warranty": "Warranty",
         "requestReply": "Request reply",
         "backInStock": "Back in stock",
-        "placeholders": "Allowed variables: {الاسم} {الموبايل} {القطعة} {الكود} {السعر} {اللينك} {الطلب} — filled automatically."
+        "placeholders": "Allowed variables: {list} — filled automatically."
       },
       "reviews": {
         "title": "Reviews",

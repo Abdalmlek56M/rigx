@@ -41,7 +41,7 @@ public sealed class IdentityRoleAdministrationService(
         var name = IdentityAdministrationSupport.NormalizeRequired(request.Name, 128, "Role name");
         if (code is "Owner" or "Customer")
             throw new IdentityException(409, "Owner and Customer roles are reserved.");
-        if (!code.All(character => char.IsLetterOrDigit(character) || character is '.' or '_' or '-'))
+        if (!code.All(character => char.IsAsciiLetterOrDigit(character) || character is '.' or '_' or '-'))
             throw new IdentityException(400, "Role code contains unsupported characters.");
         var requestedPermissions = IdentityAdministrationSupport.ValidatePermissions(request.PermissionCodes);
 

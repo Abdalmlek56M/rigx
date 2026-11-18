@@ -7,6 +7,7 @@ import { isConflict } from "@/lib/api/conflict";
 import { useLoad } from "@/lib/hooks/use-load";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
+import { useRoleLabel } from "./use-role-label";
 import { formMessage } from "../form-message.ts";
 import { PermissionPicker } from "./PermissionPicker";
 import { roleCodeValid, sameSet } from "./user-rules.ts";
@@ -15,6 +16,7 @@ import { createRole, fetchPermissions, setRolePermissions, type StaffRole } from
 /** Create a role (`role` = null) or change the permissions of an existing one; both need the step-up code. */
 export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null; onSaved: (id: string | null) => void; onClose: () => void }) {
   const t = useTranslations("admin.users.roleEditor");
+  const label = useRoleLabel();
   const permissions = useLoad(useCallback(() => fetchPermissions(), []));
   const submit = useSubmit();
   const [code, setCode] = useState("");
@@ -43,14 +45,14 @@ export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null;
   return (
     <section className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
       <header className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="m-0 text-[17px] font-bold [overflow-wrap:anywhere]">{role ? t("editTitle", { name: role.name }) : t("newTitle")}</h2>
+        <h2 className="m-0 text-[17px] font-bold [overflow-wrap:anywhere]">{role ? t("editTitle", { name: label(role) }) : t("newTitle")}</h2>
         <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>
       </header>
       <form className="flex flex-col gap-3" onSubmit={(event) => { event.preventDefault(); void save(); }}>
         {role ? null : (
           <div className="grid gap-3 sm:grid-cols-2">
-            <TextField label={t("code")} name="code" ltr value={code} onChange={setCode} error={submit.errors.fields.code} />
             <TextField label={t("name")} name="name" value={name} onChange={setName} error={submit.errors.fields.name} />
+            <TextField label={t("code")} name="code" ltr value={code} onChange={setCode} error={submit.errors.fields.code} />
           </div>
         )}
         <h3 className="m-0 text-[15px] font-bold">{t("permissions")}</h3>

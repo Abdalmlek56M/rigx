@@ -1,4 +1,5 @@
 import { toggle } from "./user-rules.ts";
+import { useRoleLabel } from "./use-role-label";
 import type { StaffRole } from "./users-api";
 
 /** One checkbox per role (name, with the code in mono under it). */
@@ -8,6 +9,7 @@ export function RoleCheckboxes({ roles, selected, onChange, disabled = false }: 
   onChange: (selected: string[]) => void;
   disabled?: boolean;
 }) {
+  const label = useRoleLabel();
   return (
     <ul className="m-0 flex list-none flex-col gap-2 p-0">
       {roles.map((role) => (
@@ -18,7 +20,7 @@ export function RoleCheckboxes({ roles, selected, onChange, disabled = false }: 
               onChange={(event) => onChange(toggle(selected, role.id, event.target.checked))} className="h-5 w-5 accent-orange"
             />
             <span className="flex min-w-0 flex-col">
-              <span className="font-bold">{role.name}</span>
+              <span className="font-bold">{label(role)}</span>
               <span dir="ltr" className="font-mono text-[11px] text-ink-muted">{role.code}</span>
             </span>
           </label>

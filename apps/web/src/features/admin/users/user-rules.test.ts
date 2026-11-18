@@ -10,6 +10,8 @@ import {
   restrictionRequest,
   restrictionValid,
   roleCodeValid,
+  permissionLabel,
+  roleLabel,
   roleNames,
   sameSet,
   setGroup,
@@ -37,9 +39,19 @@ describe("users view and filters", () => {
     assert.equal(isSameAccount("a@x.com", undefined), false);
   });
 
-  it("names a user's roles from the roles list, falling back to the code", () => {
-    const roles = [{ id: "1", name: "مدير" }];
-    assert.deepEqual(roleNames({ roleIds: ["1", "2"], roleCodes: ["Manager", "Seller"] }, roles), ["مدير", "Seller"]);
+  it("names a user's roles from the roles list, labels built-in roles, falls back to the code", () => {
+    const label = (role: string) => `label:${role}`;
+    const roles = [{ id: "1", code: "Manager", name: "مدير" }, { id: "3", code: "Owner", name: "Owner" }];
+    assert.deepEqual(roleNames({ roleIds: ["1", "2", "3"], roleCodes: ["Manager", "Seller", "Owner"] }, roles, label), ["مدير", "Seller", "label:Owner"]);
+    assert.equal(roleLabel({ code: "Customer", name: "Customer" }, label), "label:Customer");
+    assert.equal(roleLabel({ code: "Seller", name: "بياع" }, label), "بياع");
+  });
+
+  it("labels permission codes it knows", () => {
+    const labels = { Sales: { ViewOrders: "يشوف الطلبات" } };
+    assert.equal(permissionLabel("Sales.ViewOrders", labels), "يشوف الطلبات");
+    assert.equal(permissionLabel("Sales.Other", labels), null);
+    assert.equal(permissionLabel("Nope", labels), null);
   });
 
   it("toggles ids and compares selections without order", () => {

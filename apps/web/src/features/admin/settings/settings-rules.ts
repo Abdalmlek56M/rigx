@@ -90,6 +90,8 @@ export const storeInfoValue = (form: StoreInfoForm): StoreInfo => ({
 });
 
 // —— WhatsApp templates ———————————————————————————————————————————————————————
+/** The placeholders the server fills in a template (`WhatsAppTemplateSettings` in Storefront). */
+export const WHATSAPP_PLACEHOLDERS = ["{الاسم}", "{الموبايل}", "{القطعة}", "{الكود}", "{السعر}", "{اللينك}", "{الطلب}"] as const;
 export interface WhatsAppForm {
   general: string;
   product: string;

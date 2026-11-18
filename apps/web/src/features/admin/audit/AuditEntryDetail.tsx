@@ -8,11 +8,13 @@ import { changeRows } from "./audit-rules";
 import { fetchEntry } from "./audit-api";
 import { AuditField as Row } from "./AuditField";
 import { AuditRestore } from "./AuditRestore";
+import { useAuditLabels } from "./use-audit-labels";
 import { usePermissions } from "../use-permissions";
 
 /** One data-change entry: every field of the entry and its before → after rows. */
 export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onClose: () => void; onRestored: () => void }) {
   const t = useTranslations("admin.audit");
+  const labels = useAuditLabels();
   const locale = useLocale();
   const load = useCallback(() => fetchEntry(id), [id]);
   const { state, reload } = useLoad(load);
@@ -37,12 +39,12 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
       </header>
       <dl className="m-0 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Row label={t("changes.time")} value={formatDateTime(entry.occurredAtUtc, locale)} />
-        <Row label={t("changes.actor")} value={entry.actorName ?? entry.actorKind} />
-        <Row label={t("changes.actorKind")} value={entry.actorKind} mono />
+        <Row label={t("changes.actor")} value={entry.actorName ?? labels.actor(entry.actorKind)} />
+        <Row label={t("changes.actorKind")} value={labels.actor(entry.actorKind)} />
         <Row label={t("changes.actorId")} value={entry.actorUserId} mono />
-        <Row label={t("changes.action")} value={entry.action} mono />
-        <Row label={t("changes.module")} value={entry.module} mono />
-        <Row label={t("changes.entity")} value={entry.entity} mono />
+        <Row label={t("changes.action")} value={labels.action(entry.action)} />
+        <Row label={t("changes.module")} value={labels.module(entry.module)} />
+        <Row label={t("changes.entity")} value={labels.entity(entry.entity)} />
         <Row label={t("changes.entityId")} value={entry.entityId} mono />
         <Row label={t("changes.ip")} value={entry.actorIp} mono />
         <Row label={t("changes.device")} value={entry.device} />

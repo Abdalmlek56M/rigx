@@ -81,3 +81,8 @@ function json(value: unknown): string {
 export function shortId(value: string | null): string {
   return value ? value.slice(0, 8) : "";
 }
+
+/** A stored value's label from a message group, or the value itself when the group does not know it. */
+export function labelOf(names: Readonly<Record<string, string>>, value: string): string {
+  return (Object.hasOwn(names, value) ? names[value] : undefined) ?? value;
+}

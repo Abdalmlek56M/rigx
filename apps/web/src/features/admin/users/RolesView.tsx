@@ -7,6 +7,7 @@ import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar } from "../kit/FilterBar";
 import { useReveal } from "../kit/use-reveal";
 import { RoleEditor } from "./RoleEditor";
+import { useRoleLabel } from "./use-role-label";
 import type { UserSet, UserValues } from "./user-rules.ts";
 import { fetchRoles, type StaffRole } from "./users-api";
 
@@ -15,6 +16,7 @@ const NEW_ROLE = "new";
 /** The roles list (name, code, users, permissions); a new role or one role's permissions open below it. */
 export function RolesView({ values, set }: { values: UserValues; set: UserSet }) {
   const t = useTranslations("admin.users");
+  const label = useRoleLabel();
   const { state, reload } = useLoad(useCallback(() => fetchRoles(), []));
   const detailRef = useReveal<HTMLDivElement>(values.role || null);
   const tableState: Load<readonly StaffRole[]> = state;
@@ -22,12 +24,12 @@ export function RolesView({ values, set }: { values: UserValues; set: UserSet })
 
   const columns: Column<StaffRole>[] = [
     {
-      key: "name", header: t("columns.name"), cell: (role) => (
+      key: "name", header: t("columns.role"), cell: (role) => (
         <button
           type="button" aria-current={values.role === role.id ? "true" : undefined} onClick={() => set({ role: role.id })}
           className={`text-start font-bold [overflow-wrap:anywhere] ${values.role === role.id ? "text-orange-text" : ""}`}
         >
-          {role.name}
+          {label(role)}
         </button>
       )
     },

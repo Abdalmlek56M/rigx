@@ -1,9 +1,10 @@
-import { useTranslations } from "next-intl";
-import { groupPermissions, groupSelected, groupTitleKey, setGroup, toggle, systemCodes } from "./user-rules.ts";
+import { useMessages, useTranslations } from "next-intl";
+import { groupPermissions, groupSelected, groupTitleKey, permissionLabel, setGroup, toggle, systemCodes } from "./user-rules.ts";
 
-/** Permission codes grouped by their prefix, with "select all" per group and a warning (not a block) for `System.*` codes. */
+/** Permission codes grouped by their prefix (a readable label over each code), with "select all" per group and a warning (not a block) for `System.*` codes. */
 export function PermissionPicker({ codes, selected, onChange }: { codes: readonly string[]; selected: readonly string[]; onChange: (selected: string[]) => void }) {
   const t = useTranslations("admin.users.permissions");
+  const { labels } = useMessages().admin.users.permissions;
   const groups = groupPermissions(codes);
   const system = systemCodes(selected);
 
@@ -19,12 +20,18 @@ export function PermissionPicker({ codes, selected, onChange }: { codes: readonl
               <input type="checkbox" checked={all} onChange={(event) => onChange(setGroup(group, selected, event.target.checked))} className="h-5 w-5 accent-orange" />
               {t("selectGroup")}
             </label>
-            {group.codes.map((code) => (
-              <label key={code} className="flex min-h-11 items-center gap-3 text-sm">
-                <input type="checkbox" checked={selected.includes(code)} onChange={(event) => onChange(toggle(selected, code, event.target.checked))} className="h-5 w-5 accent-orange" />
-                <span dir="ltr" className="font-mono text-xs [overflow-wrap:anywhere]">{code}</span>
-              </label>
-            ))}
+            {group.codes.map((code) => {
+              const readable = permissionLabel(code, labels);
+              return (
+                <label key={code} className="flex min-h-11 items-center gap-3 text-sm">
+                  <input type="checkbox" checked={selected.includes(code)} onChange={(event) => onChange(toggle(selected, code, event.target.checked))} className="h-5 w-5 accent-orange" />
+                  <span className="flex min-w-0 flex-col">
+                    {readable ? <span>{readable}</span> : null}
+                    <span dir="ltr" className="font-mono text-[11px] text-ink-muted [overflow-wrap:anywhere]">{code}</span>
+                  </span>
+                </label>
+              );
+            })}
           </fieldset>
         );
       })}

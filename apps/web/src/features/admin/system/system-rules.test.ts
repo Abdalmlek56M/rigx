@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  backupFileName, canReset, exportableDatasets, exportFileName, formatBytes, toggleResetSection, trashKindKey
+  backupFileName, backupStatusKey, backupSucceeded, backupTriggerKey, canReset, exportableDatasets, exportFileName, formatBytes, toggleResetSection, trashKindKey
 } from "./system-rules.ts";
 
 describe("trash kinds", () => {
@@ -45,5 +45,16 @@ describe("backups", () => {
     assert.equal(formatBytes(512), "512 B");
     assert.equal(formatBytes(5 * 1024 * 1024), "5.0 MB");
     assert.equal(formatBytes(120 * 1024 * 1024), "120 MB");
+  });
+});
+
+describe("backup runs", () => {
+  it("labels known triggers and statuses and offers actions only on a finished backup", () => {
+    assert.equal(backupTriggerKey("BeforeReset"), "BeforeReset");
+    assert.equal(backupTriggerKey("Later"), null);
+    assert.equal(backupStatusKey("Failed"), "Failed");
+    assert.equal(backupStatusKey("Running"), null);
+    assert.equal(backupSucceeded({ status: "Succeeded" }), true);
+    assert.equal(backupSucceeded({ status: "Failed" }), false);
   });
 });

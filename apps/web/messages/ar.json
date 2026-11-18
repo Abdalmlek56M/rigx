@@ -653,11 +653,11 @@
     },
     "code": {
       "title": "اكتب الكود",
-      "sentTo": "بعتناه على {email}. بص في الـ Spam لو مالقيتوش.",
+      "sentTo": "بعتناه على <email>x</email>. بص في الـ Spam لو مالقيتوش.",
       "label": "كود من ٦ أرقام",
       "submit": "دخول",
       "submitting": "بندخلك…",
-      "resendIn": "ابعت تاني بعد {time}",
+      "resendIn": "ابعت تاني بعد <time>x</time>",
       "resend": "ابعت كود جديد",
       "changeEmail": "غيّر الإيميل",
       "remember": "افتكرني على الجهاز ده"
@@ -3037,8 +3037,8 @@
       "failed": "ماقدرناش نحمّل السجل.",
       "retry": "جرّب تاني",
       "filters": {
-        "module": "الوحدة",
-        "entity": "الجدول",
+        "module": "القسم",
+        "entity": "العنصر",
         "action": "الإجراء",
         "from": "من",
         "to": "لحد",
@@ -3057,8 +3057,8 @@
       "columns": {
         "time": "الوقت",
         "who": "مين",
-        "module": "الوحدة",
-        "entity": "الجدول",
+        "module": "القسم",
+        "entity": "العنصر",
         "action": "الإجراء",
         "event": "الحدث",
         "outcome": "النتيجة",
@@ -3072,8 +3072,8 @@
         "actorKind": "نوع الفاعل",
         "actorId": "رقم الفاعل",
         "action": "الإجراء",
-        "module": "الوحدة",
-        "entity": "الجدول",
+        "module": "القسم",
+        "entity": "العنصر",
         "entityId": "رقم السجل",
         "ip": "IP",
         "device": "الجهاز",
@@ -3103,6 +3103,89 @@
         "title": "رجّع القيم القديمة",
         "body": "السجل هيرجع للقيم اللي كانت قبل التغيير ده. التغيير نفسه هيتسجّل في السجل.",
         "done": "القيم اترجعت"
+      },
+      "labels": {
+        "modules": {
+          "Identity": "الحسابات",
+          "Purchasing": "الشراء",
+          "Retail": "المبيعات والمخزون",
+          "Storefront": "المتجر",
+          "Catalog": "الكتالوج",
+          "Content": "المحتوى",
+          "Auditing": "النظام"
+        },
+        "actions": {
+          "Created": "إضافة",
+          "Updated": "تعديل",
+          "Deleted": "حذف",
+          "SoftDeleted": "اتنقل للسلة",
+          "Restored": "رجع من السلة",
+          "ValuesRestored": "رجوع لقيم قديمة"
+        },
+        "actors": {
+          "User": "مستخدم",
+          "System": "النظام",
+          "Anonymous": "زائر"
+        },
+        "entities": {
+          "account_restrictions": "قيود الحساب",
+          "assemblies": "التجميعات",
+          "assembly_units": "قطع التجميعة",
+          "blacklist_entries": "القائمة السودا",
+          "brands": "البراندات",
+          "categories": "الأقسام",
+          "content_article_revisions": "نسخ المقالات",
+          "content_articles": "المقالات",
+          "content_faqs": "الأسئلة الشائعة",
+          "content_media_asset_usages": "استخدام الصور",
+          "content_media_assets": "الصور",
+          "content_policies": "السياسات",
+          "customer_addresses": "عناوين العملاء",
+          "customer_requests": "الطلبات الواردة",
+          "expense_types": "أنواع المصاريف",
+          "external_logins": "الدخول بجوجل",
+          "inventory_units": "قطع المخزون",
+          "invoices": "الفواتير",
+          "money_accounts": "حسابات الفلوس",
+          "money_movements": "حركة الفلوس",
+          "offer_items": "قطع العروض",
+          "offers": "العروض",
+          "order_events": "أحداث الطلب",
+          "order_item_components": "مكونات سطر الطلب",
+          "order_items": "سطور الطلب",
+          "order_payments": "مدفوعات الطلب",
+          "order_returns": "المرتجعات",
+          "partner_adjustments": "تسويات الشركاء",
+          "partner_capital_entries": "رأس مال الشركاء",
+          "partner_earnings": "أرباح الشركاء",
+          "partner_settlements": "سداد الشركاء",
+          "partners": "الشركاء",
+          "persons": "الأشخاص",
+          "product_images": "صور المنتجات",
+          "product_reviews": "تقييمات المنتجات",
+          "product_specifications": "مواصفات المنتجات",
+          "products": "المنتجات",
+          "purchase_lines": "سطور الشراء",
+          "purchase_receipts": "إيصالات الاستلام",
+          "purchases": "المشتريات",
+          "recurring_expenses": "المصاريف المتكررة",
+          "retail_expenses": "المصاريف",
+          "role_permissions": "صلاحيات الأدوار",
+          "roles": "الأدوار",
+          "saved_builds": "التجميعات المحفوظة",
+          "sellers": "البايعين",
+          "stock_items": "القطع",
+          "store_orders": "الطلبات",
+          "store_reviews": "تقييمات المتجر",
+          "store_settings": "إعدادات المتجر",
+          "user_accounts": "الحسابات",
+          "user_notifications": "التنبيهات",
+          "user_roles": "أدوار المستخدمين",
+          "warehouses": "المخازن",
+          "warranties": "الضمانات",
+          "warranty_extensions": "مد الضمان",
+          "wishlist_items": "المفضلة"
+        }
       }
     },
     "users": {
@@ -3128,6 +3211,7 @@
       "noRoles": "من غير دور",
       "columns": {
         "name": "المستخدم",
+        "role": "الدور",
         "email": "الإيميل",
         "roles": "الأدوار",
         "status": "الحالة",
@@ -3232,7 +3316,79 @@
           "Requests": "الطلبات الواردة",
           "Audit": "سجل النشاط",
           "System": "النظام"
+        },
+        "labels": {
+          "Audit": {
+            "Restore": "يرجّع قيم قديمة من السجل"
+          },
+          "Catalog": {
+            "View": "يشوف الكتالوج",
+            "ManageProducts": "يضيف ويعدّل القطع والتجميعات",
+            "ManageMedia": "يرفع ويشيل الصور",
+            "ManageTaxonomy": "يعدّل الأقسام ومواصفاتها"
+          },
+          "Customers": {
+            "View": "يشوف العملاء",
+            "Manage": "يدير حسابات العملاء"
+          },
+          "Finance": {
+            "Disburse": "يصرف للشركاء",
+            "ManageExpenses": "يسجل المصاريف",
+            "ManagePartnerAgreements": "يدير الشركاء ونسبهم",
+            "PostPartnerSettlements": "يقفل أرباح الشهر للشركاء",
+            "VerifyPayment": "يأكد الدفع",
+            "ViewReports": "يشوف التقارير والأرباح",
+            "ViewVaults": "يشوف أرصدة الخزنة والحسابات"
+          },
+          "Inventory": {
+            "ManageSerials": "يعدّل السيريالات",
+            "ManageWarehouses": "يدير أماكن التخزين",
+            "StockAdjust": "يعدّل كميات المخزون",
+            "StockCount": "يعمل جرد",
+            "Transfer": "ينقل مخزون",
+            "View": "يشوف المخزون",
+            "ViewCosts": "يشوف سعر الشراء",
+            "ViewSerials": "يشوف السيريالات"
+          },
+          "Purchasing": {
+            "CreateOrder": "يعمل شراء جديد",
+            "ManageSuppliers": "يدير البايعين والموردين",
+            "PostBill": "يسجل فاتورة الشراء",
+            "ReceiveGoods": "يستلم البضاعة",
+            "View": "يشوف المشتريات"
+          },
+          "Requests": {
+            "View": "يشوف الطلبات الواردة",
+            "Manage": "يرد على الطلبات الواردة"
+          },
+          "Sales": {
+            "ApproveOrder": "يأكد الطلبات ويحرّك حالتها",
+            "CompleteOrder": "يقفل الطلب كمكتمل",
+            "CreatePOS": "يبيع من المحل",
+            "FulfillStorePickup": "يسلّم طلبات الاستلام من المحل",
+            "LogCommunication": "يسجل التواصل مع العميل",
+            "OverrideMinimumPrice": "يغيّر سعر البيع ويخصم فوق الحد",
+            "ProcessReturn": "يعمل مرتجع",
+            "ViewCustomerContact": "يشوف تليفون وعنوان العميل",
+            "ViewOrders": "يشوف الطلبات"
+          },
+          "System": {
+            "BackupDownload": "ينزّل النسخ الاحتياطية",
+            "ExecuteAllowlistedAction": "ينفّذ أوامر النظام المسموحة",
+            "ManageBackups": "يدير النسخ الاحتياطي",
+            "ManageUsers": "يدير المستخدمين والأدوار",
+            "Purge": "يمسح نهائي من السلة",
+            "ResetData": "يصفّر الداتا",
+            "StoreSettings": "يعدّل إعدادات المتجر",
+            "Trash": "يشوف السلة ويرجّع منها",
+            "ViewAuditLogs": "يشوف سجل النشاط",
+            "ViewErrorLogs": "يشوف سجل الأخطاء"
+          }
         }
+      },
+      "builtInRoles": {
+        "Owner": "المالك",
+        "Customer": "عميل"
       }
     },
     "system": {
@@ -3284,7 +3440,16 @@
         "download": "تنزيل",
         "downloadTitle": "تنزيل النسخة",
         "downloadBody": "النسخة فيها كل بيانات المتجر. هنطلب منك كود على إيميلك.",
-        "downloaded": "النسخة اتنزلت"
+        "downloaded": "النسخة اتنزلت",
+        "trigger": {
+          "Scheduled": "تلقائي",
+          "Manual": "يدوي",
+          "BeforeReset": "قبل التصفير"
+        },
+        "status": {
+          "Succeeded": "نجحت",
+          "Failed": "فشلت"
+        }
       },
       "export": {
         "title": "تصدير الداتا",
@@ -3345,7 +3510,7 @@
       "retry": "جرّب تاني",
       "conflict": "حد تاني عدّل الإعدادات. بنحدّث الصفحة.",
       "list": {
-        "item": "العنصر {number}",
+        "item": "رقم {number}",
         "up": "طلّع",
         "down": "نزّل",
         "remove": "احذف"
@@ -3510,7 +3675,7 @@
         "warranty": "الضمان",
         "requestReply": "رد على طلب",
         "backInStock": "رجوع للمخزون",
-        "placeholders": "المتغيرات المسموحة: {الاسم} {الموبايل} {القطعة} {الكود} {السعر} {اللينك} {الطلب} — بتتملى لوحدها."
+        "placeholders": "المتغيرات المسموحة: {list} — بتتملى لوحدها."
       },
       "reviews": {
         "title": "التقييمات",

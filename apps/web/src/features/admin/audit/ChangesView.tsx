@@ -14,10 +14,12 @@ import { AuditEntryDetail } from "./AuditEntryDetail";
 import type { AuditEntry } from "./audit-api";
 import { fetchAuditFilters, fetchEntries } from "./audit-api";
 import { shortId, type AuditSet, type AuditValues } from "./audit-rules";
+import { useAuditLabels } from "./use-audit-labels";
 
 /** The data-change log: filters, the paged table and the picked entry below it. */
 export function ChangesView({ values, set }: { values: AuditValues; set: AuditSet }) {
   const t = useTranslations("admin.audit");
+  const labels = useAuditLabels();
   const locale = useLocale();
   const page = pageNumber(values.page);
   const filters = useLoad(useCallback(() => fetchAuditFilters(), []));
@@ -49,21 +51,21 @@ export function ChangesView({ values, set }: { values: AuditValues; set: AuditSe
     {
       key: "who", header: t("columns.who"), cell: (entry) => (
         <span className="flex flex-col gap-0.5">
-          <span>{entry.actorName ?? entry.actorKind}</span>
-          {entry.actorName ? <span dir="ltr" className="font-mono text-[11px] text-ink-muted">{entry.actorKind}</span> : null}
+          <span>{entry.actorName ?? labels.actor(entry.actorKind)}</span>
+          {entry.actorName ? <span className="text-[11px] text-ink-muted">{labels.actor(entry.actorKind)}</span> : null}
         </span>
       )
     },
-    { key: "module", header: t("columns.module"), cell: (entry) => <span dir="ltr" className="block max-w-32 break-words font-mono text-xs">{entry.module}</span> },
+    { key: "module", header: t("columns.module"), cell: (entry) => <span className="block max-w-32 break-words text-xs">{labels.module(entry.module)}</span> },
     {
       key: "entity", header: t("columns.entity"), cell: (entry) => (
         <span className="flex min-w-0 flex-col gap-0.5" title={entry.entityId}>
-          <span dir="ltr" className="break-words font-mono text-xs">{entry.entity}</span>
+          <span className="break-words text-xs">{labels.entity(entry.entity)}</span>
           <span dir="ltr" className="font-mono text-[11px] text-ink-muted">{shortId(entry.entityId)}</span>
         </span>
       )
     },
-    { key: "action", header: t("columns.action"), cell: (entry) => <span dir="ltr" className="inline-block whitespace-nowrap rounded-[4px] border border-input-line bg-surface px-2 py-[3px] font-mono text-[11px] font-bold">{entry.action}</span> }
+    { key: "action", header: t("columns.action"), cell: (entry) => <span dir="ltr" className="inline-block whitespace-nowrap rounded-[4px] border border-input-line bg-surface px-2 py-[3px] text-[11px] font-bold">{labels.action(entry.action)}</span> }
   ];
 
   return (
@@ -71,15 +73,15 @@ export function ChangesView({ values, set }: { values: AuditValues; set: AuditSe
       <FilterBar>
         <FilterSelect
           label={t("filters.module")} value={values.module} onChange={(module) => set({ module, entry: "" })}
-          options={[{ value: "", label: t("filters.all") }, ...options.modules.map((module) => ({ value: module, label: module }))]}
+          options={[{ value: "", label: t("filters.all") }, ...options.modules.map((module) => ({ value: module, label: labels.module(module) }))]}
         />
         <FilterSelect
           label={t("filters.entity")} value={values.entity} onChange={(entity) => set({ entity, entry: "" })}
-          options={[{ value: "", label: t("filters.all") }, ...options.entities.map((entity) => ({ value: entity, label: entity }))]}
+          options={[{ value: "", label: t("filters.all") }, ...options.entities.map((entity) => ({ value: entity, label: labels.entity(entity) }))]}
         />
         <FilterSelect
           label={t("filters.action")} value={values.action} onChange={(action) => set({ action, entry: "" })}
-          options={[{ value: "", label: t("filters.all") }, ...options.actions.map((action) => ({ value: action, label: action }))]}
+          options={[{ value: "", label: t("filters.all") }, ...options.actions.map((action) => ({ value: action, label: labels.action(action) }))]}
         />
         <div className="w-36"><TextField label={t("filters.from")} name="from" type="date" ltr value={values.from} onChange={(from) => set({ from, entry: "" })} /></div>
         <div className="w-36"><TextField label={t("filters.to")} name="to" type="date" ltr value={values.to} onChange={(to) => set({ to, entry: "" })} /></div>
