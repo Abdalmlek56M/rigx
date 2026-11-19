@@ -35,7 +35,7 @@ function AddressCard({ address, onEdit, onDefault, onDelete }: { address: Addres
       <div className="-mx-3 flex flex-wrap items-center">
         <button type="button" onClick={onEdit} className={actionClass}>{t("edit")}</button>
         {address.isDefault ? null : <button type="button" onClick={onDefault} className={actionClass}>{t("setDefault")}</button>}
-        <ConfirmButton label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={onDelete} />
+        <ConfirmButton iconOnly label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={onDelete} />
       </div>
     </li>
   );

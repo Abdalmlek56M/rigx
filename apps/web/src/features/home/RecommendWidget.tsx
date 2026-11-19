@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BUDGETS, type Budget } from "@/features/builds/build-query";
 import { BookIcon, BroadcastIcon, CheckIcon, FilmIcon, GamepadIcon, WhatsAppIcon } from "@/components/ui/icons";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { USAGES, type Usage } from "@/lib/usage";
 
 const chip = "chip inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-input-line bg-surface px-4 text-sm font-medium";
@@ -65,7 +65,7 @@ export function RecommendWidget({ whatsApp }: { whatsApp: { number: string; temp
         </div>
       </fieldset>
       <a
-        href={whatsAppUrl(whatsApp.number, text)}
+        {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)}
         className="press mt-1 flex h-[50px] items-center gap-2 self-start rounded-full bg-whatsapp px-6 font-bold text-white shadow-[0_10px_24px_-10px_rgba(31,168,85,.6)] transition-[filter] hover:brightness-105"
       >
         <WhatsAppIcon size={20} />

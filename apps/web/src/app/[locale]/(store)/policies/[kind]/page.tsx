@@ -8,7 +8,7 @@ import { POLICY_KINDS, policyApiKind } from "@/features/policies/policy-body";
 import { PolicyBody } from "@/features/policies/PolicyBody";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppNumber, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { loadStorefront } from "@/lib/storefront";
 import { pageSeo } from "@/lib/seo/page-seo";
@@ -72,7 +72,7 @@ export default async function PolicyPage({ params }: Props) {
         {number ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span className="font-bold">{t("helpTitle")}</span>
-            <a href={whatsAppUrl(number, helpText)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
+            <a {...NEW_TAB} href={whatsAppUrl(number, helpText)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
               <WhatsAppIcon size={16} />
               {t("helpLink")}
             </a>

@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { WhatsAppIcon } from "@/components/ui/icons";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 
 export interface OrderWhatsApp {
   /** Store WhatsApp number (digits); none = no link. */
@@ -16,7 +16,7 @@ export function OrderWhatsAppLink({ whatsApp, reference, label, className }: { w
   const text = fillTemplate(whatsApp.template, { order: reference }) || t("whatsAppMessage", { reference });
 
   return (
-    <a href={whatsAppUrl(whatsApp.number, text)} className={className}>
+    <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)} className={className}>
       <WhatsAppIcon size={18} />
       {label}
     </a>

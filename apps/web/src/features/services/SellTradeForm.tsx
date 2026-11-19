@@ -8,18 +8,16 @@ import { isEgyptMobile } from "@/features/requests/request-fields";
 import { addPhotos, MAX_PHOTOS, PHOTO_TYPES, type PhotoProblem } from "@/features/requests/request-photos";
 import { submitRequest, type SubmitOutcome } from "@/features/requests/submit-request";
 import { uploadRequestPhotos } from "@/features/requests/upload-photos";
-import { PART_TYPES, SELL_WANTS, type PartType, type SellWant } from "./services-data";
-import { CloseIcon } from "@/components/ui/icons";
+import { MAX_PARTS, PART_CONDITIONS, PART_TYPES, SELL_WANTS, describeParts, type OfferedPart, type SellWant } from "./services-data";
+import { CloseIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
 
-type Errors = Partial<Record<"name" | "phone" | "model", string>>;
+type Errors = Partial<Record<"name" | "phone", string>> & { models?: number[] };
 type Result = { outcome: SubmitOutcome; photosFailed: number };
 
-/** "بيع أو بدّل": sell or trade in a part. The request goes first; its photos follow with the upload token from the receipt. */
+/** "بيع أو بدّل": sell or trade in one part or several (type, model, condition each). The request goes first; its photos follow with the upload token from the receipt. */
 export function SellTradeForm() {
   const t = useTranslations("services.sell.form");
-  const [partType, setPartType] = useState<PartType>(PART_TYPES[0]);
-  const [model, setModel] = useState("");
-  const [ownedFor, setOwnedFor] = useState("");
+  const [parts, setParts] = useState<(OfferedPart & { key: number })[]>([newPart(0)]);
   const [want, setWant] = useState<SellWant>(SELL_WANTS[0]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,21 +34,38 @@ export function SellTradeForm() {
     event.target.value = "";
   }
 
+  const updatePart = (key: number, fields: Partial<OfferedPart>) =>
+    setParts((current) => current.map((part) => (part.key === key ? { ...part, ...fields } : part)));
+  const addPart = () => setParts((current) => (current.length >= MAX_PARTS ? current : [...current, newPart(Math.max(...current.map((part) => part.key)) + 1)]));
+  const removePart = (key: number) => setParts((current) => (current.length > 1 ? current.filter((part) => part.key !== key) : current));
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     const found: Errors = {};
     if (name.trim().length < 2) found.name = t("errors.name");
-    if (!model.trim()) found.model = t("errors.model");
+    const missing = parts.flatMap((part, index) => (part.model.trim() ? [] : [index]));
+    if (missing.length > 0) found.models = missing;
     if (!isEgyptMobile(phone)) found.phone = t("errors.phone");
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) {
+      const form = event.currentTarget;
+      requestAnimationFrame(() => form.querySelector<HTMLElement>("[aria-invalid=true]")?.focus());
+      return;
+    }
     setBusy(true);
+    const described = describeParts(parts, {
+      type: (type) => t(`partTypes.${type}`),
+      condition: (condition) => t(`conditions.${condition}`),
+      ownedFor: (value) => t("ownedForLine", { value })
+    });
+    const single = parts.length === 1 ? (parts[0]?.ownedFor.trim() ?? "") : "";
     const outcome = await submitRequest(want, {
       name: name.trim(),
       phone: phone.trim(),
-      modelName: model.trim(),
-      ownedFor: ownedFor.trim() || null,
-      partType: t(`partTypes.${partType}`)
+      modelName: described.modelName,
+      partType: described.partType,
+      ownedFor: single || null,
+      message: described.message
     });
     const upload = outcome.status === "sent" && outcome.photoUploadToken && photos.length > 0
       ? await uploadRequestPhotos(outcome.photoUploadToken, photos)
@@ -76,12 +91,72 @@ export function SellTradeForm() {
       noValidate
       className="grid flex-1 basis-[480px] grid-cols-1 gap-3.5 rounded-panel bg-paper p-6 text-ink sm:grid-cols-2 md:p-7"
     >
-      <SelectField
-        label={t("partType")} name="partType" value={partType} onChange={setPartType}
-        options={PART_TYPES.map((value) => ({ value, label: t(`partTypes.${value}`) }))}
-      />
-      <TextField label={t("model")} name="model" value={model} onChange={setModel} placeholder={t("modelPlaceholder")} required error={errors.model ?? null} />
-      <TextField label={t("ownedFor")} name="ownedFor" value={ownedFor} onChange={setOwnedFor} placeholder={t("ownedForPlaceholder")} />
+      <fieldset className="m-0 flex flex-col gap-3 border-0 p-0 sm:col-span-2">
+        <legend className="mb-1 text-[15px] font-bold">{t("parts")}</legend>
+        {parts.map((part, index) => (
+          <div key={part.key} className="part-row flex flex-col gap-3 rounded-card border border-line bg-surface p-4">
+            <div className="flex min-h-8 items-center justify-between gap-3">
+              <b className="text-sm">{t("partNumber", { number: index + 1 })}</b>
+              {parts.length > 1 ? (
+                <button
+                  type="button"
+                  aria-label={t("removePart", { number: index + 1 })}
+                  onClick={() => removePart(part.key)}
+                  className="press flex h-9 w-9 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-error hover:text-error"
+                >
+                  <TrashIcon size={16} />
+                </button>
+              ) : null}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <SelectField
+                label={t("partType")} name={`partType-${part.key}`} value={part.type} onChange={(type) => updatePart(part.key, { type })}
+                options={PART_TYPES.map((value) => ({ value, label: t(`partTypes.${value}`) }))}
+              />
+              <TextField
+                label={t("model")} name={`model-${part.key}`} value={part.model} onChange={(model) => updatePart(part.key, { model })}
+                placeholder={t("modelPlaceholder")} autoComplete="off" required error={errors.models?.includes(index) ? t("errors.model") : null}
+              />
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-bold">{t("condition")}</span>
+                <div role="radiogroup" aria-label={t("condition")} className="grid h-12 grid-cols-2 gap-1 rounded-control border border-input-line bg-surface p-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange">
+                  {PART_CONDITIONS.map((condition) => (
+                    <label key={condition} className="flex cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`condition-${part.key}`}
+                        value={condition}
+                        checked={part.condition === condition}
+                        onChange={() => updatePart(part.key, { condition })}
+                        className="peer sr-only"
+                      />
+                      <span className="flex flex-1 items-center justify-center rounded-[7px] text-sm font-bold text-ink-muted transition-colors peer-checked:bg-carbon peer-checked:text-on-carbon">
+                        {t(`conditions.${condition}`)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <TextField
+                label={t("ownedFor")} name={`ownedFor-${part.key}`} value={part.ownedFor} onChange={(ownedFor) => updatePart(part.key, { ownedFor })}
+                placeholder={t("ownedForPlaceholder")}
+              />
+            </div>
+          </div>
+        ))}
+        {parts.length < MAX_PARTS ? (
+          <button
+            type="button"
+            onClick={addPart}
+            className="press flex h-12 items-center justify-center gap-2 rounded-control border-2 border-dashed border-input-line text-sm font-bold transition-colors hover:border-orange hover:text-orange-text"
+          >
+            <PlusIcon size={18} />
+            {t("addPart")}
+          </button>
+        ) : (
+          <span className="text-xs text-ink-muted">{t("maxParts", { max: MAX_PARTS })}</span>
+        )}
+      </fieldset>
       <SelectField
         label={t("want")} name="want" value={want} onChange={setWant}
         options={SELL_WANTS.map((value) => ({ value, label: t(`wants.${value}`) }))}
@@ -127,4 +202,8 @@ export function SellTradeForm() {
       </button>
     </form>
   );
+}
+
+function newPart(key: number): OfferedPart & { key: number } {
+  return { key, type: PART_TYPES[0], model: "", condition: "Used", ownedFor: "" };
 }

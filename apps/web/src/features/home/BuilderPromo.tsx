@@ -13,7 +13,7 @@ const SLOTS = [
 export function BuilderPromo() {
   const t = useTranslations("home.builderPromo");
   return (
-    <div className="relative flex flex-1 basis-[420px] flex-col gap-4 overflow-hidden rounded-panel bg-carbon p-6 text-on-carbon md:p-8">
+    <div className="relative flex flex-1 basis-[420px] flex-col gap-4 overflow-hidden rounded-panel border border-feature-line bg-feature p-6 text-on-carbon md:p-8">
       <div className="flex flex-col gap-1">
         <h2 className="m-0 text-[28px] font-bold">{t("title")}</h2>
         <p className="m-0 text-[15px] text-orange">{t("eyebrow")}</p>

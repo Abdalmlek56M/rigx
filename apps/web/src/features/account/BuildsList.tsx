@@ -53,7 +53,7 @@ export function BuildsList() {
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4">
                       <Link href={`/builder?saved=${encodeURIComponent(build.token)}`} className="inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover">{t("open")}</Link>
-                      <ConfirmButton label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={() => void remove(build.token)} />
+                      <ConfirmButton iconOnly label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={() => void remove(build.token)} />
                     </div>
                   </li>
                 );

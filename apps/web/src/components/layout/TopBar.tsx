@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Platform, contactHref, displayPhone, findLink } from "@/lib/contact";
+import { Platform, contactLinkProps, displayPhone, findLink } from "@/lib/contact";
 import type { StorefrontData } from "@/lib/storefront";
 
 /** Slim graphite strip above the header: the announcement and the WhatsApp number. */
@@ -15,7 +15,7 @@ export async function TopBar({ storefront }: { storefront: StorefrontData }) {
           {storefront.announcementText ?? t("defaultAnnouncement")}
         </span>
         {whatsApp ? (
-          <a href={contactHref(whatsApp)} className="max-sm:hidden transition-colors hover:text-on-carbon">
+          <a {...contactLinkProps(whatsApp)} className="max-sm:hidden transition-colors hover:text-on-carbon">
             {t("whatsApp")} <span className="ltr-text">{displayPhone(whatsApp.value)}</span>
           </a>
         ) : null}

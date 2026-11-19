@@ -79,7 +79,7 @@ function TrackCard({ order }: { order: PlacedOrder }) {
   const session = useSession();
 
   return (
-    <section className="flex flex-col gap-3 rounded-card bg-carbon p-5 text-on-carbon md:p-6">
+    <section className="flex flex-col gap-3 rounded-card border border-feature-line bg-feature p-5 text-on-carbon md:p-6">
       <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
       {session.status === "signedOut" ? <p className="m-0 text-sm leading-7 text-footer-text">{t("accountHint")}</p> : null}
       <Link href={`/t/${order.trackingToken}`} className="flex h-12 items-center justify-center rounded-control bg-orange font-bold text-on-orange">

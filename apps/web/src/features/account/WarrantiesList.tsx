@@ -6,7 +6,7 @@ import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { ShieldIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { fetchInvoices, fetchWarranties } from "./account-api";
 import { invoiceTokenFor, warrantyStatusKey, WARRANTY_BADGE } from "./account-labels";
@@ -54,7 +54,7 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
       <div className="flex flex-wrap gap-x-5">
         {invoiceToken ? <Link href={`/i/${invoiceToken}`} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>{t("invoice")}</Link> : null}
         {whatsApp.number ? (
-          <a href={whatsAppUrl(whatsApp.number, text)} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>
+          <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>
             <WhatsAppIcon size={16} />
             {t("problem")}
           </a>

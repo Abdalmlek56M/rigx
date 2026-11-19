@@ -105,6 +105,9 @@
     "home": "RIGX home",
     "navLabel": "Categories",
     "allCategories": "All categories",
+    "seeAll": "See all {name}",
+    "conditionNew": "New {name}",
+    "conditionUsed": "Used {name}",
     "used": "Used",
     "new": "New",
     "builds": "Builds",
@@ -371,7 +374,10 @@
       "Editing": "Start from an editing build"
     },
     "opening": "Opening your build...",
-    "noSlots": "The builder isn't available right now.",
+    "noSlots": "The builder isn't available right now",
+    "noSlotsBody": "We're getting the parts ready. Until then, message us on WhatsApp and we'll put the PC together for you, or browse the ready builds.",
+    "noSlotsWhatsApp": "Message us on WhatsApp",
+    "noSlotsBuilds": "See ready builds",
     "loadFailed": "We can't open the builder right now. Please try again in a moment.",
     "openFailed": "That link doesn't work, so we started from an empty build.",
     "unmatched": "We couldn't find these parts available in the same model right now. Pick a replacement:",
@@ -549,8 +555,26 @@
           "gpu": "Graphics card",
           "cpu": "Processor",
           "board": "Motherboard",
+          "ram": "Memory",
+          "storage": "Hard drive or SSD",
+          "psu": "Power supply",
+          "case": "Case",
+          "cooling": "Cooling",
+          "monitor": "Monitor",
+          "accessory": "Accessory",
           "pc": "Full PC"
         },
+        "parts": "Parts",
+        "partNumber": "Part {number}",
+        "condition": "Condition",
+        "conditions": {
+          "New": "New",
+          "Used": "Used"
+        },
+        "addPart": "Add another part",
+        "removePart": "Remove part {number}",
+        "maxParts": "Up to {max} parts per request.",
+        "ownedForLine": "owned for {value}",
         "model": "Model",
         "modelPlaceholder": "e.g. GTX 1660 Super",
         "ownedFor": "How long have you had it? · optional",
@@ -582,41 +606,6 @@
           "failed": "Something went wrong. Please try again in a moment."
         }
       }
-    },
-    "soon": {
-      "title": "Coming soon",
-      "subtitle": "Sign up and we'll tell you when they start.",
-      "badge": "Soon",
-      "business": {
-        "title": "Business and bulk orders",
-        "body": "PCs for an office, a center or a lab, with one quote and an invoice.",
-        "cta": "Register your interest"
-      },
-      "wholesale": {
-        "title": "Wholesale for traders",
-        "body": "Parts in quantity for shops and resellers, at wholesale prices.",
-        "cta": "Register your interest"
-      },
-      "branch": {
-        "title": "RIGX branch in Alexandria",
-        "body": "A place to inspect parts, collect orders and get maintenance.",
-        "cta": "Tell me when it opens"
-      }
-    }
-  },
-  "interest": {
-    "title": "Register your interest",
-    "name": "Name",
-    "phone": "Mobile / WhatsApp number",
-    "submit": "Register me",
-    "note": "We'll call this number as soon as the service starts.",
-    "sent": "Done. We'll call the number you entered as soon as {subject} starts.",
-    "message": "I'd like to know as soon as this starts: {subject}",
-    "errors": {
-      "name": "Enter your name",
-      "phone": "Enter a valid Egyptian mobile number",
-      "invalid": "Please check the details and try again.",
-      "failed": "Something went wrong. Please try again in a moment."
     }
   },
   "auth": {

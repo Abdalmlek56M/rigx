@@ -19,6 +19,22 @@ export const SOCIAL_PLATFORMS = [
   Platform.YouTube
 ] as const;
 
+/** Spread on any link that leaves the store (WhatsApp, social): it opens in a new tab so the store page stays open. */
+export const NEW_TAB = { target: "_blank", rel: "noopener noreferrer" } as const;
+
+/** Link props for a contact: phone calls stay in place, everything else opens in a new tab. */
+export function contactLinkProps(link: ContactLink) {
+  return link.platform === Platform.Phone ? { href: contactHref(link) } : { href: contactHref(link), ...NEW_TAB };
+}
+
+/** The phone link, unless it is the same number as WhatsApp (then WhatsApp alone stands for both). */
+export function distinctPhone(links: ContactLink[]): ContactLink | undefined {
+  const phone = findLink(links, Platform.Phone);
+  const whatsApp = findLink(links, Platform.WhatsApp);
+  const digits = (link?: ContactLink) => link?.value.replace(/\D/g, "") ?? "";
+  return phone && digits(phone) !== digits(whatsApp) ? phone : undefined;
+}
+
 const EGYPT_CODE = "20";
 
 /** Numbers are stored as international digits (e.g. 201289186840); links hold a URL. */

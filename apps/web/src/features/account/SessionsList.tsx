@@ -46,7 +46,7 @@ export function SessionsList() {
                     <span className="text-sm text-ink-muted">{t("lastActive")} {formatDateTime(session.lastActivityAtUtc, locale)}</span>
                   </div>
                   {session.isCurrent ? null : (
-                    <ConfirmButton label={t("signOut")} icon={<LogoutIcon size={16} />} onConfirm={() => void run(() => unwrap(browserApi().DELETE("/api/v1/identity/sessions/{id}", { params: { path: { id: session.id } } })))} />
+                    <ConfirmButton iconOnly label={t("signOut")} icon={<LogoutIcon size={16} />} onConfirm={() => void run(() => unwrap(browserApi().DELETE("/api/v1/identity/sessions/{id}", { params: { path: { id: session.id } } })))} />
                   )}
                 </li>
               ))}

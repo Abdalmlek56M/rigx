@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ComingSoon } from "@/features/services/ComingSoon";
 import { SellTradeForm } from "@/features/services/SellTradeForm";
 import { ServiceCard } from "@/features/services/ServiceCard";
 import { SERVICES } from "@/features/services/services-data";
@@ -33,7 +32,6 @@ export default async function ServicesPage({ params }: Props) {
   return (
     <>
       <section className="flex shell flex-col gap-4 pb-10 pt-12 md:pt-16">
-        <span dir="ltr" className="font-mono text-[13px] font-semibold tracking-[2px] text-orange-text">RIGX SERVICES</span>
         <h1 className="m-0 text-[34px] leading-[1.2] font-bold md:text-[54px]">
           {t("hero.line1")}
           <br />
@@ -46,7 +44,7 @@ export default async function ServicesPage({ params }: Props) {
           <ServiceCard key={service.id} service={service} whatsApp={whatsApp} />
         ))}
       </section>
-      <section className="bg-carbon text-on-carbon">
+      <section id="sell" className="scroll-mt-24 border-y border-feature-line bg-feature text-on-carbon">
         <div className="flex shell flex-wrap gap-12 py-14 md:py-16">
           <div className="flex flex-1 basis-[340px] flex-col gap-3.5">
             <span className="text-[13px] font-bold text-orange">{t("sell.eyebrow")}</span>
@@ -61,7 +59,6 @@ export default async function ServicesPage({ params }: Props) {
           <SellTradeForm />
         </div>
       </section>
-      <ComingSoon />
     </>
   );
 }

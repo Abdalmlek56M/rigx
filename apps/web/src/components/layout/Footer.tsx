@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { publishedPolicySlugs } from "@/features/policies/published-policies";
-import { Platform, SOCIAL_PLATFORMS, contactHref, displayPhone, findLink } from "@/lib/contact";
+import { Platform, SOCIAL_PLATFORMS, contactLinkProps, displayPhone, distinctPhone, findLink } from "@/lib/contact";
 import type { StorefrontData } from "@/lib/storefront";
 import { PlatformIcon } from "./PlatformIcon";
 
@@ -17,9 +17,12 @@ const contactIconClass =
 /** Dark footer (both themes): brand, shop links, help (only published policies + FAQ), contact. */
 export async function Footer({ storefront }: { storefront: StorefrontData }) {
   const [t, tp, policies] = await Promise.all([getTranslations("footer"), getTranslations("policies.kinds"), publishedPolicySlugs()]);
-  const social = storefront.contactLinks.filter((l) => l.showOnSite && (SOCIAL_PLATFORMS as readonly string[]).includes(l.platform));
+  // WhatsApp has its own row under "تواصل معنا", so the social icons skip it (one number, one entry).
+  const social = storefront.contactLinks.filter(
+    (l) => l.showOnSite && l.platform !== Platform.WhatsApp && (SOCIAL_PLATFORMS as readonly string[]).includes(l.platform)
+  );
   const whatsApp = findLink(storefront.contactLinks, Platform.WhatsApp);
-  const phone = findLink(storefront.contactLinks, Platform.Phone);
+  const phone = distinctPhone(storefront.contactLinks);
 
   const shop = [
     { href: "/products", label: t("allProducts") },
@@ -45,12 +48,10 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
           {social.length > 0 ? (
             <div className="flex flex-wrap gap-2 pt-1">
               {social.map((link) => {
-                const external = link.platform !== Platform.WhatsApp;
                 return (
                   <a
                     key={link.platform}
-                    href={contactHref(link)}
-                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    {...contactLinkProps(link)}
                     aria-label={t(`platforms.${link.platform as (typeof SOCIAL_PLATFORMS)[number]}`)}
                     className="press flex h-11 w-11 items-center justify-center rounded-full border border-footer-line text-on-carbon transition-colors hover:border-orange hover:text-orange"
                   >
@@ -79,13 +80,13 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
         <div className="col-span-2 flex flex-col gap-1 lg:col-span-1">
           <h2 className={`${headingClass} mb-2`}>{t("contact")}</h2>
           {whatsApp ? (
-            <a href={contactHref(whatsApp)} className={contactClass}>
+            <a {...contactLinkProps(whatsApp)} className={contactClass}>
               <span className={contactIconClass}><WhatsAppIcon size={18} /></span>
               <span className="ltr-text">{displayPhone(whatsApp.value)}</span>
             </a>
           ) : null}
           {phone ? (
-            <a href={contactHref(phone)} className={contactClass}>
+            <a {...contactLinkProps(phone)} className={contactClass}>
               <span className={contactIconClass}><PhoneIcon size={18} /></span>
               <span className="ltr-text">{displayPhone(phone.value)}</span>
             </a>

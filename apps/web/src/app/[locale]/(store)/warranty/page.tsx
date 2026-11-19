@@ -9,7 +9,7 @@ import { WarrantyResults } from "@/features/warranty/WarrantyResults";
 import { WarrantySearchForm } from "@/features/warranty/WarrantySearchForm";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppNumber, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
 import { pageSeo } from "@/lib/seo/page-seo";
 
@@ -62,7 +62,7 @@ export default async function WarrantyPage({ params, searchParams }: Props) {
         <div className="flex flex-wrap items-center gap-x-6">
           <Link href="/policies/warranty" className={help}>{t("policy")}</Link>
           {number ? (
-            <a href={whatsAppUrl(number, helpText)} className={help}>
+            <a {...NEW_TAB} href={whatsAppUrl(number, helpText)} className={help}>
               <WhatsAppIcon size={16} />
               {t("helpLink")}
             </a>

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { FaqList, type FaqEntry } from "@/components/ui/FaqList";
+import { NEW_TAB } from "@/lib/contact";
 
 /** "قبل ما تشتري، اسأل براحتك": the general FAQs; the WhatsApp link only when the store has a number. */
 export async function FaqSection({ entries, whatsAppHref }: { entries: FaqEntry[]; whatsAppHref: string | null }) {
@@ -14,7 +15,7 @@ export async function FaqSection({ entries, whatsAppHref }: { entries: FaqEntry[
           {whatsAppHref
             ? t.rich("body", {
                 link: (chunks) => (
-                  <a href={whatsAppHref} className="text-orange-text underline hover:text-orange-text-hover">
+                  <a {...NEW_TAB} href={whatsAppHref} className="text-orange-text underline hover:text-orange-text-hover">
                     {chunks}
                   </a>
                 )

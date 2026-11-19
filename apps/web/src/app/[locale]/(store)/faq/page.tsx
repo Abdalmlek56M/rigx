@@ -7,7 +7,7 @@ import { FaqList } from "@/components/ui/FaqList";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { loadFaqPage } from "@/features/faq/load-faq-page";
 import { routing } from "@/i18n/routing";
-import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppNumber, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
 import { pageSeo } from "@/lib/seo/page-seo";
 import { faqJsonLd } from "@/lib/seo/structured-data";
@@ -52,7 +52,7 @@ export default async function FaqPage({ params }: Props) {
       {number ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-card border border-line bg-surface p-5">
           <span className="font-bold">{t("moreTitle")}</span>
-          <a href={whatsAppUrl(number, text)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
+          <a {...NEW_TAB} href={whatsAppUrl(number, text)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
             <WhatsAppIcon size={16} />
             {t("moreLink")}
           </a>

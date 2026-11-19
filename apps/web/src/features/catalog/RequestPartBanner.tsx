@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 export function RequestPartBanner() {
   const t = useTranslations("catalog.banner");
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-card bg-carbon px-7 py-6 text-on-carbon">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-feature-line bg-feature px-7 py-6 text-on-carbon">
       <div className="flex flex-col gap-1">
         <span className="text-lg font-bold">{t("title")}</span>
         <span className="text-sm text-footer-text">{t("body")}</span>

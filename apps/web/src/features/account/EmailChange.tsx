@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { STEP_UP_HEADER, unwrap } from "@rigx/api-client";
+import { PencilIcon } from "@/components/ui/icons";
 import { TextField } from "@/components/ui/TextField";
 import { browserApi } from "@/lib/api/browser";
 import { isEmail } from "@/features/requests/request-fields";
@@ -36,7 +37,15 @@ export function EmailChange({ email }: { email: string }) {
           <span dir="ltr" className="text-start text-sm">{email}</span>
         </div>
         {step === "closed" || step === "done" ? (
-          <button type="button" onClick={() => { setNext(""); setStep("email"); }} className="inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover">{t("change")}</button>
+          <button
+            type="button"
+            aria-label={t("change")}
+            data-tip={t("change")}
+            onClick={() => { setNext(""); setStep("email"); }}
+            className="tip press flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-orange hover:text-orange-text"
+          >
+            <PencilIcon size={16} />
+          </button>
         ) : null}
       </div>
       {step === "done" ? <p role="status" className="m-0 text-sm text-success">{t("sent")}</p> : null}

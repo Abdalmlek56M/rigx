@@ -38,7 +38,7 @@ export default async function LoginPage({ params, searchParams }: Props) {
           <LoginFlow next={Array.isArray(next) ? next[0] : next} />
         </div>
       </div>
-      <aside className="relative hidden min-h-[520px] flex-col justify-end gap-6 overflow-hidden rounded-panel bg-carbon p-10 text-on-carbon lg:flex">
+      <aside className="relative hidden min-h-[520px] flex-col justify-end gap-6 overflow-hidden rounded-panel border border-feature-line bg-feature p-10 text-on-carbon lg:flex">
         <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -end-16 -top-16 h-[420px] w-[420px] text-orange opacity-90">
           <polygon points="70,0 100,0 30,100 0,100" fill="currentColor" />
           <polygon points="0,0 30,0 100,100 70,100" fill="currentColor" opacity="0.18" />

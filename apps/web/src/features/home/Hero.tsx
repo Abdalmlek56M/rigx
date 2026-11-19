@@ -7,7 +7,7 @@ function PathTile({ href, icon, title, body, dark = false }: { href: string; ico
   return (
     <Link
       href={href}
-      className={`path-tile lift press group flex min-h-[148px] flex-col justify-between gap-4 rounded-card border p-5 ${dark ? "border-carbon bg-carbon text-on-carbon" : "border-line bg-surface"}`}
+      className={`path-tile lift press group flex min-h-[148px] flex-col justify-between gap-4 rounded-card border p-5 ${dark ? "border-feature-line bg-feature text-on-carbon" : "border-line bg-surface"}`}
     >
       <span className="flex items-start justify-between gap-3">
         <span className={`flex h-11 w-11 items-center justify-center rounded-full ${dark ? "bg-orange text-on-orange" : "bg-orange-soft text-orange-text"}`}>{icon}</span>

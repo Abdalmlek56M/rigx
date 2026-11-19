@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { WhatsAppIcon } from "@/components/ui/icons";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { textList, type ServiceDef } from "./services-data";
 
 interface ServiceCardProps {
@@ -8,19 +9,18 @@ interface ServiceCardProps {
   whatsApp: { number: string | null; template: string };
 }
 
-/** One service: code and price, what it is, its steps, and a button that opens WhatsApp with a prefilled line. */
+/** One service: title and price, what it is, its steps, and a button that opens WhatsApp (new tab) with a prefilled line. */
 export function ServiceCard({ service, whatsApp }: ServiceCardProps) {
   const t = useTranslations(`services.items.${service.id}`);
   const dark = service.tone === "dark";
   const text = [fillTemplate(whatsApp.template, {}), t("message")].filter(Boolean).join("\n");
 
   return (
-    <article className={`flex flex-col gap-3.5 rounded-panel border p-7 ${dark ? "border-carbon bg-carbon text-on-carbon" : "border-line bg-surface"}`}>
-      <div className="flex items-center justify-between gap-3">
-        <span dir="ltr" className={`font-mono text-[13px] font-semibold ${dark ? "text-orange" : "text-orange-text"}`}>{service.code}</span>
-        <span className="text-end text-[13px] opacity-75">{t("price")}</span>
+    <article id={`service-${service.id}`} className={`flex scroll-mt-28 flex-col gap-3.5 rounded-panel border p-7 ${dark ? "border-feature-line bg-feature text-on-carbon" : "border-line bg-surface"}`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="m-0 text-2xl font-bold">{t("title")}</h2>
+        <span className={`rounded-full px-3 py-1 text-[13px] font-bold ${dark ? "bg-orange/15 text-orange" : "bg-orange-soft text-orange-text"}`}>{t("price")}</span>
       </div>
-      <h2 className="m-0 text-2xl font-bold">{t("title")}</h2>
       <p className="m-0 text-[15px] leading-[1.75] opacity-85">{t("body")}</p>
       <ol className="m-0 ps-5 text-sm leading-[1.9] opacity-85">
         {textList(t.raw("steps")).map((step) => (
@@ -29,9 +29,10 @@ export function ServiceCard({ service, whatsApp }: ServiceCardProps) {
       </ol>
       {whatsApp.number ? (
         <a
-          href={whatsAppUrl(whatsApp.number, text)}
-          className={`mt-auto inline-flex h-12 items-center self-start rounded-control px-[22px] font-bold ${dark ? "bg-orange text-on-orange" : "bg-carbon text-on-carbon"}`}
+          {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)}
+          className={`press mt-auto inline-flex h-12 items-center gap-2 self-start rounded-full px-6 font-bold transition-[filter] hover:brightness-110 ${dark ? "bg-orange text-on-orange" : "bg-carbon text-on-carbon"}`}
         >
+          <WhatsAppIcon size={18} />
           {t("cta")}
         </a>
       ) : null}

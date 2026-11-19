@@ -7,6 +7,9 @@
   --carbon: #121418;
   /* Footer and top strip: graphite in both themes. */
   --chrome: #121418;
+  /* Big dark feature panels (builder promo, sell form, banners): graphite on the light page, one step above the surface in dark. */
+  --feature: #121418;
+  --feature-line: #121418;
   --ink: #121418;
   --ink-muted: #4f535a;
   --line: #e3e2dd;
@@ -37,6 +40,8 @@
   /* Lifted graphite in dark mode, so "selected" fills and dark cards stand out from the page. */
   --carbon: #2c3037;
   --chrome: #08090b;
+  --feature: #1c1f24;
+  --feature-line: #30343b;
   --ink: #eceae5;
   --ink-muted: #a9abb0;
   --line: #2a2d33;
@@ -58,6 +63,8 @@
   --color-surface: var(--surface);
   --color-carbon: var(--carbon);
   --color-chrome: var(--chrome);
+  --color-feature: var(--feature);
+  --color-feature-line: var(--feature-line);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-line: var(--line);
@@ -255,6 +262,71 @@ body {
     opacity: 0;
     transform: translateY(var(--pop-y, -4px)) scale(0.97);
   }
+}
+
+/* Hover tip for icon-only buttons (`.tip` + `data-tip`): appears above the button after a short rest, pointer devices only. */
+.tip {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    z-index: 20;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--carbon);
+    color: var(--on-carbon);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 3px);
+    transition:
+      opacity 140ms var(--ease-out),
+      transform 140ms var(--ease-out);
+  }
+
+  .tip:hover::after,
+  .tip:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 300ms;
+  }
+}
+
+/* Mega menu: the panel unfolds from the header edge; switching category cross-fades the sub-category pane. */
+@keyframes mega-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.mega-in {
+  transform-origin: top;
+  animation: mega-in 200ms var(--ease-out);
+}
+
+/* Switching category happens many times per visit: a quick fade only, no movement. */
+@keyframes pane-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.mega-pane {
+  animation: pane-in 120ms var(--ease-out);
+}
+
+/* A part added to the sell form slides in under the one before it. */
+.part-row {
+  animation: rise-in 220ms var(--ease-out);
 }
 
 @keyframes sheet-in {

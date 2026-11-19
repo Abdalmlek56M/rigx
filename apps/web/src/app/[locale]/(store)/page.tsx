@@ -60,7 +60,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Hero />
       <CategoryGrid categories={storefront.categories} />
       <LatestItems />
-      <section className="flex shell flex-wrap gap-[18px] pb-4">
+      <section className="flex shell flex-wrap items-stretch gap-[18px] pb-4 pt-12 md:pt-16">
         {number ? <RecommendWidget whatsApp={{ number, template: general }} /> : null}
         <BuilderPromo />
       </section>

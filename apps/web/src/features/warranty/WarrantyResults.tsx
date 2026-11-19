@@ -4,7 +4,7 @@ import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { warrantyStatusKey, WARRANTY_BADGE } from "@/features/account/account-labels";
 import { parseCondition } from "@/lib/condition";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { daysLeftToShow } from "./warranty-query";
 
@@ -41,7 +41,7 @@ async function WarrantyItem({ item, orderReference, whatsApp }: { item: Schemas[
         {days !== null ? <b className="text-ink"> · {t("daysLeft", { days })}</b> : null}
       </p>
       {whatsApp.number ? (
-        <a href={whatsAppUrl(whatsApp.number, text)} className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
+        <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)} className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
           <WhatsAppIcon size={16} />
           {t("problem")}
         </a>

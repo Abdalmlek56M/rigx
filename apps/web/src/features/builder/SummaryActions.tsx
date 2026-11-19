@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "@/features/cart/cart-context";
 import { cartLinesOf, partsSummaryText, type Evaluation } from "./builder-summary";
@@ -54,7 +54,7 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
       {hasParts && !canOrder && !checking ? <span className="text-xs leading-6 text-[#FFC94D]">{t("cannotOrder")}</span> : null}
       {whatsApp.number ? (
         <a
-          href={whatsAppUrl(whatsApp.number, message)}
+          {...NEW_TAB} href={whatsAppUrl(whatsApp.number, message)}
           aria-disabled={!hasParts}
           className={`flex h-[50px] items-center justify-center rounded-control border-[1.5px] border-on-carbon font-bold ${hasParts ? "" : "pointer-events-none opacity-50"}`}
         >

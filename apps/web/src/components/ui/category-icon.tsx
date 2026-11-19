@@ -1,16 +1,17 @@
 import type { ComponentType } from "react";
-import { BoardIcon, CaseIcon, CpuIcon, FanIcon, GpuIcon, MonitorIcon, PowerIcon, RamIcon, StorageIcon } from "./icons";
+import { BoardIcon, CaseIcon, CpuIcon, FanIcon, GpuIcon, HeadsetIcon, MonitorIcon, PowerIcon, RamIcon, StorageIcon } from "./icons";
 
 type IconComponent = ComponentType<{ size?: number }>;
 
 /** Slug words → icon, first match wins (category slugs are owner-made, so they are matched loosely). */
 const RULES: readonly [readonly string[], IconComponent][] = [
-  [["peripheral", "monitor", "screen", "keyboard", "mouse"], MonitorIcon],
+  [["accessor", "peripheral", "keyboard", "mouse", "headset"], HeadsetIcon],
+  [["monitor", "screen", "display"], MonitorIcon],
   [["graphics", "gpu", "vga"], GpuIcon],
   [["motherboard", "board"], BoardIcon],
   [["processor", "cpu"], CpuIcon],
   [["memory", "ram"], RamIcon],
-  [["storage", "ssd", "hdd", "nvme"], StorageIcon],
+  [["storage", "ssd", "hdd", "nvme", "hard"], StorageIcon],
   [["power", "psu"], PowerIcon],
   [["cool", "fan"], FanIcon],
   [["case"], CaseIcon]

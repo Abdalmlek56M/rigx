@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { WhatsAppIcon } from "@/components/ui/icons";
-import { whatsAppUrl } from "@/lib/contact";
+import { whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "./cart-context";
 import { cartWhatsAppText } from "./cart-rules";
@@ -17,7 +17,7 @@ export function CartWhatsAppLink({ number, onClick }: { number: string | null; o
 
   return (
     <a
-      href={whatsAppUrl(number, text)}
+      {...NEW_TAB} href={whatsAppUrl(number, text)}
       onClick={onClick}
       className="press flex h-[52px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold"
     >

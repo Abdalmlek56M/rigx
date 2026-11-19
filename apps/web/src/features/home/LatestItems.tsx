@@ -44,7 +44,7 @@ export async function LatestItems() {
   if (all.length === 0) return null;
 
   return (
-    <section className="shell pb-14 pt-8 md:pb-16">
+    <section className="shell pt-8">
       <LatestTabs
         title={t("title")}
         groupLabel={t("group")}

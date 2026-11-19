@@ -192,6 +192,24 @@ export const FanIcon = (p: IconProps) => (
     <path d="M12 10.5c0-3 1-5 3.5-5M13.5 12c3 0 5 1 5 3.5M12 13.5c0 3-1 5-3.5 5M10.5 12c-3 0-5-1-5-3.5" />
   </Icon>
 );
+export const PencilIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
+    <path d="m13.5 6.5 4 4" />
+  </Icon>
+);
+export const PlusIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
+export const HeadsetIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+    <rect x="3" y="14" width="4" height="6" rx="1.5" />
+    <rect x="17" y="14" width="4" height="6" rx="1.5" />
+  </Icon>
+);
 export const CaseIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="6" y="2" width="12" height="20" rx="2" />

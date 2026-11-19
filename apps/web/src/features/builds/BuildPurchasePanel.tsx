@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
-import { fillTemplate, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { clampQuantity } from "@/features/cart/cart-rules";
@@ -61,7 +61,7 @@ export function BuildPurchasePanel({ build, whatsApp, pageUrl }: BuildPurchasePa
       )}
       {whatsAppHref ? (
         <a
-          href={whatsAppHref}
+          {...NEW_TAB} href={whatsAppHref}
           className="press hidden h-[54px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold md:flex"
         >
           <WhatsAppIcon size={20} />
@@ -77,7 +77,7 @@ export function BuildPurchasePanel({ build, whatsApp, pageUrl }: BuildPurchasePa
       <div data-sticky-bar="md" className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
         {whatsAppHref ? (
           <a
-            href={whatsAppHref}
+            {...NEW_TAB} href={whatsAppHref}
             aria-label={whatsAppLabel}
             className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-card border-[1.5px] border-ink"
           >
