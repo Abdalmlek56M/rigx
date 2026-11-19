@@ -10,8 +10,26 @@ export function userView(value: string | undefined): UserView {
   return USER_VIEWS.find((view) => view === value) ?? "users";
 }
 
-/** Every filter the screen keeps in the URL (`user` = the picked staff member, `role` = the picked role or `new`). */
-export const USER_FILTERS = { view: "users", search: "", active: "", page: "1", user: "", role: "" };
+/** Every filter the screen keeps in the URL (`role` = the picked role or `new`). A staff member opens on their own page. */
+export const USER_FILTERS = { view: "users", search: "", active: "", page: "1", role: "" };
+
+/** An account holding only the Customer role is a customer: its customer record is the account itself. */
+export function isCustomerOnly(roleCodes: readonly string[]): boolean {
+  return roleCodes.length > 0 && roleCodes.every((code) => code === "Customer");
+}
+
+/** The tabs of a staff profile; the account's own profile shows only the ones that cannot lock you out. */
+export const STAFF_TABS = ["details", "roles", "purchases", "notes", "restrictions"] as const;
+export type StaffTab = (typeof STAFF_TABS)[number];
+const SELF_TABS: readonly StaffTab[] = ["details", "purchases", "notes"];
+
+export function staffTabs(isSelf: boolean): readonly StaffTab[] {
+  return isSelf ? SELF_TABS : STAFF_TABS;
+}
+
+export function staffTab(value: string | undefined, isSelf: boolean): StaffTab {
+  return staffTabs(isSelf).find((tab) => tab === value) ?? "details";
+}
 
 export type UserValues = FilterValues<typeof USER_FILTERS>;
 export type UserSet = (changes: Partial<UserValues>) => void;

@@ -76,10 +76,7 @@ public sealed class CustomerAdminService(
 
     public async Task SetNoteAsync(Guid id, string? note, Guid actorId, CancellationToken cancellationToken = default)
     {
-        var text = note?.Trim();
-        if (string.IsNullOrEmpty(text)) text = null;
-        if (text is { Length: > CustomerAccounts.MaxNoteLength })
-            throw new IdentityException(400, $"The note must be at most {CustomerAccounts.MaxNoteLength} characters.");
+        var text = PersonNotes.Normalize(note);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var person = await db.UserAccounts.Customers().Where(account => account.Id == id).Select(account => account.Person)
             .SingleOrDefaultAsync(cancellationToken) ?? throw NotFound();

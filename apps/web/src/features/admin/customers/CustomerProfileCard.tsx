@@ -1,9 +1,11 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
 import { initials } from "@/features/account/profile-rules";
+import { usePermissions } from "../use-permissions";
 import type { CustomerProfile, ShippingRates } from "./customers-api";
 import { governorateName, monthYear } from "./customer-rules";
 
@@ -21,6 +23,7 @@ export function CustomerProfileCard({ profile, rates }: { profile: CustomerProfi
   const t = useTranslations("admin.customers");
   const usageLabels = useTranslations("usage");
   const locale = useLocale();
+  const { has } = usePermissions();
   const account = profile.account;
   const usage = parseUsage(profile.sales.stats.usage);
   const governorate = governorateName(rates.governorates, profile.governorate);
@@ -58,6 +61,17 @@ export function CustomerProfileCard({ profile, rates }: { profile: CustomerProfi
         <Row label={t("orderCount")} value={String(profile.sales.stats.orderCount)} />
         <Row label={t("activeSessions")} value={String(account.activeSessions)} />
       </dl>
+
+      {profile.linkedStaff.length > 0 ? (
+        <div className="flex flex-col gap-1.5 border-t border-line pt-3 text-sm">
+          <b>{t("staffAccount")}</b>
+          {profile.linkedStaff.map((staff) => has("System.ManageUsers") ? (
+            <Link key={staff.id} href={`/admin/users/${staff.id}`} className="font-bold text-orange-text hover:underline">{staff.name}</Link>
+          ) : (
+            <span key={staff.id} className="font-bold">{staff.name}</span>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }

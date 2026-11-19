@@ -18,6 +18,7 @@ public sealed class IdentityAdministrationService
 {
     private readonly IdentityUserAdministrationService _users;
     private readonly IdentityRoleAdministrationService _roles;
+    private readonly IdentityStaffAccountService _staff;
 
     public IdentityAdministrationService(
         IDbContextFactory<IdentityDbContext> contextFactory,
@@ -42,6 +43,7 @@ public sealed class IdentityAdministrationService
             links ?? IdentityLinks.Local,
             loggerFactory?.CreateLogger<IdentityUserAdministrationService>());
         _roles = new IdentityRoleAdministrationService(contextFactory, support, timeProvider);
+        _staff = new IdentityStaffAccountService(contextFactory, support, timeProvider);
     }
 
     public Task<PagedResult<AdminIdentityUser>> GetUsersAsync(
@@ -76,6 +78,15 @@ public sealed class IdentityAdministrationService
         Guid actorUserId,
         CancellationToken cancellationToken = default) =>
         _users.AssignRolesAsync(id, request, actorUserId, cancellationToken);
+
+    public Task<StaffAccountView?> GetStaffAccountAsync(Guid id, CancellationToken cancellationToken = default) =>
+        _staff.GetAsync(id, cancellationToken);
+
+    public Task SetStaffNoteAsync(Guid id, string? note, Guid actorUserId, CancellationToken cancellationToken = default) =>
+        _staff.SetNoteAsync(id, note, actorUserId, cancellationToken);
+
+    public Task SignOutStaffEverywhereAsync(Guid id, Guid actorUserId, CancellationToken cancellationToken = default) =>
+        _staff.SignOutAllAsync(id, actorUserId, cancellationToken);
 
     public Task<IReadOnlyList<AdminIdentityRole>> GetRolesAsync(
         CancellationToken cancellationToken = default) =>

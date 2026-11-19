@@ -7,7 +7,8 @@ import { Link } from "@/i18n/navigation";
 import { formatDate, formatDateTime, formatEgp } from "@/lib/format";
 import type { Load } from "@/lib/hooks/use-load";
 import { TextAreaField } from "@/components/ui/TextAreaField";
-import { DataTable, type Column } from "../kit/DataTable";import { FormMessage } from "../kit/PageHeader";
+import { DataTable, type Column } from "../kit/DataTable";
+import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { RequestStatusBadge, RequestTypeBadge } from "../requests/RequestBadges";
 import { saveCustomerNote, type CustomerProfile } from "./customers-api";
@@ -15,13 +16,21 @@ import { customerTab, orderChannelKey, warrantyStateKey } from "./customer-rules
 import { SaveIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
-type Order = CustomerProfile["sales"]["orders"][number];
-type Warranty = CustomerProfile["sales"]["warranties"][number];
+type Sales = CustomerProfile["sales"];
+type Order = Sales["orders"][number];
+type Warranty = Sales["warranties"][number];
 type Request = CustomerProfile["requests"][number];
 
 const tabButton = "h-10 whitespace-nowrap rounded-control px-3.5 text-[13px]";
 
-function NoteEditor({ id, note, canManage, onSaved }: { id: string; note: string | null; canManage: boolean; onSaved: () => void }) {
+/** The staff-only note on a person (customer or staff); read only without the manage permission. */
+export function NoteEditor({ note, canManage, save, onSaved, hint }: {
+  note: string | null;
+  canManage: boolean;
+  save: (note: string) => Promise<unknown>;
+  onSaved: () => void;
+  hint?: string;
+}) {
   const t = useTranslations("admin.customers.notes");
   const submit = useSubmit();
   const [value, setValue] = useState(note ?? "");
@@ -32,12 +41,12 @@ function NoteEditor({ id, note, canManage, onSaved }: { id: string; note: string
       onSubmit={(event) => {
         event.preventDefault();
         void submit.run(async () => {
-          await saveCustomerNote(id, value);
+          await save(value);
           onSaved();
         }, t("saved"));
       }}
     >
-      <TextAreaField label={t("title")} name="note" value={value} onChange={setValue} maxLength={2000} hint={t("hint")} error={submit.errors.fields.note} />
+      <TextAreaField label={t("title")} name="note" value={value} onChange={setValue} maxLength={2000} hint={hint ?? t("hint")} error={submit.errors.fields.note} />
       <FormMessage message={submit.errors.general} />
       <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy}>{t("save")}</Button>
       {submit.dialog}
@@ -53,36 +62,18 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
   onChanged: () => void;
 }) {
   const t = useTranslations("admin.customers");
-  const orderStatus = useTranslations("orderStatus");
-  const warrantyT = useTranslations("admin.customers.warranties");
   const locale = useLocale();
   const [rawTab, setRawTab] = useState("orders");
   const tab = customerTab(rawTab);
   const { orders, warranties } = profile.sales;
   const requests = profile.requests;
-  const channelLabels = { Online: t("orders.online"), Store: t("orders.store"), Other: t("none") } as const;
 
-  const orderColumns: Column<Order>[] = [
-    { key: "reference", header: t("orders.reference"), cell: (row) => <span dir="ltr" className="font-mono text-xs text-orange-text">{row.reference}</span> },
-    { key: "date", header: t("orders.date"), cell: (row) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDateTime(row.createdAtUtc, locale)}</span> },
-    { key: "channel", header: t("orders.channel"), cell: (row) => channelLabels[orderChannelKey(row.channel)] },
-    { key: "total", header: t("orders.total"), align: "end", cell: (row) => <span className="whitespace-nowrap font-bold">{formatEgp(row.total, locale)}</span> },
-    { key: "paid", header: t("orders.paid"), align: "end", cell: (row) => <span className="whitespace-nowrap">{formatEgp(row.paidAmount, locale)}</span> },
-    { key: "status", header: t("orders.status"), cell: (row) => <span className="inline-block whitespace-nowrap rounded-[4px] bg-paper px-2 py-[3px] text-xs font-bold">{orderStatus(orderStatusKey(row.status))}</span> }
-  ];
-  const warrantyColumns: Column<Warranty>[] = [
-    { key: "code", header: warrantyT("code"), cell: (row) => <span dir="ltr" className="font-mono text-xs text-orange-text">{row.code}</span> },
-    { key: "name", header: warrantyT("name"), cell: (row) => <span dir="auto" className="font-bold [unicode-bidi:isolate]">{row.name}</span> },
-    { key: "ends", header: warrantyT("ends"), cell: (row) => <span className="whitespace-nowrap">{row.endsAtUtc ? warrantyT("until", { date: formatDate(row.endsAtUtc, locale) }) : t("none")}</span> },
-    { key: "status", header: warrantyT("status"), cell: (row) => <WarrantyBadge status={row.status} /> }
-  ];
   const requestColumns: Column<Request>[] = [
     { key: "code", header: t("requests.code"), cell: (row) => <Link href={`/admin/requests?id=${row.id}`} dir="ltr" className="font-mono text-xs text-orange-text hover:underline">{row.code}</Link> },
     { key: "type", header: t("requests.type"), cell: (row) => <RequestTypeBadge type={row.type} /> },
     { key: "status", header: t("requests.status"), cell: (row) => <RequestStatusBadge status={row.status} /> },
     { key: "date", header: t("requests.date"), cell: (row) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDateTime(row.createdAtUtc, locale)}</span> }
   ];
-  const ready = <T,>(rows: readonly T[]): Load<readonly T[]> => ({ status: "ready", data: rows });
 
   return (
     <section className="flex min-w-0 flex-col gap-3.5 rounded-card border border-line bg-surface p-5">
@@ -100,12 +91,45 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
         })}
       </div>
 
-      {tab === "orders" ? <DataTable label={t("tabs.orders", { count: orders.length })} columns={orderColumns} state={ready(orders)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("orders.empty")} /> : null}
-      {tab === "warranties" ? <DataTable label={t("tabs.warranties", { count: warranties.length })} columns={warrantyColumns} state={ready(warranties)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("warranties.empty")} /> : null}
+      {tab === "orders" ? <OrdersTable orders={orders} onRetry={onRetry} /> : null}
+      {tab === "warranties" ? <WarrantiesTable warranties={warranties} onRetry={onRetry} /> : null}
       {tab === "requests" ? <DataTable label={t("tabs.requests", { count: requests.length })} columns={requestColumns} state={ready(requests)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("requests.empty")} /> : null}
-      {tab === "notes" ? <NoteEditor key={`${profile.account.id}-${profile.account.note ?? ""}`} id={profile.account.id} note={profile.account.note} canManage={canManage} onSaved={onChanged} /> : null}
+      {tab === "notes" ? <NoteEditor key={`${profile.account.id}-${profile.account.note ?? ""}`} note={profile.account.note} canManage={canManage} save={(note) => saveCustomerNote(profile.account.id, note)} onSaved={onChanged} /> : null}
     </section>
   );
+}
+
+const ready = <T,>(rows: readonly T[]): Load<readonly T[]> => ({ status: "ready", data: rows });
+
+/** A person's orders (online and in the store), newest first. */
+export function OrdersTable({ orders, onRetry }: { orders: readonly Order[]; onRetry: () => void }) {
+  const t = useTranslations("admin.customers");
+  const orderStatus = useTranslations("orderStatus");
+  const locale = useLocale();
+  const channelLabels = { Online: t("orders.online"), Store: t("orders.store"), Other: t("none") } as const;
+  const orderColumns: Column<Order>[] = [
+    { key: "reference", header: t("orders.reference"), cell: (row) => <span dir="ltr" className="font-mono text-xs text-orange-text">{row.reference}</span> },
+    { key: "date", header: t("orders.date"), cell: (row) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDateTime(row.createdAtUtc, locale)}</span> },
+    { key: "channel", header: t("orders.channel"), cell: (row) => channelLabels[orderChannelKey(row.channel)] },
+    { key: "total", header: t("orders.total"), align: "end", cell: (row) => <span className="whitespace-nowrap font-bold">{formatEgp(row.total, locale)}</span> },
+    { key: "paid", header: t("orders.paid"), align: "end", cell: (row) => <span className="whitespace-nowrap">{formatEgp(row.paidAmount, locale)}</span> },
+    { key: "status", header: t("orders.status"), cell: (row) => <span className="inline-block whitespace-nowrap rounded-[4px] bg-paper px-2 py-[3px] text-xs font-bold">{orderStatus(orderStatusKey(row.status))}</span> }
+  ];
+  return <DataTable label={t("tabs.orders", { count: orders.length })} columns={orderColumns} state={ready(orders)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("orders.empty")} />;
+}
+
+/** A person's warranties with their end date and state. */
+export function WarrantiesTable({ warranties, onRetry }: { warranties: readonly Warranty[]; onRetry: () => void }) {
+  const t = useTranslations("admin.customers");
+  const warrantyT = useTranslations("admin.customers.warranties");
+  const locale = useLocale();
+  const warrantyColumns: Column<Warranty>[] = [
+    { key: "code", header: warrantyT("code"), cell: (row) => <span dir="ltr" className="font-mono text-xs text-orange-text">{row.code}</span> },
+    { key: "name", header: warrantyT("name"), cell: (row) => <span dir="auto" className="font-bold [unicode-bidi:isolate]">{row.name}</span> },
+    { key: "ends", header: warrantyT("ends"), cell: (row) => <span className="whitespace-nowrap">{row.endsAtUtc ? warrantyT("until", { date: formatDate(row.endsAtUtc, locale) }) : t("none")}</span> },
+    { key: "status", header: warrantyT("status"), cell: (row) => <WarrantyBadge status={row.status} /> }
+  ];
+  return <DataTable label={t("tabs.warranties", { count: warranties.length })} columns={warrantyColumns} state={ready(warranties)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("warranties.empty")} />;
 }
 
 function WarrantyBadge({ status }: { status: string }) {

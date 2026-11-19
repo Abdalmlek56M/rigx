@@ -21,6 +21,7 @@ public sealed class CustomerProfileComposer(
     WarrantyService warranties,
     InvoiceService invoices,
     SavedBuildService builds,
+    StaffCustomerLinkService links,
     TimeZoneInfo businessZone)
 {
     public async Task<PagedResult<CustomerListItem>> ListAsync(string? search, int page, CancellationToken cancellationToken)
@@ -59,7 +60,8 @@ public sealed class CustomerProfileComposer(
         var salesView = await sales.GetAsync(id, account.Phone, account.Email, includeSerial, cancellationToken);
         var active = (await restrictions.ListAsync(id, cancellationToken)).Where(restriction => restriction.IsActive).ToList();
         return new CustomerProfile(account, await google.GetLoginMethodsAsync(id, cancellationToken), active, salesView,
-            await requests.ListForCustomerAsync(id, account.Phone, cancellationToken), account.DefaultGovernorate ?? salesView.Stats.Governorate);
+            await requests.ListForCustomerAsync(id, account.Phone, cancellationToken), account.DefaultGovernorate ?? salesView.Stats.Governorate,
+            await links.StaffOfCustomerAsync(id, cancellationToken));
     }
 
     public async Task<CustomerViewAs> ViewAsAsync(Guid id, CancellationToken cancellationToken)

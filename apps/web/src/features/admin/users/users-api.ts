@@ -3,6 +3,7 @@ import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
 export type StaffUser = Schemas["AdminIdentityUser"];
+export type StaffProfile = Schemas["StaffProfile"];
 export type StaffUserPage = Schemas["PagedResultOfAdminIdentityUser"];
 export type StaffRole = Schemas["AdminIdentityRole"];
 export type Restriction = Schemas["RestrictionView"];
@@ -21,6 +22,15 @@ export const fetchUsers = (query: { search?: string; isActive?: boolean; page: n
 
 export const fetchUser = (id: string) =>
   required(unwrap(api().GET("/api/v1/admin/identity/users/{id}", { params: { path: { id } } })));
+
+export const fetchStaffProfile = (id: string) =>
+  required(unwrap(api().GET("/api/v1/admin/identity/users/{id}/profile", { params: { path: { id } } })));
+
+export const saveStaffNote = (id: string, note: string) =>
+  unwrap(api().PUT("/api/v1/admin/identity/users/{id}/note", { params: { path: { id } }, body: { note } }));
+
+export const signOutStaff = (id: string) =>
+  unwrap(api().POST("/api/v1/admin/identity/users/{id}/sign-out-all", { params: { path: { id } } }));
 
 export const createUser = (body: NewStaffUser) =>
   required(unwrap(api().POST("/api/v1/admin/identity/users", { body })));

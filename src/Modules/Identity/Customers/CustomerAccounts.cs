@@ -6,7 +6,7 @@ namespace HardwareStore.Modules.Identity;
 public static class CustomerAccounts
 {
     public const string RoleCode = "Customer";
-    public const int MaxNoteLength = 2000;
+    public const int MaxNoteLength = PersonNotes.MaxLength;
 
     public static bool IsCustomer(IEnumerable<string> roleCodes) => roleCodes.All(code => code == RoleCode);
 

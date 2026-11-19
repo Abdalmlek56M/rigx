@@ -129,6 +129,7 @@ builder.Services.AddScoped<BackupAuditor>();
 builder.Services.AddScoped<BackupService>();
 builder.Services.AddScoped<DataResetService>();
 builder.Services.AddScoped<CustomerProfileComposer>();
+builder.Services.AddScoped<StaffProfileComposer>();
 builder.Services.AddScoped<CustomerMergeOrchestrator>();
 builder.Services.AddScoped<BuilderCatalogLoader>();
 builder.Services.AddScoped<BuilderService>();

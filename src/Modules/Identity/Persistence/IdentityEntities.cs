@@ -11,7 +11,7 @@ public sealed class Person
     public bool IsSupplier { get; set; }
     public bool IsEmployee { get; set; }
     public bool IsActive { get; set; } = true;
-    /// <summary>Staff-only note about a customer (customer admin).</summary>
+    /// <summary>Staff-only note about the person (customer or staff), see <see cref="PersonNotes"/>.</summary>
     public string? CustomerNote { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public UserAccount? UserAccount { get; set; }

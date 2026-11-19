@@ -29,6 +29,7 @@ public static class IdentityAccountsRegistration
         services.AddScoped<GoogleSignInService>();
         services.AddScoped<CustomerAdminService>();
         services.AddScoped<CustomerMergeService>();
+        services.AddScoped<StaffCustomerLinkService>();
         services.AddScoped<IDataResetSource, CustomerDataReset>();
 
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))

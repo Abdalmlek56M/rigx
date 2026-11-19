@@ -18,6 +18,12 @@ public static class IdentityAdministrationEndpoints
             .RequirePermission("System.ManageUsers");
         group.MapPatch("/users/{id:guid}", UpdateUserAsync)
             .RequirePermission("System.ManageUsers");
+        group.MapGet("/users/{id:guid}/profile", GetProfileAsync)
+            .RequirePermission("System.ManageUsers");
+        group.MapPut("/users/{id:guid}/note", SetNoteAsync)
+            .RequirePermission("System.ManageUsers");
+        group.MapPost("/users/{id:guid}/sign-out-all", SignOutAllAsync)
+            .RequirePermission("System.ManageUsers");
         group.MapPut("/users/{id:guid}/roles", AssignRolesAsync)
             .RequirePermission("System.ManageUsers")
             .RequireStepUp();
@@ -63,6 +69,40 @@ public static class IdentityAdministrationEndpoints
         context.Response.Headers.CacheControl = "no-store";
         var user = await service.GetUserAsync(id, cancellationToken);
         return TypedResults.Ok(user ?? throw new IdentityException(StatusCodes.Status404NotFound, "The user was not found."));
+    }
+
+    private static async Task<Ok<StaffProfile>> GetProfileAsync(
+        Guid id,
+        HttpContext context,
+        StaffProfileComposer composer,
+        CancellationToken cancellationToken)
+    {
+        context.RequireUserId();
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(await composer.GetAsync(id, context.HasPermission("Inventory.ViewSerials"), cancellationToken));
+    }
+
+    private static async Task<NoContent> SetNoteAsync(
+        Guid id,
+        StaffNoteRequest request,
+        HttpContext context,
+        IdentityAdministrationService service,
+        CancellationToken cancellationToken)
+    {
+        var actorId = context.RequireUserId();
+        await service.SetStaffNoteAsync(id, request.Note, actorId, cancellationToken);
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<NoContent> SignOutAllAsync(
+        Guid id,
+        HttpContext context,
+        IdentityAdministrationService service,
+        CancellationToken cancellationToken)
+    {
+        var actorId = context.RequireUserId();
+        await service.SignOutStaffEverywhereAsync(id, actorId, cancellationToken);
+        return TypedResults.NoContent();
     }
 
     private static async Task<Created<AdminIdentityUserInvitationResult>> CreateUserAsync(

@@ -9,7 +9,7 @@ public sealed record CustomerListItem(CustomerListRow Customer, int OrderCount, 
 
 /// <summary>The customer 360 view, composed from Identity, Retail and Storefront.</summary>
 public sealed record CustomerProfile(CustomerAccountView Account, LoginMethodsView LoginMethods, IReadOnlyList<RestrictionView> Restrictions,
-    CustomerSalesView Sales, IReadOnlyList<CustomerRequestSummary> Requests, string? Governorate);
+    CustomerSalesView Sales, IReadOnlyList<CustomerRequestSummary> Requests, string? Governorate, IReadOnlyList<LinkedAccount> LinkedStaff);
 
 /// <summary>Exactly what the customer's own account pages show (read only).</summary>
 public sealed record CustomerViewAs(CurrentIdentityUser Profile, IReadOnlyList<CustomerAddressView> Addresses, IReadOnlyList<CustomerOrderView> Orders,

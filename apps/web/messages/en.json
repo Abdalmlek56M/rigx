@@ -1829,7 +1829,8 @@
         "empty": "Nothing here."
       },
       "failed": "We couldn't load the customer.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "staffAccount": "Staff account"
     },
     "categories": {
       "title": "Categories",
@@ -3625,7 +3626,6 @@
       "rolesHint": "Pick a role to change its permissions, or create a new one.",
       "failed": "Could not load the data.",
       "retry": "Try again",
-      "close": "Close",
       "noRoles": "No role",
       "columns": {
         "name": "User",
@@ -3655,15 +3655,10 @@
         "queued": "The invitation email was queued."
       },
       "detail": {
-        "profile": "Details",
         "fullName": "Full name",
         "phone": "Phone",
-        "active": "Account is active",
         "save": "Save",
-        "deactivate": "Deactivate",
-        "deactivateTitle": "Deactivate the account",
-        "deactivateBody": "They will be signed out and cannot sign in until you turn the account back on.",
-        "self": "This is your account: you cannot deactivate it, change its roles or restrict it from here."
+        "emailNote": "Signs in with this email (code or Google):"
       },
       "rolesCard": {
         "title": "User roles",
@@ -3807,6 +3802,51 @@
       "builtInRoles": {
         "Owner": "Owner",
         "Customer": "Customer"
+      },
+      "edit": "Edit",
+      "editUser": "Edit {name}",
+      "controls": {
+        "title": "Account controls",
+        "disable": "Disable account",
+        "disableBody": "They are signed out and cannot sign in until you enable the account again.",
+        "disabled": "Account disabled",
+        "enable": "Enable account",
+        "enableBody": "They can sign in again with their email or Google.",
+        "enabled": "Account enabled",
+        "signOutAll": "Sign out of all devices",
+        "signOutBody": "Every open device is signed out; they sign in again with an email code or Google.",
+        "signedOut": "Signed out everywhere",
+        "self": "This is your account: you cannot disable it, change its roles or restrict it here.",
+        "auditNote": "Every action here is recorded in the activity log.",
+        "failed": "That did not work. Try again.",
+        "conflict": "Someone else changed this account. The page is updated; try again."
+      },
+      "profile": {
+        "title": "User profile",
+        "loading": "Loading the profile",
+        "back": "All users",
+        "sections": "Profile sections",
+        "tabs": {
+          "details": "Details",
+          "roles": "Role",
+          "purchases": "Purchases and orders · {count}",
+          "notes": "Internal notes",
+          "restrictions": "Suspension and ban"
+        },
+        "email": "Email",
+        "phone": "Phone",
+        "none": "—",
+        "code": "Code",
+        "joined": "Added on",
+        "lastActivity": "Last activity",
+        "never": "Not signed in yet",
+        "activeSessions": "Devices signed in now",
+        "orderCount": "Orders",
+        "totalSpent": "Total spent",
+        "customerRecord": "Customer record",
+        "noCustomerRecord": "No customer account shares this email or phone.",
+        "linkRule": "Linked because the email or phone is the same.",
+        "noteHint": "Only the admin team sees this."
       }
     },
     "system": {

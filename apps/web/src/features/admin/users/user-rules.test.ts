@@ -15,6 +15,9 @@ import {
   roleNames,
   sameSet,
   setGroup,
+  isCustomerOnly,
+  staffTab,
+  staffTabs,
   systemCodes,
   toggle,
   userView,
@@ -60,6 +63,24 @@ describe("users view and filters", () => {
     assert.deepEqual(toggle(["a"], "a", true), ["a"]);
     assert.equal(sameSet(["a", "b"], ["b", "a"]), true);
     assert.equal(sameSet(["a"], ["a", "b"]), false);
+  });
+});
+
+describe("staff profile tabs", () => {
+  it("gives your own profile only details, purchases and notes", () => {
+    assert.deepEqual(staffTabs(true), ["details", "purchases", "notes"]);
+    assert.ok(staffTabs(false).length > staffTabs(true).length);
+    for (const tab of staffTabs(true)) assert.ok(staffTabs(false).includes(tab));
+  });
+
+  it("falls back to details for an unknown or self-forbidden tab", () => {
+    const other = staffTabs(false).find((tab) => !staffTabs(true).includes(tab));
+    assert.ok(other);
+    assert.equal(staffTab(other, false), other);
+    assert.equal(staffTab(other, true), "details");
+    assert.equal(staffTab("notes", true), "notes");
+    assert.equal(staffTab("nope", false), "details");
+    assert.equal(staffTab(undefined, false), "details");
   });
 });
 
@@ -111,5 +132,13 @@ describe("restrictions", () => {
     assert.equal(suspension.reason, "abuse");
     assert.equal(suspension.expiresAtUtc, "2026-12-01T21:59:59.999Z");
     assert.equal(restrictionRequest({ type: "Ban", reason: "abuse", until: "2026-12-01" }).expiresAtUtc, null);
+  });
+});
+
+describe("customer-only accounts", () => {
+  it("is a customer only when every role is Customer", () => {
+    assert.equal(isCustomerOnly(["Customer"]), true);
+    assert.equal(isCustomerOnly(["Customer", "Owner"]), false);
+    assert.equal(isCustomerOnly([]), false);
   });
 });

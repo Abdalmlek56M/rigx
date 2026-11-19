@@ -11429,6 +11429,140 @@
         ]
       }
     },
+    "/api/v1/admin/identity/users/{id}/profile": {
+      "get": {
+        "tags": [
+          "admin/identity"
+        ],
+        "description": "Permission: \u0060System.ManageUsers\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffProfile"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/identity/users/{id}/note": {
+      "put": {
+        "tags": [
+          "admin/identity"
+        ],
+        "description": "Permission: \u0060System.ManageUsers\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffNoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/identity/users/{id}/sign-out-all": {
+      "post": {
+        "tags": [
+          "admin/identity"
+        ],
+        "description": "Permission: \u0060System.ManageUsers\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/identity/users/{id}/roles": {
       "put": {
         "tags": [
@@ -18535,7 +18669,8 @@
           "restrictions",
           "sales",
           "requests",
-          "governorate"
+          "governorate",
+          "linkedStaff"
         ],
         "type": "object",
         "properties": {
@@ -18565,6 +18700,12 @@
               "null",
               "string"
             ]
+          },
+          "linkedStaff": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkedAccount"
+            }
           }
         }
       },
@@ -20863,6 +21004,26 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "LinkedAccount": {
+        "required": [
+          "id",
+          "personCode",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "personCode": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -26531,6 +26692,87 @@
               "number"
             ],
             "format": "double"
+          }
+        }
+      },
+      "StaffAccountView": {
+        "required": [
+          "id",
+          "personCode",
+          "createdAtUtc",
+          "note",
+          "activeSessions",
+          "lastActivityAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "personCode": {
+            "type": "string"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activeSessions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastActivityAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "StaffNoteRequest": {
+        "required": [
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "StaffProfile": {
+        "required": [
+          "user",
+          "account",
+          "sales",
+          "linkedCustomers"
+        ],
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AdminIdentityUser"
+          },
+          "account": {
+            "$ref": "#/components/schemas/StaffAccountView"
+          },
+          "sales": {
+            "$ref": "#/components/schemas/CustomerSalesView"
+          },
+          "linkedCustomers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkedAccount"
+            }
           }
         }
       },

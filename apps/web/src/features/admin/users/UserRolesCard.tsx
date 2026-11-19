@@ -34,7 +34,7 @@ export function UserRolesCard({ user, roles, onSaved }: { user: StaffUser; roles
 
   return (
     <form
-      className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5"
+      className="flex min-w-0 flex-col gap-3"
       onSubmit={(event) => { event.preventDefault(); if (selected.length === 0) setConfirming(true); else void save(); }}
     >
       <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
