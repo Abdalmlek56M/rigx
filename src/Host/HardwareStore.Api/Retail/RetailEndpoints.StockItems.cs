@@ -35,7 +35,7 @@ public static partial class RetailEndpoints
         StockItemAdminService items, StoreSettingsService settings, CategorySpecService categorySpecs, CancellationToken ct)
     {
         var (label, months) = WarrantyChoice.Resolve(await WarrantyChoice.LoadOptionsAsync(settings, ct), request.WarrantyLabel);
-        var update = new StockItemUpdate(request.ModelName, request.CategoryId, request.ProductId, request.Price,
+        var update = new StockItemUpdate(request.ModelName, request.CategoryId, request.BrandId, request.ProductId, request.Price,
             request.WithBoardExtra, request.AloneExtra, label, months, request.HasBox, request.IsHidden, request.InternalNote,
             await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct), request.RowVersion);
         return TypedResults.Ok(await items.UpdateAsync(id, update, context.HasPermission("Inventory.ViewCosts"),
@@ -83,13 +83,13 @@ public static partial class RetailEndpoints
     }
 
     private static async Task<Ok<StoreItemPage>> ListStoreItemsAsync(HttpContext context, StoreItemService items, TaxonomyService taxonomy, CancellationToken ct,
-        string? search = null, Guid? categoryId = null, string? condition = null, bool? inStock = null, decimal? minPrice = null,
-        decimal? maxPrice = null, string? sort = null, int page = 1, int pageSize = 24)
+        string? search = null, Guid? categoryId = null, Guid? brandId = null, string? condition = null, bool? inStock = null,
+        decimal? minPrice = null, decimal? maxPrice = null, string? sort = null, int page = 1, int pageSize = 24)
     {
         var categoryIds = categoryId is Guid category ? await taxonomy.GetCategoryWithDescendantIdsAsync(category, ct) : null;
         return TypedResults.Ok(await items.ListAsync(
             new StoreItemQuery(search, categoryIds, condition, inStock, minPrice, maxPrice, sort, page, pageSize,
-                SpecFilters(context.Request.Query)), ct));
+                SpecFilters(context.Request.Query), brandId), ct));
     }
 
     /// <summary>Reads <c>spec.&lt;key&gt;=value</c> query parameters (valid keys only, at most <see cref="MaxSpecFilters"/>).</summary>
@@ -111,7 +111,7 @@ public static partial class RetailEndpoints
         TypedResults.Ok(await items.GetAsync(key, ct));
 }
 
-public sealed record StockItemUpdateRequest(string? ModelName, Guid? CategoryId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,
+public sealed record StockItemUpdateRequest(string? ModelName, Guid? CategoryId, Guid? BrandId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,
     decimal? AloneExtra, string? WarrantyLabel, bool HasBox, bool IsHidden, string? InternalNote,
     Dictionary<string, string>? Specs, long RowVersion);
 public sealed record StockVisibilityResult(int Updated);

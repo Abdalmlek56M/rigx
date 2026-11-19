@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { categoryBySlug, effectiveSpecs, type CategoryNode } from "@/lib/categories";
+import type { Brand } from "@/lib/storefront";
 import { activeFilters, catalogHref, type CatalogState, type SortKey } from "./catalog-query";
 import { FiltersDrawer } from "./FiltersDrawer";
 import { SortSelect } from "./SortSelect";
@@ -12,6 +13,7 @@ const SORT_KEYS: readonly SortKey[] = ["newest", "price_asc", "price_desc"];
 interface CatalogToolbarProps {
   state: CatalogState;
   tree: CategoryNode[];
+  brands: Brand[];
   total: number;
   /** The filter panel, shown inside the mobile drawer. */
   panel: ReactNode;
@@ -19,7 +21,7 @@ interface CatalogToolbarProps {
 }
 
 /** Above the grid: the mobile filter button, removable chips of the active filters, the result count and the sort select. */
-export async function CatalogToolbar({ state, tree, total, panel, queryKey }: CatalogToolbarProps) {
+export async function CatalogToolbar({ state, tree, brands, total, panel, queryKey }: CatalogToolbarProps) {
   const t = await getTranslations("catalog");
   const tc = await getTranslations("common.condition");
   const filters = activeFilters(state);
@@ -30,6 +32,8 @@ export async function CatalogToolbar({ state, tree, total, panel, queryKey }: Ca
         return t("chips.search", { query: filter.value });
       case "category":
         return categoryBySlug(tree, filter.value)?.name ?? filter.value;
+      case "brand":
+        return brands.find((brand) => brand.slug === filter.value)?.name ?? filter.value;
       case "condition":
         return tc(filter.value === "New" ? "New" : "Used");
       case "stock":

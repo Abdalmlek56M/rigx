@@ -222,7 +222,8 @@ public sealed class PreviewInitializationPostgreSqlTests : IAsyncLifetime
             Assert.Equal(1L, await ScalarAsync(connection,
                 "SELECT COUNT(*) FROM user_accounts ua JOIN user_roles ur ON ur.user_account_id = ua.id JOIN roles r ON r.id = ur.role_id WHERE r.code = 'Owner'"));
             Assert.Equal(14L, await ScalarAsync(connection, "SELECT COUNT(*) FROM products"));
-            Assert.Equal(11L, await ScalarAsync(connection, "SELECT COUNT(*) FROM categories"));
+            Assert.Equal((long)BaseCatalog.Categories.Count, await ScalarAsync(connection, "SELECT COUNT(*) FROM categories"));
+            Assert.Equal((long)BaseCatalog.Brands.Count, await ScalarAsync(connection, "SELECT COUNT(*) FROM brands"));
         }
     }
 

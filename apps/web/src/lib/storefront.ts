@@ -10,6 +10,8 @@ export interface ContactLink {
   showInFloatingButton: boolean;
 }
 export type MenuCategory = { name: string; slug: string; children: MenuCategory[] };
+/** An active brand (catalog filter, product page). */
+export type Brand = { id: string; name: string; slug: string };
 
 export interface PaymentMethods {
   cash: boolean;
@@ -56,6 +58,8 @@ export interface StorefrontData {
   categories: MenuCategory[];
   /** Every effectively active category with ids and specs (catalog filters, breadcrumbs, spec names). */
   categoryTree: CategoryNode[];
+  /** The active brands, by name. */
+  brands: Brand[];
 }
 
 const FALLBACK: StorefrontData = {
@@ -76,7 +80,8 @@ const FALLBACK: StorefrontData = {
   },
   showSoldOut: true,
   categories: [],
-  categoryTree: []
+  categoryTree: [],
+  brands: []
 };
 
 let failureLogged = false;
@@ -118,11 +123,12 @@ function toContactLinks(links: Schemas["ContactLink"][]): ContactLink[] {
 export async function loadStorefront(): Promise<StorefrontData> {
   try {
     const api = createServerApi();
-    const [settings, categories] = await Promise.all([
+    const [settings, categories, brands] = await Promise.all([
       unwrap(api.GET("/api/v1/storefront/settings")),
-      unwrap(api.GET("/api/v1/catalog/categories"))
+      unwrap(api.GET("/api/v1/catalog/categories")),
+      unwrap(api.GET("/api/v1/catalog/brands"))
     ]);
-    if (!settings || !categories) throw new Error("Empty storefront response.");
+    if (!settings || !categories || !brands) throw new Error("Empty storefront response.");
     const info = settings.storeInfo;
     return {
       storeName: info.name || FALLBACK.storeName,
@@ -158,7 +164,8 @@ export async function loadStorefront(): Promise<StorefrontData> {
       },
       showSoldOut: settings.controls.showSoldOut ?? true,
       categories: toMenu(categories),
-      categoryTree: toTree(categories)
+      categoryTree: toTree(categories),
+      brands: brands.map((brand) => ({ id: brand.id, name: brand.name, slug: brand.slug }))
     };
   } catch (error) {
     logOnce(error);

@@ -13,7 +13,7 @@ const unit = (patch: Partial<StockUnit>): StockUnit => ({
 });
 
 const item = (units: StockUnit[], patch: Partial<StockItem> = {}): StockItem => ({
-  id: "i", code: "RX-1", condition: "Used", categoryId: "c2", productId: "p1", modelName: "RX 6600", price: 2000, withBoardExtra: null, aloneExtra: 150,
+  id: "i", code: "RX-1", condition: "Used", categoryId: "c2", brandId: "b1", productId: "p1", modelName: "RX 6600", price: 2000, withBoardExtra: null, aloneExtra: 150,
   prices: { inBuild: 2000, withBoard: 2000, alone: 2150 }, warrantyLabel: null, warrantyMonths: null, hasBox: false, isHidden: false, isPublished: true,
   internalNote: null, specs: { vram: "8" }, photos: [], availableCount: units.filter((entry) => entry.status === "Available").length, daysInStock: 3,
   createdAtUtc: "2026-11-01T00:00:00Z", rowVersion: 7, units, ...patch
@@ -85,6 +85,8 @@ describe("inventory edit form", () => {
     assert.equal(request.productId, "p1");
     assert.deepEqual(request.specs, { vram: "8" });
     assert.equal(request.rowVersion, 7);
+    assert.equal(request.brandId, "b1");
+    assert.equal(toUpdateRequest({ ...toItemForm(stock), brandId: "" }, stock).brandId, null);
   });
 
   it("needs a model and valid amounts", () => {

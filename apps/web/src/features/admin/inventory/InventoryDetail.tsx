@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { useLoad } from "@/lib/hooks/use-load";
+import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { usePermissions } from "../use-permissions";
@@ -13,9 +14,10 @@ import { StockUnits } from "./StockUnits";
 import { deleteStockPhoto, fetchStockItem, fetchWarrantyLabels, uploadStockPhoto, type StockItem } from "./inventory-api";
 
 /** The picked stock item: its edit form and photos, and its units (status, serial, cost, partner) beside or under them. */
-export function InventoryDetail({ id, tree, partners, onClose, onChanged }: {
+export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged }: {
   id: string;
   tree: readonly Category[];
+  brands: readonly Brand[];
   partners: readonly Partner[];
   onClose: () => void;
   onChanged: () => void;
@@ -71,7 +73,7 @@ export function InventoryDetail({ id, tree, partners, onClose, onChanged }: {
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">
           <StockItemForm
-            key={item.rowVersion} item={item} tree={tree} warrantyLabels={state.data.warrantyLabels} canEdit={canEdit}
+            key={item.rowVersion} item={item} tree={tree} brands={brands} warrantyLabels={state.data.warrantyLabels} canEdit={canEdit}
             onSaved={(saved) => {
               setFresh(saved);
               onChanged();

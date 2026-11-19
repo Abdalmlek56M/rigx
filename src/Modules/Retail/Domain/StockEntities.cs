@@ -12,6 +12,8 @@ public sealed class StockItem
     public required string Code { get; set; }
     public required string Condition { get; set; }
     public Guid? CategoryId { get; set; }
+    /// <summary>The Catalog brand, when the owner picked one.</summary>
+    public Guid? BrandId { get; set; }
     public Guid? ProductId { get; set; }
     public required string ModelName { get; set; }
     public required string ModelKey { get; set; }

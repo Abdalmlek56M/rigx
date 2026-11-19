@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
+import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
 import { parentOptions } from "../categories/category-rules";
 import { fetchPartners } from "../expenses/expenses-api";
@@ -40,14 +41,16 @@ export function Inventory() {
   const detailRef = useReveal<HTMLDivElement>(values.item || null);
 
   const lookups = useLoad(useCallback(async () => {
-    const [tree, partners] = await Promise.all([
+    const [tree, brands, partners] = await Promise.all([
       fetchCategories().catch(() => []),
+      fetchBrands().catch(() => []),
       canSeePartners ? fetchPartners().catch(() => []) : Promise.resolve([])
     ]);
-    return { tree, partners };
+    return { tree, brands, partners };
   }, [canSeePartners]));
   const tree = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.tree : []), [lookups.state]);
   const partners = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.partners : []), [lookups.state]);
+  const brands = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.brands : []), [lookups.state]);
 
   const { state, reload } = useLoad(useCallback(() => fetchStockItems({
     search: values.q || undefined,
@@ -128,7 +131,7 @@ export function Inventory() {
       ) : null}
       <p className="m-0 text-sm text-ink-muted">{t("hiddenNote")}</p>
       <div ref={detailRef} className="scroll-mt-20 empty:hidden">
-        {values.item ? <InventoryDetail key={values.item} id={values.item} tree={tree} partners={partners} onClose={() => set({ item: "", page: String(page) })} onChanged={reload} /> : null}
+        {values.item ? <InventoryDetail key={values.item} id={values.item} tree={tree} brands={brands} partners={partners} onClose={() => set({ item: "", page: String(page) })} onChanged={reload} /> : null}
       </div>
     </>
   );

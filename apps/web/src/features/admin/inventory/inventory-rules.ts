@@ -68,6 +68,7 @@ export function pickedIds(selected: ReadonlySet<string>, items: readonly StockIt
 export interface StockItemForm {
   modelName: string;
   categoryId: string;
+  brandId: string;
   price: string;
   withBoardExtra: string;
   aloneExtra: string;
@@ -81,6 +82,7 @@ export function toItemForm(item: StockItem): StockItemForm {
   return {
     modelName: item.modelName,
     categoryId: item.categoryId ?? "",
+    brandId: item.brandId ?? "",
     price: amountText(item.price),
     withBoardExtra: amountText(item.withBoardExtra),
     aloneExtra: amountText(item.aloneExtra),
@@ -101,6 +103,7 @@ export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItem
   return {
     modelName: form.modelName.trim(),
     categoryId: form.categoryId || null,
+    brandId: form.brandId || null,
     productId: item.productId,
     price: parseAmount(form.price) ?? 0,
     withBoardExtra: parseAmount(form.withBoardExtra),

@@ -60,12 +60,14 @@ export default async function ProductPage({ params }: Props) {
   const [storefront, faqs] = await Promise.all([loadStorefront(), loadItemFaqs(item.code)]);
   const trail = item.categoryId ? categoryPath(storefront.categoryTree, item.categoryId) : [];
   const defs = item.categoryId ? effectiveSpecs(storefront.categoryTree, item.categoryId) : [];
+  const brand = item.brandId ? storefront.brands.find((entry) => entry.id === item.brandId) : undefined;
   const soldOut = item.available <= 0;
   const url = absoluteUrl(localizedPath(locale, productPath(item.slug)));
   const structuredData = [
     productJsonLd({
       name: item.modelName, url, images: item.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: item.prices.alone,
-      available: !soldOut, condition, sku: item.code, category: trail.at(-1)?.name, organizationId: organizationId()
+      available: !soldOut, condition, sku: item.code, category: trail.at(-1)?.name, brand: brand?.name,
+      organizationId: organizationId()
     }),
     breadcrumbJsonLd([
       { name: t("home"), url: absoluteUrl(localizedPath(locale, "/")) },
@@ -101,6 +103,14 @@ export default async function ProductPage({ params }: Props) {
             <ConditionBadge condition={condition} />
             <span className={`text-[13px] font-bold ${soldOut ? "text-ink-muted" : "text-success"}`}>{availability}</span>
           </div>
+          {brand ? (
+            <Link
+              href={`/products?brand=${brand.slug}`} dir="ltr" aria-label={t("brandLink", { brand: brand.name })}
+              className="-mb-2 self-start text-sm font-bold tracking-wide text-ink-muted uppercase hover:text-orange-text"
+            >
+              {brand.name}
+            </Link>
+          ) : null}
           <h1 dir="ltr" className="m-0 text-start text-2xl leading-[1.3] font-bold [unicode-bidi:isolate] md:text-[32px]">{item.modelName}</h1>
           <PurchasePanel
             item={{

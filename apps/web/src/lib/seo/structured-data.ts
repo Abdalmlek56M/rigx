@@ -15,6 +15,7 @@ export interface ProductData {
   condition?: "New" | "Used";
   sku?: string;
   category?: string;
+  brand?: string;
   organizationId: string;
 }
 
@@ -27,6 +28,7 @@ export function productJsonLd(data: ProductData): JsonLd {
     ...(data.images.length > 0 ? { image: data.images } : {}),
     ...(data.sku ? { sku: data.sku } : {}),
     ...(data.category ? { category: data.category } : {}),
+    ...(data.brand ? { brand: { "@type": "Brand", name: data.brand } } : {}),
     offers: {
       "@type": "Offer",
       url: data.url,

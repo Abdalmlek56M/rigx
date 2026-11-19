@@ -29,6 +29,10 @@ describe("areaFor", () => {
     assert.equal(areaFor("/admin")?.key, "dashboard");
     assert.equal(areaFor("/admin/orders")?.key, "orders");
   });
+  it("finds the brands page next to the categories, opened by the catalog permission", () => {
+    assert.equal(areaFor("/admin/brands")?.key, "brands");
+    assert.deepEqual(visibleNav(["Catalog.View"]).flatMap((group) => group.areas.map((area) => area.key)), ["categories", "brands"]);
+  });
   it("finds the stock import page, which only the receive-goods permission opens", () => {
     assert.equal(areaFor("/admin/stock/import")?.key, "stockImport");
     assert.deepEqual(visibleNav(["Purchasing.ReceiveGoods"]).flatMap((group) => group.areas.map((area) => area.key)), ["stockImport"]);

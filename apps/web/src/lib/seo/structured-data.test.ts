@@ -17,6 +17,7 @@ describe("structured data", () => {
   });
 
   it("marks sold-out items and leaves out what is unknown", () => {
+    assert.deepEqual(productJsonLd({ ...base, available: true, brand: "MSI" }).brand, { "@type": "Brand", name: "MSI" });
     const product = productJsonLd({ ...base, available: false });
     const offer = product.offers as Record<string, unknown>;
     assert.equal(offer.availability, "https://schema.org/SoldOut");

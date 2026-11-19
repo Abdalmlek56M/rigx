@@ -39,6 +39,8 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         e.Property(x => x.Condition).HasColumnName("condition").HasMaxLength(8).IsRequired();
         e.Property(x => x.CategoryId).HasColumnName("category_id");
         e.Property(x => x.ProductId).HasColumnName("product_id");
+        e.Property(x => x.BrandId).HasColumnName("brand_id");
+        e.HasIndex(x => x.BrandId).HasDatabaseName("ix_stock_items_brand_id");
         e.Property(x => x.ModelName).HasColumnName("model_name").HasMaxLength(160).IsRequired();
         e.Property(x => x.ModelKey).HasColumnName("model_key").HasMaxLength(160).IsRequired();
         e.HasIndex(x => x.ModelKey).HasDatabaseName("ix_stock_items_model_key");

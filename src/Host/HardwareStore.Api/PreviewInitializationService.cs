@@ -291,43 +291,11 @@ public sealed partial class PreviewInitializationService(
         CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow().ToUniversalTime();
-        var categorySpecs = new[]
-        {
-            ("Processors", "processors", (string?)null),
-            ("AMD Processors", "amd-processors", "processors"),
-            ("Intel Processors", "intel-processors", "processors"),
-            ("Graphics Cards", "graphics-cards", (string?)null),
-            ("Motherboards", "motherboards", (string?)null),
-            ("Memory", "memory", (string?)null),
-            ("Storage", "storage", (string?)null),
-            ("Cooling", "cooling", (string?)null),
-            ("Power Supplies", "power-supplies", (string?)null),
-            ("Cases", "cases", (string?)null),
-            ("Peripherals", "peripherals", (string?)null)
-        };
+        // The base categories and brands come from BaseCatalogSeeder (run with the migrations); the demo only gives them pictures.
         var categories = await db.Categories.ToDictionaryAsync(item => item.Slug, cancellationToken);
-        foreach (var (name, slug, parentSlug) in categorySpecs)
-        {
-            if (categories.ContainsKey(slug))
-                continue;
-            var parent = parentSlug is null ? null : categories[parentSlug];
-            var category = new CatalogCategory
-            {
-                Id = StableGuid($"category:{slug}"),
-                ParentId = parent?.Id,
-                Name = name,
-                Slug = slug,
-                SortOrder = categorySpecs.Length - categories.Count,
-                IsActive = true,
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now
-            };
-            db.Categories.Add(category);
-            categories[slug] = category;
-        }
-        await db.SaveChangesAsync(cancellationToken);
-        foreach (var category in categorySpecs
-                     .Select(spec => categories[spec.Item2])
+        foreach (var category in BaseCatalog.Categories
+                     .Where(entry => categories.ContainsKey(entry.Slug))
+                     .Select(entry => categories[entry.Slug])
                      .Where(category => category.IconStorageKey is null))
         {
             var assetId = StableGuid($"category-image:{category.Slug}");
@@ -342,29 +310,9 @@ public sealed partial class PreviewInitializationService(
         }
         await db.SaveChangesAsync(cancellationToken);
 
-        var brandNames = new[]
-        {
-            "AMD", "Intel", "NVIDIA", "ASUS", "Corsair", "Samsung", "Kingston", "NZXT", "Lian Li", "Logitech"
-        };
         var brands = await db.Brands.ToDictionaryAsync(item => item.Name, cancellationToken);
-        foreach (var brandName in brandNames)
-        {
-            if (brands.ContainsKey(brandName))
-                continue;
-            var brand = new CatalogBrand
-            {
-                Id = StableGuid($"brand:{brandName}"),
-                Name = brandName,
-                Slug = brandName.ToLowerInvariant().Replace(' ', '-'),
-                IsActive = true,
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now
-            };
-            db.Brands.Add(brand);
-            brands[brandName] = brand;
-        }
-        await db.SaveChangesAsync(cancellationToken);
-        foreach (var brand in brandNames.Select(name => brands[name]).Where(brand => brand.LogoStorageKey is null))
+        foreach (var brand in PreviewProductDefinitions().Select(seed => brands[seed.BrandName]).Distinct()
+                     .Where(brand => brand.LogoStorageKey is null))
         {
             var assetId = StableGuid($"brand-image:{brand.Name}");
             var expectedKey = $"brands/{brand.Id:N}/{assetId:N}.webp";
@@ -487,9 +435,9 @@ public sealed partial class PreviewInitializationService(
 
     private static PreviewProductSeed[] PreviewProductDefinitions() =>
     [
-        P("AMD Ryzen 7 9800X3D", "amd-ryzen-7-9800x3d", "CPU-9800X3D", "amd-processors", "AMD", 25990m, "AMD processors",
+        P("AMD Ryzen 7 9800X3D", "amd-ryzen-7-9800x3d", "CPU-9800X3D", "amd", "AMD", 25990m, "AMD processors",
             [S("Platform", "Socket", "AM5")]),
-        P("Intel Core Ultra 7 265K", "intel-core-ultra-7-265k", "CPU-265K", "intel-processors", "Intel", 21490m, "Intel processors",
+        P("Intel Core Ultra 7 265K", "intel-core-ultra-7-265k", "CPU-265K", "intel", "Intel", 21490m, "Intel processors",
             [S("Platform", "Socket", "LGA1851")]),
         P("NVIDIA GeForce RTX 5080 16GB", "nvidia-geforce-rtx-5080-16gb", "GPU-5080", "graphics-cards", "NVIDIA", 57990m, "graphics cards",
             [S("Graphics", "Memory", "16 GB GDDR7"), S("Graphics", "Cooling", "Triple Fan")]),
@@ -509,9 +457,9 @@ public sealed partial class PreviewInitializationService(
             [S("Power", "Wattage", "850 W"), S("Power", "Efficiency", "80+ Gold")]),
         P("Lian Li O11 Vision", "lian-li-o11-vision", "CASE-O11V", "cases", "Lian Li", 7290m, "cases",
             [S("Case", "Form Factor", "Mid Tower")]),
-        P("Logitech G Pro X Superlight 2", "logitech-g-pro-x-superlight-2", "MOU-GPX2", "peripherals", "Logitech", 5990m, "peripherals",
+        P("Logitech G Pro X Superlight 2", "logitech-g-pro-x-superlight-2", "MOU-GPX2", "accessories", "Logitech", 5990m, "accessories",
             [S("Mouse", "Weight", "60 g")]),
-        P("ASUS TUF Gaming 27 QHD", "asus-tuf-gaming-27-qhd", "MON-TUF27", "peripherals", "ASUS", 13990m, "peripherals",
+        P("ASUS TUF Gaming 27 QHD", "asus-tuf-gaming-27-qhd", "MON-TUF27", "monitors", "ASUS", 13990m, "monitors",
             [S("Display", "Resolution", "2560 x 1440")], CatalogProductStatus.Draft),
         P("Corsair iCUE Link Titan 360", "corsair-icue-link-titan-360", "COOL-TITAN360", "cooling", "Corsair", 11990m, "cooling",
             [S("Cooling", "Radiator", "360 mm")], CatalogProductStatus.Draft)

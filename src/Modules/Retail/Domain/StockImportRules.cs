@@ -6,7 +6,7 @@ namespace HardwareStore.Modules.Retail;
 
 public enum StockImportColumn
 {
-    Category, Model, Condition, Quantity, Cost, Price, PriceWithBoard, PriceAlone, WarrantyMonths, HasBox, Serial, InternalNote, Hidden
+    Category, Model, Condition, Quantity, Cost, Price, PriceWithBoard, PriceAlone, WarrantyMonths, HasBox, Serial, InternalNote, Hidden, Brand
 }
 
 /// <summary>One column of the import sheet: its Arabic header, its English alias, and whether the sheet must have it.</summary>
@@ -42,7 +42,8 @@ public static class StockImportRules
         new(StockImportColumn.HasBox, "بالكرتونة", "Has box", false),
         new(StockImportColumn.Serial, "السيريال", "Serial", false),
         new(StockImportColumn.InternalNote, "ملاحظة داخلية", "Internal note", false),
-        new(StockImportColumn.Hidden, "مخفي", "Hidden", false)
+        new(StockImportColumn.Hidden, "مخفي", "Hidden", false),
+        new(StockImportColumn.Brand, "الماركة", "Brand", false)
     ];
 
     /// <summary>The template: the header row and one example row that is a valid row for <paramref name="exampleCategory"/>.</summary>
@@ -50,7 +51,7 @@ public static class StockImportRules
         [.. Columns.Select(column => column.Arabic)],
         [[ExportCell.Text(exampleCategory), ExportCell.Text("RTX 3060 12GB"), ExportCell.Text("مستعمل"), ExportCell.Number(1m),
             ExportCell.Number(8000m), ExportCell.Number(9500m), ExportCell.Number(10500m), ExportCell.Number(10000m), ExportCell.Empty,
-            ExportCell.Text("نعم"), ExportCell.Empty, ExportCell.Empty, ExportCell.Text("لا")]]);
+            ExportCell.Text("نعم"), ExportCell.Empty, ExportCell.Empty, ExportCell.Text("لا"), ExportCell.Empty]]);
 
     /// <summary>Finds each column in the header row (Arabic or English, any case); the names of required columns that are missing are returned.</summary>
     public static (IReadOnlyDictionary<StockImportColumn, int> Indexes, IReadOnlyList<string> Missing) MapHeader(IReadOnlyList<string> header)
@@ -73,6 +74,7 @@ public static class StockImportRules
 
         var category = FindCategory(lookups.Categories, Cell(StockImportColumn.Category), errors);
         var modelName = ParseModel(Cell(StockImportColumn.Model), errors);
+        var brand = FindBrand(lookups.Brands, Cell(StockImportColumn.Brand), errors);
         var condition = ParseCondition(Cell(StockImportColumn.Condition), errors);
         var quantity = ParseWholeNumber(Cell(StockImportColumn.Quantity), "الكمية", 1, StockItemRules.MaxQuantity, errors) ?? 1;
         var cost = ParseMoney(Cell(StockImportColumn.Cost), "التكلفة", required: true, errors);
@@ -91,7 +93,7 @@ public static class StockImportRules
         var itemsToCreate = errors.Count > 0 ? 0 : StockItemRules.UnitsPerItem(condition!, quantity).Count;
         ReceiptLine? line = errors.Count > 0 ? null : new ReceiptLine(modelName!, condition!, quantity, cost!.Value, price!.Value,
             category!.Id, null, withBoard is { } board ? board - price.Value : null, alone is { } single ? single - price.Value : null,
-            serial, null, warrantyLabel, warranty, hasBox, hidden, note);
+            serial, null, warrantyLabel, warranty, hasBox, hidden, note, BrandId: brand?.Id);
         return new StockImportRow(row, modelName ?? Cell(StockImportColumn.Model), condition ?? string.Empty, quantity, itemsToCreate, errors, line);
     }
 
@@ -125,6 +127,16 @@ public static class StockImportRules
         var found = categories.FirstOrDefault(category => string.Equals(category.Code, text, StringComparison.OrdinalIgnoreCase))
             ?? categories.FirstOrDefault(category => string.Equals(category.Name, text, StringComparison.OrdinalIgnoreCase));
         if (found is null) errors.Add($"القسم \"{text}\" مش موجود");
+        return found;
+    }
+
+    /// <summary>An optional brand from the brand list, by name or slug (any case).</summary>
+    private static StockImportBrand? FindBrand(IReadOnlyList<StockImportBrand> brands, string text, List<string> errors)
+    {
+        if (text.Length == 0) return null;
+        var found = brands.FirstOrDefault(brand => string.Equals(brand.Name, text, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(brand.Slug, text, StringComparison.OrdinalIgnoreCase));
+        if (found is null) errors.Add($"الماركة \"{text}\" مش موجودة في قائمة الماركات");
         return found;
     }
 

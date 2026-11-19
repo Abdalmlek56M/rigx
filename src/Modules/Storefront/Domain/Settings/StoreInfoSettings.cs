@@ -80,10 +80,20 @@ public sealed record ContactLinkSettings : IStoreSettingsSection<ContactLinkSett
     public static ContactLinkSettings Read(StoreSettings settings) => settings.ContactLinks;
     public static void Write(StoreSettings settings, ContactLinkSettings value) => settings.ContactLinks = value;
 
+    /// <summary>
+    /// The store's links before the owner saves their own: the store number, and the social accounts, which all use the handle
+    /// <c>rigxhardware</c> (owner decision, 19 Nov 2026). Migration <c>M53_DefaultSocialLinks</c> added the same social links once
+    /// to stores that had already saved their list.
+    /// </summary>
     public IReadOnlyList<ContactLink> Links { get; init; } =
     [
         new() { Platform = ContactPlatform.WhatsApp, Value = StoreNumber, ShowOnInvoice = true, ShowInFloatingButton = true },
-        new() { Platform = ContactPlatform.Phone, Value = StoreNumber, ShowOnInvoice = true, ShowInFloatingButton = true }
+        new() { Platform = ContactPlatform.Phone, Value = StoreNumber, ShowOnInvoice = true, ShowInFloatingButton = true },
+        new() { Platform = ContactPlatform.Facebook, Value = "https://www.facebook.com/rigxhardware" },
+        new() { Platform = ContactPlatform.Instagram, Value = "https://www.instagram.com/rigxhardware" },
+        new() { Platform = ContactPlatform.TikTok, Value = "https://www.tiktok.com/@rigxhardware" },
+        new() { Platform = ContactPlatform.YouTube, Value = "https://www.youtube.com/@rigxhardware" },
+        new() { Platform = ContactPlatform.Telegram, Value = "https://t.me/rigxhardware" }
     ];
 
     public ContactLinkSettings Normalize()

@@ -4,7 +4,7 @@ namespace HardwareStore.Modules.Retail;
 internal static class StockItemMapping
 {
     public static StockItemAdminView ToAdminView(StockItem item, DateTimeOffset now, bool includeCosts, bool includeSerials) => new(
-        item.Id, item.Code, item.Condition, item.CategoryId, item.ProductId, item.ModelName, item.Price, item.WithBoardExtra,
+        item.Id, item.Code, item.Condition, item.CategoryId, item.BrandId, item.ProductId, item.ModelName, item.Price, item.WithBoardExtra,
         item.AloneExtra, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), item.WarrantyLabel,
         item.WarrantyMonths, item.HasBox, item.IsHidden, StockItemRules.IsPublished(item.IsHidden, item.Photos.Count),
         item.InternalNote, item.Specs, item.Photos, item.Units.Count(unit => unit.Status == UnitStatus.Available),

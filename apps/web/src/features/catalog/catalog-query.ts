@@ -13,6 +13,8 @@ export interface CatalogState {
   search: string;
   /** Category slug. */
   category: string | null;
+  /** Brand slug. */
+  brand: string | null;
   condition: Condition | null;
   stock: StockFilter;
   min: number | null;
@@ -46,6 +48,7 @@ export function parseCatalogParams(params: RawParams): CatalogState {
   return {
     search: first(params.search)?.trim() ?? "",
     category: first(params.category)?.trim() || null,
+    brand: first(params.brand)?.trim().toLowerCase() || null,
     condition: parseCondition(first(params.condition)),
     stock: stock === "in" ? "in" : "all",
     min: parseAmount(first(params.min)),
@@ -61,6 +64,7 @@ export function toSearchParams(state: CatalogState): URLSearchParams {
   const query = new URLSearchParams();
   if (state.search) query.set("search", state.search);
   if (state.category) query.set("category", state.category);
+  if (state.brand) query.set("brand", state.brand);
   if (state.condition) query.set("condition", state.condition);
   if (state.stock === "in") query.set("stock", "in");
   if (state.min !== null) query.set("min", String(state.min));
@@ -99,6 +103,7 @@ export function catalogCanonicalPath(state: CatalogState): string {
 export interface ApiItemsQuery {
   search?: string;
   categoryId?: string;
+  brandId?: string;
   condition?: Condition;
   inStock?: boolean;
   minPrice?: number;
@@ -109,13 +114,20 @@ export interface ApiItemsQuery {
   [spec: `spec.${string}`]: string;
 }
 
+/** The ids of the state's category and brand (null = none or unknown). */
+export interface CatalogIds {
+  categoryId: string | null;
+  brandId: string | null;
+}
+
 /**
- * The `/api/v1/store/items` query for a state; `categoryId` is the id of the state's category (null = none or unknown).
+ * The `/api/v1/store/items` query for a state and the ids of its category and brand.
  * With sold-out items hidden by the owner (`showSoldOut` off) only available items are asked for.
  */
-export function toApiQuery(state: CatalogState, categoryId: string | null, showSoldOut = true): ApiItemsQuery {
+export function toApiQuery(state: CatalogState, { categoryId, brandId }: CatalogIds, showSoldOut = true): ApiItemsQuery {
   const query: ApiItemsQuery = { sort: state.sort, page: state.page, pageSize: PAGE_SIZE };
   if (state.search) query.search = state.search;
+  if (brandId) query.brandId = brandId;
   if (categoryId) {
     query.categoryId = categoryId;
     for (const [key, value] of Object.entries(state.specs)) query[`spec.${key}`] = value;
@@ -129,7 +141,7 @@ export function toApiQuery(state: CatalogState, categoryId: string | null, showS
 
 export interface ActiveFilter {
   id: string;
-  kind: "search" | "category" | "condition" | "stock" | "price" | "spec";
+  kind: "search" | "category" | "brand" | "condition" | "stock" | "price" | "spec";
   /** For `spec`: the spec key (its value is in `value`). */
   specKey?: string;
   value: string;
@@ -142,6 +154,7 @@ export function activeFilters(state: CatalogState): ActiveFilter[] {
   const chips: ActiveFilter[] = [];
   if (state.search) chips.push({ id: "search", kind: "search", value: state.search, clear: { search: "" } });
   if (state.category) chips.push({ id: "category", kind: "category", value: state.category, clear: { category: null } });
+  if (state.brand) chips.push({ id: "brand", kind: "brand", value: state.brand, clear: { brand: null } });
   if (state.condition) chips.push({ id: "condition", kind: "condition", value: state.condition, clear: { condition: null } });
   if (state.stock === "in") chips.push({ id: "stock", kind: "stock", value: state.stock, clear: { stock: "all" } });
   if (state.min !== null || state.max !== null) {

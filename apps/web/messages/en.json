@@ -245,7 +245,8 @@
       "apply": "Apply",
       "availability": "Availability",
       "inStock": "In stock only",
-      "allStock": "All"
+      "allStock": "All",
+      "brand": "Brand"
     },
     "chips": {
       "search": "Search: {query}",
@@ -320,7 +321,8 @@
       "pickupAndShipping": "From {address}, or shipping to all governorates",
       "shippingOnly": "Shipping to all governorates"
     },
-    "orderWhatsApp": "Order it on WhatsApp"
+    "orderWhatsApp": "Order it on WhatsApp",
+    "brandLink": "All {brand} products"
   },
   "builds": {
     "title": "Ready-made builds",
@@ -1211,7 +1213,8 @@
         "audit": "Activity log",
         "system": "Trash & backups",
         "settings": "Store settings",
-        "stockImport": "Stock import"
+        "stockImport": "Stock import",
+        "brands": "Brands"
       }
     },
     "kit": {
@@ -2484,7 +2487,9 @@
         "partner": "Partner",
         "noPartner": "No partner",
         "percent": "Partner share %",
-        "percentDefault": "The partner's default share"
+        "percentDefault": "The partner's default share",
+        "brand": "Brand",
+        "noBrand": "No brand"
       },
       "detail": {
         "loading": "Loading the item",
@@ -3816,7 +3821,7 @@
       },
       "step1": {
         "title": "1. Download the template",
-        "hint": "Fill the template with your stock. Delete the example row before uploading.",
+        "hint": "Fill the template with your stock. The brand column is optional: write the name as it is on the brands page. Delete the example row before uploading.",
         "button": "Download the template",
         "downloaded": "Template downloaded"
       },
@@ -3844,6 +3849,28 @@
         "photosHint": "Items only show in the store once you add 3 photos to each.",
         "openStock": "Open stock"
       }
+    },
+    "brands": {
+      "title": "Brands",
+      "new": "New brand",
+      "search": "Search brands",
+      "listLabel": "Brands",
+      "emptyList": "No brands yet.",
+      "noMatch": "No brand with that name.",
+      "empty": "Pick a brand from the list or create a new one.",
+      "retry": "Try again",
+      "failed": "The brands did not load.",
+      "off": "Hidden",
+      "createTitle": "New brand",
+      "editTitle": "Edit: {name}",
+      "fields": {
+        "name": "Name",
+        "slug": "Link",
+        "active": "Shown in the store"
+      },
+      "slugHint": "Lowercase English letters, numbers and dashes. It appears in the brand filter link.",
+      "save": "Save brand",
+      "saved": "Brand saved"
     }
   }
 }

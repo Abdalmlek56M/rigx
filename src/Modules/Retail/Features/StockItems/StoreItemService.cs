@@ -18,6 +18,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var items = db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter).Matching(query.Search, includeSerials: false);
         if (query.CategoryIds is { Count: > 0 } categoryIds)
             items = items.Where(item => item.CategoryId != null && categoryIds.Contains(item.CategoryId.Value));
+        if (query.BrandId is Guid brandId) items = items.Where(item => item.BrandId == brandId);
         if (query.Specs is { Count: > 0 } specs)
         {
             var json = JsonSerializer.Serialize(specs);
@@ -62,7 +63,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
             .Select(item => new { Item = item, Available = item.Units.Count(unit => unit.Status == UnitStatus.Available) })
             .SingleOrDefaultAsync(cancellationToken) ?? throw ItemNotFound();
         var item = row.Item;
-        return new StoreItemDetail(item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.WarrantyMonths,
+        return new StoreItemDetail(item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.BrandId, item.WarrantyLabel, item.WarrantyMonths,
             item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs);
     }
 

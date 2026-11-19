@@ -1006,6 +1006,14 @@
             }
           },
           {
+            "name": "brandId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "condition",
             "in": "query",
             "schema": {
@@ -26631,6 +26639,7 @@
           "code",
           "condition",
           "categoryId",
+          "brandId",
           "productId",
           "modelName",
           "price",
@@ -26664,6 +26673,13 @@
             "type": "string"
           },
           "categoryId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brandId": {
             "type": [
               "null",
               "string"
@@ -26806,6 +26822,7 @@
         "required": [
           "modelName",
           "categoryId",
+          "brandId",
           "productId",
           "price",
           "withBoardExtra",
@@ -26826,6 +26843,13 @@
             ]
           },
           "categoryId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brandId": {
             "type": [
               "null",
               "string"
@@ -27168,6 +27192,7 @@
           "modelName",
           "condition",
           "categoryId",
+          "brandId",
           "warrantyLabel",
           "warrantyMonths",
           "hasBox",
@@ -27191,6 +27216,13 @@
             "type": "string"
           },
           "categoryId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brandId": {
             "type": [
               "null",
               "string"

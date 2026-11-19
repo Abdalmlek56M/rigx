@@ -97,6 +97,20 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     }
 
     [Fact]
+    public async Task Store_brand_filter_lists_the_brand_items_and_the_page_carries_the_brand()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var msi = Guid.NewGuid();
+        var items = (await retail.Units.ReceiveAsync(Receive(UsedLine("MSI GPU") with { BrandId = msi }, UsedLine("Other GPU")), Actor)).Items;
+        foreach (var item in items) await PublishAsync(retail, item);
+
+        Assert.Equal("MSI GPU", Assert.Single((await retail.Store.ListAsync(new StoreItemQuery(BrandId: msi))).Items).ModelName);
+        Assert.Equal(2, (await retail.Store.ListAsync(new StoreItemQuery())).Total);
+        Assert.Equal(msi, (await retail.Store.GetAsync(items[0].Code)).BrandId);
+        Assert.Null((await retail.Store.GetAsync(items[1].Code)).BrandId);
+    }
+
+    [Fact]
     public async Task Store_search_finds_items_by_code_and_by_any_model_spelling_but_never_by_serial()
     {
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
@@ -151,10 +165,12 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     {
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
         var item = Assert.Single((await retail.Units.ReceiveAsync(Receive(UsedLine("Old Name")), Actor)).Items);
-        StockItemUpdate Update(long version) => new("New Name", null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
+        var brandId = Guid.NewGuid();
+        StockItemUpdate Update(long version) => new("New Name", null, brandId, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
 
         var updated = await retail.StockItems.UpdateAsync(item.Id, Update(item.RowVersion));
         Assert.Equal("New Name", updated.ModelName);
+        Assert.Equal(brandId, updated.BrandId);
         Assert.Equal(new StockItemPrices(900m, 950m, 1000m), updated.Prices);
         Assert.Equal(item.RowVersion + 1, updated.RowVersion);
 
@@ -242,7 +258,7 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
         var items = (await retail.Units.ReceiveAsync(Receive(UsedLine("Old Name"), UsedLine("New Name")), Actor)).Items;
         var item = items.Single(i => i.ModelName == "Old Name");
-        StockItemUpdate Update(string name, long version) => new(name, null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
+        StockItemUpdate Update(string name, long version) => new(name, null, null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
 
         await PublishAsync(retail, item);
         async Task<string> SlugAsync() => (await retail.Store.GetAsync(item.Code)).Slug;
@@ -263,7 +279,7 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
         var item = Assert.Single((await retail.Units.ReceiveAsync(Receive(UsedLine("RTX 4070 Super")), Actor)).Items);
         await PublishAsync(retail, item);
-        StockItemUpdate Update(string name, long version) => new(name, null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
+        StockItemUpdate Update(string name, long version) => new(name, null, null, null, 900m, 50m, 100m, "سنة", 12, true, false, null, null, version);
 
         var current = await retail.StockItems.GetAsync(item.Id, false, false);
         var renamed = await retail.StockItems.UpdateAsync(item.Id, Update("RTX 4070 Super Gaming OC", current.RowVersion));

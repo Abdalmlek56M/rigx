@@ -26,7 +26,9 @@ public static partial class RetailEndpoints
         StoreSettingsService settings, CancellationToken ct, bool dryRun = true)
     {
         var file = await ReadImportFileAsync(context, ct);
-        var lookups = new StockImportLookups(await LoadImportCategoriesAsync(taxonomy, ct), await LoadWarrantyLabelsAsync(settings, ct));
+        var lookups = new StockImportLookups(await LoadImportCategoriesAsync(taxonomy, ct),
+            [.. (await taxonomy.GetBrandsAsync(ct)).Select(brand => new StockImportBrand(brand.Id, brand.Slug, brand.Name))],
+            await LoadWarrantyLabelsAsync(settings, ct));
         return TypedResults.Ok(dryRun
             ? StockImportService.DryRun(file, lookups)
             : await imports.ImportAsync(file, lookups, context.RequireUserId(), ct));

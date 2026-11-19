@@ -5,7 +5,7 @@ import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import {
   BoxIcon, CaseIcon, ClockIcon, DatabaseIcon, DocumentIcon, FolderIcon, GearIcon, GridIcon, HandshakeIcon, HelpIcon, InboxIcon, KeyIcon,
-  MegaphoneIcon, RegisterIcon, StarIcon, StorageIcon, TagIcon, TruckIcon, UsersIcon, WalletIcon
+  MegaphoneIcon, RegisterIcon, ShieldIcon, StarIcon, StorageIcon, TagIcon, TruckIcon, UsersIcon, WalletIcon
 } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
 import type { SessionUser } from "@/features/auth/session-store";
@@ -14,7 +14,7 @@ import type { AdminArea, AdminAreaKey, AdminGroup } from "./admin-nav";
 
 const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
   dashboard: GridIcon, pos: RegisterIcon, orders: BoxIcon, customers: UsersIcon, offers: TagIcon,
-  inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, stockImport: DocumentIcon, categories: FolderIcon,
+  inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, stockImport: DocumentIcon, categories: FolderIcon, brands: ShieldIcon,
   partners: HandshakeIcon, expenses: WalletIcon,
   requests: InboxIcon, campaigns: MegaphoneIcon, tiers: StarIcon,
   articles: DocumentIcon, faq: HelpIcon, policies: DocumentIcon,

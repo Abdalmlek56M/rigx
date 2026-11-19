@@ -3,6 +3,7 @@ import { Link, getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs, type CategoryNode } from "@/lib/categories";
 import { CONDITIONS } from "@/lib/condition";
+import type { Brand } from "@/lib/storefront";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
 import { CheckIcon } from "@/components/ui/icons";
 
@@ -14,6 +15,7 @@ const numberInput = "h-11 w-full rounded-control border border-input-line bg-sur
 interface FilterPanelProps {
   state: CatalogState;
   tree: CategoryNode[];
+  brands: Brand[];
   /** Id of the selected category (spec filters come from it). */
   categoryId: string | null;
   showSoldOut: boolean;
@@ -47,8 +49,19 @@ function CategoryList({ nodes, state, openIds }: { nodes: CategoryNode[]; state:
   );
 }
 
-/** The filter sidebar: condition, category tree, spec chips of the chosen category, price range and availability. Plain links and a GET form, so it works without scripts. */
-export async function FilterPanel({ state, tree, categoryId, showSoldOut, idPrefix }: FilterPanelProps) {
+function CheckBox({ checked }: { checked: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border text-xs ${checked ? "border-carbon bg-carbon text-on-carbon" : "border-input-line"}`}
+    >
+      {checked ? <CheckIcon size={13} /> : null}
+    </span>
+  );
+}
+
+/** The filter sidebar: condition, category tree, brands, spec chips of the chosen category, price range and availability. Plain links and a GET form, so it works without scripts. */
+export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut, idPrefix }: FilterPanelProps) {
   const t = await getTranslations("catalog.filters");
   const tc = await getTranslations("common.condition");
   const locale = (await getLocale()) as Locale;
@@ -78,12 +91,7 @@ export async function FilterPanel({ state, tree, categoryId, showSoldOut, idPref
               aria-current={selected ? "true" : undefined}
               className={`${linkRow} gap-2.5 ${selected ? "bg-paper font-bold" : ""}`}
             >
-              <span
-                aria-hidden="true"
-                className={`flex h-[18px] w-[18px] items-center justify-center rounded-sm border text-xs ${selected ? "border-carbon bg-carbon text-on-carbon" : "border-input-line"}`}
-              >
-                {selected ? <CheckIcon size={13} /> : null}
-              </span>
+              <CheckBox checked={selected} />
               {tc(condition)}
             </Link>
           );
@@ -94,6 +102,29 @@ export async function FilterPanel({ state, tree, categoryId, showSoldOut, idPref
         <fieldset className={fieldset}>
           <legend className={legend}>{t("category")}</legend>
           <CategoryList nodes={tree} state={state} openIds={openIds} />
+        </fieldset>
+      ) : null}
+
+      {brands.length > 0 ? (
+        <fieldset className={fieldset}>
+          <legend className={legend}>{t("brand")}</legend>
+          <ul className="m-0 flex max-h-60 list-none flex-col gap-0.5 overflow-y-auto overscroll-contain p-0">
+            {brands.map((brand) => {
+              const selected = state.brand === brand.slug;
+              return (
+                <li key={brand.id}>
+                  <Link
+                    href={catalogHref(state, { brand: selected ? null : brand.slug })}
+                    aria-current={selected ? "true" : undefined}
+                    className={`${linkRow} gap-2.5 ${selected ? "bg-paper font-bold" : ""}`}
+                  >
+                    <CheckBox checked={selected} />
+                    <span dir="ltr">{brand.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </fieldset>
       ) : null}
 

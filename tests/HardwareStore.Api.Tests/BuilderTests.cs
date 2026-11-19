@@ -87,7 +87,7 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
         public async Task<StockItemAdminView> RepriceAsync(StockItemAdminView item, decimal price)
         {
             var current = await Retail.StockItems.GetAsync(item.Id, false, false);
-            return await Retail.StockItems.UpdateAsync(item.Id, new StockItemUpdate(current.ModelName, current.CategoryId, null, price,
+            return await Retail.StockItems.UpdateAsync(item.Id, new StockItemUpdate(current.ModelName, current.CategoryId, current.BrandId, null, price,
                 current.WithBoardExtra, current.AloneExtra, current.WarrantyLabel, current.WarrantyMonths, current.HasBox, false, null,
                 current.Specs, current.RowVersion));
         }

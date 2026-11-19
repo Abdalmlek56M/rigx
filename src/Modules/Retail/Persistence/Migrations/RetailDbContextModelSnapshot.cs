@@ -1531,6 +1531,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("alone_extra");
 
+                    b.Property<Guid?>("BrandId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("brand_id");
+
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid")
                         .HasColumnName("category_id");
@@ -1637,6 +1641,9 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("with_board_extra");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BrandId")
+                        .HasDatabaseName("ix_stock_items_brand_id");
 
                     b.HasIndex("Code")
                         .IsUnique()

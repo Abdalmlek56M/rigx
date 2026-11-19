@@ -7,8 +7,10 @@ namespace HardwareStore.Api.Tests;
 public sealed class StockImportRulesTests
 {
     private static readonly Guid GpuId = Guid.NewGuid();
+    private static readonly Guid MsiId = Guid.NewGuid();
     private static readonly StockImportLookups Lookups = new(
         [new StockImportCategory(GpuId, "GPU", "كروت الشاشة"), new StockImportCategory(Guid.NewGuid(), "RAM", "Memory")],
+        [new StockImportBrand(MsiId, "msi", "MSI")],
         new Dictionary<int, string> { [12] = "سنة" });
 
     private static readonly string[] Header = [.. StockImportRules.Columns.Select(column => column.Arabic)];
@@ -78,6 +80,15 @@ public sealed class StockImportRulesTests
         Assert.Contains("السعر في تجميعة مطلوبة", row.Errors);
         Assert.Contains(row.Errors, error => error.StartsWith("الضمان 99 شهر"));
         Assert.Contains(row.Errors, error => error.StartsWith("بالكرتونة"));
+    }
+
+    [Fact]
+    public void The_brand_is_optional_and_matched_by_name_or_slug_from_the_brand_list()
+    {
+        Assert.Null(Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "").Line!.BrandId);
+        Assert.Equal(MsiId, Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "msi").Line!.BrandId);
+        Assert.Equal(MsiId, Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "MSI").Line!.BrandId);
+        Assert.Equal(["الماركة \"Nope\" مش موجودة في قائمة الماركات"], Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "Nope").Errors);
     }
 
     [Fact]

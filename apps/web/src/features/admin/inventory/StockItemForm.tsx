@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { isConflict } from "@/lib/api/conflict";
+import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
@@ -15,16 +17,18 @@ import { itemFormValid, toItemForm, toUpdateRequest, type StockItemForm as Form 
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
-/** The item's edit form (model, category, prices, warranty, box, visibility, internal note). Reloads only on a 409, so server field errors stay visible. */
-export function StockItemForm({ item, tree, warrantyLabels, canEdit, onSaved, onStale }: {
+/** The item's edit form (model, category, brand, prices, warranty, box, visibility, internal note). Reloads only on a 409, so server field errors stay visible. */
+export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onSaved, onStale }: {
   item: StockItem;
   tree: readonly Category[];
+  brands: readonly Brand[];
   warrantyLabels: readonly string[] | null;
   canEdit: boolean;
   onSaved: (item: StockItem) => void;
   onStale: () => void;
 }) {
   const t = useTranslations("admin.inventory.form");
+  const tf = useTranslations("admin.inventory.fields");
   const submit = useSubmit();
   const [form, setForm] = useState<Form>(() => toItemForm(item));
   const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
@@ -54,6 +58,10 @@ export function StockItemForm({ item, tree, warrantyLabels, canEdit, onSaved, on
         <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
         <TextField label={t("model")} name="modelName" ltr value={form.modelName} onChange={(modelName) => set({ modelName })} error={error("modelName")} />
         <CategorySelect tree={tree} value={form.categoryId} onChange={(categoryId) => set({ categoryId })} error={error("categoryId")} />
+        <SelectField
+          label={tf("brand")} name="brandId" value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")}
+          options={[{ value: "", label: tf("noBrand") }, ...brands.map((brand) => ({ value: brand.id, label: brand.name }))]}
+        />
         <div className="grid gap-3 sm:grid-cols-3">
           <TextField label={t("price")} name="price" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />
           <TextField label={t("withBoardExtra")} name="withBoardExtra" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} />

@@ -3,13 +3,16 @@ import { BoardIcon, CaseIcon, CpuIcon, FanIcon, GpuIcon, HeadsetIcon, MonitorIco
 
 type IconComponent = ComponentType<{ size?: number }>;
 
-/** Slug words → icon, first match wins (category slugs are owner-made, so they are matched loosely). */
+/**
+ * Slug words → icon, first match wins. Category slugs are owner-made, so they are matched loosely; every base category slug
+ * (`BaseCatalog` in the Catalog module) has a rule here.
+ */
 const RULES: readonly [readonly string[], IconComponent][] = [
   [["accessor", "peripheral", "keyboard", "mouse", "headset"], HeadsetIcon],
   [["monitor", "screen", "display"], MonitorIcon],
   [["graphics", "gpu", "vga"], GpuIcon],
   [["motherboard", "board"], BoardIcon],
-  [["processor", "cpu"], CpuIcon],
+  [["processor", "cpu", "intel", "amd"], CpuIcon],
   [["memory", "ram"], RamIcon],
   [["storage", "ssd", "hdd", "nvme", "hard"], StorageIcon],
   [["power", "psu"], PowerIcon],

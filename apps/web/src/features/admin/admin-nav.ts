@@ -1,7 +1,7 @@
 /** The admin areas, their sidebar groups and the permission each needs. Labels live in the `admin.nav` messages. Pure, so it is tested. */
 export type AdminAreaKey =
   | "dashboard" | "pos" | "orders" | "customers" | "offers"
-  | "inventory" | "builds" | "purchases" | "stockImport" | "categories"
+  | "inventory" | "builds" | "purchases" | "stockImport" | "categories" | "brands"
   | "partners" | "expenses"
   | "requests" | "campaigns" | "tiers"
   | "articles" | "faq" | "policies"
@@ -41,7 +41,8 @@ export const ADMIN_NAV: readonly AdminGroup[] = [
       { key: "builds", href: "/admin/builds", anyOf: ["Catalog.ManageProducts"] },
       { key: "purchases", href: "/admin/purchases", anyOf: ["Purchasing.View"] },
       { key: "stockImport", href: "/admin/stock/import", anyOf: ["Purchasing.ReceiveGoods"] },
-      { key: "categories", href: "/admin/categories", anyOf: ["Catalog.View"] }
+      { key: "categories", href: "/admin/categories", anyOf: ["Catalog.View"] },
+      { key: "brands", href: "/admin/brands", anyOf: ["Catalog.View"] }
     ]
   },
   {

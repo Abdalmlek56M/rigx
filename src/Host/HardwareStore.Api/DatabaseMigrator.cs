@@ -11,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 /// <summary>
 /// Applies every module's EF Core migrations in dependency order.
 /// Single source of truth for "which contexts exist and in what order" — used by the
-/// <c>--migrate</c> command and by development initialization.
+/// <c>--migrate</c> command and by development initialization. Afterwards it adds the missing base categories and brands
+/// (<see cref="BaseCatalogSeeder"/>).
 /// Uses <c>ConnectionStrings:Migrations</c> (schema-owner role) when set, otherwise <c>Default</c>.
 /// </summary>
 public static class DatabaseMigrator
@@ -37,6 +38,9 @@ public static class DatabaseMigrator
             await context.Database.MigrateAsync(cancellationToken);
             logger.LogInformation("Migrated {Context}.", name);
         }
+        await using var catalog = new CatalogDbContext(Options<CatalogDbContext>(connectionString));
+        var seeded = await BaseCatalogSeeder.SeedAsync(catalog, TimeProvider.System.GetUtcNow(), cancellationToken);
+        logger.LogInformation("Base catalog: added {Categories} categories and {Brands} brands.", seeded.CategoriesAdded, seeded.BrandsAdded);
     }
 
     /// <summary>The migrations applied to the database, per module context (recorded in every backup's manifest).</summary>

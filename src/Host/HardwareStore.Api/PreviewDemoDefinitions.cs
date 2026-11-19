@@ -12,15 +12,15 @@ internal static class PreviewDemoDefinitions
 
     public static PreviewDemoStockItem[] StockItems() =>
     [
-        S("cpu-ryzen5-5600-used", "AMD Ryzen 5 5600", StockCondition.Used, "amd-processors", 1, 3800m, 5200m,
+        S("cpu-ryzen5-5600-used", "AMD Ryzen 5 5600", StockCondition.Used, "amd", 1, 3800m, 5200m,
             withBoard: 200m, alone: 400m, specs: Specs(("Socket", "AM4"), ("Cores", "6"))),
-        S("cpu-ryzen5-5600-new", "AMD Ryzen 5 5600", StockCondition.New, "amd-processors", 3, 4500m, 6100m,
+        S("cpu-ryzen5-5600-new", "AMD Ryzen 5 5600", StockCondition.New, "amd", 3, 4500m, 6100m,
             withBoard: 200m, alone: 400m, specs: Specs(("Socket", "AM4"), ("Cores", "6"))),
-        S("cpu-ryzen7-5700x", "AMD Ryzen 7 5700X", StockCondition.New, "amd-processors", 3, 6800m, 8900m,
+        S("cpu-ryzen7-5700x", "AMD Ryzen 7 5700X", StockCondition.New, "amd", 3, 6800m, 8900m,
             withBoard: 200m, alone: 400m, specs: Specs(("Socket", "AM4"), ("Cores", "8"))),
-        S("cpu-i5-12400f-used", "Intel Core i5-12400F", StockCondition.Used, "intel-processors", 1, 4500m, 5900m,
+        S("cpu-i5-12400f-used", "Intel Core i5-12400F", StockCondition.Used, "intel", 1, 4500m, 5900m,
             withBoard: 200m, alone: 400m, specs: Specs(("Socket", "LGA1700"), ("Cores", "6"))),
-        S("cpu-i5-13400", "Intel Core i5-13400", StockCondition.New, "intel-processors", 3, 7500m, 9600m,
+        S("cpu-i5-13400", "Intel Core i5-13400", StockCondition.New, "intel", 3, 7500m, 9600m,
             withBoard: 200m, alone: 400m, specs: Specs(("Socket", "LGA1700"), ("Cores", "10"))),
 
         S("gpu-rtx3060-used", "NVIDIA GeForce RTX 3060 12GB", StockCondition.Used, "graphics-cards", 1, 12000m, 16500m,
@@ -80,8 +80,8 @@ internal static class PreviewDemoDefinitions
         S("cool-kraken360", "NZXT Kraken 360 RGB", StockCondition.New, "cooling", 1, 8000m, 9890m,
             specs: Specs(("Type", "Liquid"), ("Radiator", "360 mm"))),
 
-        S("peripheral-redragon-k552", "Redragon K552 Keyboard", StockCondition.New, "peripherals", 4, 900m, 1450m),
-        S("peripheral-gpx2", "Logitech G Pro X Superlight 2", StockCondition.New, "peripherals", 1, 4200m, 5990m,
+        S("peripheral-redragon-k552", "Redragon K552 Keyboard", StockCondition.New, "accessories", 4, 900m, 1450m),
+        S("peripheral-gpx2", "Logitech G Pro X Superlight 2", StockCondition.New, "accessories", 1, 4200m, 5990m,
             specs: Specs(("Type", "Mouse")))
     ];
 

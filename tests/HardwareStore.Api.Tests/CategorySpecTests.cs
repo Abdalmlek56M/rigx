@@ -97,7 +97,7 @@ public sealed class StoreSpecFilterPostgreSqlTests(OwnerBootstrapPostgreSqlFixtu
                 await retail.StockItems.AddPhotoAsync(items[index].Id, new StockItemPhoto($"i/{index}/{photo}.webp", $"i/{index}/{photo}-t.webp"));
             var current = await retail.StockItems.GetAsync(items[index].Id, false, false);
             var (socket, cores) = socketsAndCores[index];
-            await retail.StockItems.UpdateAsync(items[index].Id, new StockItemUpdate(current.ModelName, null, null, current.Price, null, null,
+            await retail.StockItems.UpdateAsync(items[index].Id, new StockItemUpdate(current.ModelName, null, null, null, current.Price, null, null,
                 null, null, false, false, null, new Dictionary<string, string> { ["socket"] = socket, ["cores"] = cores }, current.RowVersion));
         }
         await retail.StockItems.SetVisibilityAsync(new StockVisibilityRequest([items[3].Id], true));

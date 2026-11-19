@@ -125,7 +125,7 @@ public sealed class ContentV2PostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
         var other = await services.Taxonomy.SaveCategoryAsync(null, new CategoryInput("Cases", $"cases-{suffix}", null, null, null, 0, true, null));
         var item = await retail.PublishedItemAsync("Card GPU", 1, 1500m);
         item = await retail.StockItems.GetAsync(item.Id, false, false);
-        await retail.StockItems.UpdateAsync(item.Id, new StockItemUpdate(item.ModelName, child.Id, null, item.Price, null, null, null, null,
+        await retail.StockItems.UpdateAsync(item.Id, new StockItemUpdate(item.ModelName, child.Id, null, null, item.Price, null, null, null, null,
             false, false, null, null, item.RowVersion));
         Assert.Equal([child.Id, parent.Id], await services.Taxonomy.GetCategoryPathIdsAsync(child.Id));
 

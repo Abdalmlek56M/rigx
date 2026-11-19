@@ -28,6 +28,7 @@ internal static class StockItemFactory
                 Code = await db.NextCodeAsync(CodeSequence.StockItem, PublicCode.StockItem, cancellationToken),
                 Condition = condition,
                 CategoryId = line.CategoryId,
+                BrandId = line.BrandId,
                 ProductId = line.ProductId,
                 ModelName = modelName,
                 ModelKey = ModelName.Key(modelName),

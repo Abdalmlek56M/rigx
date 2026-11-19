@@ -25,7 +25,7 @@ describe("parseCatalogParams", () => {
 
 describe("URL and API mapping", () => {
   it("leaves defaults out of the URL and round-trips", () => {
-    const state = parse({ category: "gpu", condition: "New", stock: "in", min: "500", sort: "price_desc", page: "2", "spec.vram": "8GB" });
+    const state = parse({ category: "gpu", brand: "msi", condition: "New", stock: "in", min: "500", sort: "price_desc", page: "2", "spec.vram": "8GB" });
     const query = toSearchParams(state).toString();
     assert.deepEqual(parse(Object.fromEntries(new URLSearchParams(query))), state);
     assert.equal(toSearchParams(parse({})).toString(), "");
@@ -40,21 +40,30 @@ describe("URL and API mapping", () => {
   });
   it("maps stock to inStock and adds spec params only with a category id", () => {
     const state = parse({ stock: "in", min: "10", "spec.vram": "8GB", category: "gpu" });
-    const query = toApiQuery(state, "cat-1");
+    const none = { categoryId: null, brandId: null };
+    const query = toApiQuery(state, { categoryId: "cat-1", brandId: null });
     assert.deepEqual([query.inStock, query.minPrice, query.categoryId, query["spec.vram"]], [true, 10, "cat-1", "8GB"]);
-    assert.equal(toApiQuery(state, null)["spec.vram"], undefined);
-    assert.equal(toApiQuery(parse({}), null).inStock, undefined);
+    assert.equal(toApiQuery(state, none)["spec.vram"], undefined);
+    assert.equal(toApiQuery(parse({}), none).inStock, undefined);
+  });
+  it("reads the brand slug in any case and sends the brand id", () => {
+    const state = parse({ brand: " MSI " });
+    assert.equal(state.brand, "msi");
+    assert.equal(toApiQuery(state, { categoryId: null, brandId: "b-1" }).brandId, "b-1");
+    assert.equal(toApiQuery(state, { categoryId: null, brandId: null }).brandId, undefined);
+    assert.equal(catalogHref(parse({}), { brand: "asus" }), "/products?brand=asus");
   });
   it("asks only for available items when the owner hides sold-out ones", () => {
-    assert.equal(toApiQuery(parse({}), null, false).inStock, true);
+    assert.equal(toApiQuery(parse({}), { categoryId: null, brandId: null }, false).inStock, true);
   });
 });
 
 describe("activeFilters", () => {
   it("lists removable chips, each clearing only itself", () => {
-    const state = parse({ category: "gpu", condition: "Used", min: "100", "spec.vram": "8GB", "spec.bus": "pcie" });
+    const state = parse({ category: "gpu", brand: "msi", condition: "Used", min: "100", "spec.vram": "8GB", "spec.bus": "pcie" });
     const chips = activeFilters(state);
-    assert.deepEqual(chips.map((c) => c.id), ["category", "condition", "price", "spec.vram", "spec.bus"]);
+    assert.deepEqual(chips.map((c) => c.id), ["category", "brand", "condition", "price", "spec.vram", "spec.bus"]);
+    assert.deepEqual(chips.find((c) => c.id === "brand")?.clear, { brand: null });
     const vram = chips.find((c) => c.id === "spec.vram");
     assert.deepEqual(vram?.clear, { specs: { bus: "pcie" } });
     assert.deepEqual(activeFilters(parse({})), []);
