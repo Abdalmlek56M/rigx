@@ -57,7 +57,7 @@ public sealed class RequestFollowUpService(
             .Where(item => item.AvailableItemCode != null && item.NotifiedAtUtc == null)
             .OrderBy(item => item.AvailableAtUtc).ThenBy(item => item.Code).ToListAsync(cancellationToken);
         var template = (await settings.GetAdminAsync(cancellationToken)).WhatsAppTemplates.BackInStock;
-        return requests.Select(request => new BackInStockListItem(request.Id, request.Code, request.Name, request.AvailableItemCode!,
+        return requests.Select(request => new BackInStockListItem(request.Id, request.Code, request.Name, request.Phone, request.Condition, request.AvailableItemCode!,
             request.ModelName ?? request.AvailableItemCode!, request.AvailableAtUtc!.Value,
             WhatsAppReply.For(request, template, itemUrl(request.AvailableItemCode!)))).ToList();
     }

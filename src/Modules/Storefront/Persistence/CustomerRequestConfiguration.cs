@@ -39,6 +39,7 @@ internal static class CustomerRequestConfiguration
             entity.Property(item => item.OwnedFor).HasColumnName("owned_for").HasMaxLength(60);
             entity.Property(item => item.ItemCode).HasColumnName("item_code").HasMaxLength(40);
             entity.Property(item => item.ModelKey).HasColumnName("model_key").HasMaxLength(200);
+            entity.Property(item => item.Condition).HasColumnName("condition").HasMaxLength(8);
             entity.Property(item => item.CategoryId).HasColumnName("category_id");
             entity.Property(item => item.AvailableItemCode).HasColumnName("available_item_code").HasMaxLength(40);
             entity.Property(item => item.AvailableAtUtc).HasColumnName("available_at_utc").HasColumnType("timestamp with time zone");

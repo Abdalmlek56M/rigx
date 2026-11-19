@@ -207,6 +207,8 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasDatabaseName("ix_content_article_revisions_article");
 
                     b.ToTable("content_article_revisions", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Storefront.ContentBrandReference", b =>
@@ -456,6 +458,11 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("code");
 
+                    b.Property<string>("Condition")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("condition");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
@@ -536,7 +543,8 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                     b.Property<string>("PhotoTokenHash")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
-                        .HasColumnName("photo_token_hash");
+                        .HasColumnName("photo_token_hash")
+                        .HasAnnotation("Rigx:AuditMasked", true);
 
                     b.PrimitiveCollection<List<string>>("Photos")
                         .IsRequired()
@@ -924,6 +932,8 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasDatabaseName("ux_wishlist_items_account_product");
 
                     b.ToTable("wishlist_items", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Storefront.WishlistProductImageReference", b =>

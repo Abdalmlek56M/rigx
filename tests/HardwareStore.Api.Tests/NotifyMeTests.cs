@@ -75,16 +75,18 @@ public sealed class NotifyMeTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
             return item;
         }
 
-        public Task<HttpResponseMessage> SubscribeAsync(string? model = null, string? itemCode = null, string phone = "01012345678", string? email = null) =>
-            TestSignIn.PostJsonAsync(Anonymous, "/api/v1/requests", new { type = "NotifyMe", name = "Ahmed", phone, email, modelName = model, itemCode });
+        public Task<HttpResponseMessage> SubscribeAsync(string? model = null, string? itemCode = null, string phone = "01012345678", string? email = null,
+            string? condition = null) =>
+            TestSignIn.PostJsonAsync(Anonymous, "/api/v1/requests", new { type = "NotifyMe", name = "Ahmed", phone, email, modelName = model, itemCode, condition });
 
         /// <summary>The public form's service call (the endpoint allows only five submissions per ten minutes).</summary>
-        public async Task<string> SubscribedAsync(string? model = null, string? itemCode = null, string phone = "01012345678", string? email = null)
+        public async Task<string> SubscribedAsync(string? model = null, string? itemCode = null, string phone = "01012345678", string? email = null,
+            string? condition = null)
         {
             using var scope = Factory.Services.CreateScope();
             var receipt = await scope.ServiceProvider.GetRequiredService<CustomerRequestService>().SubmitAsync(
                 new CustomerRequestSubmission(CustomerRequestType.NotifyMe, "Ahmed", phone, email, null, null, null, null, null, model, null, itemCode,
-                    null, null, null), null);
+                    null, null, null, condition), null);
             return receipt.Code!;
         }
 
@@ -240,8 +242,8 @@ public sealed class NotifyMeTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         await env.SubscribedAsync(model: "Waiting GPU", phone: "01111111111");
         Assert.Empty(await ReadAsync<List<BackInStockListItem>>(await manager.GetAsync($"{Admin}/back-in-stock")));
         var item = await env.PublishedAsync("Future GPU");
-        await env.RunJobAsync();
 
+        // No job run: opening the list matches the new stock itself.
         var list = await ReadAsync<List<BackInStockListItem>>(await manager.GetAsync($"{Admin}/back-in-stock"));
 
         var entry = Assert.Single(list);
@@ -263,6 +265,41 @@ public sealed class NotifyMeTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         Assert.Equal(HttpStatusCode.Conflict, twice.StatusCode);
         using var missing = await TestSignIn.SendJsonAsync(manager, HttpMethod.Post, $"{Admin}/{Guid.NewGuid()}/back-in-stock/sent", null);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+    }
+
+    [Fact]
+    public async Task A_chosen_condition_waits_for_an_item_in_that_condition_and_any_condition_takes_the_cheapest()
+    {
+        await using var env = await Env.StartAsync(fixture);
+        var used = await env.SubscribedAsync(model: "RTX 3060", condition: "Used");
+        var fresh = await env.SubscribedAsync(model: "RTX 3060", phone: "01111111111", condition: "New");
+        var any = await env.SubscribedAsync(model: "RTX 3060", phone: "01222222222");
+
+        var newItem = await env.PublishedAsync("RTX 3060", "New", price: 9000m);
+        Assert.Equal(2, await env.RunJobAsync());
+        Assert.Null((await env.StoredAsync(used)).AvailableItemCode);
+        Assert.Equal(newItem.Code, (await env.StoredAsync(fresh)).AvailableItemCode);
+        Assert.Equal(newItem.Code, (await env.StoredAsync(any)).AvailableItemCode);
+
+        var usedItem = await env.PublishedAsync("RTX 3060", "Used", price: 6000m);
+        Assert.Equal(1, await env.RunJobAsync());
+        var stored = await env.StoredAsync(used);
+        Assert.Equal((usedItem.Code, "Used"), (stored.AvailableItemCode, stored.Condition));
+    }
+
+    [Fact]
+    public async Task A_model_available_only_in_the_other_condition_can_still_be_waited_for_and_a_bad_condition_is_refused()
+    {
+        await using var env = await Env.StartAsync(fixture);
+        await env.PublishedAsync("RX 7600", "New");
+
+        using var anyCondition = await env.SubscribeAsync(model: "RX 7600");
+        using var sameCondition = await env.SubscribeAsync(model: "RX 7600", phone: "01111111111", condition: "New");
+        using var otherCondition = await env.SubscribeAsync(model: "RX 7600", phone: "01222222222", condition: "Used");
+        using var badCondition = await env.SubscribeAsync(model: "RX 7600", phone: "01333333333", condition: "Open Box");
+
+        Assert.Equal((HttpStatusCode.Conflict, HttpStatusCode.Conflict, HttpStatusCode.Accepted, HttpStatusCode.BadRequest),
+            (anyCondition.StatusCode, sameCondition.StatusCode, otherCondition.StatusCode, badCondition.StatusCode));
     }
 
     [Fact]

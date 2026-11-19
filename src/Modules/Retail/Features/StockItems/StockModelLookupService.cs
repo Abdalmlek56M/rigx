@@ -12,17 +12,21 @@ public sealed class StockModelLookupService(IDbContextFactory<RetailDbContext> c
             .Select(item => new StockModelRef(item.ModelName, item.ModelKey, item.CategoryId)).SingleOrDefaultAsync(cancellationToken);
     }
 
-    /// <summary>For each model key that has a published item with an available unit: its cheapest such item. Models with none are missing.</summary>
-    public async Task<IReadOnlyDictionary<string, AvailableModelItem>> FindAvailableAsync(IReadOnlyCollection<string> modelKeys,
+    /// <summary>
+    /// For each model key that has a published item with an available unit: its cheapest such item per condition, cheapest first.
+    /// Models with none are missing.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<AvailableModelItem>>> FindAvailableAsync(IReadOnlyCollection<string> modelKeys,
         CancellationToken cancellationToken = default)
     {
-        if (modelKeys.Count == 0) return new Dictionary<string, AvailableModelItem>();
+        if (modelKeys.Count == 0) return new Dictionary<string, IReadOnlyList<AvailableModelItem>>();
         var keys = modelKeys.ToArray();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = await db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter)
             .Where(item => keys.Contains(item.ModelKey) && item.Units.Any(unit => unit.Status == UnitStatus.Available))
             .OrderBy(item => item.Price).ThenBy(item => item.Code)
-            .Select(item => new AvailableModelItem(item.ModelKey, item.Code, item.ModelName)).ToListAsync(cancellationToken);
-        return rows.GroupBy(row => row.ModelKey).ToDictionary(group => group.Key, group => group.First());
+            .Select(item => new AvailableModelItem(item.ModelKey, item.Code, item.ModelName, item.Condition)).ToListAsync(cancellationToken);
+        return rows.GroupBy(row => row.ModelKey).ToDictionary(group => group.Key,
+            group => (IReadOnlyList<AvailableModelItem>)group.DistinctBy(row => row.Condition).ToList());
     }
 }

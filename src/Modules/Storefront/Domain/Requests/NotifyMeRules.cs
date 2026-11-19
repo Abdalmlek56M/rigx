@@ -6,6 +6,13 @@ namespace HardwareStore.Modules.Storefront;
 /// <summary>Who a notify-me request waits for: a model (matched by <see cref="ModelKey"/>), reached by an RX code or by a typed model name.</summary>
 public sealed record NotifyMeTarget(string? ItemCode, string ModelName, string ModelKey, Guid? CategoryId);
 
+/// <summary>A stock item's customer-facing condition, as the Storefront matches it (same values as the Retail stock).</summary>
+public static class NotifyMeCondition
+{
+    public const string New = "New";
+    public const string Used = "Used";
+}
+
 /// <summary>The few fields of a notify-me request the demand report needs.</summary>
 public sealed record NotifyMeEntry(string ModelKey, string ModelName, Guid? CategoryId, string Status, string? AvailableItemCode,
     DateTimeOffset? NotifiedAtUtc, DateTimeOffset CreatedAtUtc);
@@ -16,6 +23,8 @@ public sealed record NotifyMeEntry(string ModelKey, string ModelName, Guid? Cate
 /// </summary>
 public static class NotifyMeRules
 {
+    private const string AnyCondition = "Any";
+
     /// <summary>A notify-me request still being followed (New or Following) that has a model to match.</summary>
     public static readonly Expression<Func<CustomerRequest, bool>> OpenFilter = request =>
         request.Type == CustomerRequestType.NotifyMe && request.ModelKey != null
@@ -42,6 +51,22 @@ public static class NotifyMeRules
         var key = ModelName.Key(name);
         return key.Length == 0 ? throw new StorefrontException(400, "Enter the item code or the model.") : new NotifyMeTarget(null, name, key, null);
     }
+
+    /// <summary>The condition the customer waits for: "New" or "Used", or null for any (blank or "Any").</summary>
+    public static string? CheckCondition(string? value) => value?.Trim() switch
+    {
+        null or "" or AnyCondition => null,
+        NotifyMeCondition.New => NotifyMeCondition.New,
+        NotifyMeCondition.Used => NotifyMeCondition.Used,
+        _ => throw new StorefrontException(400, "Condition must be New, Used or Any.")
+    };
+
+    /// <summary>
+    /// The item that ends the wait: the cheapest of <paramref name="available"/> (the model's sellable items, cheapest first) in the
+    /// asked condition, or the cheapest of any condition when none was asked; null when nothing fits.
+    /// </summary>
+    public static AvailableStockItem? Pick(IReadOnlyList<AvailableStockItem>? available, string? condition) =>
+        available?.FirstOrDefault(item => condition is null || item.Condition == condition);
 
     public static StorefrontException AvailableNow() => new(409, "This item is available now.");
 

@@ -38,7 +38,8 @@ public sealed class CustomerRequestService(
             if (renewedToken is not null) await db.SaveChangesAsync(cancellationToken);
             return new CustomerRequestReceipt(existing.Code, renewedToken);
         }
-        if (target is not null && (await stock.FindAvailableAsync([target.ModelKey], cancellationToken)).ContainsKey(target.ModelKey))
+        if (target is not null && NotifyMeRules.Pick((await stock.FindAvailableAsync([target.ModelKey], cancellationToken)).GetValueOrDefault(target.ModelKey),
+                draft.Condition) is not null)
             throw NotifyMeRules.AvailableNow();
         var code = await NextCodeAsync(db, cancellationToken);
         var request = new CustomerRequest
@@ -47,7 +48,7 @@ public sealed class CustomerRequestService(
             Phone = draft.Phone, Email = draft.Email, Governorate = draft.Governorate, Source = draft.Source,
             UserAccountId = userAccountId, Subject = draft.Subject, Message = draft.Message, PartType = draft.PartType,
             ModelName = target?.ModelName ?? draft.ModelName, OwnedFor = draft.OwnedFor, ItemCode = target is null ? draft.ItemCode : target.ItemCode,
-            ModelKey = target?.ModelKey, CategoryId = target?.CategoryId, ServiceKind = draft.ServiceKind,
+            ModelKey = target?.ModelKey, CategoryId = target?.CategoryId, Condition = draft.Condition, ServiceKind = draft.ServiceKind,
             PreferredDate = draft.PreferredDate, CreatedAtUtc = now, UpdatedAtUtc = now
         };
         var token = IssuePhotoToken(request, now);

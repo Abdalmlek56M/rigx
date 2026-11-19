@@ -6,7 +6,7 @@ namespace HardwareStore.Modules.Storefront;
 /// <summary>A submission after checking: trimmed, normalized, and with the fields that do not belong to its type removed.</summary>
 public sealed record CustomerRequestDraft(string Type, string Name, string Phone, string? Email, string? Governorate, string? Source,
     string? Subject, string? Message, string? PartType, string? ModelName, string? OwnedFor, string? ItemCode, string? ServiceKind,
-    DateOnly? PreferredDate);
+    DateOnly? PreferredDate, string? Condition = null);
 
 public static class CustomerRequestRules
 {
@@ -34,7 +34,7 @@ public static class CustomerRequestRules
             CustomerRequestType.Upgrade => common with { Message = LongMessage(message), ModelName = model },
             CustomerRequestType.NotifyMe => model is null && item is null
                 ? throw new StorefrontException(400, "Enter the item code or the model.")
-                : common with { ModelName = model, ItemCode = item },
+                : common with { ModelName = model, ItemCode = item, Condition = NotifyMeRules.CheckCondition(request.Condition) },
             CustomerRequestType.Support => common with { Message = LongMessage(message), ItemCode = item },
             CustomerRequestType.Contact => common with { Message = LongMessage(message), Subject = Optional(request.Subject, 200, "Subject") },
             _ => common with

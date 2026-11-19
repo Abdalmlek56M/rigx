@@ -16085,6 +16085,8 @@
           "id",
           "code",
           "name",
+          "phone",
+          "condition",
           "itemCode",
           "itemName",
           "availableAtUtc",
@@ -16101,6 +16103,15 @@
           },
           "name": {
             "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "condition": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "itemCode": {
             "type": "string"
@@ -18789,6 +18800,12 @@
               "null",
               "string"
             ]
+          },
+          "condition": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -18853,7 +18870,8 @@
           "availableItemCode",
           "availableAtUtc",
           "notifiedAtUtc",
-          "photoCount"
+          "photoCount",
+          "condition"
         ],
         "type": "object",
         "properties": {
@@ -19025,6 +19043,12 @@
           "photoCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "condition": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

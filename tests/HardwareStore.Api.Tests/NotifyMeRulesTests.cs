@@ -32,6 +32,30 @@ public sealed class NotifyMeRulesTests
     [InlineData("  ")]
     public void No_code_typed_means_no_code(string? text) => Assert.Null(NotifyMeRules.ItemCodeOf(text));
 
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(" ", null)]
+    [InlineData("Any", null)]
+    [InlineData("New", "New")]
+    [InlineData(" Used ", "Used")]
+    public void The_condition_is_new_used_or_any(string? text, string? expected) => Assert.Equal(expected, NotifyMeRules.CheckCondition(text));
+
+    [Theory]
+    [InlineData("Open Box")]
+    [InlineData("used")]
+    public void Other_conditions_are_refused(string text) => AssertStatus(400, () => NotifyMeRules.CheckCondition(text));
+
+    [Fact]
+    public void Pick_takes_the_cheapest_item_in_the_asked_condition_or_the_cheapest_of_any()
+    {
+        IReadOnlyList<AvailableStockItem> available = [new("RX-0001", "RX 6600", "Used"), new("RX-0002", "RX 6600", "New")];
+
+        Assert.Equal("RX-0001", NotifyMeRules.Pick(available, null)?.Code);
+        Assert.Equal("RX-0002", NotifyMeRules.Pick(available, "New")?.Code);
+        Assert.Null(NotifyMeRules.Pick([available[1]], "Used"));
+        Assert.Null(NotifyMeRules.Pick(null, null));
+    }
+
     [Fact]
     public void Text_that_is_not_an_rx_code_is_an_unknown_item() => AssertStatus(404, () => NotifyMeRules.ItemCodeOf("BLD-07"));
 

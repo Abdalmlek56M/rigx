@@ -10,6 +10,7 @@ import { fetchBackInStock, markBackInStockSent } from "./requests-api";
 /** Notify-me requests whose model came back in stock and were not messaged yet. */
 export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
   const t = useTranslations("admin.requests.backInStock");
+  const tCondition = useTranslations("common.condition");
   const locale = useLocale();
   const submit = useSubmit();
   const load = useCallback(() => fetchBackInStock(), []);
@@ -37,6 +38,11 @@ export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
               <b dir="auto" className="truncate">{item.itemName}</b>
               <span dir="ltr" className="font-mono text-xs text-orange-text">{item.itemCode}</span>
               <span className="text-xs text-ink-muted">{t("requestLine", { code: item.code, name: item.name, date: formatDateTime(item.availableAtUtc, locale) })}</span>
+              <span className="text-xs text-ink-muted">
+                <bdi dir="ltr">{item.phone}</bdi>
+                {" · "}
+                {item.condition === "New" || item.condition === "Used" ? t("wanted", { condition: tCondition(item.condition) }) : t("wantedAny")}
+              </span>
             </span>
             <span className="flex flex-wrap gap-2">
               <a href={item.whatsApp.url} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center rounded-control bg-orange px-4 text-sm font-bold text-on-orange">

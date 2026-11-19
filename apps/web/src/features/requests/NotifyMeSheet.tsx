@@ -23,12 +23,17 @@ interface NotifyMeSheetProps {
 
 type Errors = Partial<Record<"name" | "phone" | "email", string>>;
 
+/** "Any" is sent as no condition: any new or used item of the model ends the wait. */
+const CONDITIONS = ["Any", "New", "Used"] as const;
+type Condition = (typeof CONDITIONS)[number];
+
 /** "بلغني لما يتوفر": phone required, email optional. Handles the "available now" answer (409) and success. */
 export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
   const t = useTranslations("notify");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [condition, setCondition] = useState<Condition>("Any");
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<SubmitOutcome | null>(null);
@@ -48,6 +53,7 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim() || null,
+        condition: condition === "Any" ? null : condition,
         ...(target.itemCode ? { itemCode: target.itemCode } : { modelName: target.modelName })
       })
     );
@@ -72,6 +78,26 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
       ) : (
         <form onSubmit={submit} noValidate className="flex flex-col gap-3">
           <span dir="auto" className="text-[13px] text-ink-muted [unicode-bidi:isolate]">{target.modelName}</span>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-bold">{t("condition")}</span>
+            <div role="radiogroup" aria-label={t("condition")} className="grid h-12 grid-cols-3 gap-1 rounded-control border border-input-line bg-surface p-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange">
+              {CONDITIONS.map((value) => (
+                <label key={value} className="flex cursor-pointer">
+                  <input
+                    type="radio"
+                    name="notify-condition"
+                    value={value}
+                    checked={condition === value}
+                    onChange={() => setCondition(value)}
+                    className="peer sr-only"
+                  />
+                  <span className="flex flex-1 items-center justify-center rounded-[7px] text-sm font-bold text-ink-muted transition-colors peer-checked:bg-carbon peer-checked:text-on-carbon">
+                    {t(`conditions.${value}`)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
           <TextField label={t("name")} name="name" value={name} onChange={setName} autoComplete="name" required error={errors.name ?? null} />
           <TextField
             label={t("phone")} name="phone" type="tel" ltr autoComplete="tel" placeholder="01xxxxxxxxx" required

@@ -22,6 +22,8 @@ public sealed class CustomerRequest
     /// <summary>Notify-me: the normalized model key the customer waits for (<c>ModelName.Key</c>); null on other types.</summary>
     public string? ModelKey { get; set; }
     public Guid? CategoryId { get; set; }
+    /// <summary>Notify-me: the condition the customer waits for ("New" / "Used"); null = any condition.</summary>
+    public string? Condition { get; set; }
     /// <summary>Notify-me: the first item of the model that became available, and when.</summary>
     public string? AvailableItemCode { get; set; }
     public DateTimeOffset? AvailableAtUtc { get; set; }

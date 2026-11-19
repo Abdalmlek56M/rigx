@@ -3,7 +3,7 @@ namespace HardwareStore.Modules.Storefront;
 /// <summary>Public form body. <paramref name="Website"/> is the honeypot: a real person leaves it empty.</summary>
 public sealed record CustomerRequestSubmission(string? Type, string? Name, string? Phone, string? Email, string? Governorate,
     string? Source, string? Subject, string? Message, string? PartType, string? ModelName, string? OwnedFor, string? ItemCode,
-    string? ServiceKind, DateOnly? PreferredDate, string? Website);
+    string? ServiceKind, DateOnly? PreferredDate, string? Website, string? Condition = null);
 
 /// <summary>
 /// The code shown to the customer; null when the honeypot was filled (nothing was stored). <paramref name="PhotoUploadToken"/> lets the
@@ -19,7 +19,7 @@ public sealed record CustomerRequestView(Guid Id, string Code, string Type, stri
     string? OwnedFor, string? ItemCode, string? ServiceKind, DateOnly? PreferredDate, decimal? OfferAmount, decimal? ExpectedResale,
     string? InternalNote, Guid? PurchaseId, string? PurchaseCode, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc,
     DateTimeOffset? ClosedAtUtc, long RowVersion, string? AvailableItemCode, DateTimeOffset? AvailableAtUtc, DateTimeOffset? NotifiedAtUtc,
-    int PhotoCount);
+    int PhotoCount, string? Condition);
 
 public sealed record CustomerRequestListItem(Guid Id, string Code, string Type, string Status, string Name, string Phone,
     string? Governorate, string? ModelName, string? ItemCode, string? ServiceKind, decimal? OfferAmount, DateTimeOffset CreatedAtUtc);

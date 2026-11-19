@@ -96,9 +96,12 @@ public static class RequestEndpoints
         return TypedResults.Ok(await followUp.WhatsAppReplyAsync(id, ct));
     }
 
-    private static async Task<Ok<IReadOnlyList<BackInStockListItem>>> BackInStockAsync(HttpContext context, RequestFollowUpService followUp, OrderLinks links, CancellationToken ct)
+    /// <summary>Matches waiting requests first (same run as the job, at most once each), so stock received minutes ago shows without waiting for the job.</summary>
+    private static async Task<Ok<IReadOnlyList<BackInStockListItem>>> BackInStockAsync(HttpContext context, RequestFollowUpService followUp,
+        BackInStockNotifier notifier, OrderLinks links, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
+        await notifier.RunAsync(ct);
         return TypedResults.Ok(await followUp.BackInStockListAsync(links.ItemUrl, ct));
     }
 

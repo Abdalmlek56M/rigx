@@ -18,14 +18,14 @@ public sealed class NotifyMeService(
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var waiting = await db.CustomerRequests.AsNoTracking().Where(NotifyMeRules.OpenFilter).Where(item => item.AvailableItemCode == null)
-            .Select(item => new { item.Id, ModelKey = item.ModelKey!, item.Name, item.Email, item.UserAccountId }).ToListAsync(cancellationToken);
+            .Select(item => new { item.Id, ModelKey = item.ModelKey!, item.Condition, item.Name, item.Email, item.UserAccountId }).ToListAsync(cancellationToken);
         if (waiting.Count == 0) return [];
         var available = await stock.FindAvailableAsync(waiting.Select(item => item.ModelKey).Distinct().ToList(), cancellationToken);
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         var matches = new List<BackInStockMatch>();
-        foreach (var request in waiting.Where(item => available.ContainsKey(item.ModelKey)))
+        foreach (var request in waiting)
         {
-            var item = available[request.ModelKey];
+            if (NotifyMeRules.Pick(available.GetValueOrDefault(request.ModelKey), request.Condition) is not { } item) continue;
             var changed = await db.CustomerRequests.Where(NotifyMeRules.OpenFilter).Where(row => row.Id == request.Id && row.AvailableItemCode == null)
                 .ExecuteUpdateAsync(set => set
                     .SetProperty(row => row.AvailableItemCode, item.Code)

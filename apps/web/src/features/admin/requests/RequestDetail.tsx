@@ -69,6 +69,7 @@ function BackInStock({ request, onSaved }: { request: Detail; onSaved: () => voi
 /** The right-hand panel of the inbox: one request, its photos, offer, decision and follow-up. */
 export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose: () => void; onChanged: () => void }) {
   const t = useTranslations("admin.requests");
+  const tCondition = useTranslations("common.condition");
   const locale = useLocale();
   const { has } = usePermissions();
   const load = useCallback(
@@ -119,6 +120,7 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
       <dl className="m-0 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label={t("detail.request")} value={title} />
         <Field label={t("detail.itemCode")} value={request.itemCode} mono />
+        <Field label={t("detail.condition")} value={request.condition === "New" || request.condition === "Used" ? tCondition(request.condition) : null} />
         <Field label={t("detail.ownedFor")} value={request.ownedFor} />
         <Field label={t("detail.partType")} value={request.partType} />
         <Field label={t("detail.service")} value={request.serviceKind} />

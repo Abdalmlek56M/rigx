@@ -36,7 +36,7 @@ public sealed record ModelNameSuggestion(string ModelName, Guid? CategoryId, Gui
 // Notify-me lookups (any item, including unpublished ones, by code; published and available ones by model).
 public sealed record StockModelRef(string ModelName, string ModelKey, Guid? CategoryId);
 /// <summary>The cheapest published item of a model that has a unit ready to sell.</summary>
-public sealed record AvailableModelItem(string ModelKey, string Code, string ModelName);
+public sealed record AvailableModelItem(string ModelKey, string Code, string ModelName, string Condition);
 
 // PC builder (public). Published items only; never cost, serial or internal note.
 public sealed record BuilderItemView(Guid StockItemId, string Code, string ModelName, string Condition, Guid? CategoryId,
