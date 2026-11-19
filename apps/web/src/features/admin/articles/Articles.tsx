@@ -17,6 +17,8 @@ import { ArticlePanel } from "./ArticlePanel";
 import { ArticleStatusBadge } from "./ArticleStatusBadge";
 import { articleFilterStatus } from "./article-labels";
 import { fetchArticles, type Article } from "./articles-api";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const FILTERS = { status: "", q: "", page: "1", id: "" };
 const PAGE_SIZE = 20;
@@ -65,7 +67,7 @@ export function Articles() {
       <PageHeader
         title={t("title")}
         actions={
-          <button type="button" onClick={() => { setCreating(true); set({ id: "" }); }} className="inline-flex h-11 items-center rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon">{t("new")}</button>
+          <Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); set({ id: "" }); }}>{t("new")}</Button>
         }
       />
       <FilterBar>

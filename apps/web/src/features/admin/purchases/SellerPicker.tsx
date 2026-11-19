@@ -9,9 +9,10 @@ import { usePermissions } from "../use-permissions";
 import { SellerFormCard, type Governorate } from "./SellerFormCard";
 import { fetchSeller, findSellers, type Seller, type SellerSummary } from "./purchases-api";
 import { looksLikePhone, sellerQuery, toSummary } from "./purchase-rules";
+import { PencilIcon, PlusIcon, SwapIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const MIN_QUERY = 3;
-const button = "h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
 
 type Editing = { seller: Seller | null; phone: string } | null;
 
@@ -65,8 +66,8 @@ export function SellerPicker({ seller, readOnly, governorates, onPick }: {
           </div>
           {readOnly ? null : (
             <div className="flex flex-wrap gap-2">
-              {canManage ? <button type="button" onClick={() => void edit()} className={button}>{t("edit")}</button> : null}
-              <button type="button" onClick={() => onPick(null)} className={button}>{t("change")}</button>
+              {canManage ? <Button icon={PencilIcon} onClick={() => void edit()}>{t("edit")}</Button> : null}
+              <Button icon={SwapIcon} onClick={() => onPick(null)}>{t("change")}</Button>
             </div>
           )}
         </div>
@@ -87,7 +88,7 @@ export function SellerPicker({ seller, readOnly, governorates, onPick }: {
             </ul>
           ) : null}
           {matches.state.status === "error" ? <p role="alert" className="m-0 text-sm font-bold text-error">{t("searchFailed")}</p> : null}
-          {canManage ? <button type="button" onClick={() => setEditing({ seller: null, phone: looksLikePhone(query) ? query : "" })} className={`${button} self-start`}>{t("new")}</button> : null}
+          {canManage ? <Button icon={PlusIcon} className="self-start" onClick={() => setEditing({ seller: null, phone: looksLikePhone(query) ? query : "" })}>{t("new")}</Button> : null}
         </div>
       )}
     </section>

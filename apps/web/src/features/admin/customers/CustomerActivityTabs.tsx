@@ -12,6 +12,8 @@ import { useSubmit } from "../kit/use-submit";
 import { RequestStatusBadge, RequestTypeBadge } from "../requests/RequestBadges";
 import { saveCustomerNote, type CustomerProfile } from "./customers-api";
 import { customerTab, orderChannelKey, warrantyStateKey } from "./customer-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 type Order = CustomerProfile["sales"]["orders"][number];
 type Warranty = CustomerProfile["sales"]["warranties"][number];
@@ -37,7 +39,7 @@ function NoteEditor({ id, note, canManage, onSaved }: { id: string; note: string
     >
       <TextAreaField label={t("title")} name="note" value={value} onChange={setValue} maxLength={2000} hint={t("hint")} error={submit.errors.fields.note} />
       <FormMessage message={submit.errors.general} />
-      <button type="submit" disabled={submit.busy} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+      <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy}>{t("save")}</Button>
       {submit.dialog}
     </form>
   );

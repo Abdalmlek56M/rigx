@@ -7,6 +7,8 @@ import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { useToast } from "../kit/Toast";
 import { blacklistTitle, maskPhone } from "./blacklist-labels";
 import { fetchBlacklist, removeFromBlacklist, type BlacklistEntry } from "./orders-api";
+import { RefreshIcon, TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The blacklisted customers: recognised by phone, email or address; staff with approval rights can remove one. Entries are added from an order. */
 export function BlacklistPanel({ reloadKey, canManage, onChanged }: { reloadKey: number; canManage: boolean; onChanged: () => void }) {
@@ -24,7 +26,7 @@ export function BlacklistPanel({ reloadKey, canManage, onChanged }: { reloadKey:
       {state.status === "error" ? (
         <div role="alert" className="flex flex-wrap items-center gap-3">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : null}
       {state.status === "ready" && state.data.entries.length === 0 ? <p className="m-0 font-bold text-ink-muted">{t("empty")}</p> : null}
@@ -39,7 +41,7 @@ export function BlacklistPanel({ reloadKey, canManage, onChanged }: { reloadKey:
                 </span>
                 <span dir="auto" className="text-sm text-ink-muted">{entry.reason}</span>
               </div>
-              {canManage ? <button type="button" onClick={() => setRemoving(entry)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("remove")}</button> : null}
+              {canManage ? <Button icon={TrashIcon} onClick={() => setRemoving(entry)}>{t("remove")}</Button> : null}
             </li>
           ))}
         </ul>

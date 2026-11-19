@@ -22,6 +22,8 @@ import { StoreInfoForm } from "./StoreInfoForm";
 import { WarrantyForm } from "./WarrantyForm";
 import { WatermarkForm } from "./WatermarkForm";
 import { WhatsAppForm } from "./WhatsAppForm";
+import { RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The one settings load: all sections and the governorate names the shipping groups need. */
 async function loadSettings() {
@@ -95,7 +97,7 @@ export function SettingsScreen() {
           {state.status === "error" ? (
             <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
               <p className="m-0 font-bold">{t("failed")}</p>
-              <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+              <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
             </div>
           ) : view ? (
             <section key={`${section}-${generation}`} className="min-w-0 rounded-card border border-line bg-surface p-5">

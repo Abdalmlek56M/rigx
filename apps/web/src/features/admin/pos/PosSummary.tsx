@@ -4,6 +4,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatEgp } from "@/lib/format";
 import { FormMessage } from "../kit/PageHeader";
 import type { PosPreview } from "./pos-api";
+import { CheckIcon, ClockIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 interface PosSummaryProps {
   lineCount: number;
@@ -61,12 +63,12 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
       {previewError ? <p role="alert" className="m-0 text-xs text-error">{t("previewFailed", { message: previewError })}</p> : null}
       <FormMessage message={saleError} />
       <div className="flex flex-col gap-2">
-        <button type="button" disabled={busy || lineCount === 0} onClick={() => onSell(true)} className="h-12 rounded-control bg-orange px-4 text-[15px] font-bold text-on-orange disabled:opacity-50">
+        <Button variant="primary" icon={CheckIcon} loading={busy} disabled={lineCount === 0} onClick={() => onSell(true)}>
           {t("confirm")}
-        </button>
-        <button type="button" disabled={busy || lineCount === 0} onClick={() => onSell(false)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">
+        </Button>
+        <Button icon={ClockIcon} loading={busy} disabled={lineCount === 0} onClick={() => onSell(false)}>
           {t("pending")}
-        </button>
+        </Button>
       </div>
     </aside>
   );

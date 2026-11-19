@@ -10,6 +10,8 @@ import { useSubmit } from "../kit/use-submit";
 import { cancelOffer, publishOffer, unpublishOffer, type Offer } from "./offers-api";
 import { offerStatusKey, type OfferStatusKey } from "./offer-rules";
 import { isConflict } from "@/lib/api/conflict";
+import { BanIcon, UndoIcon, UploadIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const TONES: Record<OfferStatusKey, string> = {
   Draft: "bg-line text-ink-muted",
@@ -48,13 +50,13 @@ export function OfferActions({ offer, onSaved, onStale }: { offer: Offer; onSave
       <div className="flex flex-wrap items-center gap-2">
         <OfferStatusBadge status={offer.status} />
         {offer.status !== "Published" && offer.status !== "Cancelled" ? (
-          <button type="button" disabled={submit.busy} onClick={() => void publish()} className="h-11 rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon disabled:opacity-50">{t("publish")}</button>
+          <Button variant="primary" icon={UploadIcon} loading={submit.busy} onClick={() => void publish()}>{t("publish")}</Button>
         ) : null}
         {offer.status === "Published" ? (
-          <button type="button" onClick={() => setUnpublishing(true)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("unpublish")}</button>
+          <Button icon={UndoIcon} onClick={() => setUnpublishing(true)}>{t("unpublish")}</Button>
         ) : null}
         {offer.status !== "Cancelled" ? (
-          <button type="button" onClick={() => setCancelling(true)} className="h-11 rounded-control border border-error/40 bg-surface px-4 text-sm font-bold text-error">{t("cancel")}</button>
+          <Button variant="danger" icon={BanIcon} onClick={() => setCancelling(true)}>{t("cancel")}</Button>
         ) : null}
       </div>
       <FormMessage message={submit.errors.general} />

@@ -13,6 +13,8 @@ import type { BuildLookups } from "./BuildParts";
 import { editPart, type BuildPart } from "./builds-api";
 import { partFormValid, toPartBody, toPartForm, type PartForm } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const SHOWN_FIELDS = ["partPrice", "warrantyLabel", "partnerId", "partnerPercentOverride"];
 
@@ -54,8 +56,8 @@ export function PartEditDialog({ part, lookups, onClose, ...action }: BuildActio
         ) : null}
         <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-          <button type="submit" disabled={submit.busy || !partFormValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-60">{t("save")}</button>
+          <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+          <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!partFormValid(form)}>{t("save")}</Button>
         </div>
       </form>
       {submit.dialog}

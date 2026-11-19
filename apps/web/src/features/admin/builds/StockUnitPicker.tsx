@@ -8,6 +8,8 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { SearchBox } from "../kit/FilterBar";
 import { fetchStockItems, type StockUnit } from "../inventory/inventory-api";
 import { availableUnits } from "../inventory/inventory-rules";
+import { RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /**
  * Free stock to pick one unit from: search the in-stock items, then choose one of the item's available units.
@@ -34,7 +36,7 @@ export function StockUnitPicker({ categoryId, pickedId, actionLabel, onPick }: {
       {state.status === "error" ? (
         <div role="alert" className="flex flex-wrap items-center gap-3">
           <span className="font-bold">{t("failed")}</span>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : null}
       {state.status === "ready" ? (

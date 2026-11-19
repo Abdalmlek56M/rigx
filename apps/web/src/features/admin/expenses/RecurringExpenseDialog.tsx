@@ -17,6 +17,8 @@ import {
   type MoneyAccount,
   type RecurringExpense
 } from "./expenses-api";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
@@ -99,8 +101,8 @@ export function RecurringExpenseDialog({ template, types, accounts, canSeeVaults
         <Check label={t("active")} checked={isActive} onChange={setIsActive} />
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>
-          <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+          <Button variant="ghost" onClick={onClose}>{kit("cancel")}</Button>
+          <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!valid}>{t("save")}</Button>
         </div>
         {submit.dialog}
       </form>

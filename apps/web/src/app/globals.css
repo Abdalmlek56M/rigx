@@ -27,6 +27,9 @@
   --muted: #6b6e74;
   --input-line: #c9c8c1;
   --error: #a3321a;
+  /* Hover fills of the admin primary and danger buttons (4.10b C). */
+  --carbon-hover: #2a2d33;
+  --error-hover: #872812;
   --disabled: #ebeae5;
   --on-carbon: #f5f5f2;
   --on-orange: #121418;
@@ -54,6 +57,8 @@
   --header-line: #2a2d33;
   --input-line: #3d4148;
   --disabled: #24272c;
+  --carbon-hover: #3a3f47;
+  --error-hover: #bd3c1f;
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
   --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 18px 40px -18px rgba(0, 0, 0, 0.8);
 }
@@ -82,6 +87,8 @@
   --color-muted: var(--muted);
   --color-input-line: var(--input-line);
   --color-error: var(--error);
+  --color-error-hover: var(--error-hover);
+  --color-carbon-hover: var(--carbon-hover);
   --color-disabled: var(--disabled);
   --color-on-carbon: var(--on-carbon);
   --color-on-orange: var(--on-orange);
@@ -262,6 +269,16 @@ body {
     opacity: 0;
     transform: translateY(var(--pop-y, -4px)) scale(0.97);
   }
+}
+
+/* Admin dialogs (4.10b C): a short centred fade and settle on open; the backdrop fades with it. Closing is instant. */
+.admin-dialog[open] {
+  animation: pop-in 200ms var(--ease-out);
+  --pop-y: 4px;
+}
+
+.admin-dialog[open]::backdrop {
+  animation: fade-in 200ms ease;
 }
 
 /* Hover tip for icon-only buttons (`.tip` + `data-tip`): appears above the button after a short rest, pointer devices only. */
@@ -588,7 +605,7 @@ dialog[data-sheet="side"][data-edge="start"] {
   }
 }
 
-/* Pages marked data-print-document (the PDF quote) or data-print-invoice (the A4 invoice) print alone, on white paper, whatever the theme. */
+/* Pages marked data-print-document (the PDF quote), data-print-invoice (the A4 invoice) or data-print-export (the admin PDF export) print alone, on white paper, whatever the theme. */
 @media print {
   :root,
   [data-theme="dark"] {
@@ -631,7 +648,17 @@ dialog[data-sheet="side"][data-edge="start"] {
     print-color-adjust: exact;
   }
 
-  body:has([data-print-document], [data-print-invoice]) > :not(main) {
+  @page export {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  [data-print-export] {
+    page: export;
+    print-color-adjust: exact;
+  }
+
+  body:has([data-print-document], [data-print-invoice], [data-print-export]) > :not(main) {
     display: none !important;
   }
 }

@@ -9,7 +9,8 @@ import { useSubmit } from "../kit/use-submit";
 import { OrderInvoiceLinks } from "../orders/OrderInvoiceLinks";
 import { OrderStatusBadge } from "../orders/OrderBadges";
 import { setOrderStatus, type Order } from "../orders/orders-api";
-import { BUTTON } from "./pos-parts";
+import { EyeIcon, PlusIcon, TruckIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 interface PosSoldProps {
   order: Order;
@@ -57,10 +58,10 @@ export function PosSold({ order: sold, canDeliver, onNewSale }: PosSoldProps) {
       </dl>
       <FormMessage message={submit.errors.general} />
       <div className="flex flex-wrap gap-2">
-        {canHandOver ? <button type="button" disabled={submit.busy} onClick={() => void handOver()} className="h-11 rounded-control bg-orange px-4 text-sm font-bold text-on-orange disabled:opacity-50">{t("deliver")}</button> : null}
+        {canHandOver ? <Button variant="primary" icon={TruckIcon} loading={submit.busy} onClick={() => void handOver()}>{t("deliver")}</Button> : null}
         {order.status === "Delivered" ? <OrderInvoiceLinks order={order} /> : null}
-        <Link href={`/admin/orders?id=${order.id}`} className={BUTTON}>{t("openOrder")}</Link>
-        <button type="button" onClick={onNewSale} className={BUTTON}>{t("newSale")}</button>
+        <Link href={`/admin/orders?id=${order.id}`} className={buttonClass()}><EyeIcon size={buttonIconSize()} />{t("openOrder")}</Link>
+        <Button icon={PlusIcon} onClick={onNewSale}>{t("newSale")}</Button>
       </div>
       {submit.dialog}
     </section>

@@ -25,11 +25,15 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
     <dialog
       ref={ref}
       aria-labelledby={titleId}
-      onClose={onClose}
+      // Only a close the person made (Escape) reports back; closing because `open` turned false must not, or a flow that swaps
+      // one dialog for the next would reset itself.
+      onClose={() => {
+        if (open) onClose();
+      }}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className="m-auto w-[min(440px,calc(100vw-32px))] rounded-panel border-0 bg-surface p-0 text-ink shadow-[0_0_40px_rgba(21,23,27,.25)] backdrop:bg-carbon/50"
+      className="admin-dialog m-auto w-[min(440px,calc(100vw-32px))] rounded-panel border-0 bg-surface p-0 text-ink shadow-[0_0_40px_rgba(21,23,27,.25)] backdrop:bg-carbon/50"
     >
       {open ? (
         <div className="flex flex-col gap-4 p-5">

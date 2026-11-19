@@ -6,6 +6,8 @@ import { TextAreaField } from "@/components/ui/TextAreaField";
 import { Dialog } from "../kit/Dialog";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
+import { CheckIcon, TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 interface ReasonDialogProps {
   open: boolean;
@@ -45,13 +47,10 @@ export function ReasonDialog({ open, title, body, label, field, maxLength, valid
       <TextAreaField label={label} name={field} value={text} onChange={setText} maxLength={maxLength} error={submit.errors.fields[field]} />
       <FormMessage message={submit.errors.general} />
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-        <button
-          type="button" disabled={submit.busy || !valid(text)} onClick={() => void confirm()}
-          className={`h-11 rounded-control px-5 font-bold disabled:opacity-50 ${danger ? "bg-error text-surface" : "bg-carbon text-on-carbon"}`}
-        >
+        <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+        <Button variant={danger ? "danger" : "primary"} icon={danger ? TrashIcon : CheckIcon} loading={submit.busy} disabled={!valid(text)} onClick={() => void confirm()}>
           {confirmLabel}
-        </button>
+        </Button>
       </div>
       {submit.dialog}
     </Dialog>

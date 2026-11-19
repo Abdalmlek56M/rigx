@@ -8,6 +8,8 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { StatementSheet } from "./StatementSheet";
 import { fetchStatement } from "./partners-api";
 import { defaultStatementRange, statementRangeValid, type DateRange } from "./partner-rules";
+import { EyeIcon, PrinterIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /**
  * The statement for a date range (this month so far to begin with). "PDF" prints the page's print view: a copy of the statement is added to the document
@@ -39,14 +41,14 @@ export function PartnerStatement({ partnerId, today, movements }: { partnerId: s
       >
         <TextField label={t("from")} name="statementFrom" type="date" ltr value={draft.from} onChange={(from) => setDraft((current) => ({ ...current, from }))} />
         <TextField label={t("to")} name="statementTo" type="date" ltr value={draft.to} onChange={(to) => setDraft((current) => ({ ...current, to }))} />
-        <button type="submit" disabled={!statementRangeValid(draft)} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold disabled:opacity-50">{t("show")}</button>
-        <button type="button" disabled={state.status !== "ready"} onClick={() => window.print()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("print")}</button>
+        <Button type="submit" icon={EyeIcon} disabled={!statementRangeValid(draft)}>{t("show")}</Button>
+        <Button variant="primary" icon={PrinterIcon} disabled={state.status !== "ready"} onClick={() => window.print()}>{t("print")}</Button>
       </form>
       {state.status === "loading" ? <div role="status" aria-label={t("loading")} className="h-40 animate-pulse rounded-control bg-line" /> : null}
       {state.status === "error" ? (
         <div role="alert" className="flex flex-wrap items-center gap-3">
           <span className="font-bold">{t("failed")}</span>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : null}
       {state.status === "ready" ? (

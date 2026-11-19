@@ -5,6 +5,8 @@ import { formatDateTime } from "@/lib/format";
 import { AuditOutcomeBadge } from "./AuditOutcomeBadge";
 import type { SecurityEvent } from "./audit-api";
 import { AuditField as Row } from "./AuditField";
+import { CloseIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** One sign-in/security event: every field of the row and its safe metadata. */
 export function SecurityEventDetail({ event, onClose }: { event: SecurityEvent; onClose: () => void }) {
@@ -16,7 +18,7 @@ export function SecurityEventDetail({ event, onClose }: { event: SecurityEvent; 
     <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("security.title")}</h2>
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>
+        <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
       </header>
       <dl className="m-0 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Row label={t("security.id")} value={event.id} mono />

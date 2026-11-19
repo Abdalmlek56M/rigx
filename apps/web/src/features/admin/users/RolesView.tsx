@@ -10,6 +10,8 @@ import { RoleEditor } from "./RoleEditor";
 import { useRoleLabel } from "./use-role-label";
 import type { UserSet, UserValues } from "./user-rules.ts";
 import { fetchRoles, type StaffRole } from "./users-api";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const NEW_ROLE = "new";
 
@@ -40,7 +42,7 @@ export function RolesView({ values, set }: { values: UserValues; set: UserSet })
 
   return (
     <>
-      <FilterBar actions={<button type="button" onClick={() => set({ role: NEW_ROLE })} className="h-11 rounded-control bg-carbon px-5 text-sm font-bold text-on-carbon">{t("roleEditor.open")}</button>}>
+      <FilterBar actions={<Button variant="primary" icon={PlusIcon} onClick={() => set({ role: NEW_ROLE })}>{t("roleEditor.open")}</Button>}>
         <p className="m-0 text-sm text-ink-muted">{t("rolesHint")}</p>
       </FilterBar>
       <DataTable label={t("views.roles")} columns={columns} state={tableState} onRetry={reload} rowKey={(role) => role.id} empty={t("emptyRoles")} />

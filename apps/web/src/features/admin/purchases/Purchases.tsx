@@ -15,6 +15,8 @@ import { usePermissions } from "../use-permissions";
 import { PurchaseStatusBadge } from "./PurchaseStatusBadge";
 import { fetchPurchases, type PurchaseListItem } from "./purchases-api";
 import { kindKey, PURCHASE_STATUSES } from "./purchase-rules";
+import { PlusIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 const FILTERS = { status: "", q: "", page: "1" };
 
@@ -64,7 +66,7 @@ export function Purchases() {
     <>
       <PageHeader
         title={t("title")}
-        actions={has("Purchasing.CreateOrder") ? <Link href="/admin/purchases/new" className="inline-flex h-11 items-center rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("new")}</Link> : null}
+        actions={has("Purchasing.CreateOrder") ? <Link href="/admin/purchases/new" className={buttonClass({ variant: "primary" })}><PlusIcon size={buttonIconSize()} />{t("new")}</Link> : null}
       />
       <FilterBar>
         <SearchBox label={t("search")} value={values.q} onChange={(q) => set({ q })} />

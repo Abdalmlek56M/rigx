@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { PERIODS, type Period } from "./dashboard-rules";
+import { CheckIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 interface PeriodSwitchProps {
   period: Period;
@@ -48,7 +50,7 @@ export function PeriodSwitch({ period, from, to, onChange }: PeriodSwitchProps) 
             {t("to")}
             <input type="date" value={draft.to} min={draft.from || undefined} onChange={(event) => setDraft({ ...draft, to: event.target.value })} className="h-11 rounded-control border border-input-line bg-surface px-2 text-sm" />
           </label>
-          <button type="submit" disabled={!draftValid} className="h-11 rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon disabled:opacity-50">{t("apply")}</button>
+          <Button type="submit" variant="primary" icon={CheckIcon} disabled={!draftValid}>{t("apply")}</Button>
         </form>
       ) : null}
     </div>

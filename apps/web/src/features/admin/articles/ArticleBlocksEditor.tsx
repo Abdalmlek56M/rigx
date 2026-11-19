@@ -6,6 +6,8 @@ import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { ARTICLE_BLOCK_TYPES, addBlock, blockTypeKey, changeBlockType, moveBlock, removeBlock, type BlockRow } from "./article-blocks";
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
@@ -39,9 +41,9 @@ export function ArticleBlocksEditor({ title, rows, dir, onChange }: { title: str
                   options={ARTICLE_BLOCK_TYPES.map((type) => ({ value: type, label: t(`types.${type}`) }))}
                 />
               </div>
-              <button type="button" disabled={index === 0} onClick={() => onChange(moveBlock(rows, index, -1))} aria-label={t("up")} className="h-11 w-11 rounded-control border border-input-line bg-surface disabled:opacity-40">↑</button>
-              <button type="button" disabled={index === rows.length - 1} onClick={() => onChange(moveBlock(rows, index, 1))} aria-label={t("down")} className="h-11 w-11 rounded-control border border-input-line bg-surface disabled:opacity-40">↓</button>
-              <button type="button" onClick={() => onChange(removeBlock(rows, index))} className="h-11 rounded-control border border-error/40 bg-surface px-3 text-sm font-bold text-error">{t("remove")}</button>
+              <IconButton icon={ArrowUpIcon} label={t("up")} variant="secondary" disabled={index === 0} onClick={() => onChange(moveBlock(rows, index, -1))} />
+              <IconButton icon={ArrowDownIcon} label={t("down")} variant="secondary" disabled={index === rows.length - 1} onClick={() => onChange(moveBlock(rows, index, 1))} />
+              <IconButton icon={TrashIcon} label={t("remove")} onClick={() => onChange(removeBlock(rows, index))} />
             </div>
 
             {row.type === "heading" ? (
@@ -88,7 +90,7 @@ export function ArticleBlocksEditor({ title, rows, dir, onChange }: { title: str
           <SelectField label={t("newBlock")} name="newBlockType" value={adding} onChange={setAdding}
             options={ARTICLE_BLOCK_TYPES.map((type) => ({ value: type, label: t(`types.${type}`) }))} />
         </div>
-        <button type="button" onClick={() => onChange(addBlock(rows, blockTypeKey(adding)))} className="h-11 rounded-control border border-carbon bg-surface px-4 text-sm font-bold">{t("add")}</button>
+        <Button icon={PlusIcon} onClick={() => onChange(addBlock(rows, blockTypeKey(adding)))}>{t("add")}</Button>
       </div>
     </section>
   );

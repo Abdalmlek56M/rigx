@@ -9,6 +9,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { MIN_REASON } from "./user-rules.ts";
 import { reinstateRestriction, type Restriction } from "./users-api";
+import { UndoIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Lifts a restriction: one sentence on what happens, a reason (kept in the audit log) and the confirm button. */
 export function ReinstateDialog({ restriction, onClose, onDone }: { restriction: Restriction; onClose: () => void; onDone: () => void }) {
@@ -39,8 +41,8 @@ export function ReinstateDialog({ restriction, onClose, onDone }: { restriction:
         <TextAreaField label={t("reinstateReason")} name="reason" value={reason} onChange={setReason} error={submit.errors.fields.reason} maxLength={1000} />
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>
-          <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("reinstate")}</button>
+          <Button variant="ghost" onClick={onClose}>{kit("cancel")}</Button>
+          <Button type="submit" variant="primary" icon={UndoIcon} loading={submit.busy} disabled={!valid}>{t("reinstate")}</Button>
         </div>
         {submit.dialog}
       </form>

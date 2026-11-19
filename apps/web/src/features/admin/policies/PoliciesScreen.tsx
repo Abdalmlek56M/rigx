@@ -14,6 +14,8 @@ import { createPolicyVersion, fetchPolicies, updatePolicy } from "./policies-api
 import { PolicyEditor } from "./PolicyEditor";
 import { PolicyHistory } from "./PolicyHistory";
 import { kindSummary } from "./policy-rules";
+import { PencilIcon, PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const FILTERS = { kind: "" };
 
@@ -57,7 +59,7 @@ export function PoliciesScreen() {
       {state.status === "error" ? (
         <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
@@ -89,9 +91,9 @@ export function PoliciesScreen() {
             ) : (
               <div className="flex flex-col items-start gap-2">
                 <p className="m-0 text-sm text-ink-muted">{summary.published ? t("startFromPublished") : t("startFirst")}</p>
-                <button type="button" disabled={starting} onClick={() => void startDraft()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">
+                <Button variant="primary" icon={summary.published ? PlusIcon : PencilIcon} className="self-start" loading={starting} onClick={() => void startDraft()}>
                   {summary.published ? t("newVersion") : t("write")}
-                </button>
+                </Button>
                 <FormMessage message={error} />
               </div>
             )}

@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { Load } from "@/lib/hooks/use-load";
 import { ariaSort, nextSort, type SortState } from "./table-sort";
+import { RefreshIcon } from "@/components/ui/icons";
+import { Button } from "./Button";
 
 export interface Column<T> {
   key: string;
@@ -47,7 +49,7 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
         <td colSpan={columns.length} className="px-3 py-8">
           <div role="alert" className="flex flex-col items-center gap-3">
             <p className="m-0 font-bold">{t("loadFailed")}</p>
-            <button type="button" onClick={onRetry} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+            <Button variant="primary" icon={RefreshIcon} onClick={onRetry}>{t("retry")}</Button>
           </div>
         </td>
       </tr>

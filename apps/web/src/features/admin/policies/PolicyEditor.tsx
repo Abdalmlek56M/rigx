@@ -12,6 +12,8 @@ import { useSubmit } from "../kit/use-submit";
 import { publishPolicy, updatePolicy, type Policy } from "./policies-api";
 import { PolicyStatusBadge } from "./PolicyStatusBadge";
 import { policyForm, policyPublishable, policySavable, sameForm, toPolicyInput, type PolicyForm } from "./policy-rules";
+import { SaveIcon, UploadIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function Preview({ title, text, dir }: { title: string; text: string; dir: "rtl" | "ltr" }) {
   const t = useTranslations("admin.policies");
@@ -67,8 +69,8 @@ export function PolicyEditor({ policy, onSaved, onStale }: { policy: Policy; onS
         </div>
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap gap-2">
-          <button type="submit" disabled={submit.busy || !dirty || !policySavable(form)} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold disabled:opacity-50">{t("save")}</button>
-          <button type="button" disabled={submit.busy || !policyPublishable(form)} onClick={() => setConfirming(true)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("publish")}</button>
+          <Button type="submit" icon={SaveIcon} loading={submit.busy} disabled={!dirty || !policySavable(form)}>{t("save")}</Button>
+          <Button variant="primary" icon={UploadIcon} disabled={submit.busy || !policyPublishable(form)} onClick={() => setConfirming(true)}>{t("publish")}</Button>
         </div>
         {!policyPublishable(form) ? <p className="m-0 text-xs text-ink-muted">{t("publishNeeds")}</p> : null}
         {submit.dialog}

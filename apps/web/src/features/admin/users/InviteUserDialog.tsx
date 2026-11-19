@@ -11,6 +11,8 @@ import { formMessage } from "../form-message.ts";
 import { RoleCheckboxes } from "./RoleCheckboxes";
 import { usernameFromEmail } from "./user-rules.ts";
 import { createUser, type StaffRole } from "./users-api";
+import { SendIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const SHOWN = ["fullName", "email", "phoneNumber", "username", "roleIds"];
 
@@ -63,8 +65,8 @@ export function InviteUserDialog({ roles, onClose, onCreated }: { roles: readonl
         <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
         <FormMessage message={formMessage(submit.errors, SHOWN)} />
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>
-          <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("submit")}</button>
+          <Button variant="ghost" onClick={onClose}>{kit("cancel")}</Button>
+          <Button type="submit" variant="primary" icon={SendIcon} loading={submit.busy} disabled={!valid}>{t("submit")}</Button>
         </div>
         {submit.dialog}
       </form>

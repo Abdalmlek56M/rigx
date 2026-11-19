@@ -11,9 +11,8 @@ import type { useSubmit } from "../kit/use-submit";
 import { usePermissions } from "../use-permissions";
 import { cancelPurchase, createPurchase, receivePurchase, updatePurchase, type Purchase, type PurchaseReceived } from "./purchases-api";
 import { toPurchaseRequest, type PurchaseForm } from "./purchase-rules";
-
-const primary = "h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50";
-const secondary = "h-11 rounded-control border border-input-line bg-surface px-5 font-bold disabled:opacity-50";
+import { BanIcon, BoxIcon, SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The first thing the server said was wrong, for a toast (a field error when there is one). */
 function failureMessage(error: unknown, fallback: string): string {
@@ -88,13 +87,13 @@ export function PurchaseActions({ purchase, form, valid, submit, onUpdated, onRe
   return (
     <div className="flex flex-wrap items-center gap-2">
       {has("Purchasing.CreateOrder") ? (
-        <button type="button" disabled={submit.busy || !valid} onClick={() => void saveDraft()} className={purchase && has("Purchasing.ReceiveGoods") ? secondary : primary}>{t("saveDraft")}</button>
+        <Button variant={purchase && has("Purchasing.ReceiveGoods") ? "secondary" : "primary"} icon={SaveIcon} loading={submit.busy} disabled={!valid} onClick={() => void saveDraft()}>{t("saveDraft")}</Button>
       ) : null}
       {purchase && has("Purchasing.ReceiveGoods") ? (
-        <button type="button" disabled={submit.busy || !valid} onClick={() => setConfirm("receive")} className={primary}>{t("receive")}</button>
+        <Button variant="primary" icon={BoxIcon} disabled={submit.busy || !valid} onClick={() => setConfirm("receive")}>{t("receive")}</Button>
       ) : null}
       {purchase && has("Purchasing.CreateOrder") ? (
-        <button type="button" disabled={submit.busy} onClick={() => setConfirm("cancel")} className={`${secondary} text-error`}>{t("cancel")}</button>
+        <Button variant="danger" icon={BanIcon} disabled={submit.busy} onClick={() => setConfirm("cancel")}>{t("cancel")}</Button>
       ) : null}
       <ConfirmDialog
         open={confirm === "receive"} title={t("receiveTitle")} body={t("receiveBody")} confirmLabel={t("receive")}

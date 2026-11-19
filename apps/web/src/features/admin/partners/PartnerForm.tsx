@@ -12,6 +12,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { createPartner, updatePartner } from "./partners-api";
 import { emptyPartnerForm, PARTNER_BASES, partnerFormValid, toPartnerForm, toPartnerRequest, type PartnerForm as Form } from "./partner-rules";
+import { PlusIcon, SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const SHOWN_FIELDS = ["name", "phone", "joinDate", "defaultPercent", "basis", "notes"];
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
@@ -77,8 +79,8 @@ export function PartnerForm({ partner, today, canEdit, onSaved, onStale, onCance
         <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
         {canEdit ? (
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={submit.busy || !partnerFormValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{partner ? t("save") : t("create")}</button>
-            {onCancel ? <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button> : null}
+            <Button type="submit" variant="primary" icon={partner ? SaveIcon : PlusIcon} loading={submit.busy} disabled={!partnerFormValid(form)}>{partner ? t("save") : t("create")}</Button>
+            {onCancel ? <Button variant="ghost" onClick={onCancel}>{t("cancel")}</Button> : null}
           </div>
         ) : null}
       </fieldset>

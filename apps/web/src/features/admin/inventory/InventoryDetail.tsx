@@ -12,6 +12,8 @@ import { PhotoGallery } from "../stock/PhotoGallery";
 import { StockItemForm } from "./StockItemForm";
 import { StockUnits } from "./StockUnits";
 import { deleteStockPhoto, fetchStockItem, fetchWarrantyLabels, uploadStockPhoto, type StockItem } from "./inventory-api";
+import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
 
 /** The picked stock item: its edit form and photos, and its units (status, serial, cost, partner) beside or under them. */
 export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged }: {
@@ -48,8 +50,8 @@ export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("failed")}</p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
+          <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
         </div>
       </div>
     );
@@ -68,7 +70,7 @@ export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged
           <ConditionBadge condition={item.condition === "New" ? "New" : "Used"} />
           <span className="text-xs text-ink-muted">{item.isPublished ? t("published") : t("notPublished")}</span>
         </div>
-        <button type="button" onClick={onClose} aria-label={t("close")} className="h-11 w-11 rounded-control text-xl leading-none text-ink-muted hover:bg-line">×</button>
+        <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">

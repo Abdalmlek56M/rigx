@@ -12,6 +12,8 @@ import { useSubmit } from "../kit/use-submit";
 import { ExpenseTypeDialog } from "./ExpenseTypeDialog";
 import { createExpense, uploadExpenseReceipt, type Expense, type ExpenseType, type MoneyAccount, type Partner } from "./expenses-api";
 import { emptyExpenseForm, expenseValid, toExpenseCreate, type ExpenseForm as Form } from "./expense-rules";
+import { PlusIcon, SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The daily expense form: amount, type, note, who paid and an optional receipt photo. */
 export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, onCreated, onTypesChanged }: {
@@ -61,7 +63,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
     <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
-        <button type="button" onClick={() => setNewType(true)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("newType")}</button>
+        <Button icon={PlusIcon} onClick={() => setNewType(true)}>{t("newType")}</Button>
       </div>
       <form
         className="flex flex-col gap-3"
@@ -91,7 +93,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
           <span className="text-xs font-normal text-ink-muted">{t("receiptHint")}</span>
         </label>
         <FormMessage message={submit.errors.general} />
-        <button type="submit" disabled={submit.busy || !expenseValid(form)} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+        <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!expenseValid(form)}>{t("save")}</Button>
         {submit.dialog}
       </form>
       {newType ? (

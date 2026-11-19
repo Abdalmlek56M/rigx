@@ -6,6 +6,8 @@ import { formatEgp } from "@/lib/format";
 import { DataTable, type Column } from "../kit/DataTable";
 import { RecurringExpenseDialog } from "./RecurringExpenseDialog";
 import type { ExpenseType, MoneyAccount, RecurringExpense } from "./expenses-api";
+import { PencilIcon, PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The monthly fixed expenses the job posts on their day. */
 export function RecurringExpensesPanel({ templates, types, accounts, canSeeVaults, canManage, onChanged }: {
@@ -28,7 +30,7 @@ export function RecurringExpensesPanel({ templates, types, accounts, canSeeVault
     { key: "day", header: t("day"), align: "end", cell: (template) => <span className="text-sm">{template.dayOfMonth}</span> },
     ...(canSeeVaults ? [{ key: "account", header: t("account"), cell: (template: RecurringExpense) => <span className="text-xs text-ink-muted">{template.moneyAccountId ? accountsById.get(template.moneyAccountId)?.name ?? t("defaultAccount") : t("defaultAccount")}</span> }] : []),
     { key: "active", header: t("active"), cell: (template) => <span className={`text-sm ${template.isActive ? "font-bold text-success" : "text-ink-muted"}`}>{template.isActive ? activeLabel("yes") : activeLabel("no")}</span> },
-    ...(canManage ? [{ key: "edit", header: "", cell: (template: RecurringExpense) => <button type="button" onClick={() => setEditing(template)} className="h-9 rounded-control px-2 text-xs font-bold text-orange-text">{t("edit")}</button> }] : [])
+    ...(canManage ? [{ key: "edit", header: "", cell: (template: RecurringExpense) => <Button size="sm" variant="ghost" icon={PencilIcon} onClick={() => setEditing(template)}>{t("edit")}</Button> }] : [])
   ];
 
   return (
@@ -38,7 +40,7 @@ export function RecurringExpensesPanel({ templates, types, accounts, canSeeVault
           <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
           <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
         </div>
-        {canManage ? <button type="button" onClick={() => setEditing("new")} className="h-11 rounded-control border border-carbon bg-surface px-4 text-sm font-bold">{t("add")}</button> : null}
+        {canManage ? <Button icon={PlusIcon} onClick={() => setEditing("new")}>{t("add")}</Button> : null}
       </div>
       <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: templates }} onRetry={onChanged} rowKey={(template) => template.id} empty={t("empty")} />
       {editing ? (

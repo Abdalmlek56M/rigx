@@ -7,6 +7,8 @@ import { formatDate, formatEgp } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { Dialog } from "../kit/Dialog";import { RequestTypeBadge } from "../requests/RequestBadges";
 import { fetchCustomerViewAs } from "./customers-api";
+import { CloseIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -127,7 +129,7 @@ export function ViewAsDialog({ id, onClose }: { id: string; onClose: () => void 
         </div>
       ) : null}
       <div className="flex justify-end">
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{common("close")}</button>
+        <Button icon={CloseIcon} onClick={onClose}>{common("close")}</Button>
       </div>
     </Dialog>
   );

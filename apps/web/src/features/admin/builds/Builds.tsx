@@ -15,6 +15,8 @@ import { BuildStatusBadge } from "./BuildStatusBadge";
 import { NewBuildDialog } from "./NewBuildDialog";
 import { fetchBuilds, type Build } from "./builds-api";
 import { BUILD_STATUSES, filterBuilds } from "./build-rules";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const FILTERS = { status: "", q: "", new: "" };
 
@@ -56,7 +58,7 @@ export function Builds() {
     <>
       <PageHeader
         title={t("title")}
-        actions={has("Catalog.ManageProducts") ? <button type="button" onClick={() => set({ new: "1" })} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("new")}</button> : null}
+        actions={has("Catalog.ManageProducts") ? <Button variant="primary" icon={PlusIcon} onClick={() => set({ new: "1" })}>{t("new")}</Button> : null}
       />
       <FilterBar>
         <SearchBox label={t("search")} value={values.q} onChange={(q) => set({ q })} />

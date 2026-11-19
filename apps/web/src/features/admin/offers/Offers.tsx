@@ -13,6 +13,8 @@ import { OfferStatusBadge } from "./OfferActions";
 import { OfferForm } from "./OfferForm";
 import { offerDiscount } from "./offer-rules";
 import { fetchOffers, fetchProducts, type Offer } from "./offers-api";
+import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const FILTERS = { id: "" };
 
@@ -67,13 +69,13 @@ export function Offers() {
       <PageHeader
         title={t("title")}
         actions={
-          <button type="button" onClick={() => { setCreating(true); set({ id: "" }); }} className="inline-flex h-11 items-center rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon">{t("new")}</button>
+          <Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); set({ id: "" }); }}>{t("new")}</Button>
         }
       />
       {state.status === "error" ? (
         <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : (
         <>

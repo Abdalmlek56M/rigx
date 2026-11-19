@@ -14,8 +14,8 @@ import {
   waiverReasonValid, type StorePaymentMethod
 } from "./order-rules";
 import { useOrderAction, type OrderActionProps } from "./use-order-action";
-
-const BUTTON = "h-11 self-start rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50";
+import { BanIcon, CheckIcon, WalletIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function RecordPayment(props: OrderActionProps) {
   const { order } = props;
@@ -43,7 +43,7 @@ function RecordPayment(props: OrderActionProps) {
       <p className="m-0 text-xs text-ink-muted">{t("payment.record.hint", { amount: formatEgp(order.remaining, locale) })}</p>
       <TextField label={t("payment.record.note")} name="note" value={note} onChange={setNote} error={submit.errors.fields.note} />
       <FormMessage message={submit.errors.general} />
-      <button type="submit" disabled={submit.busy || !paymentAmountValid(amount, order.remaining)} className={BUTTON}>{t("payment.record.submit")}</button>
+      <Button type="submit" icon={WalletIcon} className="self-start" loading={submit.busy} disabled={!paymentAmountValid(amount, order.remaining)}>{t("payment.record.submit")}</Button>
       {submit.dialog}
     </form>
   );
@@ -72,7 +72,7 @@ function PaymentStatusForm(props: OrderActionProps) {
       <p className="m-0 text-xs text-ink-muted">{t("payment.status.hint")}</p>
       <TextField label={t("payment.status.note")} name="statusNote" value={note} onChange={setNote} error={submit.errors.fields.notes} />
       <FormMessage message={submit.errors.general} />
-      <button type="submit" disabled={submit.busy} className={BUTTON}>{t("payment.status.submit")}</button>
+      <Button type="submit" icon={CheckIcon} className="self-start" loading={submit.busy}>{t("payment.status.submit")}</Button>
       {submit.dialog}
     </form>
   );
@@ -98,7 +98,7 @@ export function OrderPaymentActions(props: OrderActionProps) {
       {setStatus ? <PaymentStatusForm {...props} /> : null}
       {waive ? (
         <>
-          <button type="button" onClick={() => setWaiving(true)} className={BUTTON}>{t("payment.waive.button")}</button>
+          <Button icon={BanIcon} className="self-start" onClick={() => setWaiving(true)}>{t("payment.waive.button")}</Button>
           <ReasonDialog
             open={waiving} title={t("payment.waive.title")} body={t("payment.waive.body")} label={t("payment.waive.reason")} field="reason"
             maxLength={500} valid={waiverReasonValid} confirmLabel={t("payment.waive.confirm")} success={t("payment.waive.done")}

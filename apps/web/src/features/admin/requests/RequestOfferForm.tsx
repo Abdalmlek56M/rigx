@@ -9,6 +9,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { canOffer } from "./request-labels";
 import { saveOffer, type RequestDetail } from "./requests-api";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The price offer (and the internal expected resale) for a sell / trade-in / upgrade request. */
 export function RequestOfferForm({ request, canManage, onSaved, onStale }: { request: RequestDetail; canManage: boolean; onSaved: () => void; onStale: () => void }) {
@@ -65,9 +67,9 @@ export function RequestOfferForm({ request, canManage, onSaved, onStale }: { req
           </div>
           <p className="m-0 text-xs text-ink-muted">{t("expectedHint")}</p>
           <FormMessage message={submit.errors.general} />
-          <button type="submit" disabled={submit.busy || !valid} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">
+          <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!valid}>
             {t("save")}
-          </button>
+          </Button>
           {submit.dialog}
         </form>
       ) : (

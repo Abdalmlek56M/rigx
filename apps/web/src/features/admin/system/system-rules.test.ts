@@ -20,9 +20,12 @@ describe("reset sections", () => {
   });
 
   it("needs a section and the exact word", () => {
+    assert.equal(canReset(["content"], "تصفير"), true);
+    assert.equal(canReset(["content"], " Reset "), true);
     assert.equal(canReset(["content"], "RESET"), true);
-    assert.equal(canReset(["content"], "reset"), false);
-    assert.equal(canReset([], "RESET"), false);
+    assert.equal(canReset(["content"], "صفر"), false);
+    assert.equal(canReset(["content"], "res"), false);
+    assert.equal(canReset([], "تصفير"), false);
   });
 });
 

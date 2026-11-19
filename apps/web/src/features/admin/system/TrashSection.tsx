@@ -13,6 +13,8 @@ import { useUrlFilters } from "../kit/use-url-filters";
 import { SectionCard } from "./SectionCard";
 import { purgeTrash, restoreTrash, fetchTrash, type TrashEntry } from "./system-api";
 import { SYSTEM_FILTERS, TRASH_KINDS, trashKindKey } from "./system-rules.ts";
+import { TrashIcon, UndoIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The trash: what was deleted, restore for `System.Trash`, delete forever for `System.Purge` (asks first, then the step-up code). */
 export function TrashSection({ canPurge }: { canPurge: boolean }) {
@@ -51,8 +53,8 @@ export function TrashSection({ canPurge }: { canPurge: boolean }) {
     {
       key: "actions", header: "", align: "end", cell: (entry) => (
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" disabled={submit.busy} onClick={() => void restore(entry)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">{t("restore")}</button>
-          {canPurge ? <button type="button" disabled={submit.busy} onClick={() => setPurging(entry)} className="h-11 rounded-control border border-error/40 bg-surface px-4 text-sm font-bold text-error disabled:opacity-50">{t("purge")}</button> : null}
+          <Button icon={UndoIcon} loading={submit.busy} onClick={() => void restore(entry)}>{t("restore")}</Button>
+          {canPurge ? <Button variant="danger" icon={TrashIcon} disabled={submit.busy} onClick={() => setPurging(entry)}>{t("purge")}</Button> : null}
         </div>
       )
     }

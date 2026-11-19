@@ -21,12 +21,10 @@ import { InventoryDetail } from "./InventoryDetail";
 import { fetchStockItems, setItemsHidden, type StockItem } from "./inventory-api";
 import { pickedIds, triState } from "./inventory-rules";
 import { useInventoryColumns } from "./use-inventory-columns";
+import { BanIcon, CheckIcon, EyeIcon, PlusIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 const FILTERS = { q: "", category: "", condition: "", stock: "", hidden: "", item: "", page: "1" };
-
-const linkButton = "inline-flex h-11 items-center whitespace-nowrap rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
-
-const secondaryButton = "h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50";
 
 /** ADM-Inventory: the stock list with filters and bulk hide/show, and the picked item (edit, photos, units) below it. */
 export function Inventory() {
@@ -102,8 +100,8 @@ export function Inventory() {
         title={t("title")}
         actions={
           <>
-            {has("Purchasing.CreateOrder") ? <Link href="/admin/purchases/new" className={linkButton}>{t("newPurchase")}</Link> : null}
-            {has("Catalog.ManageProducts") ? <Link href="/admin/builds?new=1" className={linkButton}>{t("newBuild")}</Link> : null}
+            {has("Purchasing.CreateOrder") ? <Link href="/admin/purchases/new" className={buttonClass()}><PlusIcon size={buttonIconSize()} />{t("newPurchase")}</Link> : null}
+            {has("Catalog.ManageProducts") ? <Link href="/admin/builds?new=1" className={buttonClass()}><PlusIcon size={buttonIconSize()} />{t("newBuild")}</Link> : null}
           </>
         }
       />
@@ -119,10 +117,10 @@ export function Inventory() {
       </FilterBar>
       {has("Inventory.StockAdjust") ? (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <button type="button" disabled={items.length === 0} onClick={() => setSelected(new Set(items.map((item) => item.id)))} className={secondaryButton}>{t("bulk.selectAll")}</button>
+          <Button icon={CheckIcon} disabled={items.length === 0} onClick={() => setSelected(new Set(items.map((item) => item.id)))}>{t("bulk.selectAll")}</Button>
           <span aria-live="polite" className="font-bold">{t("bulk.picked", { count: picked.length })}</span>
-          <button type="button" disabled={busy || picked.length === 0} onClick={() => void setHidden(true)} className={secondaryButton}>{t("bulk.hide")}</button>
-          <button type="button" disabled={busy || picked.length === 0} onClick={() => void setHidden(false)} className={secondaryButton}>{t("bulk.show")}</button>
+          <Button icon={BanIcon} loading={busy} disabled={picked.length === 0} onClick={() => void setHidden(true)}>{t("bulk.hide")}</Button>
+          <Button icon={EyeIcon} loading={busy} disabled={picked.length === 0} onClick={() => void setHidden(false)}>{t("bulk.show")}</Button>
         </div>
       ) : null}
       <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(item) => item.id} empty={t("empty")} />

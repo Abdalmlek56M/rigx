@@ -299,17 +299,6 @@ export const WalletIcon = (p: IconProps) => (
     <path d="M4 6a2 2 0 0 1 2-2h10v2M15 13h5" />
   </Icon>
 );
-export const MegaphoneIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <path d="M3 10v4h4l9 5V5L7 10z" />
-    <path d="M19 9a4 4 0 0 1 0 6M7 14l1 6h3l-1-5" />
-  </Icon>
-);
-export const StarIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
-  </Icon>
-);
 export const HelpIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="9" />
@@ -397,5 +386,88 @@ export const TrashIcon = (p: IconProps) => (
 export const LogoutIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
+  </Icon>
+);
+
+/* Admin action icons (4.10b C): one per verb on the admin buttons. */
+export const DownloadIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+  </Icon>
+);
+export const UploadIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 16V5M7 10l5-5 5 5M5 20h14" />
+  </Icon>
+);
+export const PrinterIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+    <path d="M7 14h10v7H7z" />
+  </Icon>
+);
+export const RefreshIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4" />
+  </Icon>
+);
+export const UndoIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+  </Icon>
+);
+export const EyeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </Icon>
+);
+export const SaveIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+    <path d="M7 3v5h8V3M7 21v-7h10v7" />
+  </Icon>
+);
+export const SendIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
+  </Icon>
+);
+export const CopyIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+  </Icon>
+);
+export const BanIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M5.6 5.6l12.8 12.8" />
+  </Icon>
+);
+export const ExternalIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </Icon>
+);
+export const ArrowDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 5v14M6 13l6 6 6-6" />
+  </Icon>
+);
+export const SwapIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
+  </Icon>
+);
+export const ArrowEndIcon = (p: IconProps) => (
+  <Icon {...p} className="shrink-0 rtl:-scale-x-100">
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </Icon>
+);
+export const ArrowBackIcon = (p: IconProps) => (
+  <Icon {...p} className="shrink-0 rtl:-scale-x-100">
+    <path d="M19 12H5M11 6l-6 6 6 6" />
   </Icon>
 );

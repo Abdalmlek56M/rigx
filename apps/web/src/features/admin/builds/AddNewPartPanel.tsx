@@ -16,6 +16,8 @@ import type { BuildLookups } from "./BuildParts";
 import { addNewPart } from "./builds-api";
 import { emptyNewPart, newPartValid, toNewPartBody, type NewPartForm } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
+import { CloseIcon, PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
@@ -91,8 +93,8 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
       <TextAreaField label={lines("internalNote")} name="newPartNote" value={form.internalNote} onChange={(internalNote) => set({ internalNote })} rows={2} maxLength={1000} error={error("internalNote")} />
       <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={submit.busy || !newPartValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("add")}</button>
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+        <Button type="submit" variant="primary" icon={PlusIcon} loading={submit.busy} disabled={!newPartValid(form)}>{t("add")}</Button>
+        <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
       </div>
       {submit.dialog}
     </form>

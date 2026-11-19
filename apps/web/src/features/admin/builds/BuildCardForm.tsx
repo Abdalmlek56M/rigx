@@ -12,6 +12,8 @@ import { WarrantyField } from "../stock/WarrantyField";
 import { editBuild } from "./builds-api";
 import { cardValid, SELL_MODES, toCardForm, toEditRequest, type CardForm } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The server field names this form shows next to their inputs; any other field error goes to the form message. */
 const SHOWN_FIELDS = ["name", "publicTitleAr", "publicTitleEn", "salePrice", "usage", "sellMode", "warrantyLabel", "copies", "suitableForAr", "suitableForEn"];
@@ -63,7 +65,7 @@ export function BuildCardForm({ warrantyLabels, canEdit, ...action }: BuildActio
         <TextAreaField label={t("suitableAr")} name="suitableForAr" dir="rtl" value={form.suitableForAr} onChange={(suitableForAr) => set({ suitableForAr })} rows={2} error={error("suitableForAr")} />
         <TextAreaField label={t("suitableEn")} name="suitableForEn" dir="ltr" value={form.suitableForEn} onChange={(suitableForEn) => set({ suitableForEn })} rows={2} error={error("suitableForEn")} />
         <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
-        {canEdit ? <button type="submit" disabled={submit.busy || !cardValid(form)} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button> : null}
+        {canEdit ? <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!cardValid(form)}>{t("save")}</Button> : null}
       </fieldset>
       {submit.dialog}
     </form>

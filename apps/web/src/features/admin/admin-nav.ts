@@ -3,7 +3,7 @@ export type AdminAreaKey =
   | "dashboard" | "pos" | "orders" | "customers" | "offers"
   | "inventory" | "builds" | "purchases" | "stockImport" | "categories" | "brands"
   | "partners" | "expenses"
-  | "requests" | "campaigns" | "tiers"
+  | "requests"
   | "articles" | "faq" | "policies"
   | "users" | "audit" | "system" | "settings";
 
@@ -55,9 +55,8 @@ export const ADMIN_NAV: readonly AdminGroup[] = [
   {
     key: "customers",
     areas: [
-      { key: "requests", href: "/admin/requests", anyOf: ["Requests.View"] },
-      { key: "campaigns", href: "/admin/campaigns", anyOf: ["Customers.Manage"] },
-      { key: "tiers", href: "/admin/tiers", anyOf: ["Customers.Manage"] }
+      // Campaigns and customer tiers come back here in Phase 5, when their pages exist (4.10b owner decision).
+      { key: "requests", href: "/admin/requests", anyOf: ["Requests.View"] }
     ]
   },
   {

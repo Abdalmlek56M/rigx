@@ -12,6 +12,8 @@ import { OfferItems } from "./OfferItems";
 import { createOffer, updateOffer, type Offer, type ProductSummary } from "./offers-api";
 import { emptyOfferForm, endsBeforeStart, offerForm, offerValid, toOfferInput, type OfferForm as Form } from "./offer-rules";
 import { isConflict } from "@/lib/api/conflict";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function Summary({ offer }: { offer: Offer }) {
   const t = useTranslations("admin.offers");
@@ -92,8 +94,8 @@ export function OfferForm({ offer, products, today, onSaved, onStale, onCancel, 
           <OfferItems items={form.items} products={products} onChange={(items) => set({ items })} onReload={onReload} />
           <FormMessage message={submit.errors.general} />
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={submit.busy || !offerValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-            {offer ? null : <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>}
+            <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!offerValid(form)}>{t("save")}</Button>
+            {offer ? null : <Button variant="ghost" onClick={onCancel}>{kit("cancel")}</Button>}
           </div>
           {submit.dialog}
         </form>

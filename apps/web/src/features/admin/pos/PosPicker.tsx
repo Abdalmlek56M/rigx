@@ -9,8 +9,9 @@ import { ChipRadio, FormSection } from "@/features/checkout/form-parts";
 import { usePermissions } from "../use-permissions";
 import { SearchBox } from "../kit/FilterBar";
 import { listBuilds, searchItems } from "./pos-api";
-import { BUTTON } from "./pos-parts";
 import { buildLine, itemLine, PRICE_OPTIONS, shownPrice, type BuildPick, type CartLine, type ItemPick } from "./pos-rules";
+import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 type Kind = "item" | "build";
 
@@ -36,7 +37,7 @@ function ItemResults({ query, onAdd }: { query: string; onAdd: (line: CartLine) 
       {(items: ItemPick[]) => items.map((pick) => (
         <Result
           key={pick.code}
-          action={<button type="button" onClick={() => onAdd(itemLine(pick))} className={BUTTON}>{t("add")}</button>}
+          action={<Button icon={PlusIcon} onClick={() => onAdd(itemLine(pick))}>{t("add")}</Button>}
         >
           <span className="flex flex-wrap items-center gap-2">
             <span dir="ltr" className="font-mono text-[13px] font-bold">{pick.code}</span>
@@ -70,7 +71,7 @@ function BuildResults({ query, onAdd }: { query: string; onAdd: (line: CartLine)
       {(builds: BuildPick[]) => builds.map((pick) => (
         <Result
           key={pick.code}
-          action={<button type="button" onClick={() => onAdd(buildLine(pick))} className={BUTTON}>{t("add")}</button>}
+          action={<Button icon={PlusIcon} onClick={() => onAdd(buildLine(pick))}>{t("add")}</Button>}
         >
           <span className="flex flex-wrap items-center gap-2">
             <span dir="ltr" className="font-mono text-[13px] font-bold">{pick.code}</span>
@@ -98,7 +99,7 @@ function Status<T>({ state, reload, isEmpty, children }: StatusProps<T>) {
     return (
       <p role="alert" className="m-0 flex flex-wrap items-center gap-3 text-sm font-bold text-error">
         {t("failed")}
-        <button type="button" onClick={reload} className={BUTTON}>{t("retry")}</button>
+        <Button icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </p>
     );
   }

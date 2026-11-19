@@ -6,6 +6,8 @@ import { useLoad } from "@/lib/hooks/use-load";
 import type { Category } from "../categories/categories-api";
 import { ArticleEditor } from "./ArticleEditor";
 import { fetchArticle, fetchRevisions, type Article } from "./articles-api";
+import { RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Loads one article and its revisions, then shows the editor. */
 export function ArticlePanel({ id, categories, onChanged }: {
@@ -24,7 +26,7 @@ export function ArticlePanel({ id, categories, onChanged }: {
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
         <p className="m-0 font-bold">{t("failed")}</p>
-        <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </div>
     );
   }

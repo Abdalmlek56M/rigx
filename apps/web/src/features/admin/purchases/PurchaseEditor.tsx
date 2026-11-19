@@ -16,8 +16,8 @@ import { PurchaseForm } from "./PurchaseForm";
 import { PurchaseReceivedPanel } from "./PurchaseReceivedPanel";
 import { PurchaseStatusBadge } from "./PurchaseStatusBadge";
 import { fetchPurchase, type Purchase, type PurchaseReceived } from "./purchases-api";
-
-const backLink = "inline-flex h-11 items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
+import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** `/admin/purchases/new` (no id) and `/admin/purchases/[id]`: loads what the form needs and keeps the purchase as the last action returned it. */
 export function PurchaseEditor({ id }: { id: string | null }) {
@@ -46,7 +46,7 @@ export function PurchaseEditor({ id }: { id: string | null }) {
   const [received, setReceived] = useState<PurchaseReceived | null>(null);
 
   const title = id ? t("detailTitle") : t("newTitle");
-  const header = <PageHeader title={title} actions={<Link href="/admin/purchases" className={backLink}>{t("back")}</Link>} />;
+  const header = <PageHeader title={title} actions={<Link href="/admin/purchases" className={buttonClass()}><ArrowBackIcon size={buttonIconSize()} />{t("back")}</Link>} />;
 
   if (state.status === "loading") {
     return (
@@ -62,7 +62,7 @@ export function PurchaseEditor({ id }: { id: string | null }) {
         {header}
         <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       </>
     );
@@ -76,7 +76,7 @@ export function PurchaseEditor({ id }: { id: string | null }) {
         actions={
           <>
             {purchase ? <PurchaseStatusBadge status={purchase.status} /> : null}
-            <Link href="/admin/purchases" className={backLink}>{t("back")}</Link>
+            <Link href="/admin/purchases" className={buttonClass()}><ArrowBackIcon size={buttonIconSize()} />{t("back")}</Link>
           </>
         }
       />

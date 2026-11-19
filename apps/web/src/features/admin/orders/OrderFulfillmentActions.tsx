@@ -10,8 +10,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { setReservation, setShipping } from "./orders-api";
 import { hasShipping, holdsReservation, reservationHoursValid } from "./order-rules";
 import { useOrderAction, type OrderActionProps } from "./use-order-action";
-
-const BUTTON = "h-11 self-start rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function ReservationForm(props: OrderActionProps) {
   const { order } = props;
@@ -38,7 +38,7 @@ function ReservationForm(props: OrderActionProps) {
         options={[{ value: "notify", label: t("notify") }, { value: "release", label: t("release") }]}
       />
       <FormMessage message={submit.errors.general} />
-      <button type="submit" disabled={submit.busy || (hours.trim() !== "" && !reservationHoursValid(hours))} className={BUTTON}>{t("save")}</button>
+      <Button type="submit" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={hours.trim() !== "" && !reservationHoursValid(hours)}>{t("save")}</Button>
       {submit.dialog}
     </form>
   );
@@ -63,7 +63,7 @@ function ShippingForm(props: OrderActionProps) {
       <TextField label={t("courier")} name="courierName" value={courier} onChange={(value) => setCourier(value.slice(0, 120))} error={submit.errors.fields.courierName} />
       <TextField label={t("waybill")} name="waybillNumber" ltr value={waybill} onChange={(value) => setWaybill(value.slice(0, 80))} error={submit.errors.fields.waybillNumber} />
       <FormMessage message={submit.errors.general} />
-      <button type="submit" disabled={submit.busy} className={BUTTON}>{t("save")}</button>
+      <Button type="submit" icon={SaveIcon} className="self-start" loading={submit.busy}>{t("save")}</Button>
       {submit.dialog}
     </form>
   );

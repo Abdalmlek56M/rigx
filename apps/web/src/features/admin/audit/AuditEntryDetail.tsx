@@ -10,6 +10,8 @@ import { AuditField as Row } from "./AuditField";
 import { AuditRestore } from "./AuditRestore";
 import { useAuditLabels } from "./use-audit-labels";
 import { usePermissions } from "../use-permissions";
+import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** One data-change entry: every field of the entry and its before → after rows. */
 export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onClose: () => void; onRestored: () => void }) {
@@ -24,7 +26,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("failed")}</p>
-        <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </div>
     );
   }
@@ -35,7 +37,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
     <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("changes.title")}</h2>
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>
+        <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
       </header>
       <dl className="m-0 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Row label={t("changes.time")} value={formatDateTime(entry.occurredAtUtc, locale)} />

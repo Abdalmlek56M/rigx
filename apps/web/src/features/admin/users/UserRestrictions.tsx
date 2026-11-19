@@ -13,6 +13,8 @@ import { useSubmit } from "../kit/use-submit";
 import { ReinstateDialog } from "./ReinstateDialog";
 import { RESTRICTION_TYPES, restrictionRequest, restrictionType, restrictionValid, type RestrictionForm } from "./user-rules.ts";
 import { addRestriction, fetchRestrictions, type Restriction } from "./users-api";
+import { BanIcon, RefreshIcon, UndoIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const EMPTY: RestrictionForm = { type: "Suspension", reason: "", until: "" };
 
@@ -43,7 +45,7 @@ function AddRestriction({ userId, onAdded }: { userId: string; onAdded: () => vo
       ) : null}
       <TextAreaField label={t("reason")} name="reason" value={form.reason} onChange={(reason) => setForm({ ...form, reason })} error={submit.errors.fields.reason} maxLength={1000} />
       <FormMessage message={submit.errors.general} />
-      <button type="submit" disabled={submit.busy || !restrictionValid(form)} className="h-11 self-start rounded-control bg-error px-5 font-bold text-surface disabled:opacity-50">{t(`submit.${form.type}`)}</button>
+      <Button type="submit" variant="danger" icon={BanIcon} className="self-start" loading={submit.busy} disabled={!restrictionValid(form)}>{t(`submit.${form.type}`)}</Button>
       {submit.dialog}
       <ConfirmDialog
         open={confirming} title={t(`submit.${form.type}`)} body={t(`confirm.${form.type}`)} confirmLabel={t(`submit.${form.type}`)} danger
@@ -67,7 +69,7 @@ export function UserRestrictions({ userId }: { userId: string }) {
       {state.status === "error" ? (
         <div role="alert" className="flex flex-col items-start gap-2">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : null}
       {state.status === "ready" && state.data.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("empty")}</p> : null}
@@ -81,7 +83,7 @@ export function UserRestrictions({ userId }: { userId: string }) {
                   <span className={`rounded-[4px] px-2 py-[3px] text-xs font-bold ${item.isActive ? "bg-error/10 text-error" : "bg-line text-ink-muted"}`}>{item.isActive ? t("active") : t("ended")}</span>
                 </span>
                 {item.isActive ? (
-                  <button type="button" onClick={() => setReinstating(item)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("reinstate")}</button>
+                  <Button icon={UndoIcon} onClick={() => setReinstating(item)}>{t("reinstate")}</Button>
                 ) : null}
               </div>
               <p className="m-0 [overflow-wrap:anywhere]">{item.reason}</p>

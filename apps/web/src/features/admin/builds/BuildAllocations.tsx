@@ -7,6 +7,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { saveAllocations } from "./builds-api";
 import { allocationDifference, allocationForm, allocationSum, allocationValid, defaultAllocation, toAllocationInputs } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
+import { SaveIcon, UndoIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The revenue split between the parts: a percent per part that must add up to 100 (the difference is shown), or reset to each part's standalone share. */
 export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { canEdit: boolean }) {
@@ -53,8 +55,8 @@ export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { ca
       <FormMessage message={formMessage(submit.errors)} />
       {canEdit ? (
         <div className="flex flex-wrap gap-2">
-          <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-          <button type="button" onClick={() => setForm(defaultAllocation(build.units))} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("reset")}</button>
+          <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!valid}>{t("save")}</Button>
+          <Button icon={UndoIcon} onClick={() => setForm(defaultAllocation(build.units))}>{t("reset")}</Button>
         </div>
       ) : null}
       {submit.dialog}

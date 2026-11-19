@@ -13,6 +13,8 @@ import { applySuggestion, editModel } from "../stock/stock-fields";
 import { WarrantyField } from "../stock/WarrantyField";
 import { ModelInput } from "./ModelInput";
 import { lineTotal, type LineForm } from "./purchase-rules";
+import { TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
@@ -42,7 +44,7 @@ export function PurchaseLineCard({ line, index, tree, partners, warrantyLabels, 
         <span className="flex items-center gap-3 text-sm">
           <span className="text-ink-muted">{t("lineTotal")}</span>
           <span className="font-bold">{formatEgp(lineTotal(line), locale)}</span>
-          {onRemove ? <button type="button" onClick={onRemove} className="h-10 rounded-control border border-input-line bg-surface px-3 text-sm font-bold text-error">{t("remove")}</button> : null}
+          {onRemove ? <Button size="sm" variant="danger" icon={TrashIcon} onClick={onRemove}>{t("remove")}</Button> : null}
         </span>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

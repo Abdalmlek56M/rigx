@@ -10,6 +10,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { createSeller, updateSeller, type Seller } from "./purchases-api";
 import { emptySeller, isKnownSource, SELLER_KINDS, SELLER_SOURCES, sellerFormValid, sellerFromView, toSellerRequest, type SellerForm } from "./purchase-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 export interface Governorate {
   code: string;
@@ -66,8 +68,8 @@ export function SellerFormCard({ seller, phone, governorates, onSaved, onStale, 
       <TextAreaField label={t("notes")} name="notes" value={form.notes} onChange={(notes) => set({ notes })} rows={2} maxLength={1000} error={error("notes")} />
       <FormMessage message={submit.errors.general} />
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={submit.busy || !sellerFormValid(form)} onClick={() => void save()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-        <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
+        <Button variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!sellerFormValid(form)} onClick={() => void save()}>{t("save")}</Button>
+        <Button variant="ghost" onClick={onCancel}>{t("cancel")}</Button>
       </div>
       {submit.dialog}
     </div>

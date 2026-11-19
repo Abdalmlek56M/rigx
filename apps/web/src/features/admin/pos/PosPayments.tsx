@@ -6,8 +6,10 @@ import { TextField } from "@/components/ui/TextField";
 import { FormSection } from "@/features/checkout/form-parts";
 import { formatEgp } from "@/lib/format";
 import { STORE_PAYMENT_METHODS } from "../orders/order-rules";
-import { BUTTON, MoneyInput, usePosError, type SetForm } from "./pos-parts";
+import { MoneyInput, usePosError, type SetForm } from "./pos-parts";
 import { fillRemaining, moneyValid, paidTotal, type PaymentRow, type PosField, type PosForm } from "./pos-rules";
+import { CloseIcon, PlusIcon, WalletIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
 
 interface PosPaymentsProps {
   form: PosForm;
@@ -43,14 +45,14 @@ export function PosPayments({ form, set, errors, total }: PosPaymentsProps) {
             </select>
             <MoneyInput label={t("amount")} value={row.amount} onChange={(amount) => patch(row.key, { amount })} invalid={row.amount.trim() !== "" && !moneyValid(row.amount)} className="min-w-0 flex-1 sm:flex-none sm:basis-40" />
             {rows.length > 1 ? (
-              <button type="button" aria-label={t("remove")} onClick={() => setRows(rows.filter((other) => other.key !== row.key))} className={`${BUTTON} w-11 px-0 text-lg`}>×</button>
+              <IconButton icon={CloseIcon} label={t("remove")} variant="secondary" onClick={() => setRows(rows.filter((other) => other.key !== row.key))} />
             ) : null}
           </li>
         ))}
       </ul>
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => setRows([...rows, { key: `p${nextKey.current++}`, method: "Cash", amount: "" }])} className={BUTTON}>{t("add")}</button>
-        {total !== null ? <button type="button" onClick={() => setRows(fillRemaining(rows, total))} className={BUTTON}>{t("fill")}</button> : null}
+        <Button icon={PlusIcon} onClick={() => setRows([...rows, { key: `p${nextKey.current++}`, method: "Cash", amount: "" }])}>{t("add")}</Button>
+        {total !== null ? <Button icon={WalletIcon} onClick={() => setRows(fillRemaining(rows, total))}>{t("fill")}</Button> : null}
       </div>
       <dl className="m-0 grid grid-cols-2 gap-3 text-sm">
         <div className="flex flex-col gap-0.5">

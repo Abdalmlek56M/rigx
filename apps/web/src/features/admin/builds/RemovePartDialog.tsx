@@ -10,6 +10,8 @@ import { removePart, type BuildPart } from "./builds-api";
 import { buildOption } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { useOtherBuilds } from "./use-other-builds";
+import { TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const radio = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
@@ -59,8 +61,8 @@ export function RemovePartDialog({ part, onClose, ...action }: BuildActionProps 
       ) : null}
       <FormMessage message={formMessage(submit.errors, ["targetAssemblyId"])} />
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-        <button type="button" disabled={submit.busy || !ready} onClick={() => void remove()} className="h-11 rounded-control bg-error px-5 font-bold text-surface disabled:opacity-60">{t("confirm")}</button>
+        <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+        <Button variant="danger" icon={TrashIcon} loading={submit.busy} disabled={!ready} onClick={() => void remove()}>{t("confirm")}</Button>
       </div>
       {submit.dialog}
     </Dialog>

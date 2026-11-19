@@ -15,6 +15,8 @@ import { cairoToday, parsePeriod, periodRange, type DateRange, type Period } fro
 import { KpiCards } from "./KpiCards";
 import { PeriodSwitch } from "./PeriodSwitch";
 import { SalesChart } from "./SalesChart";
+import { BoxIcon, RefreshIcon, RegisterIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 const FILTERS = { period: "month", from: "", to: "" };
 
@@ -40,7 +42,7 @@ function Content({ from, to }: DateRange) {
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
         <p className="m-0 font-bold">{t("failed")}</p>
-        <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </div>
     );
   }
@@ -74,8 +76,6 @@ function Content({ from, to }: DateRange) {
   );
 }
 
-const actionButton = "inline-flex h-11 items-center whitespace-nowrap rounded-control px-4 text-sm font-bold";
-
 /** ADM-Dashboard: the owner's overview for a period (kept in the URL), against the previous period of the same length. */
 export function Dashboard() {
   const t = useTranslations("admin.dashboard");
@@ -91,8 +91,8 @@ export function Dashboard() {
         title={t("title")}
         actions={
           <>
-            {has("Purchasing.ReceiveGoods") ? <Link href="/admin/purchases" className={`${actionButton} border border-input-line bg-surface`}>{t("receive")}</Link> : null}
-            {has("Sales.CreatePOS") ? <Link href="/admin/pos" className={`${actionButton} bg-orange text-on-orange`}>{t("newSale")}</Link> : null}
+            {has("Purchasing.ReceiveGoods") ? <Link href="/admin/purchases" className={buttonClass()}><BoxIcon size={buttonIconSize()} />{t("receive")}</Link> : null}
+            {has("Sales.CreatePOS") ? <Link href="/admin/pos" className={buttonClass({ variant: "primary" })}><RegisterIcon size={buttonIconSize()} />{t("newSale")}</Link> : null}
           </>
         }
       />

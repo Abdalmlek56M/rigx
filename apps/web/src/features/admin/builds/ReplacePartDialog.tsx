@@ -12,6 +12,8 @@ import { replacePart, type BuildPart } from "./builds-api";
 import { buildOption } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { useOtherBuilds } from "./use-other-builds";
+import { SwapIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 type Source = "stock" | "build";
 
@@ -81,8 +83,8 @@ export function ReplacePartDialog({ part, onClose, ...action }: BuildActionProps
       <p className="m-0 text-xs text-ink-muted">{source === "stock" ? t("stockNote", { code: part.stockItemCode }) : t("buildNote")}</p>
       <FormMessage message={formMessage(submit.errors)} />
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-        <button type="button" disabled={submit.busy || !pickedId} onClick={() => void replace()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-60">{t("confirm")}</button>
+        <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+        <Button variant="primary" icon={SwapIcon} loading={submit.busy} disabled={!pickedId} onClick={() => void replace()}>{t("confirm")}</Button>
       </div>
       {submit.dialog}
     </Dialog>

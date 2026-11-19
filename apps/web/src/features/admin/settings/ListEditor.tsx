@@ -2,11 +2,9 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowUpIcon, CloseIcon } from "@/components/ui/icons";
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
 import { addItem, moveItem, removeItem, replaceItem } from "./list-editor-rules.ts";
-
-const control = "flex h-11 w-11 items-center justify-center rounded-control border border-input-line bg-surface text-ink disabled:opacity-40";
-const add = "h-11 self-start rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50";
+import { Button, IconButton } from "../kit/Button";
 
 interface ListEditorProps<T> {
   /** The list's name for screen readers. */
@@ -36,22 +34,10 @@ export function ListEditor<T>({ label, items, onChange, renderItem, create, addL
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-ink-muted">{t("item", { number: index + 1 })}</span>
               <span className="flex items-center gap-1">
-                <button
-                  type="button" aria-label={t("up")} disabled={index === 0}
-                  onClick={() => onChange(moveItem(items, index, -1))} className={control}
-                >
-                  <ArrowUpIcon size={18} />
-                </button>
-                <button
-                  type="button" aria-label={t("down")} disabled={index === items.length - 1}
-                  onClick={() => onChange(moveItem(items, index, 1))} className={control}
-                >
-                  <span className="inline-flex rotate-180"><ArrowUpIcon size={18} /></span>
-                </button>
+                <IconButton icon={ArrowUpIcon} label={t("up")} variant="secondary" disabled={index === 0} onClick={() => onChange(moveItem(items, index, -1))} />
+                <IconButton icon={ArrowDownIcon} label={t("down")} variant="secondary" disabled={index === items.length - 1} onClick={() => onChange(moveItem(items, index, 1))} />
                 {fixed ? null : (
-                  <button type="button" aria-label={t("remove")} onClick={() => onChange(removeItem(items, index))} className={control}>
-                    <CloseIcon size={18} />
-                  </button>
+                  <IconButton icon={TrashIcon} label={t("remove")} variant="secondary" onClick={() => onChange(removeItem(items, index))} />
                 )}
               </span>
             </div>
@@ -60,12 +46,9 @@ export function ListEditor<T>({ label, items, onChange, renderItem, create, addL
         ))}
       </ul>
       {fixed || !create ? null : (
-        <button
-          type="button" disabled={max !== undefined && items.length >= max}
-          onClick={() => onChange(addItem(items, create()))} className={add}
-        >
-          + {addLabel}
-        </button>
+        <Button icon={PlusIcon} className="self-start" disabled={max !== undefined && items.length >= max} onClick={() => onChange(addItem(items, create()))}>
+          {addLabel}
+        </Button>
       )}
     </div>
   );

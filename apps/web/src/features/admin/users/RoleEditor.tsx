@@ -12,6 +12,8 @@ import { formMessage } from "../form-message.ts";
 import { PermissionPicker } from "./PermissionPicker";
 import { roleCodeValid, sameSet } from "./user-rules.ts";
 import { createRole, fetchPermissions, setRolePermissions, type StaffRole } from "./users-api";
+import { CloseIcon, PlusIcon, RefreshIcon, SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Create a role (`role` = null) or change the permissions of an existing one; both need the step-up code. */
 export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null; onSaved: (id: string | null) => void; onClose: () => void }) {
@@ -46,7 +48,7 @@ export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null;
     <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold [overflow-wrap:anywhere]">{role ? t("editTitle", { name: label(role) }) : t("newTitle")}</h2>
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>
+        <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
       </header>
       <form className="flex flex-col gap-3" onSubmit={(event) => { event.preventDefault(); void save(); }}>
         {role ? null : (
@@ -60,13 +62,13 @@ export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null;
         {permissions.state.status === "error" ? (
           <div role="alert" className="flex flex-col items-start gap-2">
             <p className="m-0 font-bold">{t("failed")}</p>
-            <button type="button" onClick={permissions.reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+            <Button variant="primary" icon={RefreshIcon} onClick={permissions.reload}>{t("retry")}</Button>
           </div>
         ) : null}
         {permissions.state.status === "ready" ? <PermissionPicker codes={permissions.state.data} selected={selected} onChange={setSelected} /> : null}
         <p className="m-0 text-xs text-ink-muted">{t("stepUpNote")}</p>
         <FormMessage message={formMessage(submit.errors, ["code", "name"])} />
-        <button type="submit" disabled={submit.busy || !valid} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{role ? t("save") : t("create")}</button>
+        <Button type="submit" variant="primary" icon={role ? SaveIcon : PlusIcon} className="self-start" loading={submit.busy} disabled={!valid}>{role ? t("save") : t("create")}</Button>
         {submit.dialog}
       </form>
     </section>

@@ -14,6 +14,8 @@ import { UserRestrictions } from "./UserRestrictions";
 import { UserRolesCard } from "./UserRolesCard";
 import { isSameAccount } from "./user-rules.ts";
 import { fetchUser, updateUser, type StaffRole, type StaffUser } from "./users-api";
+import { CloseIcon, RefreshIcon, SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const card = "flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5";
 
@@ -52,7 +54,7 @@ function ProfileCard({ user, isSelf, onSaved }: { user: StaffUser; isSelf: boole
         </label>
       )}
       <FormMessage message={formMessage(submit.errors, ["fullName", "phoneNumber"])} />
-      <button type="submit" disabled={submit.busy || !valid} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+      <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!valid}>{t("save")}</Button>
       {submit.dialog}
       <ConfirmDialog
         open={confirming} title={t("deactivateTitle")} body={t("deactivateBody")} confirmLabel={t("deactivate")} danger
@@ -73,7 +75,7 @@ export function UserDetail({ id, roles, onChanged, onClose }: { id: string; role
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("failed")}</p>
-        <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </div>
     );
   }
@@ -85,7 +87,7 @@ export function UserDetail({ id, roles, onChanged, onClose }: { id: string; role
     <section className="flex min-w-0 flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold [overflow-wrap:anywhere]">{user.fullName}</h2>
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>
+        <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
       </header>
       {isSelf ? <p className="m-0 rounded-control bg-paper px-3 py-2 text-sm text-ink-muted">{t("detail.self")}</p> : null}
       <div className="grid gap-4 xl:grid-cols-2">

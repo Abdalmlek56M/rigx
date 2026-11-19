@@ -11,7 +11,10 @@ export function trashKindKey(kind: string): (typeof TRASH_KINDS)[number] | null 
 
 export const RESET_SECTIONS = ["business", "content", "customers"] as const;
 export type ResetSection = (typeof RESET_SECTIONS)[number];
+/** The word the API itself requires in the request (its own guard); the screen sends it once the owner typed one of `RESET_WORDS`. */
 export const RESET_CONFIRM = "RESET";
+/** What the owner may type in the last dialog: the Arabic word or "reset" in any letter case. */
+export const RESET_WORDS = ["تصفير", "reset"] as const;
 
 /** Ticks or unticks a section: customers needs business, so ticking customers ticks business and unticking business unticks customers. */
 export function toggleResetSection(selected: readonly ResetSection[], section: ResetSection): ResetSection[] {
@@ -22,9 +25,10 @@ export function toggleResetSection(selected: readonly ResetSection[], section: R
   return section === "customers" && !next.includes("business") ? [...next, "business"] : next;
 }
 
-/** The reset button is enabled only for a real choice and the exact typed word (case matters, like the server). */
+/** The reset runs only for a real choice and a typed "تصفير" or "reset" (spaces around it and letter case do not matter). */
 export function canReset(selected: readonly ResetSection[], typed: string): boolean {
-  return selected.length > 0 && typed === RESET_CONFIRM;
+  const word = typed.trim().toLowerCase();
+  return selected.length > 0 && RESET_WORDS.some((accepted) => accepted === word);
 }
 
 export const EXPORT_DATASETS = [
@@ -38,8 +42,12 @@ export const EXPORT_DATASETS = [
 ] as const;
 export type ExportDataset = (typeof EXPORT_DATASETS)[number]["name"];
 
+/** The file formats the server writes. */
 export const EXPORT_FORMATS = ["csv", "xlsx", "xml"] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
+/** What the screen offers: the server's files, plus PDF, printed in the browser from the CSV (4.10b C). */
+export const EXPORT_CHOICES = ["xlsx", "pdf", "csv", "xml"] as const;
+export type ExportChoice = (typeof EXPORT_CHOICES)[number];
 
 /** The datasets this person may export. */
 export function exportableDatasets(has: (permission: string) => boolean): ExportDataset[] {

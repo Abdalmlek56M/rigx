@@ -11,6 +11,8 @@ import { PartnerFields } from "../stock/PartnerFields";
 import { amountText } from "../stock/stock-fields";
 import { setUnitPartner, type StockUnit } from "./inventory-api";
 import { unitPercent } from "./inventory-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Changes who financed one unit (and the share); sends the unit's own row version, and a 409 reads the item again. */
 export function UnitPartnerDialog({ unit, partners, onSaved, onStale, onClose }: {
@@ -50,8 +52,8 @@ export function UnitPartnerDialog({ unit, partners, onSaved, onStale, onClose }:
       />
       <FormMessage message={submit.errors.general} />
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-        <button type="button" disabled={submit.busy} onClick={() => void save()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-60">{t("save")}</button>
+        <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+        <Button variant="primary" icon={SaveIcon} loading={submit.busy} onClick={() => void save()}>{t("save")}</Button>
       </div>
       {submit.dialog}
     </Dialog>

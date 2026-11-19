@@ -5,9 +5,10 @@ import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
 import type { AdminDashboard, DashboardData } from "./dashboard-api";
 import { Empty, Panel, PanelTable } from "./Panel";
+import { BoxIcon, EyeIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 const cell = "border-t border-line px-2 py-2";
-const linkButton = "inline-flex min-h-9 items-center rounded-control border border-input-line px-3 text-[13px] font-bold hover:bg-line";
 
 /** Parts customers asked to be told about ("notify me"), with how many are still waiting and whether it is in stock now. */
 export function DemandPanel({ rows }: { rows: AdminDashboard["notifyMeDemand"] }) {
@@ -22,7 +23,7 @@ export function DemandPanel({ rows }: { rows: AdminDashboard["notifyMeDemand"] }
               <td className={cell}>{t("customers", { count: row.open })}</td>
               <td className={cell}>{row.availableNow ? <b className="text-success">{t("available")}</b> : <span className="text-ink-muted">{t("missing")}</span>}</td>
               <td className={`${cell} text-end`}>
-                <Link href={`/admin/requests?type=NotifyMe&q=${encodeURIComponent(row.modelName)}`} className={linkButton}>{t("open")}</Link>
+                <Link href={`/admin/requests?type=NotifyMe&q=${encodeURIComponent(row.modelName)}`} className={buttonClass({ size: "sm" })}><EyeIcon size={buttonIconSize("sm")} />{t("open")}</Link>
               </td>
             </tr>
           ))}
@@ -39,7 +40,7 @@ export function AgingPanel({ aging }: { aging: DashboardData["stockAging"] }) {
   return (
     <Panel
       title={<>{t("title")} <span className="text-sm font-normal text-ink-muted">{t("summary", { count: aging.count, cost: formatEgp(aging.costTotal, locale) })}</span></>}
-      action={<Link href="/admin/inventory" className={linkButton}>{t("all")}</Link>}
+      action={<Link href="/admin/inventory" className={buttonClass({ size: "sm" })}><BoxIcon size={buttonIconSize("sm")} />{t("all")}</Link>}
     >
       {aging.oldest.length ? (
         <PanelTable headers={[t("code"), t("part"), t("condition"), t("days"), t("cost")]}>

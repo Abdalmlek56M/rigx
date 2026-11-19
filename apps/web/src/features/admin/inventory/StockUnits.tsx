@@ -9,6 +9,8 @@ import { financingPartners, partnerShare } from "../stock/stock-fields";
 import { UnitPartnerDialog } from "./UnitPartnerDialog";
 import type { StockItem, StockUnit } from "./inventory-api";
 import { unitStatusKey } from "./inventory-rules";
+import { SwapIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const READY = (units: readonly StockUnit[]) => ({ status: "ready", data: units }) as const;
 
@@ -51,7 +53,7 @@ export function StockUnits({ item, partners, canAssign, showCosts, onChanged, on
     columns.push({
       key: "actions",
       header: t("columns.actions"),
-      cell: (unit) => <button type="button" onClick={() => setEditing(unit)} className="h-10 whitespace-nowrap rounded-control border border-input-line bg-surface px-3 text-sm font-bold">{t("changePartner")}</button>
+      cell: (unit) => <Button size="sm" icon={SwapIcon} onClick={() => setEditing(unit)}>{t("changePartner")}</Button>
     });
   }
 

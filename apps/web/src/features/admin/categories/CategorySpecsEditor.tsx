@@ -15,6 +15,8 @@ import {
 } from "./category-rules";
 import { saveCategorySpecs, type Category } from "./categories-api";
 import { isConflict } from "@/lib/api/conflict";
+import { PlusIcon, SaveIcon, TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const SPEC_TYPES = ["Choice", "Number", "YesNo", "Text"] as const;
 const inputClass = "h-9 rounded-control border border-input-line bg-surface px-2 text-sm";
@@ -87,9 +89,9 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
     { key: "compatibility", header: t("compatibility"), cell: (row) => <input aria-label={t("compatibility")} type="checkbox" checked={row.isCompatibility} onChange={(event) => patch(row.id, { isCompatibility: event.target.checked })} className={checkClass} /> },
     {
       key: "remove", header: "", cell: (row) => (
-        <button type="button" onClick={() => setRows((current) => current.filter((entry) => entry.id !== row.id))} className="h-9 rounded-control px-2 text-xs font-bold text-error">
+        <Button size="sm" variant="ghost" icon={TrashIcon} onClick={() => setRows((current) => current.filter((entry) => entry.id !== row.id))}>
           {t("remove")}
-        </button>
+        </Button>
       )
     }
   ];
@@ -117,8 +119,8 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
         >
           <DataTable label={t("title")} columns={ownColumns} state={{ status: "ready", data: rows }} onRetry={onStale} rowKey={(row) => row.id} empty={t("empty")} />
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setRows((current) => [...current, emptySpecRow()])} className="h-11 rounded-control border border-carbon bg-surface px-4 text-sm font-bold">{t("add")}</button>
-            <button type="submit" disabled={submit.busy || !allValid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+            <Button icon={PlusIcon} onClick={() => setRows((current) => [...current, emptySpecRow()])}>{t("add")}</Button>
+            <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!allValid}>{t("save")}</Button>
           </div>
           <FormMessage message={submit.errors.general} />
           {submit.dialog}

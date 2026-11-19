@@ -12,6 +12,8 @@ import { RequestOfferForm } from "./RequestOfferForm";
 import { RequestStatusBadge } from "./RequestBadges";
 import { canMarkBackInStockSent, requestTitle, requestTrail, requestTypeKey, type TrailStep } from "./request-labels";
 import { fetchRequest, fetchWhatsAppReply, markBackInStockSent, requestPhotoUrl, type RequestDetail as Detail } from "./requests-api";
+import { CheckIcon, CloseIcon, RefreshIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
 
 function Field({ label, value, mono = false }: { label: string; value: string | null; mono?: boolean }) {
   if (!value) return null;
@@ -51,16 +53,15 @@ function BackInStock({ request, onSaved }: { request: Detail; onSaved: () => voi
       <p className="m-0 text-sm">
         {t("available", { code: request.availableItemCode ?? "", date: request.availableAtUtc ? formatDateTime(request.availableAtUtc, locale) : "" })}
       </p>
-      <button
-        type="button" disabled={submit.busy}
+      <Button
+        variant="primary" icon={CheckIcon} className="self-start" loading={submit.busy}
         onClick={() => void submit.run(async () => {
           await markBackInStockSent(request.id);
           onSaved();
         }, t("marked"))}
-        className="h-11 self-start rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon disabled:opacity-50"
       >
         {t("markSent")}
-      </button>
+      </Button>
       {submit.dialog}
     </section>
   );
@@ -92,8 +93,8 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("detail.failed")}</p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("detail.retry")}</button>
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("detail.retry")}</Button>
+          <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
         </div>
       </div>
     );
@@ -112,7 +113,7 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
           <span dir="ltr" className="font-mono text-[13px] text-orange-text">{request.code}</span>
           <RequestStatusBadge status={request.status} />
         </div>
-        <button type="button" onClick={onClose} aria-label={t("close")} className="h-11 w-11 rounded-control text-xl leading-none text-ink-muted hover:bg-line">×</button>
+        <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>
 
       {trail ? <Trail steps={trail.steps} current={trail.current} /> : null}
@@ -164,7 +165,8 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
         <h3 className="m-0 text-[15px] font-bold">{t("whatsapp.title")}</h3>
         <p className="m-0 whitespace-pre-wrap rounded-control bg-paper p-3 text-sm text-ink-muted">{whatsApp.text}</p>
         <p className="m-0 text-xs text-ink-muted">{t("whatsapp.note")}</p>
-        <a href={whatsApp.url} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center self-start rounded-control bg-orange px-4 text-sm font-bold text-on-orange">
+        <a href={whatsApp.url} target="_blank" rel="noreferrer" className={`${buttonClass({ variant: "primary" })} self-start`}>
+          <WhatsAppIcon size={buttonIconSize()} />
           {t("whatsapp.open")}
         </a>
       </section>

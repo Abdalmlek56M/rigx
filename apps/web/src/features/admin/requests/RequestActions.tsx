@@ -8,6 +8,8 @@ import { useSubmit } from "../kit/use-submit";
 import { canClose, canDecide, canFollow, convertAllowed } from "./request-labels";
 import { convertRequest, decideRequest, setRequestStatus, type RequestDetail } from "./requests-api";
 import { isConflict } from "@/lib/api/conflict";
+import { ArrowEndIcon, BanIcon, CheckIcon, CloseIcon, EyeIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Follow / close, accept / reject and "convert to purchase", each only where the API allows it. */
 export function RequestActions({ request, canManage, canConvert, onSaved, onStale }: {
@@ -40,29 +42,29 @@ export function RequestActions({ request, canManage, canConvert, onSaved, onStal
       <h3 className="m-0 text-[15px] font-bold">{t("actions.title")}</h3>
       <div className="flex flex-wrap gap-2">
         {canFollow(request.status) ? (
-          <button type="button" disabled={submit.busy} onClick={() => void move(() => setRequestStatus(request.id, "Following", request.rowVersion), t("actions.followed"))} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">
+          <Button icon={EyeIcon} loading={submit.busy} onClick={() => void move(() => setRequestStatus(request.id, "Following", request.rowVersion), t("actions.followed"))}>
             {t("actions.follow")}
-          </button>
+          </Button>
         ) : null}
         {canClose(request.status) ? (
-          <button type="button" disabled={submit.busy} onClick={() => void move(() => setRequestStatus(request.id, "Closed", request.rowVersion), t("actions.closed"))} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">
+          <Button icon={CloseIcon} loading={submit.busy} onClick={() => void move(() => setRequestStatus(request.id, "Closed", request.rowVersion), t("actions.closed"))}>
             {t("actions.close")}
-          </button>
+          </Button>
         ) : null}
         {canDecide(request.status) ? (
           <>
-            <button type="button" disabled={submit.busy} onClick={() => void move(() => decideRequest(request.id, "Accepted", request.rowVersion), t("decision.accepted"))} className="h-11 rounded-control bg-success px-4 text-sm font-bold text-surface disabled:opacity-50">
+            <Button variant="primary" icon={CheckIcon} loading={submit.busy} onClick={() => void move(() => decideRequest(request.id, "Accepted", request.rowVersion), t("decision.accepted"))}>
               {t("decision.accept")}
-            </button>
-            <button type="button" disabled={submit.busy} onClick={() => void move(() => decideRequest(request.id, "Rejected", request.rowVersion), t("decision.rejected"))} className="h-11 rounded-control bg-error px-4 text-sm font-bold text-surface disabled:opacity-50">
+            </Button>
+            <Button variant="danger" icon={BanIcon} loading={submit.busy} onClick={() => void move(() => decideRequest(request.id, "Rejected", request.rowVersion), t("decision.rejected"))}>
               {t("decision.reject")}
-            </button>
+            </Button>
           </>
         ) : null}
         {canConvert && convertAllowed(request.type, request.status) ? (
-          <button type="button" disabled={submit.busy} onClick={() => setConverting(true)} className="h-11 rounded-control bg-orange px-4 text-sm font-bold text-on-orange disabled:opacity-50">
+          <Button variant="primary" icon={ArrowEndIcon} disabled={submit.busy} onClick={() => setConverting(true)}>
             {t("convert.button")}
-          </button>
+          </Button>
         ) : null}
       </div>
       {request.purchaseCode ? <p className="m-0 text-sm text-ink-muted">{t("convert.purchase", { code: request.purchaseCode })}</p> : null}

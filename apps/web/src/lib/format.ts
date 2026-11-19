@@ -19,20 +19,36 @@ export function formatDate(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(calendarLocale(locale), { day: "numeric", month: "long", year: "numeric", timeZone: CAIRO }).format(new Date(iso));
 }
 
-/** "13/11 · 14:22": day/month and 24-hour time in Cairo (Western digits). */
-export function formatDateTime(iso: string, locale: string): string {
-  const parts = new Intl.DateTimeFormat(calendarLocale(locale), {
-    day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: CAIRO
+type Parts = Intl.DateTimeFormatPart[];
+const part = (parts: Parts, type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? "";
+
+/** "ص" / "م" in Arabic, "AM" / "PM" in English. */
+const dayPeriod = (parts: Parts, locale: string) => (locale === "ar" ? part(parts, "dayPeriod") : part(parts, "dayPeriod").toUpperCase());
+
+function cairoParts(iso: string, locale: string, date: Intl.DateTimeFormatOptions): Parts {
+  return new Intl.DateTimeFormat(calendarLocale(locale), {
+    ...date, hour: "numeric", minute: "2-digit", hour12: true, timeZone: CAIRO
   }).formatToParts(new Date(iso));
-  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
-  return `${part("day")}/${part("month")} · ${part("hour")}:${part("minute")}`;
 }
 
-/** "13/11/2026 · 14:22": day/month/year and 24-hour time in Cairo (Western digits), as printed on an invoice. */
+const clock = (parts: Parts, locale: string) => `${part(parts, "hour")}:${part(parts, "minute")} ${dayPeriod(parts, locale)}`;
+
+/**
+ * The one time format for admin and storefront: 12-hour Cairo time with Western digits, "2:22 م" / "2:22 PM".
+ * The date-time helpers below build on it, so every time on the site reads the same.
+ */
+export function formatTime(iso: string, locale: string): string {
+  return clock(cairoParts(iso, locale, {}), locale);
+}
+
+/** "13/11 · 2:22 م" / "13/11 · 2:22 PM": day/month and 12-hour Cairo time. */
+export function formatDateTime(iso: string, locale: string): string {
+  const parts = cairoParts(iso, locale, { day: "numeric", month: "numeric" });
+  return `${part(parts, "day")}/${part(parts, "month")} · ${clock(parts, locale)}`;
+}
+
+/** "13/11/2026 · 2:22 م": day/month/year and 12-hour Cairo time, as printed on an invoice. */
 export function formatDateTimeFull(iso: string, locale: string): string {
-  const parts = new Intl.DateTimeFormat(calendarLocale(locale), {
-    day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: CAIRO
-  }).formatToParts(new Date(iso));
-  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
-  return `${part("day")}/${part("month")}/${part("year")} · ${part("hour")}:${part("minute")}`;
+  const parts = cairoParts(iso, locale, { day: "2-digit", month: "2-digit", year: "numeric" });
+  return `${part(parts, "day")}/${part(parts, "month")}/${part(parts, "year")} · ${clock(parts, locale)}`;
 }

@@ -14,6 +14,8 @@ import { createFaq, updateFaq, type Faq } from "./faq-api";
 import { emptyFaqForm, faqForm, faqValid, FAQ_SCOPES, toFaqInput, type FaqForm as Form } from "./faq-rules";
 import { FaqExclusions } from "./FaqExclusions";
 import { isConflict } from "@/lib/api/conflict";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
@@ -104,8 +106,8 @@ export function FaqForm({ faq, categories, onSaved, onDeleted, onStale, onCancel
 
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap gap-2">
-          <button type="submit" disabled={submit.busy || !faqValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-          {faq ? null : <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>}
+          <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!faqValid(form)}>{t("save")}</Button>
+          {faq ? null : <Button variant="ghost" onClick={onCancel}>{kit("cancel")}</Button>}
         </div>
         {submit.dialog}
       </form>

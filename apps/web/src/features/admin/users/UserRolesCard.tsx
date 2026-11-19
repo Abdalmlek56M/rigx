@@ -9,6 +9,8 @@ import { useSubmit } from "../kit/use-submit";
 import { RoleCheckboxes } from "./RoleCheckboxes";
 import { sameSet } from "./user-rules.ts";
 import { assignRoles, type StaffRole, type StaffUser } from "./users-api";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The roles of a staff member; saving needs the step-up code, and taking away every role asks first. */
 export function UserRolesCard({ user, roles, onSaved }: { user: StaffUser; roles: readonly StaffRole[]; onSaved: () => void }) {
@@ -39,7 +41,7 @@ export function UserRolesCard({ user, roles, onSaved }: { user: StaffUser; roles
       <RoleCheckboxes roles={roles} selected={selected} onChange={setSelected} />
       <p className="m-0 text-xs text-ink-muted">{t("stepUpNote")}</p>
       <FormMessage message={submit.errors.general ?? submit.errors.fields.roleIds ?? null} />
-      <button type="submit" disabled={submit.busy || unchanged} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+      <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={unchanged}>{t("save")}</Button>
       {submit.dialog}
       <ConfirmDialog
         open={confirming} title={t("emptyTitle")} body={t("emptyBody")} confirmLabel={t("save")} danger

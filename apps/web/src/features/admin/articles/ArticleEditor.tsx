@@ -13,6 +13,8 @@ import { ArticlePublishCard } from "./ArticlePublishCard";
 import { createArticle, updateArticle, type Article, type ArticleDetail, type ArticleRevision } from "./articles-api";
 import { articleForm, articleValid, emptyArticleForm, toArticleInput, type ArticleForm as Form } from "./article-rules";
 import { isConflict } from "@/lib/api/conflict";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The article editor: bilingual text and blocks on the start side, publishing and metadata on the end side. */
 export function ArticleEditor({ detail, revisions, categories, onSaved, onDeleted, onStale, onCancel }: {
@@ -76,8 +78,8 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
 
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap gap-2">
-          <button type="submit" disabled={submit.busy || !articleValid(form)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-          {detail ? null : <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>}
+          <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!articleValid(form)}>{t("save")}</Button>
+          {detail ? null : <Button variant="ghost" onClick={onCancel}>{kit("cancel")}</Button>}
         </div>
         {submit.dialog}
       </div>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { CheckIcon, TrashIcon } from "@/components/ui/icons";
+import { Button } from "./Button";
 import { Dialog } from "./Dialog";
 
 interface ConfirmDialogProps {
@@ -10,7 +12,7 @@ interface ConfirmDialogProps {
   body?: string;
   /** The action's own verb ("احذف", "ألغي الطلب"); defaults to "confirm". */
   confirmLabel?: string;
-  /** Red confirm button for deletes and cancellations. */
+  /** Red confirm button (with a bin icon) for deletes and cancellations. */
   danger?: boolean;
   /** Runs the action; the dialog stays open and busy until it settles, and closes on success. Show the failure with a toast. */
   onConfirm: () => Promise<void>;
@@ -38,13 +40,10 @@ export function ConfirmDialog({ open, title, body, confirmLabel, danger = false,
     <Dialog open={open} onClose={onClose} title={title}>
       {body ? <p className="m-0 text-sm text-ink-muted">{body}</p> : null}
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-        <button
-          type="button" disabled={busy} onClick={() => void confirm()}
-          className={`h-11 rounded-control px-5 font-bold disabled:opacity-60 ${danger ? "bg-error text-surface" : "bg-carbon text-on-carbon"}`}
-        >
+        <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+        <Button variant={danger ? "danger" : "primary"} icon={danger ? TrashIcon : CheckIcon} loading={busy} onClick={() => void confirm()}>
           {confirmLabel ?? t("confirm")}
-        </button>
+        </Button>
       </div>
     </Dialog>
   );

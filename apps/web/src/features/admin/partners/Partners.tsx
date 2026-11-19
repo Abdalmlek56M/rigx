@@ -15,6 +15,8 @@ import { MonthClosePanel } from "./MonthClosePanel";
 import { NewPartnerDialog } from "./NewPartnerDialog";
 import { PartnerDetail } from "./PartnerDetail";
 import { basisKey, partnerTotals } from "./partner-rules";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const FILTERS = { partner: "" };
 
@@ -67,7 +69,7 @@ export function Partners() {
     <>
       <PageHeader
         title={t("title")}
-        actions={canManage ? <button type="button" onClick={() => setCreating(true)} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("new")}</button> : null}
+        actions={canManage ? <Button variant="primary" icon={PlusIcon} onClick={() => setCreating(true)}>{t("new")}</Button> : null}
       />
       {kpis.length > 0 ? (
         <dl className="m-0 grid grid-cols-2 gap-3 xl:grid-cols-4">

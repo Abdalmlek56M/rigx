@@ -10,6 +10,8 @@ import { useSubmit } from "../kit/use-submit";
 import { deleteFaq, publishFaq, unpublishFaq, type Faq } from "./faq-api";
 import { faqStatusKey, type FaqStatusKey } from "./faq-rules";
 import { isConflict } from "@/lib/api/conflict";
+import { TrashIcon, UndoIcon, UploadIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const TONES: Record<FaqStatusKey, string> = {
   Draft: "bg-line text-ink-muted",
@@ -54,17 +56,17 @@ export function FaqActions({ faq, onSaved, onDeleted, onStale }: {
       <div className="flex flex-wrap items-center gap-2">
         <FaqStatusBadge status={faq.status} />
         {faq.status !== "Published" ? (
-          <button type="button" disabled={submit.busy} onClick={() => void run(() => publishFaq(faq.id, faq.rowVersion), t("published"))} className="h-11 rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon disabled:opacity-50">
+          <Button variant="primary" icon={UploadIcon} loading={submit.busy} onClick={() => void run(() => publishFaq(faq.id, faq.rowVersion), t("published"))}>
             {t("publish")}
-          </button>
+          </Button>
         ) : (
-          <button type="button" disabled={submit.busy} onClick={() => setUnpublishing(true)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">
+          <Button icon={UndoIcon} disabled={submit.busy} onClick={() => setUnpublishing(true)}>
             {t("unpublish")}
-          </button>
+          </Button>
         )}
-        <button type="button" onClick={() => setDeleting(true)} className="h-11 rounded-control border border-error/40 bg-surface px-4 text-sm font-bold text-error">
+        <Button variant="danger" icon={TrashIcon} onClick={() => setDeleting(true)}>
           {t("delete")}
-        </button>
+        </Button>
       </div>
       <FormMessage message={submit.errors.general} />
       {submit.dialog}

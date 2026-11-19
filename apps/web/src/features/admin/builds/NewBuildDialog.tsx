@@ -10,6 +10,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { createBuild } from "./builds-api";
 import { StockUnitPicker } from "./StockUnitPicker";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Asks for the build's name and its first part from free stock, creates the draft and opens its editor (the other parts are added there). */
 export function NewBuildDialog({ onClose }: { onClose: () => void }) {
@@ -42,8 +44,8 @@ export function NewBuildDialog({ onClose }: { onClose: () => void }) {
         <StockUnitPicker pickedId={unitId} actionLabel={t("pick")} onPick={(unit) => setUnitId(unit.id)} />
         <FormMessage message={formMessage(submit.errors, ["name"])} />
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
-          <button type="submit" disabled={submit.busy || !ready} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-60">{t("submit")}</button>
+          <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+          <Button type="submit" variant="primary" icon={PlusIcon} loading={submit.busy} disabled={!ready}>{t("submit")}</Button>
         </div>
       </form>
       {submit.dialog}

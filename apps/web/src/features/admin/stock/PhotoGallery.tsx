@@ -7,10 +7,10 @@ import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import type { Schemas } from "@rigx/api-client";
+import { PlusIcon, TrashIcon } from "@/components/ui/icons";
+import { IconButton, buttonClass, buttonIconSize } from "../kit/Button";
 
 type Photo = Schemas["StockItemPhoto"];
-
-const button = "inline-flex h-11 cursor-pointer items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
 
 /**
  * The photos of a stock item or a build: upload and remove. The server's own message (for example the minimum photo count to publish) is shown as it comes.
@@ -61,18 +61,14 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
             <img src={mediaUrl(photo.thumbnailStorageKey)} alt={t("alt", { model: name })} className="h-20 w-20 rounded-control border border-line object-cover" />
             {canManage ? (
-              <button
-                type="button" disabled={busy} onClick={() => setRemoving(photo)} aria-label={t("remove")}
-                className="absolute end-1 top-1 h-7 w-7 rounded-full bg-carbon/80 text-sm leading-none text-on-carbon disabled:opacity-50"
-              >
-                ×
-              </button>
+              <IconButton icon={TrashIcon} label={t("remove")} variant="secondary" size="sm" className="absolute end-1 top-1" disabled={busy} onClick={() => setRemoving(photo)} />
             ) : null}
           </li>
         ))}
       </ul>
       {canManage ? (
-        <label className={`${button} self-start ${busy ? "opacity-60" : ""}`}>
+        <label className={`${buttonClass()} cursor-pointer self-start ${busy ? "opacity-60" : ""}`}>
+          <PlusIcon size={buttonIconSize()} />
           {t("add")}
           <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => void upload(event.target.files?.[0])} className="sr-only" />
         </label>

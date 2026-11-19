@@ -45,15 +45,20 @@ const EXPORT_PATHS = {
   customers: "/api/v1/admin/system/export/customers"
 } as const satisfies Record<ExportDataset, string>;
 
-export const downloadExport = (query: { dataset: ExportDataset; format: ExportFormat; from: string; to: string }, headers: Headers) =>
+type ExportQuery = { dataset: ExportDataset; from: string; to: string };
+
+const exportParams = (query: ExportQuery, format: ExportFormat) =>
+  ({ query: { format, ...(query.from ? { from: query.from } : {}), ...(query.to ? { to: query.to } : {}) } });
+
+export const downloadExport = (query: ExportQuery & { format: ExportFormat }, headers: Headers) =>
   download(
-    api().GET(EXPORT_PATHS[query.dataset], {
-      params: { query: { format: query.format, ...(query.from ? { from: query.from } : {}), ...(query.to ? { to: query.to } : {}) } },
-      headers,
-      parseAs: "blob"
-    }),
+    api().GET(EXPORT_PATHS[query.dataset], { params: exportParams(query, query.format), headers, parseAs: "blob" }),
     exportFileName(query.dataset, query.from, query.to, query.format)
   );
+
+/** The dataset as CSV text, for the printable PDF table. */
+export const fetchExportCsv = (query: ExportQuery, headers: Headers) =>
+  required(unwrap(api().GET(EXPORT_PATHS[query.dataset], { params: exportParams(query, "csv"), headers, parseAs: "text" })));
 
 export const resetData = (sections: readonly ResetSection[], confirm: string, headers: Headers) =>
   required(unwrap(api().POST("/api/v1/admin/system/reset", { body: { sections: [...sections], confirm }, headers })));

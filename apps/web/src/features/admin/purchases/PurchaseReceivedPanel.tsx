@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { PurchaseReceived } from "./purchases-api";
+import { ArrowEndIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 /** After receiving: the RX codes that now exist in stock (each opens in the inventory) and the kept build, if there is one. */
 export function PurchaseReceivedPanel({ result }: { result: PurchaseReceived }) {
@@ -24,7 +26,7 @@ export function PurchaseReceivedPanel({ result }: { result: PurchaseReceived }) 
         ))}
       </ul>
       <p className="m-0 text-sm text-ink-muted">{t("photosHint")}</p>
-      {assemblyId ? <Link href={`/admin/builds/${assemblyId}`} className="inline-flex h-11 items-center self-start rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("openBuild")}</Link> : null}
+      {assemblyId ? <Link href={`/admin/builds/${assemblyId}`} className={`${buttonClass({ variant: "primary" })} self-start`}><ArrowEndIcon size={buttonIconSize()} />{t("openBuild")}</Link> : null}
     </section>
   );
 }

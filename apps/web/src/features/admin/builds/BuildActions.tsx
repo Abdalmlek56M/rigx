@@ -9,8 +9,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { transitionBuild, type BuildTransition } from "./builds-api";
 import { canDisassemble, canPublish, canUnpublish } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
-
-const button = "h-11 rounded-control border border-input-line bg-surface px-5 font-bold disabled:opacity-50";
+import { EyeIcon, UndoIcon, UnlinkIcon, UploadIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** Publish / unpublish / disassemble (disassemble confirms: every part goes back to stock), and "preview in store" for a published build. */
 export function BuildActions({ canEdit, ...action }: BuildActionProps & { canEdit: boolean }) {
@@ -24,11 +24,11 @@ export function BuildActions({ canEdit, ...action }: BuildActionProps & { canEdi
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         {build.status === "Published" ? (
-          <Link href={`/builds/${build.code}`} target="_blank" className={`${button} inline-flex items-center`}>{t("preview")}</Link>
+          <Link href={`/builds/${build.code}`} target="_blank" className={buttonClass()}><EyeIcon size={buttonIconSize()} />{t("preview")}</Link>
         ) : null}
-        {canEdit && canPublish(build) ? <button type="button" disabled={submit.busy} onClick={() => void go("publish")} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("publish")}</button> : null}
-        {canEdit && canUnpublish(build) ? <button type="button" disabled={submit.busy} onClick={() => void go("unpublish")} className={button}>{t("unpublish")}</button> : null}
-        {canEdit && canDisassemble(build) ? <button type="button" disabled={submit.busy} onClick={() => setConfirming(true)} className={`${button} text-error`}>{t("disassemble")}</button> : null}
+        {canEdit && canPublish(build) ? <Button variant="primary" icon={UploadIcon} loading={submit.busy} onClick={() => void go("publish")}>{t("publish")}</Button> : null}
+        {canEdit && canUnpublish(build) ? <Button icon={UndoIcon} loading={submit.busy} onClick={() => void go("unpublish")}>{t("unpublish")}</Button> : null}
+        {canEdit && canDisassemble(build) ? <Button variant="danger" icon={UnlinkIcon} disabled={submit.busy} onClick={() => setConfirming(true)}>{t("disassemble")}</Button> : null}
       </div>
       <FormMessage message={formMessage(submit.errors)} />
       <ConfirmDialog

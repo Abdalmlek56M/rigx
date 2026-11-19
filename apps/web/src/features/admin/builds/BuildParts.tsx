@@ -16,8 +16,8 @@ import { RemovePartDialog } from "./RemovePartDialog";
 import { ReplacePartDialog } from "./ReplacePartDialog";
 import type { BuildPart } from "./builds-api";
 import type { BuildActionProps } from "./use-build-action";
-
-const rowButton = "h-10 whitespace-nowrap rounded-control border border-input-line bg-surface px-3 text-sm font-bold";
+import { BoxIcon, PencilIcon, PlusIcon, SwapIcon, TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 export interface BuildLookups {
   tree: readonly Category[];
@@ -100,9 +100,9 @@ export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & {
       header: t("columns.actions"),
       cell: (part) => (
         <span className="flex flex-wrap gap-1.5">
-          <button type="button" onClick={() => setPanel({ kind: "edit", part })} className={rowButton}>{t("edit")}</button>
-          <button type="button" onClick={() => setPanel({ kind: "replace", part })} className={rowButton}>{t("replace")}</button>
-          <button type="button" onClick={() => setPanel({ kind: "remove", part })} className={`${rowButton} text-error`}>{t("remove")}</button>
+          <Button size="sm" icon={PencilIcon} onClick={() => setPanel({ kind: "edit", part })}>{t("edit")}</Button>
+          <Button size="sm" icon={SwapIcon} onClick={() => setPanel({ kind: "replace", part })}>{t("replace")}</Button>
+          <Button size="sm" variant="danger" icon={TrashIcon} onClick={() => setPanel({ kind: "remove", part })}>{t("remove")}</Button>
         </span>
       )
     });
@@ -114,8 +114,8 @@ export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & {
         <h2 className="m-0 text-[17px] font-bold">{t("title", { count: build.units.length })}</h2>
         {canEdit ? (
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setPanel({ kind: "stock" })} className={rowButton}>{t("addFromStock")}</button>
-            <button type="button" onClick={() => setPanel({ kind: "new" })} className={rowButton}>{t("addNew")}</button>
+            <Button size="sm" icon={BoxIcon} onClick={() => setPanel({ kind: "stock" })}>{t("addFromStock")}</Button>
+            <Button size="sm" icon={PlusIcon} onClick={() => setPanel({ kind: "new" })}>{t("addNew")}</Button>
           </div>
         ) : null}
       </div>

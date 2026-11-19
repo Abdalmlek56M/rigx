@@ -14,6 +14,8 @@ import { AuditOutcomeBadge } from "./AuditOutcomeBadge";
 import { fetchEvents, type SecurityEvent } from "./audit-api";
 import { AUDIT_OUTCOMES, auditRangeUtc, shortId, type AuditSet, type AuditValues } from "./audit-rules";
 import { SecurityEventDetail } from "./SecurityEventDetail";
+import { CloseIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Sign-in and security events: filters, the paged table and the picked event below it. */
 export function SecurityView({ values, set }: { values: AuditValues; set: AuditSet }) {
@@ -84,7 +86,7 @@ export function SecurityView({ values, set }: { values: AuditValues; set: AuditS
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-line bg-surface p-5 text-sm text-ink-muted">
             {t("security.notOnPage")}
-            <button type="button" onClick={clear} className="h-11 rounded-control border border-input-line bg-surface px-4 font-bold text-ink">{t("close")}</button>
+            <Button icon={CloseIcon} onClick={clear}>{t("close")}</Button>
           </div>
         ) : null}
       </div>

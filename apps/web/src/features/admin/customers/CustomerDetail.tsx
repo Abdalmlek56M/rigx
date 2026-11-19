@@ -12,8 +12,8 @@ import { CustomerProfileCard } from "./CustomerProfileCard";
 import { blacklistEntry } from "./customer-rules";
 import { fetchBlacklist, fetchCustomer, fetchShippingRates } from "./customers-api";
 import { ViewAsDialog } from "./ViewAsDialog";
-
-const linkButton = "inline-flex h-11 items-center whitespace-nowrap rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
+import { ArrowBackIcon, EyeIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** ADM-Customer 360 view: the account, its actions and the customer's orders, warranties, requests and note. */
 export function CustomerDetail({ id }: { id: string }) {
@@ -38,7 +38,7 @@ export function CustomerDetail({ id }: { id: string }) {
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
         <p className="m-0 font-bold">{t("failed")}</p>
-        <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </div>
     );
   }
@@ -52,8 +52,8 @@ export function CustomerDetail({ id }: { id: string }) {
         title={profile.account.name}
         actions={
           <>
-            <Link href="/admin/customers" className={linkButton}>{t("back")}</Link>
-            <button type="button" onClick={() => setViewAs(true)} className={linkButton}>{t("viewAs")}</button>
+            <Link href="/admin/customers" className={buttonClass()}><ArrowBackIcon size={buttonIconSize()} />{t("back")}</Link>
+            <Button icon={EyeIcon} onClick={() => setViewAs(true)}>{t("viewAs")}</Button>
           </>
         }
       />

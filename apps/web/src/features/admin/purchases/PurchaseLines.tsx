@@ -5,6 +5,8 @@ import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { PurchaseLineCard } from "./PurchaseLineCard";
 import { emptyLine, type LineForm } from "./purchase-rules";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 let lineCounter = 0;
 /** A client-only id for a line, so removing one keeps the others' inputs. */
@@ -35,7 +37,7 @@ export function PurchaseLines({ lines, minLines, tree, partners, warrantyLabels,
         ))}
       </ul>
       {lines.length < minLines ? <p role="status" className="m-0 text-sm font-bold text-error">{t("needMore", { count: minLines })}</p> : null}
-      <button type="button" onClick={() => onChange([...lines, emptyLine(newLineKey())])} className="h-11 self-start rounded-control border border-input-line bg-surface px-5 font-bold">{t("add")}</button>
+      <Button icon={PlusIcon} className="self-start" onClick={() => onChange([...lines, emptyLine(newLineKey())])}>{t("add")}</Button>
       <p className="m-0 text-xs text-ink-muted">{t("modelHint")}</p>
     </section>
   );

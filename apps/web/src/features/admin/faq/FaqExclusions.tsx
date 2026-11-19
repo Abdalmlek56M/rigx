@@ -7,6 +7,8 @@ import { TextField } from "@/components/ui/TextField";
 import { flattenTree } from "../categories/category-rules";
 import type { Category } from "../categories/categories-api";
 import { addExcludedCategory, addExcludedCode, removeValue } from "./faq-rules";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** "Excluded in": categories and item codes this general/category FAQ never shows on. */
 export function FaqExclusions({ categories, currentCategoryId, categoryIds, itemCodes, onChange }: {
@@ -34,12 +36,9 @@ export function FaqExclusions({ categories, currentCategoryId, categoryIds, item
             options={[{ value: "", label: t("pickCategory") }, ...options]}
           />
         </div>
-        <button
-          type="button" disabled={category === ""} onClick={() => { onChange({ excludedCategoryIds: addExcludedCategory(categoryIds, category) }); setCategory(""); }}
-          className="h-11 rounded-control border border-carbon bg-surface px-4 text-sm font-bold disabled:opacity-50"
-        >
+        <Button icon={PlusIcon} disabled={category === ""} onClick={() => { onChange({ excludedCategoryIds: addExcludedCategory(categoryIds, category) }); setCategory(""); }}>
           {t("add")}
-        </button>
+        </Button>
       </div>
       {categoryIds.length > 0 ? (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
@@ -55,12 +54,9 @@ export function FaqExclusions({ categories, currentCategoryId, categoryIds, item
         <div className="min-w-56 flex-1">
           <TextField label={t("itemCode")} name="excludedCode" value={code} onChange={(value) => setCode(value.toUpperCase())} ltr placeholder="RX-0154" />
         </div>
-        <button
-          type="button" disabled={code.trim() === ""} onClick={() => { onChange({ excludedItemCodes: addExcludedCode(itemCodes, code) }); setCode(""); }}
-          className="h-11 rounded-control border border-carbon bg-surface px-4 text-sm font-bold disabled:opacity-50"
-        >
+        <Button icon={PlusIcon} disabled={code.trim() === ""} onClick={() => { onChange({ excludedItemCodes: addExcludedCode(itemCodes, code) }); setCode(""); }}>
           {t("add")}
-        </button>
+        </Button>
       </div>
       {itemCodes.length > 0 ? (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">

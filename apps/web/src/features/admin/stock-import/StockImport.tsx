@@ -8,6 +8,8 @@ import { useSubmit } from "../kit/use-submit";
 import { SectionCard } from "../system/SectionCard";
 import { downloadImportTemplate, importStockFile, type StockImportResult } from "./stock-import-api";
 import { canImport, conditionKey, fileProblem, importSummary, rowHasErrors } from "./stock-import-rules";
+import { BoxIcon, DownloadIcon, UploadIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 const COLUMNS = ["row", "model", "condition", "quantity", "items", "errors"] as const;
 
@@ -47,7 +49,7 @@ export function StockImport() {
 
       <SectionCard title={t("step1.title")} hint={t("step1.hint")}>
         <FormMessage message={template.errors.general} />
-        <button type="button" disabled={template.busy} onClick={() => void template.run(() => downloadImportTemplate(), t("step1.downloaded"))} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("step1.button")}</button>
+        <Button variant="primary" icon={DownloadIcon} className="self-start" loading={template.busy} onClick={() => void template.run(() => downloadImportTemplate(), t("step1.downloaded"))}>{t("step1.button")}</Button>
       </SectionCard>
 
       <SectionCard title={t("step2.title")} hint={t("step2.hint")}>
@@ -96,12 +98,12 @@ export function StockImport() {
           <div role="status" className="flex flex-col gap-3">
             <p className="m-0 font-bold">{t("step3.done", { count: result.items?.length ?? result.itemsToCreate })}</p>
             <p className="m-0 text-sm text-ink-muted">{t("step3.photosHint")}</p>
-            <Link href="/admin/inventory" className="inline-flex h-11 items-center self-start rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("step3.openStock")}</Link>
+            <Link href="/admin/inventory" className={`${buttonClass({ variant: "primary" })} self-start`}><BoxIcon size={buttonIconSize()} />{t("step3.openStock")}</Link>
           </div>
         ) : (
-          <button type="button" disabled={!canImport(result) || commit.busy} onClick={() => void startImport()} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">
+          <Button variant="primary" icon={UploadIcon} className="self-start" loading={commit.busy} disabled={!canImport(result)} onClick={() => void startImport()}>
             {t("step3.button", { count: result?.itemsToCreate ?? 0 })}
-          </button>
+          </Button>
         )}
       </SectionCard>
     </div>

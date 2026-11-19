@@ -16,6 +16,8 @@ import { OrderStatusActions } from "./OrderStatusActions";
 import { fetchShippingRates } from "../customers/customers-api";
 import { fetchOrder, type Order } from "./orders-api";
 import { customerWhatsAppNumber, orderTrail } from "./order-rules";
+import { CheckIcon, CloseIcon, CopyIcon, ExternalIcon, RefreshIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
 
 function Trail({ order }: { order: Order }) {
   const t = useTranslations("admin.orders");
@@ -53,8 +55,8 @@ function Tracking({ token }: { token: string }) {
     <div className="flex flex-col gap-2">
       <h3 className="m-0 text-sm font-bold">{t("title")}</h3>
       <div className="flex flex-wrap gap-2">
-        <Link href={`/t/${token}`} target="_blank" className="inline-flex h-11 items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("open")}</Link>
-        <button type="button" onClick={() => void copy()} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{copied ? t("copied") : t("copy")}</button>
+        <Link href={`/t/${token}`} target="_blank" className={buttonClass()}><ExternalIcon size={buttonIconSize()} />{t("open")}</Link>
+        <Button icon={copied ? CheckIcon : CopyIcon} onClick={() => void copy()}>{copied ? t("copied") : t("copy")}</Button>
       </div>
     </div>
   );
@@ -80,8 +82,8 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("detail.failed")}</p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("detail.retry")}</button>
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("detail.retry")}</Button>
+          <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
         </div>
       </div>
     );
@@ -113,7 +115,7 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
           <PaymentStatusBadge status={order.paymentStatus} />
           <span className="text-xs text-ink-muted">{t(`channels.${order.channel === "Store" ? "Store" : "Online"}`)} · {t("detail.created", { date: formatDateTime(order.createdAtUtc, locale) })}</span>
         </div>
-        <button type="button" onClick={onClose} aria-label={t("close")} className="h-11 w-11 rounded-control text-xl leading-none text-ink-muted hover:bg-line">×</button>
+        <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_400px]">
@@ -134,7 +136,8 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
           <OrderPaymentActions key={`payment-${formKey}`} {...actionProps} />
           <div className="flex flex-col gap-2 border-t border-line pt-4">
             {order.phoneHasWhatsApp ? (
-              <a href={whatsAppUrl(customerWhatsAppNumber(order.phoneNumber))} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center rounded-control bg-orange px-4 text-sm font-bold text-on-orange">
+              <a href={whatsAppUrl(customerWhatsAppNumber(order.phoneNumber))} target="_blank" rel="noreferrer" className={buttonClass({ variant: "primary" })}>
+                <WhatsAppIcon size={buttonIconSize()} />
                 {t("actions.whatsapp")}
               </a>
             ) : null}

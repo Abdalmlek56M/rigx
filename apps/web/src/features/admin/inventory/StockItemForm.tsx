@@ -14,6 +14,8 @@ import { CategorySelect } from "../stock/CategorySelect";
 import { WarrantyField } from "../stock/WarrantyField";
 import { updateStockItem, type StockItem } from "./inventory-api";
 import { itemFormValid, toItemForm, toUpdateRequest, type StockItemForm as Form } from "./inventory-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
@@ -80,7 +82,7 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
         <TextAreaField label={t("internalNote")} name="internalNote" value={form.internalNote} onChange={(internalNote) => set({ internalNote })} rows={2} hint={t("internalNoteHint")} error={error("internalNote")} />
         <FormMessage message={submit.errors.general} />
         {canEdit ? (
-          <button type="submit" disabled={submit.busy || !itemFormValid(form)} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+          <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!itemFormValid(form)}>{t("save")}</Button>
         ) : null}
       </fieldset>
       {submit.dialog}

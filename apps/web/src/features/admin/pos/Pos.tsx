@@ -18,6 +18,8 @@ import { PosSold } from "./PosSold";
 import { PosSummary } from "./PosSummary";
 import type { SetForm } from "./pos-parts";
 import { addToCart, EMPTY_POS_FORM, sendableLines, toSaleRequest, validateSale, type CartLine, type PosForm } from "./pos-rules";
+import { ClockIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 const PREVIEW_DELAY_MS = 400;
 
@@ -92,7 +94,7 @@ export function Pos({ leadSources, governorates }: PosProps) {
 
   return (
     <>
-      <PageHeader title={t("title")} actions={<Link href="/admin/orders?channel=Store" className="inline-flex h-11 items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("recent")}</Link>} />
+      <PageHeader title={t("title")} actions={<Link href="/admin/orders?channel=Store" className={buttonClass()}><ClockIcon size={buttonIconSize()} />{t("recent")}</Link>} />
       {sold ? <PosSold order={sold} canDeliver={has("Sales.ApproveOrder")} onNewSale={reset} /> : (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex min-w-0 flex-col gap-5">

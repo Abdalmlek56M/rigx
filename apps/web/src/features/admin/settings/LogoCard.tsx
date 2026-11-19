@@ -6,8 +6,8 @@ import { mediaUrl } from "@/lib/media";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { useToast } from "../kit/Toast";
 import { deleteLogo, uploadLogo, type SettingsView, type StoreLogoKind } from "./settings-api";
-
-const button = "inline-flex h-11 cursor-pointer items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
+import { TrashIcon, UploadIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** One logo: preview, upload/change and remove (the settings form keeps the rest of the section). */
 export function LogoCard({ kind, storageKey, onSaved }: { kind: StoreLogoKind; storageKey: string | null; onSaved: (view: SettingsView) => void }) {
@@ -52,7 +52,8 @@ export function LogoCard({ kind, storageKey, onSaved }: { kind: StoreLogoKind; s
           ) : null}
         </span>
         <div className="flex flex-wrap gap-2">
-          <label className={`${button} ${busy ? "pointer-events-none opacity-60" : ""}`}>
+          <label className={`${buttonClass()} cursor-pointer ${busy ? "pointer-events-none opacity-60" : ""}`}>
+            <UploadIcon size={buttonIconSize()} />
             {storageKey ? t("change") : t("upload")}
             <input
               ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
@@ -60,9 +61,9 @@ export function LogoCard({ kind, storageKey, onSaved }: { kind: StoreLogoKind; s
             />
           </label>
           {storageKey ? (
-            <button type="button" disabled={busy} onClick={() => setRemoving(true)} className={`${button} text-error disabled:opacity-50`}>
+            <Button variant="danger" icon={TrashIcon} disabled={busy} onClick={() => setRemoving(true)}>
               {t("remove")}
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>

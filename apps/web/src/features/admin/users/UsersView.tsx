@@ -13,6 +13,8 @@ import { useBuiltInRoleLabel } from "./use-role-label";
 import { UserDetail } from "./UserDetail";
 import { ACTIVE_FILTERS, activeFilter, roleNames, type UserSet, type UserValues } from "./user-rules.ts";
 import { fetchRoles, fetchUsers, type StaffUser } from "./users-api";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The staff list with search, the active filter and paging; the picked user's detail below. */
 export function UsersView({ values, set }: { values: UserValues; set: UserSet }) {
@@ -58,7 +60,7 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
 
   return (
     <>
-      <FilterBar actions={<button type="button" onClick={() => setInviting(true)} className="h-11 rounded-control bg-carbon px-5 text-sm font-bold text-on-carbon">{t("invite.open")}</button>}>
+      <FilterBar actions={<Button variant="primary" icon={PlusIcon} onClick={() => setInviting(true)}>{t("invite.open")}</Button>}>
         <SearchBox label={t("search")} value={values.search} onChange={(search) => set({ search })} />
         <FilterSelect
           label={t("activeLabel")} value={values.active as (typeof ACTIVE_FILTERS)[number]} onChange={(active) => set({ active })}

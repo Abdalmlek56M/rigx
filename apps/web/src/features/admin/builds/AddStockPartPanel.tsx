@@ -6,6 +6,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { StockUnitPicker } from "./StockUnitPicker";
 import { addStockPart } from "./builds-api";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
+import { CloseIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Add a part from free stock: pick one of the available units and it joins the build at once. */
 export function AddStockPartPanel({ onClose, ...action }: BuildActionProps & { onClose: () => void }) {
@@ -17,7 +19,7 @@ export function AddStockPartPanel({ onClose, ...action }: BuildActionProps & { o
     <div className="flex flex-col gap-3 rounded-control border border-line bg-paper p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
-        <button type="button" onClick={onClose} className="h-10 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>
+        <Button size="sm" icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
       </div>
       <StockUnitPicker pickedId="" actionLabel={t("add")} onPick={(unit) => void run(() => addStockPart(build.id, unit.id, build.rowVersion), t("added"))} />
       <FormMessage message={formMessage(submit.errors)} />

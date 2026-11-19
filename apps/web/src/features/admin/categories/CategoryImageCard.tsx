@@ -7,6 +7,8 @@ import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { useToast } from "../kit/Toast";
 import { usePermissions } from "../use-permissions";
 import { deleteCategoryImage, uploadCategoryImage, type Category } from "./categories-api";
+import { TrashIcon, UploadIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** The category picture: upload, change and remove (the text save keeps the current key). */
 export function CategoryImageCard({ category, onChanged }: { category: Category; onChanged: (saved: Category) => void }) {
@@ -45,8 +47,6 @@ export function CategoryImageCard({ category, onChanged }: { category: Category;
     }
   }
 
-  const button = "inline-flex h-11 cursor-pointer items-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold";
-
   return (
     <div className="flex flex-col gap-2 rounded-control border border-line bg-paper p-3">
       <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
@@ -59,7 +59,8 @@ export function CategoryImageCard({ category, onChanged }: { category: Category;
         </span>
         {canManage ? (
           <div className="flex flex-wrap gap-2">
-            <label className={`${button} ${busy ? "opacity-60" : ""}`}>
+            <label className={`${buttonClass()} cursor-pointer ${busy ? "opacity-60" : ""}`}>
+              <UploadIcon size={buttonIconSize()} />
               {category.iconStorageKey ? t("change") : t("upload")}
               <input
                 ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
@@ -67,7 +68,7 @@ export function CategoryImageCard({ category, onChanged }: { category: Category;
               />
             </label>
             {category.iconStorageKey ? (
-              <button type="button" disabled={busy} onClick={() => setRemoving(true)} className={`${button} text-error disabled:opacity-50`}>{t("remove")}</button>
+              <Button variant="danger" icon={TrashIcon} disabled={busy} onClick={() => setRemoving(true)}>{t("remove")}</Button>
             ) : null}
           </div>
         ) : null}

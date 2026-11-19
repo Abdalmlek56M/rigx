@@ -13,6 +13,8 @@ import { PartnerPayouts } from "./PartnerPayouts";
 import { PartnerStatement } from "./PartnerStatement";
 import { basisKey } from "./partner-rules";
 import { fetchPartner } from "./partners-api";
+import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
 
 /** The picked partner: balances, the agreement form, financed parts, capital, payouts and the statement. */
 export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; today: string; onClose: () => void; onChanged: () => void }) {
@@ -44,8 +46,8 @@ export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; t
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("failed")}</p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("close")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
+          <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>
         </div>
       </div>
     );
@@ -66,7 +68,7 @@ export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; t
           <h2 className="m-0 text-[17px] font-bold"><span dir="auto" className="[unicode-bidi:isolate]">{partner.name}</span></h2>
           <span className="text-xs text-ink-muted">{t("summary", { percent: partner.defaultPercent, basis: basis(basisKey(partner.basis)) })}{partner.isActive ? "" : ` · ${t("inactive")}`}</span>
         </div>
-        <button type="button" onClick={onClose} aria-label={t("close")} className="h-11 w-11 rounded-control text-xl leading-none text-ink-muted hover:bg-line">×</button>
+        <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>
       <dl className="m-0 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {figures.map((figure) => (

@@ -17,6 +17,8 @@ import {
   type BlacklistEntry,
   type CustomerProfile
 } from "./customers-api";
+import { BanIcon, KeyIcon, LogoutIcon, UndoIcon, UnlinkIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function BlacklistDialog({ profile, onClose, onSaved }: { profile: CustomerProfile; onClose: () => void; onSaved: () => void }) {
   const t = useTranslations("admin.customers.blacklist");
@@ -47,8 +49,8 @@ function BlacklistDialog({ profile, onClose, onSaved }: { profile: CustomerProfi
         <TextAreaField label={t("reason")} name="reason" value={reason} onChange={setReason} placeholder={t("reasonPlaceholder")} error={submit.errors.fields.reason} />
         <FormMessage message={submit.errors.general} />
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>
-          <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-error px-5 font-bold text-surface disabled:opacity-50">{t("save")}</button>
+          <Button variant="ghost" onClick={onClose}>{kit("cancel")}</Button>
+          <Button type="submit" variant="danger" icon={BanIcon} loading={submit.busy} disabled={!valid}>{t("save")}</Button>
         </div>
         {submit.dialog}
       </form>
@@ -91,33 +93,32 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       {canManage ? (
         <>
-          <button
-            type="button" disabled={submit.busy}
+          <Button
+            icon={KeyIcon} className="w-full" loading={submit.busy}
             onClick={() => void submit.run(async () => { await sendCustomerLoginCode(profile.account.id); }, t("codeSent"))}
-            className="h-11 w-full rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50"
           >
             {t("sendCode")}
-          </button>
+          </Button>
           {profile.loginMethods.googleEmail ? (
-            <button type="button" onClick={() => setUnlinking(true)} className="h-11 w-full rounded-control border border-input-line bg-surface px-4 text-sm font-bold">
+            <Button icon={UnlinkIcon} className="w-full" onClick={() => setUnlinking(true)}>
               {t("unlinkGoogle")}
-            </button>
+            </Button>
           ) : null}
-          <button type="button" onClick={() => setSigningOut(true)} className="h-11 w-full rounded-control border border-input-line bg-surface px-4 text-sm font-bold">
+          <Button icon={LogoutIcon} className="w-full" onClick={() => setSigningOut(true)}>
             {t("signOutAll")}
-          </button>
+          </Button>
         </>
       ) : null}
       {profile.sales.blacklisted && canViewBlacklist ? <p className="m-0 rounded-control bg-error/10 px-3 py-2 text-sm font-bold text-error">{t("blacklistState")}</p> : null}
       {canApprove && !profile.sales.blacklisted ? (
-        <button type="button" onClick={() => setAdding(true)} className="h-11 w-full rounded-control border border-error/40 bg-surface px-4 text-sm font-bold text-error">
+        <Button variant="danger" icon={BanIcon} className="w-full" onClick={() => setAdding(true)}>
           {t("blacklist")}
-        </button>
+        </Button>
       ) : null}
       {canApprove && canViewBlacklist && profile.sales.blacklisted && blacklist ? (
-        <button type="button" onClick={() => setRemoving(true)} className="h-11 w-full rounded-control border border-input-line bg-surface px-4 text-sm font-bold">
+        <Button icon={UndoIcon} className="w-full" onClick={() => setRemoving(true)}>
           {t("blacklistRemove")}
-        </button>
+        </Button>
       ) : null}
       <p className="m-0 text-xs text-ink-muted">{t("auditNote")}</p>
       {submit.dialog}

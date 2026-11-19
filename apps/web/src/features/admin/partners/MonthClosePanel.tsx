@@ -10,6 +10,8 @@ import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import { closeMonth, type MonthClose } from "./partners-api";
 import { monthValid, previousMonth } from "./partner-rules";
+import { CheckIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Closes a month for the partners paid from the shop's whole profit (the previous month, Cairo, to begin with): confirm first, then shows the result. */
 export function MonthClosePanel({ today, onClosed }: { today: string; onClosed: () => void }) {
@@ -54,7 +56,7 @@ export function MonthClosePanel({ today, onClosed }: { today: string; onClosed: 
       >
         <TextField label={t("month")} name="closeMonth" type="number" ltr value={month} onChange={setMonth} />
         <TextField label={t("year")} name="closeYear" type="number" ltr value={year} onChange={setYear} />
-        <button type="submit" disabled={!valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("close")}</button>
+        <Button type="submit" variant="primary" icon={CheckIcon} disabled={!valid}>{t("close")}</Button>
       </form>
       <ConfirmDialog
         open={confirming} title={t("confirmTitle", { month: Number(month), year: Number(year) })} body={t("confirmBody")} confirmLabel={t("close")}

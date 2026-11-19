@@ -30,4 +30,3 @@ export function MoneyInput({ label, value, onChange, invalid = false, className 
   );
 }
 
-export const BUTTON = "inline-flex h-11 items-center justify-center rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50";

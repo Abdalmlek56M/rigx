@@ -7,6 +7,8 @@ import { FormMessage } from "../kit/PageHeader";
 import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
 import type { SettingsView } from "./settings-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 interface SectionFormProps {
   title: string;
@@ -36,9 +38,9 @@ export function SectionForm({ title, hint, onSubmit, busy, error, dialog, childr
       {children}
       <FormMessage message={error} />
       <div>
-        <button type="submit" disabled={busy} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">
+        <Button type="submit" variant="primary" icon={SaveIcon} loading={busy}>
           {t("save")}
-        </button>
+        </Button>
       </div>
       {dialog}
     </form>

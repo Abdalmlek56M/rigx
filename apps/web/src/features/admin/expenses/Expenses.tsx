@@ -24,6 +24,8 @@ import {
   type Expense
 } from "./expenses-api";
 import { expenseLink, expensePeriodRange, expenseSplits, parseExpensePeriod } from "./expense-rules";
+import { EyeIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const FILTERS = { period: "month", from: "", to: "" };
 
@@ -59,7 +61,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
     return (
       <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
         <p className="m-0 font-bold">{t("failed")}</p>
-        <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
+        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </div>
     );
   }
@@ -92,7 +94,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
     { key: "paidFrom", header: t("columns.paidFrom"), cell: (expense) => <span className="text-xs text-ink-muted">{paidFrom(expense)}</span> },
     {
       key: "receipt", header: t("columns.receipt"),
-      cell: (expense) => expense.hasReceipt ? <button type="button" onClick={() => setReceiptId(expense.id)} className="h-9 rounded-control px-2 text-xs font-bold text-orange-text">{t("receipt.open")}</button> : <span className="text-xs text-ink-muted">{t("none")}</span>
+      cell: (expense) => expense.hasReceipt ? <Button size="sm" variant="ghost" icon={EyeIcon} onClick={() => setReceiptId(expense.id)}>{t("receipt.open")}</Button> : <span className="text-xs text-ink-muted">{t("none")}</span>
     }
   ];
 

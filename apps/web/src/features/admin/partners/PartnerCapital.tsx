@@ -14,6 +14,8 @@ import { useSubmit } from "../kit/use-submit";
 import { MoneyFields } from "./MoneyFields";
 import { addCapital, fetchCapital, type CapitalEntry } from "./partners-api";
 import { capitalKindKey, capitalValid, CAPITAL_KINDS, emptyCapitalForm, payMethodKey, toCapitalRequest, type CapitalForm } from "./partner-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const SHOWN_FIELDS = ["kind", "amount", "entryDate", "method", "moneyAccountId", "note"];
 
@@ -79,7 +81,7 @@ export function PartnerCapital({ partnerId, today, accounts, canPost, onChanged 
           </div>
           <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
           <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
-          <button type="submit" disabled={submit.busy || !capitalValid(form)} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+          <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!capitalValid(form)}>{t("save")}</Button>
         </form>
       ) : null}
       {submit.dialog}

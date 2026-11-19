@@ -7,6 +7,8 @@ import { TextField } from "@/components/ui/TextField";
 import { DataTable, type Column } from "../kit/DataTable";
 import { addOfferItem, filterProducts, itemDiscount, removeOfferItem, type OfferItemForm } from "./offer-rules";
 import type { ProductSummary } from "./offers-api";
+import { PlusIcon, TrashIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The offer's products: search the catalog, add at a suggested price, then edit each offer price. */
 export function OfferItems({ items, products, onChange, onReload }: {
@@ -47,7 +49,7 @@ export function OfferItems({ items, products, onChange, onReload }: {
     },
     {
       key: "remove", header: "", cell: (item) => (
-        <button type="button" onClick={() => onChange(removeOfferItem(items, item.productId))} className="h-9 rounded-control px-2 text-xs font-bold text-error">{t("remove")}</button>
+        <Button size="sm" variant="ghost" icon={TrashIcon} onClick={() => onChange(removeOfferItem(items, item.productId))}>{t("remove")}</Button>
       )
     }
   ];
@@ -64,7 +66,7 @@ export function OfferItems({ items, products, onChange, onReload }: {
                   <span dir="auto" className="[unicode-bidi:isolate]">{product.name}</span> <span dir="ltr" className="font-mono text-xs text-ink-muted">{product.sku}</span>
                 </button>
                 <span className="whitespace-nowrap text-xs text-ink-muted">{formatEgp(product.basePrice, locale)}</span>
-                <button type="button" onClick={() => onChange(addOfferItem(items, product))} className="h-9 rounded-control bg-carbon px-3 text-xs font-bold text-on-carbon">{t("add")}</button>
+                <Button size="sm" variant="primary" icon={PlusIcon} onClick={() => onChange(addOfferItem(items, product))}>{t("add")}</Button>
               </li>
             ))}
           </ul>

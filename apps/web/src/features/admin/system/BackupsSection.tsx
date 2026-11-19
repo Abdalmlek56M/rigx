@@ -11,6 +11,8 @@ import { useSubmit } from "../kit/use-submit";
 import { SectionCard } from "./SectionCard";
 import { downloadBackup, fetchBackups, runBackup, verifyBackup, type BackupRun } from "./system-api";
 import { backupStatusKey, backupSucceeded, backupTriggerKey, formatBytes } from "./system-rules.ts";
+import { DatabaseIcon, DownloadIcon, ShieldIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Backups: the list, "run now", verify, and download (asks first, then the step-up code). */
 export function BackupsSection({ canDownload }: { canDownload: boolean }) {
@@ -72,8 +74,8 @@ export function BackupsSection({ canDownload }: { canDownload: boolean }) {
     {
       key: "actions", header: "", align: "end", cell: (run) => !backupSucceeded(run) ? null : (
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" disabled={submit.busy} onClick={() => void verify(run)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">{t("verify")}</button>
-          {canDownload ? <button type="button" disabled={submit.busy} onClick={() => setDownloading(run)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">{t("download")}</button> : null}
+          <Button icon={ShieldIcon} loading={submit.busy} onClick={() => void verify(run)}>{t("verify")}</Button>
+          {canDownload ? <Button icon={DownloadIcon} disabled={submit.busy} onClick={() => setDownloading(run)}>{t("download")}</Button> : null}
         </div>
       )
     }
@@ -82,7 +84,7 @@ export function BackupsSection({ canDownload }: { canDownload: boolean }) {
   return (
     <SectionCard title={t("title")} hint={t("hint")}>
       <div>
-        <button type="button" disabled={submit.busy} onClick={() => void runNow()} className="h-11 rounded-control bg-carbon px-5 text-sm font-bold text-on-carbon disabled:opacity-50">{t("runNow")}</button>
+        <Button variant="primary" icon={DatabaseIcon} loading={submit.busy} onClick={() => void runNow()}>{t("runNow")}</Button>
       </div>
       <FormMessage message={submit.errors.general} />
       <DataTable label={t("title")} columns={columns} state={state} onRetry={reload} rowKey={(run) => run.id ?? `${run.startedAtUtc}`} empty={t("empty")} />

@@ -7,6 +7,8 @@ import { isConflict } from "@/lib/api/conflict";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { saveRequestNote, type RequestDetail } from "./requests-api";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The staff-only note on a request; never shown to the customer. */
 export function RequestNoteForm({ request, canManage, onSaved, onStale }: { request: RequestDetail; canManage: boolean; onSaved: () => void; onStale: () => void }) {
@@ -40,9 +42,9 @@ export function RequestNoteForm({ request, canManage, onSaved, onStale }: { requ
         >
           <TextAreaField label={t("title")} name="internalNote" value={note} onChange={setNote} hint={t("hint")} error={submit.errors.fields.internalNote} />
           <FormMessage message={submit.errors.general} />
-          <button type="submit" disabled={submit.busy} className="h-11 self-start rounded-control border border-input-line bg-surface px-5 font-bold disabled:opacity-50">
+          <Button type="submit" icon={SaveIcon} className="self-start" loading={submit.busy}>
             {t("save")}
-          </button>
+          </Button>
           {submit.dialog}
         </form>
       ) : null}

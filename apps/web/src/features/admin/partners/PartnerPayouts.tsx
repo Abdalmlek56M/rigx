@@ -13,6 +13,8 @@ import { useSubmit } from "../kit/use-submit";
 import { MoneyFields } from "./MoneyFields";
 import { addPayout, fetchPayouts, type Payout } from "./partners-api";
 import { emptyPayoutForm, payMethodKey, payoutValid, toPayoutRequest, type PayoutForm } from "./partner-rules";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 const SHOWN_FIELDS = ["amount", "method", "moneyAccountId", "reference", "note"];
 
@@ -75,7 +77,7 @@ export function PartnerPayouts({ partnerId, accounts, canPost, onChanged }: {
           </div>
           <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
           <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
-          <button type="submit" disabled={submit.busy || !payoutValid(form)} className="h-11 self-start rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
+          <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!payoutValid(form)}>{t("save")}</Button>
         </form>
       ) : null}
       {submit.dialog}

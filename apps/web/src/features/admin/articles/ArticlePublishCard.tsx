@@ -11,6 +11,8 @@ import { useSubmit } from "../kit/use-submit";
 import { deleteArticle, publishArticle, unpublishArticle, type ArticleDetail, type ArticleRevision, type Article } from "./articles-api";
 import { ArticleStatusBadge } from "./ArticleStatusBadge";
 import { isConflict } from "@/lib/api/conflict";
+import { TrashIcon, UndoIcon, UploadIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** Publishing, revisions, the products the body shows and delete. */
 export function ArticlePublishCard({ detail, revisions, onSaved, onDeleted, onStale }: {
@@ -45,9 +47,9 @@ export function ArticlePublishCard({ detail, revisions, onSaved, onDeleted, onSt
       <div className="flex flex-wrap items-center gap-2">
         <ArticleStatusBadge status={article.status} publishedAtUtc={article.publishedAtUtc} />
         {article.status !== "Published" ? (
-          <button type="button" disabled={submit.busy} onClick={() => void run(() => publishArticle(article.id, article.rowVersion), t("published"))} className="h-11 rounded-control bg-carbon px-4 text-sm font-bold text-on-carbon disabled:opacity-50">{t("publish")}</button>
+          <Button variant="primary" icon={UploadIcon} loading={submit.busy} onClick={() => void run(() => publishArticle(article.id, article.rowVersion), t("published"))}>{t("publish")}</Button>
         ) : (
-          <button type="button" onClick={() => setUnpublishing(true)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("unpublish")}</button>
+          <Button icon={UndoIcon} onClick={() => setUnpublishing(true)}>{t("unpublish")}</Button>
         )}
       </div>
       <p className="m-0 text-xs text-ink-muted">{t("saveFirst")}</p>
@@ -82,7 +84,7 @@ export function ArticlePublishCard({ detail, revisions, onSaved, onDeleted, onSt
         </div>
       ) : null}
 
-      <button type="button" onClick={() => setDeleting(true)} className="h-11 rounded-control border border-error/40 bg-surface px-4 text-sm font-bold text-error">{t("delete")}</button>
+      <Button variant="danger" icon={TrashIcon} className="self-start" onClick={() => setDeleting(true)}>{t("delete")}</Button>
       {submit.dialog}
       <ConfirmDialog
         open={unpublishing} title={t("unpublish")} body={t("unpublishBody")} confirmLabel={t("unpublish")} danger

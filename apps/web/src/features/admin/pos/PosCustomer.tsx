@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/ui/TextField";
 import { FormSection } from "@/features/checkout/form-parts";
-import { BUTTON, usePosError, type SetForm } from "./pos-parts";
+import { usePosError, type SetForm } from "./pos-parts";
 import { findCustomer, type PosCustomer as FoundCustomer } from "./pos-api";
 import { posPhone, posPhoneValid, type PosField, type PosForm } from "./pos-rules";
+import { CheckIcon, SearchIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 interface PosCustomerProps {
   form: PosForm;
@@ -66,15 +68,15 @@ export function PosCustomer({ form, set, errors }: PosCustomerProps) {
         </div>
         <TextField label={t("email")} name="email" type="email" ltr value={form.email} onChange={(value) => set("email", value)} autoComplete="off" error={error("email")} />
         <div className="flex flex-col items-start justify-end gap-2">
-          <button type="button" disabled={!posPhoneValid(form.phone) || lookup.status === "busy"} onClick={() => void find()} className={BUTTON}>
+          <Button icon={SearchIcon} loading={lookup.status === "busy"} disabled={!posPhoneValid(form.phone)} onClick={() => void find()}>
             {lookup.status === "busy" ? t("finding") : t("find")}
-          </button>
+          </Button>
         </div>
       </div>
       {lookup.status === "found" ? (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-paper px-3 py-2 text-sm">
           <span>{t("found", { name: lookup.customer.name, orders: t("orders", { count: lookup.customer.orderCount }) })}</span>
-          <button type="button" onClick={() => applyDetails(lookup.customer)} className={BUTTON}>{t("use")}</button>
+          <Button icon={CheckIcon} onClick={() => applyDetails(lookup.customer)}>{t("use")}</Button>
         </div>
       ) : null}
       {lookup.status === "none" ? <p role="status" className="m-0 text-sm text-ink-muted">{t("none")}</p> : null}

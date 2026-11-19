@@ -12,6 +12,8 @@ import { CategorySpecsEditor } from "./CategorySpecsEditor";
 import { CategoryTree } from "./CategoryTree";
 import { effectiveSpecs, findPath } from "./category-rules";
 import { fetchCategories, type Category } from "./categories-api";
+import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** ADM-Categories: the category tree on the start side and the edit / create panel on the end side. */
 export function Categories() {
@@ -40,22 +42,20 @@ export function Categories() {
     reload();
   };
 
-  const button = "inline-flex h-11 items-center whitespace-nowrap rounded-control px-4 text-sm font-bold";
-
   return (
     <>
       <PageHeader
         title={t("title")}
         actions={canManage ? (
-          <button type="button" onClick={() => { setCreating({ parentId: null }); setSelectedId(null); }} className={`${button} bg-carbon text-on-carbon`}>
+          <Button variant="primary" icon={PlusIcon} onClick={() => { setCreating({ parentId: null }); setSelectedId(null); }}>
             {t("newRoot")}
-          </button>
+          </Button>
         ) : null}
       />
       {state.status === "error" ? (
         <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className={`${button} bg-carbon text-on-carbon`}>{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
@@ -86,9 +86,9 @@ export function Categories() {
                     </span>
                   </h2>
                   {canManage ? (
-                    <button type="button" onClick={() => setCreating({ parentId: selected.id })} className={`${button} border border-input-line bg-surface`}>
+                    <Button icon={PlusIcon} onClick={() => setCreating({ parentId: selected.id })}>
                       {t("newChild")}
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
                 <CategoryForm key={`edit-${selected.id}`} tree={tree} category={selected} parentId={null} canManage={canManage} onSaved={saved} onStale={reload} onCancel={() => setSelectedId(null)} />

@@ -11,6 +11,8 @@ import { LogoCard } from "./LogoCard";
 import { SectionForm, useSectionSave } from "./SectionForm";
 import { reapplyWatermark, saveWatermark } from "./settings-api";
 import { watermarkForm, watermarkValue, WATERMARK_POSITIONS, type SectionProps, type WatermarkForm as Form } from "./settings-rules";
+import { RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** ADM-Settings — watermark: on/off, placement, opacity/size, the watermark logo and a full reapply to old photos. */
 export function WatermarkForm({ view, onSaved, onStale }: SectionProps) {
@@ -56,9 +58,9 @@ export function WatermarkForm({ view, onSaved, onStale }: SectionProps) {
         <div className="flex flex-col gap-2 border-t border-line pt-3">
           <h3 className="m-0 text-[15px] font-bold">{t("oldImagesTitle")}</h3>
           <p className="m-0 text-xs text-ink-muted">{t("oldImagesHint")}</p>
-          <button type="button" disabled={reapplying} onClick={() => setConfirming(true)} className="h-11 self-start rounded-control border border-input-line bg-surface px-4 text-sm font-bold disabled:opacity-50">
+          <Button icon={RefreshIcon} className="self-start" loading={reapplying} onClick={() => setConfirming(true)}>
             {t("reapply")}
-          </button>
+          </Button>
         </div>
       </SectionForm>
       <ConfirmDialog

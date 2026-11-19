@@ -6,6 +6,8 @@ import { formatDateTime } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { useSubmit } from "../kit/use-submit";
 import { fetchBackInStock, markBackInStockSent } from "./requests-api";
+import { CheckIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** Notify-me requests whose model came back in stock and were not messaged yet. */
 export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
@@ -45,12 +47,13 @@ export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
               </span>
             </span>
             <span className="flex flex-wrap gap-2">
-              <a href={item.whatsApp.url} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center rounded-control bg-orange px-4 text-sm font-bold text-on-orange">
+              <a href={item.whatsApp.url} target="_blank" rel="noreferrer" className={buttonClass({ variant: "primary" })}>
+                <WhatsAppIcon size={buttonIconSize()} />
                 {t("openWhatsApp")}
               </a>
-              <button type="button" disabled={submit.busy} onClick={() => void markSent(item.id)} className="h-11 rounded-control border border-input-line bg-surface px-4 font-bold disabled:opacity-50">
+              <Button icon={CheckIcon} loading={submit.busy} onClick={() => void markSent(item.id)}>
                 {t("markSent")}
-              </button>
+              </Button>
             </span>
           </li>
         ))}

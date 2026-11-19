@@ -18,6 +18,8 @@ import {
   type CategoryForm as Form
 } from "./category-rules";
 import { createCategory, updateCategory, type Category } from "./categories-api";
+import { SaveIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
@@ -107,8 +109,8 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
       </div>
       <FormMessage message={submit.errors.general} />
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-        {category ? null : <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>}
+        <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!valid}>{t("save")}</Button>
+        {category ? null : <Button variant="ghost" onClick={onCancel}>{kit("cancel")}</Button>}
       </div>
       {submit.dialog}
     </form>

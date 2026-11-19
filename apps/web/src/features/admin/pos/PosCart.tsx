@@ -5,10 +5,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { formatEgp } from "@/lib/format";
 import { FormSection } from "@/features/checkout/form-parts";
-import { BUTTON, MoneyInput, usePosError } from "./pos-parts";
+import { MoneyInput, usePosError } from "./pos-parts";
 import {
   moneyValid, PRICE_OPTIONS, shownPrice, type BuildLine, type CartLine, type ItemLine, type PosField, type PriceOption
 } from "./pos-rules";
+import { CloseIcon } from "@/components/ui/icons";
+import { IconButton } from "../kit/Button";
 
 const condition = (value: string) => (value === "New" ? "New" : "Used");
 const CELL = "px-2 py-2 align-middle";
@@ -23,7 +25,7 @@ interface LineProps<L extends CartLine> {
 
 function RemoveButton({ name, onRemove }: { name: string; onRemove: () => void }) {
   const t = useTranslations("admin.pos.cart");
-  return <button type="button" aria-label={t("remove", { name })} onClick={onRemove} className={`${BUTTON} w-11 px-0 text-lg`}>×</button>;
+  return <IconButton icon={CloseIcon} label={t("remove", { name })} variant="secondary" onClick={onRemove} />;
 }
 
 /** The sale price input of a line, with the below-cost mark under it. */
