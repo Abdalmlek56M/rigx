@@ -49,9 +49,9 @@
 | ~~Google sign-in missing~~ | Closed in 2.1 | 2 |
 | ~~Owner/admin step-up for destructive actions~~ | Closed in 2.1 | 2 |
 | ~~Full audit log (before/after for all entities)~~ | Closed in 2.11 (business audit log). Open part: `ExecuteUpdate`, `ExecuteDelete` and raw SQL writes bypass the interceptor (listed in the 2.11 checkpoint) | 2 |
-| Content-Security-Policy (nonce-based with Next.js) | Normal | 4 |
-| Off-host encrypted backups + restore drill: partly closed in 2.10 (restore drill, two destinations); encryption and off-host target at launch | High | 2/5 |
-| Migration runner outside dev-only "preview" mode | High | 0/1 |
+| ~~Content-Security-Policy~~ | Closed in 4.8: static allowlist CSP on the web (no nonce, decision 45) and `default-src 'none'` on the API | 4 |
+| ~~Off-host encrypted backups + restore drill~~ | Closed in 4.8: daily rclone **crypt** copy to Google Drive (`deploy/offsite-backup.sh`, 30 days); restore drill from 2.10 | 2/5 |
+| ~~Migration runner outside dev-only "preview" mode~~ | Closed: `--migrate` (1.2) runs as the one-shot `migrate` service before the API in production (4.8) | 0/1 |
 | External penetration test before launch | High | 5 |
 | ~~Rate limits for notify-me submissions~~ | Closed in 2.12: notify-me goes through the rate-limited requests endpoint | 2 |
 | Rate limits for new public endpoints (warranty lookup, tracking): partly closed | Normal | 2 |

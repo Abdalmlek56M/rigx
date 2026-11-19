@@ -6,7 +6,8 @@ describe("policyApiKind", () => {
   it("maps the URL slugs to API kinds", () => {
     assert.equal(policyApiKind("shipping"), "Shipping");
     assert.equal(policyApiKind("terms"), "Terms");
-    assert.equal(policyApiKind("privacy"), null);
+    assert.equal(policyApiKind("privacy"), "Privacy");
+    assert.equal(policyApiKind("cookies"), null);
     assert.equal(policyApiKind("Shipping"), null);
   });
 });

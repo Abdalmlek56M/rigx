@@ -136,6 +136,7 @@
     "warranty": "Warranty policy",
     "returns": "Returns and exchanges",
     "shipping": "Shipping and deposit",
+    "privacy": "Privacy",
     "about": "How we work",
     "articles": "Articles",
     "contact": "Contact us",
@@ -1144,7 +1145,8 @@
       "returns": "Returns",
       "exchanges": "Exchanges",
       "warranty": "Warranty",
-      "terms": "Terms and conditions"
+      "terms": "Terms and conditions",
+      "privacy": "Privacy"
     },
     "version": "Version {version}",
     "updated": "Last updated: {date}",
@@ -1212,10 +1214,12 @@
         "tiers": "Customer tiers",
         "articles": "Articles",
         "faq": "FAQ",
+        "policies": "Policies",
         "users": "Users & roles",
         "audit": "Activity log",
         "system": "Trash & backups",
-        "settings": "Store settings"
+        "settings": "Store settings",
+        "stockImport": "Stock import"
       }
     },
     "kit": {
@@ -1897,6 +1901,44 @@
           "Text": "Text"
         }
       }
+    },
+    "policies": {
+      "title": "Policies",
+      "version": "Version {version}",
+      "publishedInfo": "Published: version {version} · {date}",
+      "notPublished": "Not published yet",
+      "draftWaiting": "A draft is waiting (version {version})",
+      "startFirst": "This policy has not been written yet.",
+      "startFromPublished": "The published version cannot be edited. Start a new version from it and edit that.",
+      "write": "Write the policy",
+      "newVersion": "New version to edit",
+      "draftStarted": "A new draft was started.",
+      "formatHelp": "A line starting with # is a heading, - is a bullet, and a blank line separates paragraphs.",
+      "fields": {
+        "titleAr": "Arabic title",
+        "bodyAr": "Arabic text",
+        "titleEn": "English title",
+        "bodyEn": "English text"
+      },
+      "preview": "Preview (as customers see it)",
+      "previewEmpty": "No text yet.",
+      "save": "Save draft",
+      "saved": "Draft saved.",
+      "publish": "Publish",
+      "publishBody": "This version goes live for customers now, and the previously published one is archived.",
+      "published": "Published.",
+      "publishNeeds": "To publish, both titles and both texts (Arabic and English) must be filled in.",
+      "history": "Version history",
+      "noVersions": "No versions yet.",
+      "statuses": {
+        "Draft": "Draft",
+        "Review": "In review",
+        "Published": "Published",
+        "Archived": "Archived",
+        "Other": "Other"
+      },
+      "failed": "Could not load the policies.",
+      "retry": "Try again"
     },
     "faq": {
       "title": "FAQ",
@@ -3765,6 +3807,47 @@
           "body": "There will be no automatic daily backup.",
           "confirm": "Turn it off"
         }
+      }
+    },
+    "stockImport": {
+      "title": "Import stock from Excel",
+      "none": "—",
+      "checked": "File checked",
+      "imported": "Stock imported",
+      "rowsChanged": "Some rows have errors. Upload the file again.",
+      "fileProblems": {
+        "type": "The file must be an Excel .xlsx file.",
+        "size": "The file is larger than 2 MB."
+      },
+      "step1": {
+        "title": "1. Download the template",
+        "hint": "Fill the template with your stock. Delete the example row before uploading.",
+        "button": "Download the template",
+        "downloaded": "Template downloaded"
+      },
+      "step2": {
+        "title": "2. Upload the file",
+        "hint": "Every row is checked first and nothing is saved."
+      },
+      "table": {
+        "label": "File check result",
+        "row": "Row",
+        "model": "Model",
+        "condition": "Condition",
+        "quantity": "Quantity",
+        "items": "Items",
+        "errors": "Errors"
+      },
+      "summary": {
+        "clean": "{rows, plural, one {1 row is fine} other {# rows are fine}} — {items, plural, one {1 item} other {# items}} will be created.",
+        "withErrors": "{errorRows, plural, one {1 row has errors} other {# rows have errors}}. Fix them in the file and upload it again."
+      },
+      "step3": {
+        "title": "3. Import",
+        "button": "Import {count, plural, one {1 item} other {# items}}",
+        "done": "Imported {count, plural, one {1 item} other {# items}}.",
+        "photosHint": "Items only show in the store once you add 3 photos to each.",
+        "openStock": "Open stock"
       }
     }
   }

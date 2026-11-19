@@ -3,7 +3,8 @@ export const POLICY_KINDS = [
   { slug: "returns", api: "Returns" },
   { slug: "exchanges", api: "Exchanges" },
   { slug: "warranty", api: "Warranty" },
-  { slug: "terms", api: "Terms" }
+  { slug: "terms", api: "Terms" },
+  { slug: "privacy", api: "Privacy" }
 ] as const;
 
 export type PolicySlug = (typeof POLICY_KINDS)[number]["slug"];

@@ -14,10 +14,10 @@ import type { AdminArea, AdminAreaKey, AdminGroup } from "./admin-nav";
 
 const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
   dashboard: GridIcon, pos: RegisterIcon, orders: BoxIcon, customers: UsersIcon, offers: TagIcon,
-  inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, categories: FolderIcon,
+  inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, stockImport: DocumentIcon, categories: FolderIcon,
   partners: HandshakeIcon, expenses: WalletIcon,
   requests: InboxIcon, campaigns: MegaphoneIcon, tiers: StarIcon,
-  articles: DocumentIcon, faq: HelpIcon,
+  articles: DocumentIcon, faq: HelpIcon, policies: DocumentIcon,
   users: KeyIcon, audit: ClockIcon, system: DatabaseIcon, settings: GearIcon
 };
 

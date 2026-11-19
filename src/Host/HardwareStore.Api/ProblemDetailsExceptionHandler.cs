@@ -2,6 +2,7 @@ using HardwareStore.Common.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sentry;
 
 public sealed class ProblemDetailsExceptionHandler(
     IProblemDetailsService problemDetailsService,
@@ -50,6 +51,8 @@ public sealed class ProblemDetailsExceptionHandler(
         }
 
         logger.LogError(exception, "Unhandled request exception.");
+        // .NET 10 does not report exceptions an IExceptionHandler handled, so unexpected ones go to Sentry here (no-op without a DSN).
+        SentrySdk.CaptureException(exception);
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext

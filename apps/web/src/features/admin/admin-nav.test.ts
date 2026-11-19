@@ -29,6 +29,15 @@ describe("areaFor", () => {
     assert.equal(areaFor("/admin")?.key, "dashboard");
     assert.equal(areaFor("/admin/orders")?.key, "orders");
   });
+  it("finds the stock import page, which only the receive-goods permission opens", () => {
+    assert.equal(areaFor("/admin/stock/import")?.key, "stockImport");
+    assert.deepEqual(visibleNav(["Purchasing.ReceiveGoods"]).flatMap((group) => group.areas.map((area) => area.key)), ["stockImport"]);
+    assert.deepEqual(visibleNav(["Purchasing.View"]).flatMap((group) => group.areas.map((area) => area.key)), ["purchases"]);
+  });
+  it("finds the policies page in the content group, opened by the store-settings permission", () => {
+    assert.equal(areaFor("/admin/policies")?.key, "policies");
+    assert.deepEqual(visibleNav(["System.StoreSettings"]).find((group) => group.key === "content")?.areas.map((area) => area.key), ["articles", "faq", "policies"]);
+  });
   it("puts detail pages under their list", () => {
     assert.equal(areaFor("/admin/orders/123")?.key, "orders");
   });

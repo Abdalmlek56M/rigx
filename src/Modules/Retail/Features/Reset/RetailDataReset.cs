@@ -14,7 +14,7 @@ public sealed class RetailDataReset(IDbContextFactory<RetailDbContext> contextFa
     private static readonly string[] BusinessTables =
     [
         "warranty_extensions", "warranties", "order_returns", "order_payments", "order_item_components", "order_items", "order_events",
-        "invoices", "invoice_counters", "store_orders", "assembly_units", "assemblies", "inventory_units", "stock_item_old_slugs", "stock_items", "purchase_receipts",
+        "invoices", "invoice_counters", "store_orders", "assembly_units", "assemblies", "inventory_units", "stock_item_old_slugs", "stock_items", "stock_imports", "purchase_receipts",
         "money_movements", "retail_expenses", "recurring_expenses",
         "partner_earnings", "partner_settlements", "partner_capital_entries", "partner_adjustments"
     ];

@@ -27,6 +27,8 @@ public static class StockItemRules
     public const int MaxPhotos = 12;
     public const int MaxSpecs = 40;
     public const int MaxInternalNoteLength = 1000;
+    public const int MaxQuantity = 1000;
+    public const int MaxSerialLength = 128;
 
     /// <summary>Shown on the storefront only when not hidden and it has at least three photos.</summary>
     public static bool IsPublished(bool isHidden, int photoCount) => !isHidden && photoCount >= MinPhotosToPublish;
@@ -40,7 +42,7 @@ public static class StockItemRules
     /// </summary>
     public static IReadOnlyList<int> UnitsPerItem(string condition, int quantity)
     {
-        if (quantity is < 1 or > 1000) throw new RetailException(400, "Quantity must be between 1 and 1000.");
+        if (quantity is < 1 or > MaxQuantity) throw new RetailException(400, $"Quantity must be between 1 and {MaxQuantity}.");
         return condition == StockCondition.Used ? Enumerable.Repeat(1, quantity).ToList() : [quantity];
     }
 

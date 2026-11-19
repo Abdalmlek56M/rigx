@@ -27,6 +27,7 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
     { href: "/policies/warranty", label: t("warranty") },
     { href: "/policies/returns", label: t("returns") },
     { href: "/policies/shipping", label: t("shipping") },
+    { href: "/policies/privacy", label: t("privacy") },
     { href: "/about", label: t("about") },
     { href: "/articles", label: t("articles") }
   ];

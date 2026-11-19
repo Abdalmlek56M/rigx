@@ -1,10 +1,10 @@
 /** The admin areas, their sidebar groups and the permission each needs. Labels live in the `admin.nav` messages. Pure, so it is tested. */
 export type AdminAreaKey =
   | "dashboard" | "pos" | "orders" | "customers" | "offers"
-  | "inventory" | "builds" | "purchases" | "categories"
+  | "inventory" | "builds" | "purchases" | "stockImport" | "categories"
   | "partners" | "expenses"
   | "requests" | "campaigns" | "tiers"
-  | "articles" | "faq"
+  | "articles" | "faq" | "policies"
   | "users" | "audit" | "system" | "settings";
 
 export type AdminGroupKey = "home" | "sales" | "stock" | "money" | "customers" | "content" | "system";
@@ -40,6 +40,7 @@ export const ADMIN_NAV: readonly AdminGroup[] = [
       { key: "inventory", href: "/admin/inventory", anyOf: ["Inventory.View"] },
       { key: "builds", href: "/admin/builds", anyOf: ["Catalog.ManageProducts"] },
       { key: "purchases", href: "/admin/purchases", anyOf: ["Purchasing.View"] },
+      { key: "stockImport", href: "/admin/stock/import", anyOf: ["Purchasing.ReceiveGoods"] },
       { key: "categories", href: "/admin/categories", anyOf: ["Catalog.View"] }
     ]
   },
@@ -62,7 +63,8 @@ export const ADMIN_NAV: readonly AdminGroup[] = [
     key: "content",
     areas: [
       { key: "articles", href: "/admin/articles", anyOf: ["System.StoreSettings"] },
-      { key: "faq", href: "/admin/faq", anyOf: ["System.StoreSettings"] }
+      { key: "faq", href: "/admin/faq", anyOf: ["System.StoreSettings"] },
+      { key: "policies", href: "/admin/policies", anyOf: ["System.StoreSettings"] }
     ]
   },
   {

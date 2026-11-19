@@ -19,6 +19,7 @@ public static class RetailRegistration
         services.AddScoped<StockItemAdminService>();
         services.AddScoped<StoreItemService>();
         services.AddScoped<StockModelLookupService>();
+        services.AddScoped<StockImportService>();
         services.AddScoped<BuilderItemService>();
         services.AddScoped<AssemblyService>();
         services.AddScoped<AssemblyPartService>();

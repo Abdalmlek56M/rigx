@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
+import { Analytics } from "@/components/analytics/Analytics";
 import { THEME_INIT_SCRIPT } from "@/components/layout/theme-script";
 import { localeDirection, routing } from "@/i18n/routing";
 import { openGraphBase } from "@/lib/seo/page-seo";
@@ -61,6 +62,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <NextIntlClientProvider>
           {children}
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );

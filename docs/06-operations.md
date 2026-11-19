@@ -22,6 +22,9 @@ Add a migration:
 dotnet ef migrations add <Name> --project src/Modules/<Module> --startup-project src/Host/HardwareStore.Api
 ```
 
+## Stock import from Excel
+Admin → "استيراد المخزون" (`/admin/stock/import`, `Purchasing.ReceiveGoods`): download the template (`GET /api/v1/admin/retail/stock-import/template`), fill one row per model, upload for a dry run (`POST /api/v1/admin/retail/stock-import?dryRun=true`, multipart `file`, .xlsx ≤ 2 MB, ≤ 500 rows, ≤ 2,000 items), fix the rows marked red, then import (`dryRun=false`). The import is all-or-nothing in one transaction through the same factory as a purchase receipt (RX codes, slugs, units with source type `Import`); category by code or name, warranty months must be one of the store's warranty options; the same file (SHA-256, `stock_imports`) cannot be imported twice. Imported items show on the site only after 3 photos each.
+
 ## First owner account
 One-time interactive command (see `src/Host/HardwareStore.Api/OwnerBootstrapCommand.cs`): run the API with `--bootstrap-owner` and `OwnerBootstrap:Enabled=true`. It asks for username, email and full name only; the owner then signs in with a 6-digit code sent to that email (or Google once configured). There are no passwords.
 
@@ -90,7 +93,7 @@ A run seeds the demo data (idempotent; seeding signs every session out, so it co
 ## Configuration
 - Secrets only in `.env` locally / the host's secret store in production. Never committed.
 - `NEXT_PUBLIC_SITE_URL` (web): the public origin used for canonical URLs, hreflang, the sitemap, robots and Open Graph. It is baked in at `next build`, so set it for the production build (`https://rigxhardware.com`); unset means `http://localhost:3000`.
-- SMTP variables are listed (commented) in `.env.example`; Development uses an in-memory email provider.
+- Production settings: `deploy/production.env.example` (copied to `deploy/.env` on the server; see "Production"). Development uses an in-memory email provider.
 
 ## Backups and restore
 **What a backup is.** One zip per day, `rigx-backup-{yyyyMMdd-HHmmss}Z.zip`: `database.dump` (`pg_dump --format=custom --no-owner` of the whole database: data, settings, audit log), `media/` (every photo, incl. `private/` and `settings/`) and `manifest.json` (time, app version, database size, file count, SHA-256 of the dump, applied migrations per module). It is built in a temp folder, then copied to **every** destination (`.tmp` first, then moved). A run counts as successful only if all destinations got the file; a failed attempt is recorded and retried at the next hourly tick.
@@ -122,3 +125,47 @@ With no destination, backups are off and the backup and reset endpoints answer 4
 - `content`: articles with revisions, FAQ entries, the media library (assets, usages, image files).
 - `customers` (needs `business` in the same call): accounts holding only the Customer role, with sessions, addresses, notifications, restrictions, Google links and pending codes.
 - Never reset: staff and owner accounts, roles and permissions, store settings and logos, categories/brands/spec schemas, catalog products, audit logs (their link to a deleted customer becomes empty), backup runs, person-code counters and the database sequences behind public codes. Each module clears its own explicit table list in one transaction.
+
+## Production (owner VPS, roadmap 4.8)
+Owner facts (18 Nov 2026):
+- **VPS:** Ubuntu 24.04, shared with two low-traffic sites: one served by host nginx, the other probably in Docker. The owner logs in over SSH with a user and password; the plan is an SSH key, then password login off (runbook §2). The server IP is never written in the repo (only in the owner's own notes / `deploy/.env` if ever needed).
+- **Proxy:** host nginx already holds ports 80 and 443. RIGX adds one server block for `rigxhardware.com` that proxies to the RIGX compose services on loopback ports. No second reverse proxy, no Coolify. Before installing, the owner runs `sudo ss -tlnp` and `docker ps` (and the network list) and pastes the output, so nothing collides with the two live sites.
+- **DNS / TLS:** `rigxhardware.com` is on Cloudflare (other subdomains already exist there). Records `@` and `www` are proxied; SSL mode Full (strict) for these two hostnames only (a Configuration Rule when the zone mode is not already Full (strict), so the other subdomains are untouched); nginx serves a Cloudflare Origin certificate (`/etc/ssl/rigx/origin.pem` + `.key`); Always Use HTTPS on.
+- **Email:** Gmail SMTP (`smtp.gmail.com:587`, STARTTLS) from `rigxhardware@gmail.com` with an App Password (needs 2-step verification). The owner puts it in the server `deploy/.env` themselves; it is never pasted in chat or committed. Domain mail later.
+- **Google sign-in:** a production OAuth client (Web application) in a Google Cloud project with no billing (the "Start free" trial is not needed for OAuth). Consent screen: name RIGX, support email, home page, privacy policy `/policies/privacy`, terms `/policies/terms`, authorized domain `rigxhardware.com`, published (basic scopes need no review). The button is Google Identity Services (popup + ID token checked by the API), so the client needs the JavaScript origin `https://rigxhardware.com` and **no redirect URI**; no client secret is stored anywhere.
+- **Sentry:** free Developer plan, projects `rigx-api` (ASP.NET Core) and `rigx-web` (Next.js), one uptime monitor on `https://rigxhardware.com/health`.
+- **DeepSeek:** the owner may let DeepSeek (OpenCode) draft deploy files; Opus reviews them. For 4.8 the files were written directly, so no brief was needed.
+
+**Files** (`deploy/`):
+| File | What |
+|---|---|
+| `compose.prod.yaml` | project `rigx`: `postgres` (no host port), `migrate` (one-shot `--migrate`, must exit 0), `api` (`127.0.0.1:${API_PORT:-8081}`), `web` (`127.0.0.1:${WEB_PORT:-3001}`); private network `${RIGX_SUBNET}` whose gateway is the API's trusted proxy |
+| `production.env.example` | every setting; copied to `deploy/.env` (git-ignored, mode 600) |
+| `init-server.sh` | one-time, idempotent: `/srv/rigx/backups` (owned by uid 1654, the image's `app` user), `/srv/rigx/secrets/dataprotection.pfx` (self-signed, 10 years, password in `.env`), random DB passwords; prints no secret |
+| `nginx/rigxhardware.com.conf` | port 80 → https apex, `www` → apex, `/api/` → API, `/health` → API `/health/ready`, rest → web; HSTS (no `includeSubDomains`, other subdomains exist); 15 MB bodies |
+| `nginx/rigx-cloudflare-real-ip.conf` | `set_real_ip_from` Cloudflare ranges + `CF-Connecting-IP`, included in the RIGX server block only |
+| `offsite-backup.sh` | root cron 03:30 server time: `rclone copy` new archives to `rigxbackup:` (rclone **crypt** over `gdrive:rigx-backups`), deletes off-host copies older than 30 days, fails when none is there |
+| `apps/web/Dockerfile` | Next.js standalone build; `NEXT_PUBLIC_*` are build args (site URL, Google client id, Sentry DSN, GA id, pixel id), so changing one needs `up -d --build web` |
+
+**How requests flow.** Visitor → Cloudflare → host nginx (real IP from `CF-Connecting-IP`) → `X-Forwarded-For` = visitor, `X-Forwarded-Proto: https` → docker-proxy → container. The API trusts forwarded headers only from the RIGX network gateway (`ForwardedHeaders__KnownProxies__0=${RIGX_GATEWAY}`), which is the source address docker-proxy uses; without it the `__Host-` cookies and CSRF fail (the request looks like plain HTTP) and rate limits see one IP. The browser calls `/api` on the same origin through nginx; server-side rendering calls `http://api:8080` inside the network (public data only, no cookies).
+
+**Deploy / update** (runbook §8 and "التحديثات"): `cd /srv/rigx/app && git pull && docker compose -f deploy/compose.prod.yaml up -d --build`. `migrate` runs every module migration first (as the database owner); `api` starts only after it exits 0, `web` only after the API is healthy. First owner: `docker compose -f deploy/compose.prod.yaml run --rm -e OwnerBootstrap__Enabled=true api --bootstrap-owner`.
+
+**Production settings the API needs** (all in `compose.prod.yaml` from `deploy/.env`): `ASPNETCORE_ENVIRONMENT=Production`; `DataProtection:KeyRingPath` (volume) + `CertificatePath` + `CertificatePassword`; `Identity:Email:Smtp:*`; `Identity:Google:ClientId`; `Identity:SignInUrl` / `EmailChangeBaseUrl` and `Sales:*Url` on `SITE_URL`; `ConnectionStrings:Migrations` and `:Backup` as the database owner (backups need `CREATEDB` for the restore drill); `System:Backup:Destinations:0=/backups`; `Sentry:Dsn`.
+
+**Security headers.** Web (production builds, `apps/web/src/lib/security/csp.ts` via `next.config.ts` `headers()`): CSP with every external origin listed (Google sign-in, and only when configured: Google tag, Meta pixel, the Sentry ingest host), `'unsafe-inline'` scripts (no nonce, decision 45), `frame-ancestors 'none'`, `object-src 'none'`, `base-uri`/`form-action 'self'`; `nosniff`, `strict-origin-when-cross-origin`, Permissions-Policy, COOP `same-origin-allow-popups` (Google popup). API: `default-src 'none'; frame-ancestors 'none'` plus the existing headers. HSTS from nginx.
+
+**Error tracking and uptime.** API: `Sentry.AspNetCore`, on only when `Sentry:Dsn` is set; unexpected 500s are sent from `ProblemDetailsExceptionHandler` (business errors are not), no personal data (`SendDefaultPii` off). Web: `@sentry/nextjs` without the build wrapper (no source-map upload yet): browser errors (`instrumentation-client.ts`, `NEXT_PUBLIC_SENTRY_DSN`) and server render errors (`instrumentation.ts` `onRequestError`, `SENTRY_DSN`). Uptime: Sentry monitor on `/health` (API + database), 5 minutes.
+
+**Analytics.** GA4 (`NEXT_PUBLIC_GA_ID`) and the Meta pixel (`NEXT_PUBLIC_META_PIXEL_ID`) load only when set and never on `/admin` (incl. POS). Page views: GA4 enhanced measurement (history changes) and a pixel `PageView` per route. A click on any WhatsApp link (`wa.me`, `api.whatsapp.com`) sends GA4 `generate_lead` (`method: whatsapp`) and Meta `Contact`, since orders close on WhatsApp. No cookie banner (decision recorded in the 4.8 checkpoint); the privacy policy names both tools. Search Console: Domain property verified by a Cloudflare TXT record, `sitemap.xml` submitted.
+
+**Backups off the host.** The API keeps writing the daily zip to `/backups` (`/srv/rigx/backups`, 14 days by default). `offsite-backup.sh` copies it encrypted to Google Drive (rclone crypt; the two crypt passwords are kept by the owner outside the server, without them the copy cannot be read) and keeps 30 days there. Restore from off-host: `rclone copy rigxbackup:<file> /tmp/restore/`, then "Real restore" above. Run the restore drill from the admin after the first deploy and monthly.
+
+## Payment gateway (designed, not built)
+Online card payment is documented only; the owner decides when (Phase 6). Orders keep closing on WhatsApp with InstaPay / cash / wallet until then.
+- **Provider:** Paymob (cards, mobile wallets; Egyptian merchant account, settles in EGP). Fawry as the alternative if cash-at-outlet is wanted.
+- **What is paid online:** the order's upfront (shipping + deposit, decision 23) or the full total, by a setting; never a part of a build.
+- **Flow:** checkout creates the order as today, then `POST /api/v1/orders/{id}/payment-intent` (Sales) creates a Paymob intention with the amount from the order (never from the browser), the order number as merchant reference and a 30-minute expiry; the browser goes to Paymob's hosted checkout (no card data touches RIGX; PCI scope stays SAQ-A). Paymob calls `POST /api/v1/payments/paymob/webhook`: HMAC checked with the secret from `.env`, amount and currency compared with the order, idempotent by Paymob transaction id (unique), then the existing "record payment" path posts the payment and the money movement into a `Paymob` money account (kind BankTransfer). The return page only shows the status; the webhook is the truth.
+- **Refunds:** from the Paymob dashboard, then the existing return flow records the refund (no API refund at first).
+- **Config:** `Payments:Paymob:ApiKey`, `:SecretKey`, `:PublicKey`, `:HmacSecret`, `:IntegrationIds` in `deploy/.env`; CSP adds the Paymob checkout origin to `form-action`/`frame-src`.
+- **Tests:** HMAC check, wrong amount, replayed webhook, expired intent, order cancelled before payment.

@@ -15,7 +15,7 @@ public static class ContentStatus
 public static class ContentPolicyKind
 {
     public static readonly IReadOnlyList<string> All =
-        ["Shipping", "Returns", "Exchanges", "Warranty", "Terms"];
+        ["Shipping", "Returns", "Exchanges", "Warranty", "Terms", "Privacy"];
 }
 
 public sealed class ContentArticle : ISoftDeletable

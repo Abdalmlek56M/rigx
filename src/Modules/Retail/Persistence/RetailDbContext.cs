@@ -8,6 +8,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
 {
     public DbSet<StockItem> StockItems => Set<StockItem>();
     public DbSet<StockItemOldSlug> OldSlugs => Set<StockItemOldSlug>();
+    public DbSet<StockImport> StockImports => Set<StockImport>();
     public DbSet<InventoryUnit> Units => Set<InventoryUnit>();
     public DbSet<PurchaseReceipt> Receipts => Set<PurchaseReceipt>();
     public DbSet<Assembly> Assemblies => Set<Assembly>();
@@ -42,6 +43,19 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
         model.ApplyConfiguration(new MoneyMovementConfiguration());
         model.ApplyConfiguration(new ExpenseTypeConfiguration());
         model.ApplyConfiguration(new RecurringExpenseConfiguration());
+        model.Entity<StockImport>(e =>
+        {
+            e.ToTable("stock_imports");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.Sha256).HasColumnName("sha256").HasMaxLength(64).IsRequired();
+            e.HasIndex(x => x.Sha256).IsUnique().HasDatabaseName("ux_stock_imports_sha256");
+            e.Property(x => x.FileName).HasColumnName("file_name").HasMaxLength(200).IsRequired();
+            e.Property(x => x.RowCount).HasColumnName("row_count");
+            e.Property(x => x.ItemCount).HasColumnName("item_count");
+            e.Property(x => x.ImportedByUserAccountId).HasColumnName("imported_by_user_account_id");
+            e.Property(x => x.ImportedAtUtc).HasColumnName("imported_at_utc").HasColumnType("timestamp with time zone");
+        });
         model.Entity<InventoryUnit>(e =>
         {
             e.ToTable("inventory_units", t => t.HasCheckConstraint("ck_inventory_units_cost", "acquisition_cost >= 0"));

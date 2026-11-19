@@ -1,0 +1,125 @@
+# RIGX production stack (owner VPS). Run from the repository root:
+#   docker compose -f deploy/compose.prod.yaml up -d --build
+# Secrets live in deploy/.env (copy of deploy/production.env.example, never committed).
+# Host nginx is the only public entry: it proxies rigxhardware.com to the two loopback ports below.
+name: rigx
+
+x-api-environment: &api-environment
+  ASPNETCORE_ENVIRONMENT: Production
+  ASPNETCORE_URLS: http://+:8080
+  ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-rigx};Username=hardware_store_app;Password=${APP_DB_PASSWORD:?Set APP_DB_PASSWORD}
+  # Migrations and backups run as the database owner (backups also need CREATEDB for the restore drill).
+  ConnectionStrings__Migrations: Host=postgres;Port=5432;Database=${POSTGRES_DB:-rigx};Username=${POSTGRES_USER:-rigx};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+  ConnectionStrings__Backup: Host=postgres;Port=5432;Database=${POSTGRES_DB:-rigx};Username=${POSTGRES_USER:-rigx};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+  DataProtection__KeyRingPath: /home/app/.local/share/HardwareStore/DataProtection/Production
+  DataProtection__CertificatePath: /run/secrets/dataprotection.pfx
+  DataProtection__CertificatePassword: ${DATAPROTECTION_CERT_PASSWORD:?Set DATAPROTECTION_CERT_PASSWORD}
+  Catalog__MediaRoot: /app/App_Data/catalog-media
+  # Host nginx reaches the containers through the network gateway, so that address is the trusted proxy.
+  ForwardedHeaders__KnownProxies__0: ${RIGX_GATEWAY:-172.29.208.1}
+  Identity__SignInUrl: ${SITE_URL:?Set SITE_URL}/login
+  Identity__EmailChangeBaseUrl: ${SITE_URL}/change-email
+  Identity__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+  Identity__Email__Smtp__Host: smtp.gmail.com
+  Identity__Email__Smtp__Port: "587"
+  Identity__Email__Smtp__EnableSsl: "true"
+  Identity__Email__Smtp__FromAddress: ${SMTP_USERNAME:?Set SMTP_USERNAME}
+  Identity__Email__Smtp__FromName: RIGX
+  Identity__Email__Smtp__UserName: ${SMTP_USERNAME}
+  Identity__Email__Smtp__Password: ${SMTP_APP_PASSWORD:?Set SMTP_APP_PASSWORD}
+  Sales__TrackingBaseUrl: ${SITE_URL}/t/
+  Sales__InvoiceBaseUrl: ${SITE_URL}/i/
+  Sales__WarrantyLookupUrl: ${SITE_URL}/warranty
+  Sales__ItemBaseUrl: ${SITE_URL}/products/
+  System__Backup__Destinations__0: /backups
+  Sentry__Dsn: ${SENTRY_DSN_API:-}
+  Sentry__Environment: production
+
+x-api-build: &api-build
+  context: ..
+  dockerfile: src/Host/HardwareStore.Api/Dockerfile
+
+x-api-volumes: &api-volumes
+  - api_data_protection:/home/app/.local/share/HardwareStore/DataProtection
+  - api_media:/app/App_Data/catalog-media
+  - ${BACKUP_DIR:-/srv/rigx/backups}:/backups
+  - ${DATAPROTECTION_CERT_FILE:-/srv/rigx/secrets/dataprotection.pfx}:/run/secrets/dataprotection.pfx:ro
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rigx}
+      POSTGRES_USER: ${POSTGRES_USER:-rigx}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    networks: [rigx]
+
+  migrate:
+    image: rigx-api:latest
+    build: *api-build
+    command: ["--migrate"]
+    restart: "no"
+    environment: *api-environment
+    volumes: *api-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [rigx]
+
+  api:
+    image: rigx-api:latest
+    build: *api-build
+    restart: unless-stopped
+    environment: *api-environment
+    volumes: *api-volumes
+    ports:
+      - "127.0.0.1:${API_PORT:-8081}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [rigx]
+
+  web:
+    image: rigx-web:latest
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${SENTRY_DSN_WEB:-}
+        NEXT_PUBLIC_GA_ID: ${GA_ID:-}
+        NEXT_PUBLIC_META_PIXEL_ID: ${META_PIXEL_ID:-}
+    restart: unless-stopped
+    environment:
+      RIGX_API_ORIGIN: http://api:8080
+      SENTRY_DSN: ${SENTRY_DSN_WEB:-}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3001}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [rigx]
+
+networks:
+  rigx:
+    ipam:
+      config:
+        - subnet: ${RIGX_SUBNET:-172.29.208.0/24}
+          gateway: ${RIGX_GATEWAY:-172.29.208.1}
+
+volumes:
+  postgres_data:
+  api_data_protection:
+  api_media:

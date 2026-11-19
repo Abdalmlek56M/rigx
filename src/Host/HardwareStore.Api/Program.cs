@@ -20,6 +20,13 @@ using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+// Error tracking (Sentry) only when a DSN is configured (production compose); options come from the "Sentry" section.
+if (!string.IsNullOrWhiteSpace(builder.Configuration["Sentry:Dsn"]))
+    builder.WebHost.UseSentry(options =>
+    {
+        options.TracesSampleRate = 0;
+        options.SendDefaultPii = false;
+    });
 
 builder.Host.UseSerilog((_, _, configuration) => configuration
     .MinimumLevel.Information()
@@ -138,6 +145,8 @@ app.Use(async (context, next) =>
     context.Response.Headers.TryAdd("X-Frame-Options", "DENY");
     context.Response.Headers.TryAdd("Referrer-Policy", "no-referrer");
     context.Response.Headers.TryAdd("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    // JSON and images only: nothing here may run scripts or be framed.
+    context.Response.Headers.TryAdd("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
     await next();
 });
 

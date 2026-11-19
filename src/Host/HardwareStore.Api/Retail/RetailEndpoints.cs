@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 public static partial class RetailEndpoints
 {
+    private const string ReceiveGoods = "Purchasing.ReceiveGoods";
+
     public static IEndpointRouteBuilder MapRetailEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var admin = endpoints.MapGroup("/api/v1/admin/retail");
@@ -19,6 +21,9 @@ public static partial class RetailEndpoints
         admin.MapPost("/stock-items/visibility", SetStockVisibilityAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapPost("/stock-items/{id:guid}/photos", AddStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapDelete("/stock-items/{id:guid}/photos", RemoveStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
+        admin.MapGet("/stock-import/template", GetStockImportTemplateAsync).RequirePermission(ReceiveGoods)
+            .Produces<Stream>(StatusCodes.Status200OK, XlsxContentType);
+        admin.MapPost("/stock-import", ImportStockAsync).RequirePermission(ReceiveGoods);
         admin.MapGet("/models/suggest", SuggestModelsAsync).RequirePermission("Inventory.View");
         admin.MapGet("/assemblies", ListAssembliesAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapGet("/assemblies/{id:guid}", GetAssemblyAsync).RequirePermission("Catalog.ManageProducts");

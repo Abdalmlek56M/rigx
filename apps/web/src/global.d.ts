@@ -23,6 +23,10 @@ declare global {
   }
 
   interface Window {
+    /** Google tag (GA4), present only when `NEXT_PUBLIC_GA_ID` is set. */
+    gtag?: (...args: unknown[]) => void;
+    /** Meta pixel, present only when `NEXT_PUBLIC_META_PIXEL_ID` is set. */
+    fbq?: (...args: unknown[]) => void;
     google?: {
       accounts: {
         id: {
