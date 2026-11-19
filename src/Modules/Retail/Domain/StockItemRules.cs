@@ -40,6 +40,16 @@ public static class StockItemRules
     /// How many units each new item gets for an intake line: a used line of 3 pieces is three items
     /// of one unit each (each piece has its own page); a new line of 3 pieces is one lot of three units.
     /// </summary>
+    /// <summary>
+    /// The item a new piece of the same model copies its data from: the newest one with photos, else the newest one.
+    /// <paramref name="newestFirst"/> holds items of one model, newest first.
+    /// </summary>
+    public static StockItemTemplate PickTemplate(IEnumerable<StockItemTemplate> newestFirst)
+    {
+        var items = newestFirst.ToList();
+        return items.FirstOrDefault(item => item.PhotoCount > 0) ?? items[0];
+    }
+
     public static IReadOnlyList<int> UnitsPerItem(string condition, int quantity)
     {
         if (quantity is < 1 or > MaxQuantity) throw new RetailException(400, $"Quantity must be between 1 and {MaxQuantity}.");

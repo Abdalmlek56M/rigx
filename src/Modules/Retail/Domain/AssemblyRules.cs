@@ -64,6 +64,31 @@ public static class AssemblyRules
         return clean;
     }
 
+    /// <summary>Stock parts and typed parts together stay within <see cref="MaxParts"/>.</summary>
+    public static void EnsureRoom(int units, int planned)
+    {
+        if (units + planned > MaxParts) throw new RetailException(409, $"A build can have at most {MaxParts} parts.");
+    }
+
+    /// <summary>A typed part needs a name; its price, when given, is not negative. A row without an id gets a new one.</summary>
+    public static List<PlannedPart> CleanPlannedParts(IReadOnlyList<PlannedPartInput>? parts) =>
+        (parts ?? []).Select(part =>
+        {
+            var name = StockItemRules.CleanModelName(part.Name);
+            if (part.Price is < 0) throw new RetailException(400, "A part price cannot be negative.");
+            return new PlannedPart(part.Id ?? Guid.CreateVersion7(), name, part.CategoryId, part.BrandId, part.Price, part.StockItemId, null);
+        }).ToList();
+
+    /// <summary>
+    /// A whole build is sold from its stock units, so its typed parts must become real parts before it is published or sold
+    /// (its real parts may still be sold one by one at the store).
+    /// </summary>
+    public static void EnsureNoPlannedParts(Assembly assembly)
+    {
+        if (assembly.PlannedParts.Count > 0)
+            throw new RetailException(400, "The build still has typed parts that are not in stock; replace them with parts from stock first.");
+    }
+
     public static void ValidatePartPrice(decimal price)
     {
         if (price < 0) throw new RetailException(400, "A part price cannot be negative.");

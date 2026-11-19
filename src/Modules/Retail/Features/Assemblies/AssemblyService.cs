@@ -30,8 +30,9 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
     {
         if (string.IsNullOrWhiteSpace(request.Name)) throw new RetailException(400, "Assembly name is required.");
         var unitIds = request.UnitIds?.Distinct().ToList() ?? [];
-        if (unitIds.Count is < 1 or > AssemblyRules.MaxParts)
-            throw new RetailException(400, $"An assembly needs between 1 and {AssemblyRules.MaxParts} units.");
+        // A draft may start empty: its parts can be new pieces that are not in stock yet (round 3, slice J); publishing still needs parts.
+        if (unitIds.Count > AssemblyRules.MaxParts)
+            throw new RetailException(400, $"An assembly can have at most {AssemblyRules.MaxParts} units.");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
@@ -110,6 +111,7 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var assembly = await AssemblyEditing.LoadEditableAsync(db, id, rowVersion, cancellationToken);
+        if (published) AssemblyRules.EnsureNoPlannedParts(assembly);
         if (published && assembly.SalePrice <= 0) throw new RetailException(400, "A sale price is required before publishing.");
         if (published && (assembly.Units.Count == 0 || !AllocationMath.SumsToHundred(assembly.Units.Select(link => link.AllocationPercent))))
             throw new RetailException(400, "Component allocations must sum to 100 before publishing.");

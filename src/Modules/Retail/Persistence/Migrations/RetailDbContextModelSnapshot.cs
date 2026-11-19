@@ -57,6 +57,13 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("photos")
                         .HasDefaultValueSql("'[]'::jsonb");
 
+                    b.Property<string>("PlannedParts")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("planned_parts")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
                     b.Property<string>("PublicTitleAr")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")

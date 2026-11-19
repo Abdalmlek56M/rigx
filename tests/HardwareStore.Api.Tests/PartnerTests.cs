@@ -1,8 +1,5 @@
-using HardwareStore.Modules.Auditing;
-using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
-using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -303,9 +300,7 @@ public sealed class PartnerPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
         public SellerService Sellers { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System);
         public PurchaseService Purchases { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System, RetailSales.BusinessZone);
         public RetailTestServices Retail { get; } = database.CreateRetailServices();
-        public PurchaseReceiptService Receipts => new(Purchases, Retail.Units, Retail.Assemblies,
-            new StoreSettingsService(Factory<StorefrontDbContext>(database), new SecurityAuditWriter(Factory<SecurityAuditDbContext>(database)), TimeProvider.System),
-            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System), Retail.Money);
+        public PurchaseReceiptService Receipts => new PurchaseReceiptTesting(database, Purchases, Retail).Create();
 
         private static Factory<T> Factory<T>(OwnerBootstrapDatabase db) where T : DbContext => new(db.ConnectionString);
     }

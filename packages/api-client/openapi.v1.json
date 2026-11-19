@@ -8264,6 +8264,62 @@
         ]
       }
     },
+    "/api/v1/admin/retail/assemblies/{id}/planned-parts": {
+      "put": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060Catalog.ManageProducts\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssemblyPlannedPartsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/retail/assemblies/{id}/parts/{unitId}": {
       "put": {
         "tags": [
@@ -15632,6 +15688,13 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -15668,6 +15731,28 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AssemblyPlannedPartsRequest": {
+        "required": [
+          "parts",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "parts": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PlannedPartInput"
+            }
           },
           "rowVersion": {
             "type": "integer",
@@ -15933,7 +16018,8 @@
           "componentCost",
           "partsTotal",
           "allocatedTotal",
-          "rowVersion"
+          "rowVersion",
+          "plannedParts"
         ],
         "type": "object",
         "properties": {
@@ -16037,6 +16123,12 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          },
+          "plannedParts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlannedPart"
+            }
           }
         }
       },
@@ -21078,6 +21170,16 @@
           "itemCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "template": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/StockItemTemplate"
+              }
+            ]
           }
         }
       },
@@ -23659,6 +23761,115 @@
           }
         }
       },
+      "PlannedPart": {
+        "required": [
+          "id",
+          "name",
+          "categoryId",
+          "brandId",
+          "price",
+          "stockItemId",
+          "stockItemCode"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "price": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "stockItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "stockItemCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PlannedPartInput": {
+        "required": [
+          "id",
+          "name",
+          "categoryId",
+          "brandId",
+          "price",
+          "stockItemId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "categoryId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "price": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "stockItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "PolicyInput": {
         "required": [
           "titleAr",
@@ -24985,6 +25196,20 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "copyPhotosFromItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -25009,7 +25234,9 @@
           "warrantyLabel",
           "hasBox",
           "internalNote",
-          "specs"
+          "specs",
+          "brandId",
+          "copyPhotosFromItemId"
         ],
         "type": "object",
         "properties": {
@@ -25114,6 +25341,20 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "copyPhotosFromItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -27057,6 +27298,62 @@
           "alone": {
             "type": "number",
             "format": "double"
+          }
+        }
+      },
+      "StockItemTemplate": {
+        "required": [
+          "itemId",
+          "code",
+          "modelName",
+          "categoryId",
+          "brandId",
+          "productId",
+          "specs",
+          "photoCount"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "productId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "specs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "photoCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

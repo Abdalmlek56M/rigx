@@ -35,22 +35,31 @@ export function partnerShare(partner: Partner, override: number | null): number 
   return override ?? partner.defaultPercent;
 }
 
-/** The model fields of a line or a new part: what is typed, the catalog product it was matched to, and its category. */
+/** The model fields of a line or a new part: what is typed, the catalog product it was matched to, its category, brand and specs. */
 interface ModelFields {
   modelName: string;
   productId: string;
   categoryId: string;
+  brandId: string;
+  specs: Record<string, string>;
 }
 
 /** A typed model name is no longer the suggestion that was picked: it is free text again. */
 export const editModel = <T extends ModelFields>(fields: T, modelName: string): T => ({ ...fields, modelName, productId: "" });
 
-/** Picking a suggestion fills the model and its product (and the category when there is none); it is never forced. */
+/**
+ * Picking a suggestion fills the model and its product. A model already in stock also copies its data ("نسخ من منتج موجود"):
+ * the category, brand and specs of the item it was last entered with. Price, condition, serial and cost are never copied.
+ * A catalog product only fills the category when there is none. Everything stays editable.
+ */
 export function applySuggestion<T extends ModelFields>(fields: T, suggestion: ModelSuggestion): T {
+  const template = suggestion.template;
   return {
     ...fields,
     modelName: suggestion.modelName,
-    productId: suggestion.productId ?? "",
-    categoryId: fields.categoryId || suggestion.categoryId || ""
+    productId: template?.productId ?? suggestion.productId ?? "",
+    categoryId: template?.categoryId ?? (fields.categoryId || suggestion.categoryId || ""),
+    brandId: template?.brandId ?? fields.brandId,
+    specs: template ? { ...template.specs } : fields.specs
   };
 }

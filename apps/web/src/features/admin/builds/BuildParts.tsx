@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
+import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { DataTable, type Column } from "../kit/DataTable";
@@ -21,6 +22,7 @@ import { Button } from "../kit/Button";
 
 export interface BuildLookups {
   tree: readonly Category[];
+  brands: readonly Brand[];
   /** Every partner, or `null` when the staff member cannot read partners (the partner column and fields are then left out). */
   partners: readonly Partner[] | null;
   warrantyLabels: readonly string[] | null;

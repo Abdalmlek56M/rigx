@@ -3,8 +3,9 @@
  * The server stays the authority; these only keep the screen honest (the total, what is left to pay, what can be sent).
  * Messages live under `admin.purchases`.
  */
-import { amountOk, amountText, optionalAmountOk, parseAmount } from "../stock/stock-fields.ts";
-import type { Purchase, PurchaseLineRequest, PurchaseLineView, PurchaseRequest, Seller, SellerRequest, SellerSummary } from "./purchases-api";
+import { amountOk, amountText, applySuggestion, editModel, optionalAmountOk, parseAmount } from "../stock/stock-fields.ts";
+import type { StockItem } from "../inventory/inventory-api";
+import type { ModelSuggestion, Purchase, PurchaseLineRequest, PurchaseLineView, PurchaseRequest, Seller, SellerRequest, SellerSummary } from "./purchases-api";
 
 const known = <T extends string>(list: readonly T[], value: string): T | "other" => list.find((entry) => entry === value) ?? "other";
 
@@ -50,8 +51,12 @@ export interface LineForm {
   warrantyLabel: string;
   hasBox: boolean;
   internalNote: string;
-  /** Kept as read when a draft is edited (a purchase converted from a request may carry specs). */
+  brandId: string;
   specs: Record<string, string>;
+  /** "نسخ من منتج موجود": the stock item whose photos every received piece gets a copy of ("" = none). */
+  copyPhotosFromItemId: string;
+  /** What the copy chip says: the source item's code and photo count, when the line was filled on this screen. */
+  copySource: { code: string; photoCount: number } | null;
 }
 
 export interface PurchaseForm {
@@ -71,15 +76,45 @@ export interface PurchaseForm {
 export function emptyLine(key: string): LineForm {
   return {
     key, categoryId: "", modelName: "", productId: "", condition: "Used", quantity: "1", serialNumber: "", unitCost: "", price: "",
-    withBoardExtra: "", aloneExtra: "", partnerId: "", partnerPercent: "", isHidden: false, warrantyLabel: "", hasBox: false, internalNote: "", specs: {}
+    withBoardExtra: "", aloneExtra: "", partnerId: "", partnerPercent: "", isHidden: false, warrantyLabel: "", hasBox: false, internalNote: "", brandId: "",
+    specs: {}, copyPhotosFromItemId: "", copySource: null
   };
 }
 
-export function emptyPurchase(today: string, firstLineKey: string): PurchaseForm {
+/** A new purchase; `firstLine` is a line copied from an existing item ("نسخ لقطعة جديدة" in the inventory). */
+export function emptyPurchase(today: string, firstLineKey: string, firstLine?: LineForm): PurchaseForm {
   return {
     sellerId: "", kind: "Parts", keepAsBuild: false, buildName: "", purchaseDate: today, notes: "", paymentMethod: "Cash",
-    paidAmount: "", tradeInValue: "", tradeInNote: "", lines: [emptyLine(firstLineKey)]
+    paidAmount: "", tradeInValue: "", tradeInNote: "", lines: [firstLine ?? emptyLine(firstLineKey)]
   };
+}
+
+/** Picking a model fills the line from it; a model in stock also has its photos copied on receiving (when it has any). */
+export function pickModel(line: LineForm, suggestion: ModelSuggestion): LineForm {
+  const template = suggestion.template;
+  const copy = template && template.photoCount > 0 ? template : null;
+  return {
+    ...applySuggestion(line, suggestion),
+    copyPhotosFromItemId: copy?.itemId ?? "",
+    copySource: copy ? { code: copy.code, photoCount: copy.photoCount } : null
+  };
+}
+
+/** Typing over a picked model makes it free text again: the other model's photos are no longer copied (the rest stays editable). */
+export const typeModel = (line: LineForm, modelName: string): LineForm => ({ ...editModel(line, modelName), copyPhotosFromItemId: "", copySource: null });
+
+/** Keeps the copied data but not the photos. */
+export const dropPhotoCopy = (line: LineForm): LineForm => ({ ...line, copyPhotosFromItemId: "", copySource: null });
+
+/** A line for one more piece like `item`: its model, category, brand, specs and photos; price, cost, condition and serial are left to fill. */
+export function lineFromItem(item: StockItem, key: string): LineForm {
+  return pickModel(emptyLine(key), {
+    modelName: item.modelName, categoryId: item.categoryId, productId: item.productId, itemCount: 1,
+    template: {
+      itemId: item.id, code: item.code, modelName: item.modelName, categoryId: item.categoryId, brandId: item.brandId,
+      productId: item.productId, specs: item.specs, photoCount: item.photos.length
+    }
+  });
 }
 
 export function lineFromView(line: PurchaseLineView, key: string): LineForm {
@@ -101,7 +136,10 @@ export function lineFromView(line: PurchaseLineView, key: string): LineForm {
     warrantyLabel: line.warrantyLabel ?? "",
     hasBox: line.hasBox,
     internalNote: line.internalNote ?? "",
-    specs: line.specs
+    brandId: line.brandId ?? "",
+    specs: line.specs,
+    copyPhotosFromItemId: line.copyPhotosFromItemId ?? "",
+    copySource: null
   };
 }
 
@@ -186,7 +224,9 @@ export function toLineRequest(line: LineForm): PurchaseLineRequest {
     warrantyLabel: line.warrantyLabel.trim() || null,
     hasBox: line.hasBox,
     internalNote: line.internalNote.trim() || null,
-    specs: line.specs
+    specs: line.specs,
+    brandId: line.brandId || null,
+    copyPhotosFromItemId: line.copyPhotosFromItemId || null
   };
 }
 

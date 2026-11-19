@@ -31,7 +31,14 @@ public sealed record StoreItemQuery(string? Search = null, IReadOnlyList<Guid>? 
     IReadOnlyDictionary<string, string>? Specs = null, Guid? BrandId = null);
 public sealed record StoreConditionCounts(int New, int Used);
 public sealed record StoreItemPage(IReadOnlyList<StoreItemCard> Items, int Page, int PageSize, int Total, StoreConditionCounts Counts);
-public sealed record ModelNameSuggestion(string ModelName, Guid? CategoryId, Guid? ProductId, int ItemCount);
+/// <summary>
+/// A model to pick while adding stock. <paramref name="Template"/> is the stock item whose data is copied ("نسخ من منتج موجود");
+/// it is null for a catalog product that was never in stock.
+/// </summary>
+public sealed record ModelNameSuggestion(string ModelName, Guid? CategoryId, Guid? ProductId, int ItemCount, StockItemTemplate? Template = null);
+/// <summary>The facts of one stock item that a new piece of the same model reuses; price, condition, serial and cost are never copied.</summary>
+public sealed record StockItemTemplate(Guid ItemId, string Code, string ModelName, Guid? CategoryId, Guid? BrandId, Guid? ProductId,
+    IReadOnlyDictionary<string, string> Specs, int PhotoCount);
 
 // Notify-me lookups (any item, including unpublished ones, by code; published and available ones by model).
 public sealed record StockModelRef(string ModelName, string ModelKey, Guid? CategoryId);

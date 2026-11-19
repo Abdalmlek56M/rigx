@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Purchase } from "./purchases-api.ts";
 import {
-  emptyLine, emptyPurchase, isDraft, isOverpaid, kindKey, lineQuantity, purchaseFormValid, purchaseFromView,
+  dropPhotoCopy, emptyLine, emptyPurchase, lineFromItem, pickModel, toLineRequest, typeModel, isDraft, isOverpaid, kindKey, lineQuantity, purchaseFormValid, purchaseFromView,
   purchaseTotal, remainingAmount, sellerFormValid, statusKey, toPurchaseRequest, toSellerRequest, emptySeller, looksLikePhone, sellerQuery, withMethod, type LineForm, type PurchaseForm
 } from "./purchase-rules.ts";
 
@@ -131,5 +131,37 @@ describe("labels and sellers", () => {
     assert.equal(request.nationalId, null);
     assert.equal(request.governorate, null);
     assert.equal(request.rowVersion, 3);
+  });
+});
+
+describe("copying an existing item", () => {
+  const template = { itemId: "i1", code: "RX-0012", modelName: "RTX 4060 8GB", categoryId: "gpu", brandId: "msi", productId: null, specs: { vram: "8" }, photoCount: 3 };
+  const suggestion = { modelName: "RTX 4060 8GB", categoryId: "gpu", productId: null, itemCount: 2, template };
+
+  it("fills the data, keeps price, cost, condition and serial, and copies the photos on receiving", () => {
+    const picked = pickModel(line({ price: "9000", unitCost: "7000", condition: "New", serialNumber: "" }), suggestion);
+    assert.deepEqual([picked.brandId, picked.specs, picked.copyPhotosFromItemId, picked.copySource], ["msi", { vram: "8" }, "i1", { code: "RX-0012", photoCount: 3 }]);
+    assert.deepEqual([picked.price, picked.unitCost, picked.condition], ["9000", "7000", "New"]);
+    const request = toLineRequest(picked);
+    assert.deepEqual([request.brandId, request.copyPhotosFromItemId, request.specs], ["msi", "i1", { vram: "8" }]);
+  });
+
+  it("copies no photos from an item that has none, and stops when the model is retyped or the copy is dropped", () => {
+    assert.equal(pickModel(line(), { ...suggestion, template: { ...template, photoCount: 0 } }).copyPhotosFromItemId, "");
+    const picked = pickModel(line(), suggestion);
+    assert.equal(typeModel(picked, "RTX 4070").copyPhotosFromItemId, "");
+    const dropped = dropPhotoCopy(picked);
+    assert.deepEqual([dropped.copyPhotosFromItemId, dropped.brandId], ["", "msi"]);
+    assert.equal(toLineRequest(dropped).copyPhotosFromItemId, null);
+  });
+
+  it("starts a new purchase line from an inventory item with nothing to pay or price yet", () => {
+    const item = {
+      id: "i1", code: "RX-0012", modelName: "RTX 4060 8GB", categoryId: "gpu", brandId: "msi", productId: null, specs: { vram: "8" },
+      photos: [{ storageKey: "a", thumbnailStorageKey: "b" }]
+    } as unknown as Parameters<typeof lineFromItem>[0];
+    const copied = lineFromItem(item, "k9");
+    assert.deepEqual([copied.key, copied.modelName, copied.categoryId, copied.copyPhotosFromItemId], ["k9", "RTX 4060 8GB", "gpu", "i1"]);
+    assert.deepEqual([copied.price, copied.unitCost, copied.serialNumber], ["", "", ""]);
   });
 });

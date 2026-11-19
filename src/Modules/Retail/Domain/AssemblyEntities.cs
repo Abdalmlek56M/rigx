@@ -25,6 +25,8 @@ public sealed class Assembly
     public string? SuitableForAr { get; set; }
     public string? SuitableForEn { get; set; }
     public List<StockItemPhoto> Photos { get; set; } = [];
+    /// <summary>Parts typed into the build that are not stock units (made to order, round 3): nothing is created or reserved for them.</summary>
+    public List<PlannedPart> PlannedParts { get; set; } = [];
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public long RowVersion { get; set; } = 1;
@@ -44,3 +46,9 @@ public sealed class AssemblyUnit
     public Assembly Assembly { get; set; } = null!;
     public InventoryUnit Unit { get; set; } = null!;
 }
+
+/// <summary>
+/// A part listed in a build without a stock unit ("مش شرط تبقى في المخزون"). <see cref="StockItemId"/> links it to a stock item of the same
+/// model when one exists (its code is kept for display). Its price is the part's price inside the build, when known.
+/// </summary>
+public sealed record PlannedPart(Guid Id, string Name, Guid? CategoryId, Guid? BrandId, decimal? Price, Guid? StockItemId, string? StockItemCode);

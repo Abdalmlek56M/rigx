@@ -83,4 +83,11 @@ public sealed class PurchaseLine
     public bool HasBox { get; set; }
     public string? InternalNote { get; set; }
     public Dictionary<string, string> Specs { get; set; } = [];
+    /// <summary>The Catalog brand (no foreign key across modules).</summary>
+    public Guid? BrandId { get; set; }
+    /// <summary>
+    /// "نسخ من منتج موجود": the Retail stock item whose photos every item of this line gets a copy of when it is received.
+    /// The other copied facts (model, category, brand, specs) are already in the line's own fields.
+    /// </summary>
+    public Guid? CopyPhotosFromItemId { get; set; }
 }

@@ -264,6 +264,45 @@ public sealed class CatalogMediaStorageTests
         }
     }
 
+    [Fact]
+    public async Task A_transparent_png_keeps_its_transparency_and_gets_the_watermark()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "hardware-store-catalog-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var options = new CatalogMediaOptions { RootPath = root };
+            var storage = new LocalCatalogMediaStorage(options, new SkiaCatalogImageProcessor(options));
+            var photo = Png(400, 300, SKColors.Transparent, canvas => canvas.DrawRect(150, 100, 100, 100, new SKPaint { Color = SKColors.Black }));
+            var logo = Png(40, 40, SKColors.Red);
+            var stored = await storage.SaveImageAsync(Guid.CreateVersion7(), Guid.CreateVersion7(),
+                new CatalogImageUpload(new MemoryStream(photo), photo.Length, "gpu.png", "image/png"),
+                new ImageWatermark(logo, "BottomRight", 100, 20));
+
+            await using var stream = storage.OpenRead(stored.StorageKey);
+            using var image = SKBitmap.Decode(stream);
+            Assert.Equal(0, image.GetPixel(5, 5).Alpha);
+            Assert.Equal(255, image.GetPixel(200, 150).Alpha);
+            Assert.Contains(Enumerable.Range(300, 100).SelectMany(x => Enumerable.Range(200, 100).Select(y => image.GetPixel(x, y))),
+                pixel => pixel.Alpha > 200 && pixel.Red > 200 && pixel.Green < 60);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static byte[] Png(int width, int height, SKColor background, Action<SKCanvas>? draw = null)
+    {
+        using var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul));
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(background);
+        draw?.Invoke(canvas);
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100) ?? throw new InvalidOperationException("Could not create image fixture.");
+        return data.ToArray();
+    }
+
     private static byte[] CreatePng()
     {
         using var bitmap = new SKBitmap(32, 24);

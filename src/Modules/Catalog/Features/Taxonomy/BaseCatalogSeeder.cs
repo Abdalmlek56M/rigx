@@ -17,7 +17,8 @@ public static class BaseCatalogSeeder
         var categoriesRenamed = await RenameCategoriesAsync(db, now, cancellationToken);
         var categoriesAdded = await SeedCategoriesAsync(db, now, cancellationToken);
         var brandsAdded = await SeedBrandsAsync(db, now, cancellationToken);
-        if (categoriesRenamed + categoriesAdded + brandsAdded > 0) await db.SaveChangesAsync(cancellationToken);
+        var specsAdded = await SeedSpecsAsync(db, now, cancellationToken);
+        if (categoriesRenamed + categoriesAdded + brandsAdded + specsAdded > 0) await db.SaveChangesAsync(cancellationToken);
         return new BaseCatalogSeedResult(categoriesAdded, brandsAdded, categoriesRenamed);
     }
 
@@ -95,6 +96,22 @@ public static class BaseCatalogSeeder
     /// <summary>The entry's name and its old starting names, so a category still named the old way is not added twice.</summary>
     private static IEnumerable<string> KnownNames(BaseCategory entry) =>
         BaseCatalog.Renames.Where(rename => rename.Slug == entry.Slug).Select(rename => rename.OldName).Prepend(entry.Name);
+
+    /// <summary>Starter specs (<see cref="BaseCategorySpecs"/>) for base categories that have no specs of their own yet.</summary>
+    private static async Task<int> SeedSpecsAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var slugs = BaseCategorySpecs.BySlug.Keys.ToList();
+        await db.Categories.Where(category => slugs.Contains(category.Slug)).LoadAsync(cancellationToken);
+        var added = 0;
+        foreach (var category in db.Categories.Local.Where(category => slugs.Contains(category.Slug) && category.SpecDefinitions.Count == 0).ToList())
+        {
+            category.SpecDefinitions = CategorySpecSchema.Normalize(BaseCategorySpecs.BySlug[category.Slug]).ToList();
+            category.UpdatedAtUtc = now;
+            if (db.Entry(category).State != EntityState.Added) category.RowVersion++;
+            added++;
+        }
+        return added;
+    }
 
     private static bool SameName(string left, string right) => string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
 }

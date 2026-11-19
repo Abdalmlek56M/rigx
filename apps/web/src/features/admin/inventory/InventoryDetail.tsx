@@ -12,8 +12,9 @@ import { PhotoGallery } from "../stock/PhotoGallery";
 import { StockItemForm } from "./StockItemForm";
 import { StockUnits } from "./StockUnits";
 import { deleteStockPhoto, fetchStockItem, fetchWarrantyLabels, uploadStockPhoto, type StockItem } from "./inventory-api";
-import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
-import { Button, IconButton } from "../kit/Button";
+import { Link } from "@/i18n/navigation";
+import { CloseIcon, CopyIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button, buttonClass, buttonIconSize, IconButton } from "../kit/Button";
 
 /** The picked stock item: its edit form and photos, and its units (status, serial, cost, partner) beside or under them. */
 export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged }: {
@@ -70,7 +71,14 @@ export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged
           <ConditionBadge condition={item.condition === "New" ? "New" : "Used"} />
           <span className="text-xs text-ink-muted">{item.isPublished ? t("published") : t("notPublished")}</span>
         </div>
-        <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
+        <div className="flex items-center gap-2">
+          {has("Purchasing.CreateOrder") ? (
+            <Link href={`/admin/purchases/new?copyFrom=${item.id}`} className={buttonClass({ size: "sm" })}>
+              <CopyIcon size={buttonIconSize("sm")} />{t("copy")}
+            </Link>
+          ) : null}
+          <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
+        </div>
       </header>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">

@@ -69,6 +69,7 @@ builder.Services.AddSingleton<WatermarkReapplyJob>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<WatermarkReapplyJob>());
 builder.Services.AddScoped<MediaWatermarkSource>();
 builder.Services.AddScoped<WatermarkReapplyService>();
+builder.Services.AddScoped<StockPhotoCopyService>();
 builder.Services.AddScoped<HardwareStore.Modules.Catalog.IMediaReferenceGuard, RetailMediaReferenceGuard>();
 builder.Services.AddSecurityAuditPersistence(builder.Configuration);
 var previewEnabled = builder.Environment.IsDevelopment() &&

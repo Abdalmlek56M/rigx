@@ -35,6 +35,7 @@ public static partial class RetailEndpoints
         admin.MapPost("/assemblies/{id:guid}/disassemble", DisassembleAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies/{id:guid}/parts", AddAssemblyPartAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies/{id:guid}/parts/new", AddNewAssemblyPartAsync).RequirePermission("Catalog.ManageProducts");
+        admin.MapPut("/assemblies/{id:guid}/planned-parts", SetPlannedAssemblyPartsAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPut("/assemblies/{id:guid}/parts/{unitId:guid}", UpdateAssemblyPartAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies/{id:guid}/parts/{unitId:guid}/remove", RemoveAssemblyPartAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies/{id:guid}/parts/{unitId:guid}/replace", ReplaceAssemblyPartAsync).RequirePermission("Catalog.ManageProducts");

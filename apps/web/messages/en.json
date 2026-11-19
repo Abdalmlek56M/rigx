@@ -2503,7 +2503,8 @@
         "retry": "Try again",
         "close": "Close",
         "published": "Shown in the store",
-        "notPublished": "Not shown in the store"
+        "notPublished": "Not shown in the store",
+        "copy": "Copy to a new piece"
       },
       "form": {
         "title": "Item details",
@@ -2559,6 +2560,14 @@
           "cancel": "Cancel",
           "save": "Save"
         }
+      },
+      "specs": {
+        "title": "Specs",
+        "hint": "From the category. All optional; leave what you don't know empty.",
+        "yes": "Yes",
+        "no": "No",
+        "notSet": "Not set",
+        "old": "Specs typed freely before; they will not be saved. Type them into the fields above:"
       }
     },
     "purchases": {
@@ -2668,7 +2677,11 @@
         "aloneExtra": "Extra when alone",
         "hasBox": "Comes with its box",
         "isHidden": "Hidden from the store",
-        "internalNote": "Internal note"
+        "internalNote": "Internal note",
+        "copyFrom": "Copies {code}'s data",
+        "copied": "Data copied from {code}. {count, plural, one {Its photo is} other {Its # photos are}} copied to every piece on receiving.",
+        "copiedSaved": "The original item's photos are copied to every piece on receiving.",
+        "dropPhotos": "Without the photos"
       },
       "payment": {
         "title": "Paying the seller",
@@ -2746,8 +2759,9 @@
         "cancel": "Cancel",
         "submit": "Create build",
         "created": "Build created",
-        "firstPart": "First part from stock",
-        "pick": "Pick"
+        "firstPart": "First part from stock (optional)",
+        "pick": "Pick",
+        "firstPartHint": "You can start it empty and type its parts inside the build, even if they are not in stock."
       },
       "actions": {
         "preview": "Preview in store",
@@ -2882,6 +2896,19 @@
         "over": "{amount}% over",
         "save": "Save the split",
         "reset": "Reset to default"
+      },
+      "planned": {
+        "title": "Typed parts (not in stock)",
+        "hint": "Type the build's parts even if you don't have them. Nothing is reserved; a model you have in stock is linked. Replace them with parts from stock before publishing.",
+        "name": "Part",
+        "price": "Price in the build",
+        "add": "Add a typed part",
+        "remove": "Remove",
+        "save": "Save parts",
+        "saved": "Parts saved",
+        "linked": "Linked to {code}",
+        "total": "Prices total",
+        "empty": "No typed parts."
       }
     },
     "partners": {
@@ -3304,6 +3331,7 @@
           "ContactLinks": "Contact links",
           "ContactPhone": "Contact phone",
           "Controls": "Controls",
+          "CopyPhotosFromItemId": "Copy photos from",
           "CostAmount": "Cost amount",
           "CountryCallingCode": "Country calling code",
           "CountryCode": "Country code",
@@ -3457,6 +3485,7 @@
           "PhotoTokenExpiresAtUtc": "Photo token expires at",
           "PhotoTokenHash": "Photo token hash",
           "Photos": "Photos",
+          "PlannedParts": "Typed parts",
           "PostalCode": "Postal code",
           "PreferredDate": "Preferred date",
           "PreviousEndUtc": "Previous end",

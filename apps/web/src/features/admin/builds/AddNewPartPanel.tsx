@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
@@ -8,7 +8,9 @@ import { TextField } from "@/components/ui/TextField";
 import { formMessage } from "../form-message";
 import { FormMessage } from "../kit/PageHeader";
 import { ModelInput } from "../purchases/ModelInput";
+import { BrandSelect } from "../stock/BrandSelect";
 import { CategorySelect } from "../stock/CategorySelect";
+import { SpecFields } from "../stock/SpecFields";
 import { PartnerFields } from "../stock/PartnerFields";
 import { applySuggestion, editModel, financingPartners } from "../stock/stock-fields";
 import { WarrantyField } from "../stock/WarrantyField";
@@ -22,11 +24,14 @@ import { Button } from "../kit/Button";
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
 const SHOWN_FIELDS = [
-  "categoryId", "modelName", "condition", "serialNumber", "acquisitionCost", "price", "withBoardExtra", "aloneExtra", "partnerId", "partnerPercentOverride",
+  "categoryId", "brandId", "specs", "modelName", "condition", "serialNumber", "acquisitionCost", "price", "withBoardExtra", "aloneExtra", "partnerId", "partnerPercentOverride",
   "warrantyLabel", "internalNote"
 ];
 
-/** A part that is not in stock yet: the same facts as a purchase line plus what it cost; it is created as a new RX unit and joins this build. */
+/**
+ * A part that is not in stock yet: the same facts as a purchase line plus what it cost; it is created as a new RX unit and joins this build.
+ * Picking a model that was in stock before copies its category, brand and specs.
+ */
 export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProps & { lookups: BuildLookups; onClose: () => void }) {
   const t = useTranslations("admin.builds.addNew");
   const lines = useTranslations("admin.purchases.lines");
@@ -35,6 +40,7 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
   const [form, setForm] = useState<NewPartForm>(emptyNewPart);
   const set = (patch: Partial<NewPartForm>) => setForm((current) => ({ ...current, ...patch }));
   const error = (field: string) => submit.errors.fields[field];
+  const setSpecs = useCallback((specs: NewPartForm["specs"]) => setForm((current) => ({ ...current, specs })), []);
   const isUsed = form.condition === "Used";
 
   async function add() {
@@ -62,6 +68,7 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
           name="newPartModel" value={form.modelName} categoryId={form.categoryId} error={error("modelName")}
           onType={(text) => setForm((current) => editModel(current, text))} onPick={(suggestion) => setForm((current) => applySuggestion(current, suggestion))}
         />
+        <BrandSelect brands={lookups.brands} name="newPartBrand" value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")} />
         <SelectField
           label={lines("condition")} name="newPartCondition" value={form.condition} onChange={(condition) => set({ condition, ...(condition === "New" ? { serialNumber: "" } : {}) })} error={error("condition")}
           options={[{ value: "Used", label: lines("used") }, { value: "New", label: lines("new") }]}
@@ -80,6 +87,7 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
         ) : null}
         <WarrantyField name="newPartWarranty" value={form.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={lookups.warrantyLabels} error={error("warrantyLabel")} />
       </div>
+      <SpecFields categoryId={form.categoryId} values={form.specs} onChange={setSpecs} namePrefix="newPartSpec" error={error("specs")} />
       <div className="flex flex-wrap gap-x-6">
         <label className={checkbox}>
           <input type="checkbox" checked={form.hasBox} onChange={(event) => set({ hasBox: event.target.checked })} className="h-5 w-5" />

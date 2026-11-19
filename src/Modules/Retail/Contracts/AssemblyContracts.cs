@@ -14,6 +14,10 @@ public sealed record AssemblyPartUpdateRequest(decimal PartPrice, string? Warran
 public sealed record AssemblyAddPartRequest(Guid UnitId, long RowVersion);
 /// <summary>Adds a part that is not in stock yet: it becomes a new single-piece stock item inside the build.</summary>
 public sealed record AssemblyNewPartRequest(ReceiptLine Part, long RowVersion);
+/// <summary>One typed part of a build; <paramref name="Id"/> is null for a new row.</summary>
+public sealed record PlannedPartInput(Guid? Id, string? Name, Guid? CategoryId, Guid? BrandId, decimal? Price, Guid? StockItemId);
+/// <summary>Replaces the build's whole list of typed parts.</summary>
+public sealed record AssemblyPlannedPartsRequest(IReadOnlyList<PlannedPartInput>? Parts, long RowVersion);
 /// <summary>Without a target the part goes back to stock as available; with a target it moves into that build.</summary>
 public sealed record AssemblyRemovePartRequest(long RowVersion, Guid? TargetAssemblyId = null, long? TargetRowVersion = null);
 /// <summary>
@@ -41,4 +45,4 @@ public sealed record AssemblyUnitView(Guid UnitId, Guid? CategoryId, string Name
 public sealed record AssemblyView(Guid Id, string Code, string Name, string? PublicTitleAr, string? PublicTitleEn, decimal SalePrice,
     string Status, string? Usage, string SellMode, string? WarrantyLabel, int? WarrantyMonths, int Copies, string? SuitableForAr,
     string? SuitableForEn, IReadOnlyList<StockItemPhoto> Photos, IReadOnlyList<AssemblyUnitView> Units, decimal? ComponentCost,
-    decimal PartsTotal, decimal? AllocatedTotal, long RowVersion);
+    decimal PartsTotal, decimal? AllocatedTotal, long RowVersion, IReadOnlyList<PlannedPart> PlannedParts);

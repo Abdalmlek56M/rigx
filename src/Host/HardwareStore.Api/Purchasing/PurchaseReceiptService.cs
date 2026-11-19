@@ -10,7 +10,7 @@ public sealed record PurchaseReceived(PurchaseView Purchase, ReceiptResult Items
 /// Catalog spec schema, Retail stock), so it lives in Host per architecture decision 11.
 /// </summary>
 public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryUnitService inventory, AssemblyService assemblies,
-    StoreSettingsService settings, CategorySpecService categorySpecs, MoneyAccountService money)
+    StoreSettingsService settings, CategorySpecService categorySpecs, MoneyAccountService money, StockPhotoCopyService photoCopies)
 {
     public async Task<PurchaseReceived> ReceiveAsync(Guid purchaseId, Guid actorId, CancellationToken cancellationToken)
     {
@@ -25,7 +25,7 @@ public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryU
             var specs = await categorySpecs.CheckValuesAsync(line.CategoryId, line.Specs, cancellationToken);
             lines.Add(new ReceiptLine(line.ModelName, line.Condition, line.Quantity, line.UnitCost, line.Price, line.CategoryId,
                 line.ProductId, line.WithBoardExtra, line.AloneExtra, line.SerialNumber, line.PartnerPercent, label, months,
-                line.HasBox, line.IsHidden, line.InternalNote, specs, line.PartnerId));
+                line.HasBox, line.IsHidden, line.InternalNote, specs, line.PartnerId, line.BrandId));
         }
         var source = new ReceiptSource(purchase.Seller.Name, purchase.Seller.Kind, purchase.Kind, purchase.PurchaseDate);
         var receipt = await inventory.ReceiveAsync(new ReceiveRequest(purchase.Id, purchase.Notes, source, lines), actorId, cancellationToken);
@@ -39,7 +39,21 @@ public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryU
         var received = await purchases.MarkReceivedAsync(purchase.Id, assemblyId, cancellationToken);
         if (purchase.PaidAmount > 0 && payKind is not null)
             await money.PayPurchaseAsync(purchase.Id, purchase.Code, payKind, purchase.PaidAmount, purchase.PurchaseDate, actorId, cancellationToken);
+        await CopyPhotosAsync(purchase.Lines, receipt.Items, cancellationToken);
         return new PurchaseReceived(received, receipt);
+    }
+
+    /// <summary>Receipt items come in line order, as many per line as <see cref="StockItemRules.UnitsPerItem"/> makes.</summary>
+    private async Task CopyPhotosAsync(IReadOnlyList<PurchaseLineView> lines, IReadOnlyList<StockItemAdminView> items, CancellationToken cancellationToken)
+    {
+        var next = 0;
+        foreach (var line in lines)
+        {
+            var count = StockItemRules.UnitsPerItem(line.Condition, line.Quantity).Count;
+            var created = items.Skip(next).Take(count).Select(item => item.Id).ToList();
+            next += count;
+            if (line.CopyPhotosFromItemId is Guid sourceId) await photoCopies.CopyAsync(sourceId, created, cancellationToken);
+        }
     }
 
     /// <summary>The money method the seller is paid with: cash and trade-in is paid in cash; a pure trade-in moves no money.</summary>

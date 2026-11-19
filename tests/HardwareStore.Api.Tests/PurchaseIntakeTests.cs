@@ -1,9 +1,8 @@
-using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
-using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
+using SkiaSharp;
 using Xunit;
 
 namespace HardwareStore.Api.Tests;
@@ -20,9 +19,10 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         public SellerService Sellers { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System);
         public PurchaseService Purchases { get; } = new(Factory<PurchasingDbContext>(database), TimeProvider.System, RetailSales.BusinessZone);
         public RetailTestServices Retail { get; } = database.CreateRetailServices();
-        public PurchaseReceiptService Receipts => new(Purchases, Retail.Units, Retail.Assemblies,
-            new StoreSettingsService(Factory<StorefrontDbContext>(database), new SecurityAuditWriter(Factory<SecurityAuditDbContext>(database)), TimeProvider.System),
-            new CategorySpecService(Factory<CatalogDbContext>(database), TimeProvider.System), Retail.Money);
+        private PurchaseReceiptTesting? receipts;
+        private PurchaseReceiptTesting Receipting => receipts ??= new(database, Purchases, Retail);
+        public LocalCatalogMediaStorage Media => Receipting.Media;
+        public PurchaseReceiptService Receipts => Receipting.Create();
 
         public async Task<SellerView> NewSellerAsync(string phone = "01012345678") =>
             await Sellers.CreateAsync(new SellerRequest("Person", "Ahmed", phone, null, null, null, null, null));
@@ -106,6 +106,45 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         var used = received.Items.Items.Where(item => item.Condition == "Used").ToList();
         Assert.All(used, item => Assert.Equal(1, item.WarrantyMonths));
         Assert.Equal(3, Assert.Single(received.Items.Items, item => item.Condition == "New").Units.Count);
+    }
+
+    [Fact]
+    public async Task A_line_copied_from_an_existing_item_gets_its_brand_and_each_new_piece_its_own_copy_of_the_photos()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var source = (await harness.Receipts.ReceiveAsync(
+            (await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, Used("RTX 4060")), Actor)).Id, Actor, default)).Items.Items.Single();
+        var png = PhotoPng();
+        var stored = await harness.Media.SaveImageAsync(source.Id, Guid.CreateVersion7(), new CatalogImageUpload(new MemoryStream(png), png.Length, "a.png", "image/png"));
+        await harness.Retail.StockItems.AddPhotoAsync(source.Id, new StockItemPhoto(stored.StorageKey, stored.ThumbnailStorageKey));
+        var brandId = Guid.NewGuid();
+        var copy = Used("RTX 4060", 2) with { BrandId = brandId, CopyPhotosFromItemId = source.Id };
+
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 0m, copy, New("Fan", 1)), Actor);
+        Assert.Equal(source.Id, purchase.Lines[0].CopyPhotosFromItemId);
+        var received = await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+
+        var pieces = received.Items.Items.Where(item => item.Condition == "Used").ToList();
+        Assert.Equal(2, pieces.Count);
+        foreach (var piece in pieces)
+        {
+            Assert.Equal(brandId, piece.BrandId);
+            var photo = Assert.Single(await harness.Retail.StockItems.FindPhotosAsync(piece.Id));
+            Assert.NotEqual(stored.StorageKey, photo.StorageKey);
+            Assert.True(harness.Media.Exists(photo.StorageKey));
+        }
+        Assert.Empty(await harness.Retail.StockItems.FindPhotosAsync(received.Items.Items.Single(item => item.Condition == "New").Id));
+    }
+
+    private static byte[] PhotoPng()
+    {
+        using var bitmap = new SKBitmap(64, 48);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(SKColors.CornflowerBlue);
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100)!;
+        return data.ToArray();
     }
 
     [Fact]

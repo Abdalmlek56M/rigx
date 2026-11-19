@@ -8,7 +8,8 @@ import { fetchCategories } from "../categories/categories-api";
 import { cairoToday } from "../dashboard/dashboard-rules";
 import { fetchPartners } from "../expenses/expenses-api";
 import { fetchShippingRates } from "../customers/customers-api";
-import { fetchWarrantyLabels } from "../inventory/inventory-api";
+import { fetchStockItem, fetchWarrantyLabels } from "../inventory/inventory-api";
+import { fetchBrands } from "../brands/brands-api";
 import { PageHeader } from "../kit/PageHeader";
 import { financingPartners } from "../stock/stock-fields";
 import { usePermissions } from "../use-permissions";
@@ -20,25 +21,27 @@ import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** `/admin/purchases/new` (no id) and `/admin/purchases/[id]`: loads what the form needs and keeps the purchase as the last action returned it. */
-export function PurchaseEditor({ id }: { id: string | null }) {
+export function PurchaseEditor({ id, copyFromId = null }: { id: string | null; copyFromId?: string | null }) {
   const t = useTranslations("admin.purchases");
   const { has } = usePermissions();
   const canSeePartners = has("Finance.ViewReports");
   const canReadWarranties = has("System.StoreSettings");
   const load = useCallback(async () => {
-    const [purchase, tree, partners, warrantyLabels, rates] = await Promise.all([
+    const [purchase, tree, brands, copySource, partners, warrantyLabels, rates] = await Promise.all([
       id ? fetchPurchase(id) : Promise.resolve(null),
       fetchCategories().catch(() => []),
+      fetchBrands().catch(() => []),
+      !id && copyFromId ? fetchStockItem(copyFromId).catch(() => null) : Promise.resolve(null),
       canSeePartners ? fetchPartners().catch(() => null) : Promise.resolve(null),
       canReadWarranties ? fetchWarrantyLabels().catch(() => null) : Promise.resolve(null),
       fetchShippingRates().catch(() => null)
     ]);
     return {
-      purchase, tree, warrantyLabels,
+      purchase, tree, brands, copySource, warrantyLabels,
       partners: partners ? financingPartners(partners) : null,
       governorates: (rates?.governorates ?? []).map(({ code, name }) => ({ code, name }))
     };
-  }, [id, canSeePartners, canReadWarranties]);
+  }, [id, copyFromId, canSeePartners, canReadWarranties]);
   const { state, reload } = useLoad(load);
   const [today] = useState(() => cairoToday(new Date()));
   // The purchase as the last save or cancel returned it, and what receiving created; a 409 drops them and reads the purchase again.

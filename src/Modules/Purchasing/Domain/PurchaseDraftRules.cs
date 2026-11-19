@@ -71,7 +71,9 @@ public static class PurchaseDraftRules
             WarrantyLabel = TextRules.Optional(request.WarrantyLabel, MaxWarrantyLabelLength, "Warranty"),
             HasBox = request.HasBox,
             InternalNote = TextRules.Optional(request.InternalNote, MaxInternalNoteLength, "Internal note"),
-            Specs = CleanSpecs(request.Specs)
+            Specs = CleanSpecs(request.Specs),
+            BrandId = request.BrandId,
+            CopyPhotosFromItemId = request.CopyPhotosFromItemId
         };
     }
 

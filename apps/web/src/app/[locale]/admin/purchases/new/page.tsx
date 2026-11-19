@@ -11,6 +11,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("newTitle") };
 }
 
-export default function AdminNewPurchasePage() {
-  return <PurchaseEditor id={null} />;
+/** `?copyFrom=<stock item id>` starts the purchase with one more piece like that item ("نسخ لقطعة جديدة"). */
+export default async function AdminNewPurchasePage({ searchParams }: { searchParams: Promise<{ copyFrom?: string | string[] }> }) {
+  const { copyFrom } = await searchParams;
+  return <PurchaseEditor id={null} copyFromId={typeof copyFrom === "string" && copyFrom ? copyFrom : null} />;
 }

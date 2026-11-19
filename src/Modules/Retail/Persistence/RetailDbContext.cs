@@ -122,6 +122,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.SuitableForAr).HasColumnName("suitable_for_ar").HasMaxLength(AssemblyRules.MaxSuitableForLength);
             e.Property(x => x.SuitableForEn).HasColumnName("suitable_for_en").HasMaxLength(AssemblyRules.MaxSuitableForLength);
             StockItemConfiguration.Document(e.Property(x => x.Photos).HasColumnName("photos"), "'[]'::jsonb");
+            StockItemConfiguration.Document(e.Property(x => x.PlannedParts).HasColumnName("planned_parts"), "'[]'::jsonb");
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();

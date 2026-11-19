@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { PurchaseLineCard } from "./PurchaseLineCard";
@@ -13,11 +14,12 @@ let lineCounter = 0;
 export const newLineKey = () => `line-${++lineCounter}`;
 
 /** The purchased lines: add and remove, each line edited in its own card. */
-export function PurchaseLines({ lines, minLines, tree, partners, warrantyLabels, errors, onChange }: {
+export function PurchaseLines({ lines, minLines, tree, brands, partners, warrantyLabels, errors, onChange }: {
   lines: readonly LineForm[];
   /** A whole PC needs two parts; a parts purchase needs one. */
   minLines: number;
   tree: readonly Category[];
+  brands: readonly Brand[];
   partners: readonly Partner[] | null;
   warrantyLabels: readonly string[] | null;
   errors: Record<string, string>;
@@ -30,7 +32,7 @@ export function PurchaseLines({ lines, minLines, tree, partners, warrantyLabels,
       <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {lines.map((line, index) => (
           <PurchaseLineCard
-            key={line.key} line={line} index={index} tree={tree} partners={partners} warrantyLabels={warrantyLabels} errors={errors}
+            key={line.key} line={line} index={index} tree={tree} brands={brands} partners={partners} warrantyLabels={warrantyLabels} errors={errors}
             onChange={(next) => onChange(lines.map((entry) => (entry.key === line.key ? next : entry)))}
             onRemove={lines.length > 1 ? () => onChange(lines.filter((entry) => entry.key !== line.key)) : null}
           />

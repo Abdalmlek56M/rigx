@@ -108,6 +108,14 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         return item.Photos;
     }
 
+    /// <summary>The item's photos, or none when there is no such item (a copy source that is gone copies nothing).</summary>
+    public async Task<IReadOnlyList<StockItemPhoto>> FindPhotosAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var photos = await db.StockItems.AsNoTracking().Where(item => item.Id == id).Select(item => item.Photos).SingleOrDefaultAsync(cancellationToken);
+        return photos ?? [];
+    }
+
     public async Task<IReadOnlyList<OwnedPhoto>> ListPhotosAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -151,13 +159,16 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         var items = db.StockItems.AsNoTracking().Where(item => item.ModelKey.Contains(key));
         if (categoryId is Guid category) items = items.Where(item => item.CategoryId == category);
         var candidates = await items.OrderByDescending(item => item.CreatedAtUtc).Take(SuggestionCandidates)
-            .Select(item => new { item.ModelKey, item.ModelName, item.CategoryId, item.ProductId }).ToListAsync(cancellationToken);
-        return candidates.GroupBy(item => item.ModelKey)
+            .Select(item => new StockItemTemplate(item.Id, item.Code, item.ModelName, item.CategoryId, item.BrandId, item.ProductId, item.Specs,
+                item.PhotoCount))
+            .ToListAsync(cancellationToken);
+        return candidates.GroupBy(item => ModelName.Key(item.ModelName))
             .Select(group => new ModelNameSuggestion(
                 group.GroupBy(item => item.ModelName).OrderByDescending(spelling => spelling.Count()).First().Key,
                 group.Select(item => item.CategoryId).FirstOrDefault(value => value is not null),
                 group.Select(item => item.ProductId).FirstOrDefault(value => value is not null),
-                group.Count()))
+                group.Count(),
+                StockItemRules.PickTemplate(group)))
             .OrderByDescending(suggestion => suggestion.ItemCount).ThenBy(suggestion => suggestion.ModelName, StringComparer.Ordinal)
             .Take(MaxSuggestions).ToList();
     }

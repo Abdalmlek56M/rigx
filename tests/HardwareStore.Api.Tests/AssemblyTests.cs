@@ -100,6 +100,55 @@ public sealed class AssemblyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
     }
 
     [Fact]
+    public async Task A_build_can_start_empty_and_be_listed_from_parts_that_are_not_in_stock()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var build = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Made to order", []));
+        Assert.Empty(build.Units);
+
+        var gpu = new ReceiptLine("RTX 4060 8GB", "New", 1, 12000m, 14000m, Specs: new Dictionary<string, string> { ["vram"] = "8" });
+        var cpu = new ReceiptLine("Ryzen 5 7600", "New", 1, 7000m, 8000m);
+        var withGpu = await retail.Parts.AddNewPartAsync(build.Id, new AssemblyNewPartRequest(gpu, build.RowVersion));
+        var both = await retail.Parts.AddNewPartAsync(build.Id, new AssemblyNewPartRequest(cpu, withGpu.RowVersion));
+
+        Assert.Equal(2, both.Units.Count);
+        Assert.Equal(100m, both.Units.Sum(unit => unit.AllocationPercent));
+    }
+
+    [Fact]
+    public async Task Typed_parts_list_a_build_without_stock_and_block_publishing_until_replaced()
+    {
+        var (retail, database, units) = await StartAsync(fixture, Line("Typed GPU", 100m, 300m));
+        var build = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Made to order", []));
+        await using var context = database.CreateRetailContext();
+        var gpuItemId = (await context.Units.SingleAsync(unit => unit.Id == units[0].Id)).StockItemId;
+
+        var saved = await retail.Parts.SetPlannedPartsAsync(build.Id, new AssemblyPlannedPartsRequest(
+            [new PlannedPartInput(null, "Ryzen 5 7600", null, null, 8000m, null), new PlannedPartInput(null, "Typed GPU", null, null, null, gpuItemId)],
+            build.RowVersion));
+
+        Assert.Equal(2, saved.PlannedParts.Count);
+        Assert.StartsWith("RX-", saved.PlannedParts[1].StockItemCode);
+        Assert.Empty(saved.Units);
+        await using (var db = database.CreateRetailContext())
+            Assert.Equal(UnitStatus.Available, (await db.Units.SingleAsync()).Status);
+        var priced = await retail.Assemblies.UpdateAssemblyAsync(saved.Id, new AssemblyUpdateRequest("Made to order", null, null, 20000m, saved.RowVersion));
+        Assert.Equal(400, await StatusOfAsync(() => retail.Assemblies.SetAssemblyPublishedAsync(saved.Id, true, priced.RowVersion)));
+        Assert.Equal(400, await StatusOfAsync(() => retail.Parts.SetPlannedPartsAsync(build.Id,
+            new AssemblyPlannedPartsRequest([new PlannedPartInput(null, " ", null, null, null, null)], priced.RowVersion))));
+        Assert.Equal(404, await StatusOfAsync(() => retail.Parts.SetPlannedPartsAsync(build.Id,
+            new AssemblyPlannedPartsRequest([new PlannedPartInput(null, "X", null, null, null, Guid.NewGuid())], priced.RowVersion))));
+
+        var kept = saved.PlannedParts[0];
+        var edited = await retail.Parts.SetPlannedPartsAsync(build.Id,
+            new AssemblyPlannedPartsRequest([new PlannedPartInput(kept.Id, kept.Name, null, null, 7500m, null)], priced.RowVersion));
+        Assert.Equal((kept.Id, (decimal?)7500m), (Assert.Single(edited.PlannedParts).Id, edited.PlannedParts[0].Price));
+
+        await retail.Parts.AddPartAsync(build.Id, new AssemblyAddPartRequest(units[0].Id, edited.RowVersion));
+        Assert.Equal(400, await StatusOfAsync(() => retail.Pos.PreviewAsync(RetailSales.Sale([RetailSales.BuildLine(build.Id)]), RetailSales.PosUnlimited, false)));
+    }
+
+    [Fact]
     public async Task Adding_a_new_part_creates_a_stock_item_inside_the_build()
     {
         var (retail, database, units) = await StartAsync(fixture, Line("New CPU", 100m, 300m));

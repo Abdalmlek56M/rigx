@@ -63,7 +63,10 @@ export function ModelInput({ value, categoryId, name, error, onType, onPick }: {
                 className="flex min-h-11 w-full items-center justify-between gap-2 rounded-control px-2 text-start text-sm hover:bg-paper"
               >
                 <span dir="auto" className="[unicode-bidi:isolate]">{item.modelName}</span>
-                <span className="text-xs text-ink-muted">{t("inStock", { count: item.itemCount })}</span>
+                <span className="flex shrink-0 flex-col items-end whitespace-nowrap text-xs text-ink-muted">
+                  <span>{t("inStock", { count: item.itemCount })}</span>
+                  {item.template ? <span className="font-bold text-ink">{t("copyFrom", { code: item.template.code })}</span> : null}
+                </span>
               </button>
             </li>
           ))}

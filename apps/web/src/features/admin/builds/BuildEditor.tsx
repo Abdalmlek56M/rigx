@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useLoad } from "@/lib/hooks/use-load";
+import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
 import { fetchPartners } from "../expenses/expenses-api";
 import { fetchWarrantyLabels } from "../inventory/inventory-api";
@@ -14,6 +15,7 @@ import { BuildActions } from "./BuildActions";
 import { BuildAllocations } from "./BuildAllocations";
 import { BuildCardForm } from "./BuildCardForm";
 import { BuildParts } from "./BuildParts";
+import { BuildPlannedParts } from "./BuildPlannedParts";
 import { BuildStatusBadge } from "./BuildStatusBadge";
 import { BuildSummary } from "./BuildSummary";
 import { deleteBuildPhoto, fetchBuild, uploadBuildPhoto, type Build } from "./builds-api";
@@ -28,13 +30,14 @@ export function BuildEditor({ id }: { id: string }) {
   const canSeePartners = has("Finance.ViewReports");
   const canReadWarranties = has("System.StoreSettings");
   const load = useCallback(async () => {
-    const [build, tree, partners, warrantyLabels] = await Promise.all([
+    const [build, tree, brands, partners, warrantyLabels] = await Promise.all([
       fetchBuild(id),
       fetchCategories().catch(() => []),
+      fetchBrands().catch(() => []),
       canSeePartners ? fetchPartners().catch(() => null) : Promise.resolve(null),
       canReadWarranties ? fetchWarrantyLabels().catch(() => null) : Promise.resolve(null)
     ]);
-    return { build, lookups: { tree, partners, warrantyLabels } };
+    return { build, lookups: { tree, brands, partners, warrantyLabels } };
   }, [id, canSeePartners, canReadWarranties]);
   const { state, reload } = useLoad(load);
   // The build as the last write returned it; a 409 drops it and reads the build again.
@@ -95,6 +98,7 @@ export function BuildEditor({ id }: { id: string }) {
         </div>
       </div>
       <BuildParts {...action} canEdit={canEdit} lookups={state.data.lookups} />
+      <BuildPlannedParts key={`planned-${build.rowVersion}`} {...action} canEdit={canEdit} lookups={state.data.lookups} />
       <BuildAllocations key={build.rowVersion} {...action} canEdit={canEdit} />
     </>
   );

@@ -44,6 +44,24 @@ public sealed class AssemblyPartService(IDbContextFactory<RetailDbContext> conte
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
 
+    /// <summary>Saves the build's typed parts (not in stock, nothing reserved); a linked stock item must exist and keeps its code for display.</summary>
+    public async Task<AssemblyView> SetPlannedPartsAsync(Guid assemblyId, AssemblyPlannedPartsRequest request, bool includeCosts = true,
+        CancellationToken cancellationToken = default)
+    {
+        var parts = AssemblyRules.CleanPlannedParts(request.Parts);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var assembly = await AssemblyEditing.LoadEditableAsync(db, assemblyId, request.RowVersion, cancellationToken);
+        AssemblyRules.EnsureRoom(assembly.Units.Count, parts.Count);
+        var linkedIds = parts.Where(part => part.StockItemId is not null).Select(part => part.StockItemId!.Value).Distinct().ToList();
+        var codes = await db.StockItems.AsNoTracking().Where(item => linkedIds.Contains(item.Id))
+            .ToDictionaryAsync(item => item.Id, item => item.Code, cancellationToken);
+        if (codes.Count != linkedIds.Count) throw new RetailException(404, "A linked stock item was not found.");
+        assembly.PlannedParts = parts.Select(part => part with { StockItemCode = part.StockItemId is Guid id ? codes[id] : null }).ToList();
+        AssemblyEditing.Touch(assembly, timeProvider.GetUtcNow().ToUniversalTime());
+        await AssemblyEditing.SaveAsync(db, cancellationToken);
+        return AssemblyMapping.ToView(assembly, includeCosts);
+    }
+
     public async Task<AssemblyView> UpdatePartAsync(Guid assemblyId, Guid unitId, AssemblyPartUpdateRequest request,
         bool includeCosts = true, CancellationToken cancellationToken = default)
     {
@@ -167,9 +185,5 @@ public sealed class AssemblyPartService(IDbContextFactory<RetailDbContext> conte
     private static AssemblyUnit FindPart(Assembly assembly, Guid unitId) =>
         assembly.Units.SingleOrDefault(link => link.UnitId == unitId) ?? throw new RetailException(404, "The unit is not part of this assembly.");
 
-    private static void EnsureRoom(Assembly assembly)
-    {
-        if (assembly.Units.Count >= AssemblyRules.MaxParts)
-            throw new RetailException(409, $"A build can have at most {AssemblyRules.MaxParts} parts.");
-    }
+    private static void EnsureRoom(Assembly assembly) => AssemblyRules.EnsureRoom(assembly.Units.Count + 1, assembly.PlannedParts.Count);
 }

@@ -89,8 +89,11 @@ internal static class OrderDrafting
         if (!sellable || assembly!.Units.Count == 0) throw new RetailException(409, "The selected build is no longer available.");
         var photo = assembly.Photos.FirstOrDefault()?.ThumbnailStorageKey;
         if (line.Parts is not { Count: > 0 } parts)
+        {
+            AssemblyRules.EnsureNoPlannedParts(assembly);
             return [Line(assembly.PublicTitleAr ?? assembly.PublicTitleEn ?? assembly.Name, assembly.Code, photo, 1, assembly.SalePrice,
                 store ? line.SalePrice : null, null, assemblyId, null)];
+        }
         if (!store) throw new RetailException(400, "Parts of a build are sold one by one at the store only.");
         if (assembly.SellMode != AssemblySellMode.FullOrSplit) throw new RetailException(409, "This build is sold as a whole only.");
         return parts.Select(part =>

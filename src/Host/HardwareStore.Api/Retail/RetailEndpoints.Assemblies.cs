@@ -74,9 +74,14 @@ public static partial class RetailEndpoints
         var specs = await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct);
         var part = new ReceiptLine(request.ModelName ?? string.Empty, request.Condition ?? string.Empty, 1, request.AcquisitionCost,
             request.Price, request.CategoryId, request.ProductId, request.WithBoardExtra, request.AloneExtra, request.SerialNumber,
-            request.PartnerPercentOverride, label, months, request.HasBox, request.IsHidden, request.InternalNote, specs, request.PartnerId);
+            request.PartnerPercentOverride, label, months, request.HasBox, request.IsHidden, request.InternalNote, specs, request.PartnerId,
+            request.BrandId);
         return TypedResults.Ok(await parts.AddNewPartAsync(id, new AssemblyNewPartRequest(part, request.RowVersion), context.HasPermission(ViewCosts), ct));
     }
+
+    private static async Task<Ok<AssemblyView>> SetPlannedAssemblyPartsAsync(Guid id, AssemblyPlannedPartsRequest request, HttpContext context,
+        AssemblyPartService parts, CancellationToken ct) =>
+        TypedResults.Ok(await parts.SetPlannedPartsAsync(id, request, context.HasPermission(ViewCosts), ct));
 
     private static async Task<Ok<AssemblyView>> UpdateAssemblyPartAsync(Guid id, Guid unitId, AssemblyPartBody request, HttpContext context,
         AssemblyPartService parts, StoreSettingsService settings, CancellationToken ct)
@@ -121,4 +126,4 @@ public sealed record AssemblyPartBody(decimal PartPrice, string? WarrantyLabel, 
 public sealed record AssemblyNewPartBody(string? ModelName, string? Condition, decimal AcquisitionCost, decimal Price, long RowVersion,
     Guid? CategoryId = null, Guid? ProductId = null, decimal? WithBoardExtra = null, decimal? AloneExtra = null, string? SerialNumber = null,
     decimal? PartnerPercentOverride = null, string? WarrantyLabel = null, bool HasBox = false, bool IsHidden = false,
-    string? InternalNote = null, Dictionary<string, string>? Specs = null, Guid? PartnerId = null);
+    string? InternalNote = null, Dictionary<string, string>? Specs = null, Guid? PartnerId = null, Guid? BrandId = null);

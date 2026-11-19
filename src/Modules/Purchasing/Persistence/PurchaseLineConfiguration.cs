@@ -42,6 +42,8 @@ internal sealed class PurchaseLineConfiguration : IEntityTypeConfiguration<Purch
         e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(PurchaseDraftRules.MaxWarrantyLabelLength);
         e.Property(x => x.HasBox).HasColumnName("has_box");
         e.Property(x => x.InternalNote).HasColumnName("internal_note").HasMaxLength(PurchaseDraftRules.MaxInternalNoteLength);
+        e.Property(x => x.BrandId).HasColumnName("brand_id");
+        e.Property(x => x.CopyPhotosFromItemId).HasColumnName("copy_photos_from_item_id");
         e.Property(x => x.Specs).HasColumnName("specs").HasColumnType("jsonb").IsRequired().HasDefaultValueSql("'{}'::jsonb")
             .HasConversion(
                 new ValueConverter<Dictionary<string, string>, string>(value => JsonSerializer.Serialize(value, Json),

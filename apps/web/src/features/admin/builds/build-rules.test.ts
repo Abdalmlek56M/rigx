@@ -4,7 +4,7 @@ import type { Build, BuildPart } from "./builds-api.ts";
 import {
   allocationDifference, allocationForm, allocationSum, allocationValid, canDisassemble, canPublish, canUnpublish, cardValid, copiesCount, defaultAllocation,
   buildOption, emptyNewPart, otherBuilds, filterBuilds, isLocked, newPartValid, pickBuild, sellModeKey, statusKey, toAllocationInputs, toCardForm, toEditRequest, toNewPartBody,
-  toPartBody, toPartForm
+  toPartBody, toPartForm, emptyPlannedRow, pickPlannedModel, plannedRows, plannedRowsValid, plannedTotal, toPlannedInputs, typePlannedName
 } from "./build-rules.ts";
 
 const part = (patch: Partial<BuildPart> = {}): BuildPart => ({
@@ -13,7 +13,7 @@ const part = (patch: Partial<BuildPart> = {}): BuildPart => ({
 });
 
 const build = (patch: Partial<Build> = {}): Build => ({
-  id: "b1", code: "BLD-01", name: "تجميعة ألعاب", publicTitleAr: "ألعاب", publicTitleEn: "Gaming PC", salePrice: 5000, status: "Draft", usage: "Gaming",
+  plannedParts: [], id: "b1", code: "BLD-01", name: "تجميعة ألعاب", publicTitleAr: "ألعاب", publicTitleEn: "Gaming PC", salePrice: 5000, status: "Draft", usage: "Gaming",
   sellMode: "FullOrSplit", warrantyLabel: null, warrantyMonths: null, copies: 1, suitableForAr: null, suitableForEn: null, photos: [], units: [part()],
   componentCost: 4000, partsTotal: 4800, allocatedTotal: 5000, rowVersion: 3, ...patch
 });
@@ -147,5 +147,25 @@ describe("revenue split", () => {
 
   it("sends the percents as numbers", () => {
     assert.deepEqual(toAllocationInputs({ a: "60", b: "40" }), [{ unitId: "a", percent: 60 }, { unitId: "b", percent: 40 }]);
+  });
+});
+
+describe("typed build parts", () => {
+  const template = { itemId: "i1", code: "RX-0007", modelName: "RTX 4060 8GB", categoryId: "gpu", brandId: "msi", productId: null, specs: {}, photoCount: 0 };
+
+  it("links a picked model in stock and unlinks it when the name is retyped", () => {
+    const row = pickPlannedModel(emptyPlannedRow("k"), { modelName: "RTX 4060 8GB", categoryId: "gpu", productId: null, itemCount: 1, template });
+    assert.deepEqual([row.name, row.categoryId, row.brandId, row.stockItemId, row.stockItemCode], ["RTX 4060 8GB", "gpu", "msi", "i1", "RX-0007"]);
+    assert.deepEqual([typePlannedName(row, "RTX 4070").stockItemId, typePlannedName(row, "RTX 4070").stockItemCode], ["", ""]);
+  });
+
+  it("sends new rows without an id, keeps saved ids, and needs a name and a non-negative price", () => {
+    const saved = plannedRows([{ id: "p1", name: "Ryzen 5 7600", categoryId: null, brandId: null, price: 8000, stockItemId: null, stockItemCode: null }]);
+    const rows = [...saved, { ...emptyPlannedRow("k2"), name: " B650M ", price: "" }];
+    assert.deepEqual(toPlannedInputs(rows).map((input) => [input.id, input.name, input.price]), [["p1", "Ryzen 5 7600", 8000], [null, "B650M", null]]);
+    assert.equal(plannedTotal(rows), 8000);
+    assert.equal(plannedRowsValid(rows), true);
+    assert.equal(plannedRowsValid([{ ...emptyPlannedRow("k3"), name: "" }]), false);
+    assert.equal(plannedRowsValid([{ ...emptyPlannedRow("k4"), name: "X", price: "-1" }]), false);
   });
 });

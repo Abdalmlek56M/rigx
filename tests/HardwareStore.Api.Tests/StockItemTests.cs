@@ -234,6 +234,26 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     }
 
     [Fact]
+    public async Task A_model_suggestion_carries_the_newest_item_with_photos_as_the_template_to_copy()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var gpu = UsedLine("RTX 4060 8GB") with { Specs = new Dictionary<string, string> { ["vram"] = "8" }, BrandId = Guid.NewGuid() };
+        var items = (await retail.Units.ReceiveAsync(Receive(gpu, gpu, gpu), Actor)).Items;
+        await retail.StockItems.AddPhotoAsync(items[1].Id, new StockItemPhoto("items/a.webp", "items/a-t.webp"));
+
+        var template = Assert.Single(await retail.StockItems.SuggestModelsAsync("rtx 4060", null)).Template;
+
+        Assert.NotNull(template);
+        Assert.Equal(items[1].Id, template.ItemId);
+        Assert.Equal(items[1].Code, template.Code);
+        Assert.Equal(gpu.BrandId, template.BrandId);
+        Assert.Equal("8", template.Specs["vram"]);
+        Assert.Equal(1, template.PhotoCount);
+        Assert.Single(await retail.StockItems.FindPhotosAsync(items[1].Id));
+        Assert.Empty(await retail.StockItems.FindPhotosAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
     public async Task Items_get_readable_slugs_and_are_found_by_slug_or_old_code()
     {
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();

@@ -36,7 +36,7 @@ describe("stock fields", () => {
   });
 });
 
-const fields = () => ({ modelName: "RX", productId: "", categoryId: "" });
+const fields = () => ({ modelName: "RX", productId: "", categoryId: "", brandId: "", specs: {} as Record<string, string> });
 
 describe("model suggestions", () => {
   it("fills the model, product and an empty category; typing frees the model again", () => {
@@ -45,5 +45,11 @@ describe("model suggestions", () => {
     assert.equal(picked.categoryId, "c1");
     assert.equal(applySuggestion({ ...fields(), categoryId: "mine" }, { modelName: "X", categoryId: "c1", productId: null, itemCount: 0 }).categoryId, "mine");
     assert.equal(editModel(picked, "RX 6650").productId, "");
+  });
+
+  it("copies the category, brand and specs of a model already in stock", () => {
+    const template = { itemId: "i1", code: "RX-0012", modelName: "RTX 4060", categoryId: "gpu", brandId: "msi", productId: null, specs: { vram: "8" }, photoCount: 3 };
+    const picked = applySuggestion({ ...fields(), categoryId: "other", specs: { old: "x" } }, { modelName: "RTX 4060", categoryId: "gpu", productId: null, itemCount: 4, template });
+    assert.deepEqual([picked.categoryId, picked.brandId, picked.specs], ["gpu", "msi", { vram: "8" }]);
   });
 });

@@ -20,7 +20,7 @@ internal static class AssemblyMapping
             assembly.Copies, assembly.SuitableForAr, assembly.SuitableForEn, assembly.Photos, units,
             includeCosts ? decimal.Round(units.Sum(unit => unit.AcquisitionCost ?? 0m), 2) : null,
             decimal.Round(units.Sum(unit => unit.PartPrice), 2),
-            includeCosts ? decimal.Round(units.Sum(unit => unit.AllocatedAmount ?? 0m), 2) : null, assembly.RowVersion);
+            includeCosts ? decimal.Round(units.Sum(unit => unit.AllocatedAmount ?? 0m), 2) : null, assembly.RowVersion, assembly.PlannedParts);
     }
 
     public static AssemblyPublicView ToPublicView(Assembly assembly)

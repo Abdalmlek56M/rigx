@@ -161,6 +161,10 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("alone_extra");
 
+                    b.Property<Guid?>("BrandId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("brand_id");
+
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid")
                         .HasColumnName("category_id");
@@ -170,6 +174,10 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasMaxLength(8)
                         .HasColumnType("character varying(8)")
                         .HasColumnName("condition");
+
+                    b.Property<Guid?>("CopyPhotosFromItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("copy_photos_from_item_id");
 
                     b.Property<bool>("HasBox")
                         .HasColumnType("boolean")
@@ -302,7 +310,8 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                     b.Property<string>("NationalId")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("national_id");
+                        .HasColumnName("national_id")
+                        .HasAnnotation("Rigx:AuditMasked", true);
 
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)

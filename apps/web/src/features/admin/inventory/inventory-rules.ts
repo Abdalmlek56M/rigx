@@ -76,6 +76,7 @@ export interface StockItemForm {
   hasBox: boolean;
   isHidden: boolean;
   internalNote: string;
+  specs: Record<string, string>;
 }
 
 export function toItemForm(item: StockItem): StockItemForm {
@@ -89,7 +90,8 @@ export function toItemForm(item: StockItem): StockItemForm {
     warrantyLabel: item.warrantyLabel ?? "",
     hasBox: item.hasBox,
     isHidden: item.isHidden,
-    internalNote: item.internalNote ?? ""
+    internalNote: item.internalNote ?? "",
+    specs: { ...item.specs }
   };
 }
 
@@ -98,7 +100,7 @@ export function itemFormValid(form: StockItemForm): boolean {
   return form.modelName.trim() !== "" && amountOk(form.price) && optionalAmountOk(form.withBoardExtra) && optionalAmountOk(form.aloneExtra);
 }
 
-/** The update request: the form's fields, the item's own `productId` and `specs` kept as read, and its `rowVersion`. */
+/** The update request: the form's fields, the item's own `productId` kept as read, and its `rowVersion`. */
 export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItemUpdateRequest {
   return {
     modelName: form.modelName.trim(),
@@ -112,7 +114,7 @@ export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItem
     hasBox: form.hasBox,
     isHidden: form.isHidden,
     internalNote: form.internalNote.trim() || null,
-    specs: item.specs,
+    specs: form.specs,
     rowVersion: item.rowVersion
   };
 }

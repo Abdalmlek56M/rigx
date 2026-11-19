@@ -35,6 +35,32 @@ public sealed class BaseCatalogPostgreSqlTests(OwnerBootstrapPostgreSqlFixture f
     }
 
     [Fact]
+    public async Task Base_categories_get_starter_specs_only_while_they_have_none()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var ownSpec = new SpecDefinition("chip", "الشريحة", SpecType.Text);
+        await using (var owner = database.CreateCatalogContext())
+        {
+            var monitors = Category("monitors", "شاشات");
+            monitors.SpecDefinitions = [ownSpec];
+            owner.Categories.Add(monitors);
+            await owner.SaveChangesAsync();
+        }
+        await using var db = database.CreateCatalogContext();
+
+        await BaseCatalogSeeder.SeedAsync(db, Now);
+        await BaseCatalogSeeder.SeedAsync(db, Now);
+
+        var categories = await db.Categories.AsNoTracking().ToListAsync();
+        var gpu = categories.Single(category => category.Slug == "graphics-cards").SpecDefinitions;
+        var vram = Assert.Single(gpu, spec => spec.Key == "vram");
+        Assert.Equal((SpecType.Number, "GB"), (vram.Type, vram.Unit));
+        Assert.Equal([ownSpec], categories.Single(category => category.Slug == "monitors").SpecDefinitions);
+        Assert.Empty(categories.Single(category => category.Slug == "accessories").SpecDefinitions);
+        Assert.Equal(1, categories.Single(category => category.Slug == "graphics-cards").RowVersion);
+    }
+
+    [Fact]
     public async Task The_seed_keeps_the_owner_categories_and_brands_as_they_are()
     {
         var database = await fixture.CreateDatabaseAsync();

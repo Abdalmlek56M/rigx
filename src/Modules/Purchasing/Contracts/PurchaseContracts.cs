@@ -4,7 +4,7 @@ public sealed record PurchaseLineRequest(string? ModelName, string? Condition, i
     Guid? CategoryId = null, Guid? ProductId = null, decimal? WithBoardExtra = null, decimal? AloneExtra = null,
     string? SerialNumber = null, decimal? PartnerPercent = null, bool IsHidden = false, string? WarrantyLabel = null,
     bool HasBox = false, string? InternalNote = null, Dictionary<string, string>? Specs = null,
-    Guid? PartnerId = null);
+    Guid? PartnerId = null, Guid? BrandId = null, Guid? CopyPhotosFromItemId = null);
 
 /// <summary>Create/update body; <paramref name="RowVersion"/> is required on update only. No date means today.</summary>
 public sealed record PurchaseRequest(Guid SellerId, string? Kind, bool KeepAsBuild, string? BuildName, DateOnly? PurchaseDate,
@@ -14,7 +14,7 @@ public sealed record PurchaseRequest(Guid SellerId, string? Kind, bool KeepAsBui
 public sealed record PurchaseLineView(Guid Id, int SortOrder, Guid? CategoryId, Guid? ProductId, string ModelName, string Condition,
     int Quantity, decimal UnitCost, decimal LineTotal, decimal Price, decimal? WithBoardExtra, decimal? AloneExtra,
     string? SerialNumber, decimal? PartnerPercent, Guid? PartnerId, bool IsHidden, string? WarrantyLabel, bool HasBox, string? InternalNote,
-    IReadOnlyDictionary<string, string> Specs);
+    IReadOnlyDictionary<string, string> Specs, Guid? BrandId, Guid? CopyPhotosFromItemId);
 
 public sealed record PurchaseView(Guid Id, string Code, SellerSummary Seller, string Kind, bool KeepAsBuild, string? BuildName,
     string Status, DateOnly PurchaseDate, string? Notes, decimal Total, string PaymentMethod, decimal PaidAmount,

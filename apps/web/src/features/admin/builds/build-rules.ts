@@ -3,7 +3,8 @@
  * Pure, so it is tested. The server stays the authority. Messages live under `admin.builds`.
  */
 import { amountOk, amountText, optionalAmountOk, parseAmount } from "../stock/stock-fields.ts";
-import type { Build, BuildAllocationInput, BuildEditRequest, BuildNewPartBody, BuildPart, BuildPartBody } from "./builds-api";
+import type { ModelSuggestion } from "../purchases/purchases-api";
+import type { Build, BuildAllocationInput, BuildEditRequest, BuildNewPartBody, BuildPart, BuildPartBody, PlannedPart, PlannedPartInput } from "./builds-api";
 
 const known = <T extends string>(list: readonly T[], value: string | null | undefined): T | "other" => list.find((entry) => entry === value) ?? "other";
 
@@ -116,6 +117,8 @@ export const toPartBody = (form: PartForm, rowVersion: number): BuildPartBody =>
 
 export interface NewPartForm {
   categoryId: string;
+  brandId: string;
+  specs: Record<string, string>;
   modelName: string;
   productId: string;
   condition: "New" | "Used";
@@ -133,7 +136,7 @@ export interface NewPartForm {
 }
 
 export const emptyNewPart = (): NewPartForm => ({
-  categoryId: "", modelName: "", productId: "", condition: "Used", serialNumber: "", acquisitionCost: "", price: "", withBoardExtra: "", aloneExtra: "",
+  categoryId: "", brandId: "", specs: {}, modelName: "", productId: "", condition: "Used", serialNumber: "", acquisitionCost: "", price: "", withBoardExtra: "", aloneExtra: "",
   partnerId: "", partnerPercent: "", isHidden: false, warrantyLabel: "", hasBox: false, internalNote: ""
 });
 
@@ -159,6 +162,8 @@ export function toNewPartBody(form: NewPartForm, rowVersion: number): BuildNewPa
     hasBox: form.hasBox,
     isHidden: form.isHidden,
     internalNote: form.internalNote.trim() || null,
+    brandId: form.brandId || null,
+    specs: form.specs,
     rowVersion
   };
 }
@@ -201,3 +206,51 @@ export const otherBuilds = (builds: readonly Build[], currentId: string): Build[
 
 /** A build as a dropdown option: "BLD-07 — اسم التجميعة". */
 export const buildOption = (build: Pick<Build, "id" | "code" | "name">) => ({ value: build.id, label: `${build.code} — ${build.name}` });
+
+/** One typed part on the screen ("مش شرط تبقى في المخزون"): `key` keeps the inputs when a row is removed; `id` is "" for a new row. */
+export interface PlannedRow {
+  key: string;
+  id: string;
+  name: string;
+  categoryId: string;
+  brandId: string;
+  price: string;
+  /** The stock item of the same model it is linked to ("" = none) and its code for the chip. */
+  stockItemId: string;
+  stockItemCode: string;
+}
+
+export const emptyPlannedRow = (key: string): PlannedRow => ({ key, id: "", name: "", categoryId: "", brandId: "", price: "", stockItemId: "", stockItemCode: "" });
+
+export const plannedRows = (parts: readonly PlannedPart[]): PlannedRow[] =>
+  parts.map((part) => ({
+    key: part.id, id: part.id, name: part.name, categoryId: part.categoryId ?? "", brandId: part.brandId ?? "", price: amountText(part.price),
+    stockItemId: part.stockItemId ?? "", stockItemCode: part.stockItemCode ?? ""
+  }));
+
+/** Picking a model fills the name and, for a model in stock, its category and brand, and links the row to that item. */
+export function pickPlannedModel(row: PlannedRow, suggestion: ModelSuggestion): PlannedRow {
+  const template = suggestion.template;
+  return {
+    ...row,
+    name: suggestion.modelName,
+    categoryId: template?.categoryId ?? (row.categoryId || suggestion.categoryId || ""),
+    brandId: template?.brandId ?? row.brandId,
+    stockItemId: template?.itemId ?? "",
+    stockItemCode: template?.code ?? ""
+  };
+}
+
+/** Typing over a picked model unlinks the row from that stock item. */
+export const typePlannedName = (row: PlannedRow, name: string): PlannedRow => ({ ...row, name, stockItemId: "", stockItemCode: "" });
+
+export const plannedRowsValid = (rows: readonly PlannedRow[]): boolean => rows.every((row) => row.name.trim() !== "" && optionalAmountOk(row.price));
+
+export const toPlannedInputs = (rows: readonly PlannedRow[]): PlannedPartInput[] =>
+  rows.map((row) => ({
+    id: row.id || null, name: row.name.trim(), categoryId: row.categoryId || null, brandId: row.brandId || null,
+    price: parseAmount(row.price), stockItemId: row.stockItemId || null
+  }));
+
+/** The typed parts' prices that are filled in, summed. */
+export const plannedTotal = (rows: readonly PlannedRow[]): number => round2(rows.reduce((sum, row) => sum + (parseAmount(row.price) || 0), 0));

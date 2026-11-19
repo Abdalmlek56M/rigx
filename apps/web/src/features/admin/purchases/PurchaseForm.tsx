@@ -9,15 +9,20 @@ import type { Partner } from "../expenses/expenses-api";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { PurchaseActions } from "./PurchaseActions";
+import type { Brand } from "../brands/brands-api";
+import type { StockItem } from "../inventory/inventory-api";
 import { PurchaseLines, newLineKey } from "./PurchaseLines";
 import { PurchasePayment } from "./PurchasePayment";
 import { SellerPicker } from "./SellerPicker";
 import type { Governorate } from "./SellerFormCard";
 import type { Purchase, PurchaseReceived, SellerSummary } from "./purchases-api";
-import { emptyPurchase, isDraft, PURCHASE_KINDS, purchaseFormValid, purchaseFromView, type PurchaseForm as Form } from "./purchase-rules";
+import { emptyPurchase, isDraft, lineFromItem, PURCHASE_KINDS, purchaseFormValid, purchaseFromView, type PurchaseForm as Form } from "./purchase-rules";
 
 export interface PurchaseLookups {
   tree: readonly Category[];
+  brands: readonly Brand[];
+  /** "نسخ لقطعة جديدة": the inventory item a new purchase starts from (`?copyFrom=` on the new-purchase page). */
+  copySource: StockItem | null;
   /** Active financing partners; `null` when the staff member cannot read partners. */
   partners: readonly Partner[] | null;
   warrantyLabels: readonly string[] | null;
@@ -39,7 +44,9 @@ export function PurchaseForm({ purchase, today, lookups, onUpdated, onReceived, 
 }) {
   const t = useTranslations("admin.purchases.form");
   const submit = useSubmit();
-  const [form, setForm] = useState<Form>(() => (purchase ? purchaseFromView(purchase, newLineKey) : emptyPurchase(today, newLineKey())));
+  const [form, setForm] = useState<Form>(() => (purchase
+    ? purchaseFromView(purchase, newLineKey)
+    : emptyPurchase(today, newLineKey(), lookups.copySource ? lineFromItem(lookups.copySource, newLineKey()) : undefined)));
   const [seller, setSeller] = useState<SellerSummary | null>(purchase?.seller ?? null);
   const readOnly = purchase !== null && !isDraft(purchase);
   const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
@@ -77,7 +84,7 @@ export function PurchaseForm({ purchase, today, lookups, onUpdated, onReceived, 
           <p className="m-0 text-xs text-ink-muted">{t("fullPcHint")}</p>
         </section>
         <PurchaseLines
-          lines={form.lines} minLines={fullPc ? 2 : 1} tree={lookups.tree} partners={lookups.partners} warrantyLabels={lookups.warrantyLabels}
+          lines={form.lines} minLines={fullPc ? 2 : 1} tree={lookups.tree} brands={lookups.brands} partners={lookups.partners} warrantyLabels={lookups.warrantyLabels}
           errors={submit.errors.fields} onChange={(lines) => set({ lines })}
         />
         <PurchasePayment form={form} errors={submit.errors.fields} onChange={setForm} />

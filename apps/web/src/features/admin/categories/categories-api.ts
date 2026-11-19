@@ -21,6 +21,10 @@ export const updateCategory = (id: string, input: CategoryInput) =>
 export const saveCategorySpecs = (id: string, specs: SpecDefinition[], rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/catalog/categories/{id}/specs", { params: { path: { id } }, body: { specs, rowVersion } })));
 
+/** The category's spec fields with the inherited ones (the public read; the admin forms build their spec inputs from it). */
+export const fetchCategorySpecs = (id: string) =>
+  required(unwrap(api().GET("/api/v1/catalog/categories/{id}/specs", { params: { path: { id } } })));
+
 export const uploadCategoryImage = (id: string, file: File) => {
   const form = new FormData();
   form.set("image", file);

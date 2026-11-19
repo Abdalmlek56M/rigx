@@ -8,6 +8,8 @@ export type BuildEditRequest = Schemas["AssemblyEditRequest"];
 export type BuildPartBody = Schemas["AssemblyPartBody"];
 export type BuildNewPartBody = Schemas["AssemblyNewPartBody"];
 export type BuildAllocationInput = Schemas["AssemblyAllocationInput"];
+export type PlannedPart = Schemas["PlannedPart"];
+export type PlannedPartInput = Schemas["PlannedPartInput"];
 
 const api = () => browserApi();
 const path = (id: string) => ({ params: { path: { id } } });
@@ -17,9 +19,9 @@ export const fetchBuilds = () => required(unwrap(api().GET("/api/v1/admin/retail
 
 export const fetchBuild = (id: string) => required(unwrap(api().GET("/api/v1/admin/retail/assemblies/{id}", path(id))));
 
-/** A build starts with at least one part (the server refuses an empty one). */
-export const createBuild = (name: string, firstUnitId: string) =>
-  required(unwrap(api().POST("/api/v1/admin/retail/assemblies", { body: { name, unitIds: [firstUnitId] } })));
+/** A new draft build, with its first part from stock or empty (its parts can then be new pieces that are not in stock). */
+export const createBuild = (name: string, firstUnitId: string | null) =>
+  required(unwrap(api().POST("/api/v1/admin/retail/assemblies", { body: { name, unitIds: firstUnitId ? [firstUnitId] : [] } })));
 
 export const editBuild = (id: string, body: BuildEditRequest) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}", { ...path(id), body })));
@@ -63,3 +65,7 @@ export const uploadBuildPhoto = (id: string, file: File) => {
 
 export const deleteBuildPhoto = (id: string, storageKey: string) =>
   unwrap(api().DELETE("/api/v1/admin/retail/assemblies/{id}/photos", { params: { path: { id }, query: { storageKey } } }));
+
+/** Saves the build's whole list of typed parts (parts that are not in stock; nothing is reserved for them). */
+export const savePlannedParts = (id: string, parts: PlannedPartInput[], rowVersion: number) =>
+  required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}/planned-parts", { ...path(id), body: { parts, rowVersion } })));
