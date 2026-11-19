@@ -38,3 +38,6 @@ docs/review/
 .opencode/
 **/next-env.d.ts
 **/*.tsbuildinfo
+
+# Local media and data written by the API at runtime (uploads, demo photos)
+src/Host/HardwareStore.Api/App_Data/
