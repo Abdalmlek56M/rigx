@@ -14,7 +14,7 @@ const OPEN_DELAY = 90;
 const CLOSE_DELAY = 220;
 
 /**
- * "كل الأقسام" mega menu: a full-width panel under the header. Main categories with their icons on the start side,
+ * "كل الأقسام" mega menu: a compact panel under the trigger. Main categories with their icons on the start side,
  * the hovered (or focused) category's sub-categories beside them. Opens on hover with a mouse, on click or tap otherwise;
  * Escape or a press outside closes it.
  */
@@ -51,7 +51,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
   };
 
   return (
-    <div ref={ref} onPointerEnter={onEnter} onPointerLeave={onLeave}>
+    <div ref={ref} onPointerEnter={onEnter} onPointerLeave={onLeave} className="relative">
       <button
         type="button"
         aria-expanded={open}
@@ -66,9 +66,9 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
         <span className="transition-transform duration-200 [[aria-expanded=true]>&]:rotate-180"><ChevronDownIcon size={16} /></span>
       </button>
       {open ? (
-        <div id="categories-panel" className="mega-in absolute inset-x-0 top-full z-30 border-b border-line bg-surface text-ink shadow-lift">
-          <div className="shell grid grid-cols-[260px_minmax(0,1fr)] gap-6 py-5">
-            <ul className="m-0 flex max-h-[min(64vh,520px)] list-none flex-col gap-0.5 overflow-y-auto overscroll-contain border-e border-line p-0 pe-4">
+        <div id="categories-panel" className="mega-in absolute start-0 top-full z-30 mt-2 w-[min(680px,calc(100vw-48px))] rounded-panel border border-line bg-surface text-ink shadow-lift">
+          <div className="grid grid-cols-[220px_minmax(0,1fr)] gap-4 p-3">
+            <ul className="m-0 flex max-h-[min(60vh,420px)] list-none flex-col gap-0.5 overflow-y-auto overscroll-contain border-e border-line p-0 pe-3">
               {categories.map((category) => {
                 const current = category.slug === active.slug;
                 return (
@@ -79,10 +79,10 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                       onPointerEnter={() => setActiveSlug(category.slug)}
                       onFocus={() => setActiveSlug(category.slug)}
                       aria-current={current ? "true" : undefined}
-                      className={`group flex min-h-11 items-center gap-3 rounded-card px-2.5 text-[15px] font-bold transition-colors ${current ? "bg-paper text-ink" : "text-ink-muted hover:text-ink"}`}
+                      className={`group flex min-h-10 items-center gap-2.5 rounded-control px-2 text-sm font-bold transition-colors ${current ? "bg-paper text-ink" : "text-ink-muted hover:text-ink"}`}
                     >
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "bg-orange text-on-orange" : "bg-orange-soft text-orange-text"}`}>
-                        <CategoryIcon slug={category.slug} size={18} />
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "bg-orange text-on-orange" : "bg-orange-soft text-orange-text"}`}>
+                        <CategoryIcon slug={category.slug} size={16} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">{category.name}</span>
                       {category.children.length > 0 ? (
@@ -95,24 +95,24 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                 );
               })}
             </ul>
-            <div key={active.slug} className="mega-pane flex min-w-0 flex-col gap-4">
+            <div key={active.slug} className="mega-pane flex min-w-0 flex-col gap-3 py-1">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="m-0 text-xl font-bold">{active.name}</h2>
-                <Link href={categoryHref(active.slug)} onClick={close} className="press inline-flex min-h-10 items-center gap-1.5 rounded-full border border-input-line px-4 text-sm font-bold transition-colors hover:border-orange hover:text-orange-text">
+                <h2 className="m-0 text-lg font-bold">{active.name}</h2>
+                <Link href={categoryHref(active.slug)} onClick={close} className="press inline-flex min-h-9 items-center gap-1.5 rounded-full border border-input-line px-3.5 text-[13px] font-bold transition-colors hover:border-orange hover:text-orange-text">
                   {t("seeAll", { name: active.name })}
                   <span aria-hidden="true" className="flex ltr:-scale-x-100"><ChevronStartIcon size={16} /></span>
                 </Link>
               </div>
               {active.children.length > 0 ? (
-                <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2 p-0">
+                <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-1.5 p-0">
                   {active.children.map((child) => (
                     <li key={child.slug}>
                       <Link
                         href={categoryHref(child.slug)}
                         onClick={close}
-                        className="path-tile press flex min-h-14 flex-col justify-center gap-0.5 rounded-card border border-line px-4 py-2.5 transition-colors hover:border-orange/60 hover:bg-paper"
+                        className="press flex min-h-11 flex-col justify-center gap-0.5 rounded-control border border-line px-3 py-2 transition-colors hover:border-orange/60 hover:bg-paper"
                       >
-                        <b className="text-[15px]">{child.name}</b>
+                        <b className="text-sm">{child.name}</b>
                         {child.children.length > 0 ? (
                           <span className="truncate text-xs text-ink-muted">{child.children.map((grandchild) => grandchild.name).join(" · ")}</span>
                         ) : null}
@@ -121,13 +121,13 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                   ))}
                 </ul>
               ) : null}
-              <div className="flex flex-wrap gap-2 border-t border-line pt-4">
+              <div className="mt-auto flex flex-wrap gap-1.5 border-t border-line pt-3">
                 {(["New", "Used"] as const).map((condition) => (
                   <Link
                     key={condition}
                     href={`${categoryHref(active.slug)}&condition=${condition}`}
                     onClick={close}
-                    className="press flex min-h-12 flex-1 basis-[200px] items-center justify-between gap-3 rounded-card bg-paper px-4 font-bold transition-colors hover:bg-orange-soft hover:text-orange-text"
+                    className="press flex min-h-11 flex-1 basis-[150px] items-center justify-between gap-2 rounded-control bg-paper px-3 text-sm font-bold transition-colors hover:bg-orange-soft hover:text-orange-text"
                   >
                     {t(condition === "New" ? "conditionNew" : "conditionUsed", { name: active.name })}
                     <span aria-hidden="true" className="flex ltr:-scale-x-100"><ChevronStartIcon size={16} /></span>

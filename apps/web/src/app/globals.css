@@ -300,6 +300,11 @@ body {
   }
 }
 
+/* Category strip: the cards fade out at both ends so the strip reads as "more this way". */
+.strip-fade {
+  mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+}
+
 /* Mega menu: the panel unfolds from the header edge; switching category cross-fades the sub-category pane. */
 @keyframes mega-in {
   from {

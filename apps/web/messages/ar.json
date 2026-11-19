@@ -31,7 +31,9 @@
       }
     },
     "categories": {
-      "title": "الأقسام"
+      "title": "الأقسام",
+      "scrollLeft": "حرّك للشمال",
+      "scrollRight": "حرّك لليمين"
     },
     "latest": {
       "title": "لسه واصل",

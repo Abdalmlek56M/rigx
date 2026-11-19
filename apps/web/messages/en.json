@@ -31,7 +31,9 @@
       }
     },
     "categories": {
-      "title": "Categories"
+      "title": "Categories",
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right"
     },
     "latest": {
       "title": "Just arrived",
