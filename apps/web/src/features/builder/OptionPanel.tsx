@@ -36,7 +36,7 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
   const tabs: { value: Condition | null; label: string }[] = [{ value: null, label: t("all") }, ...CONDITIONS.map((value) => ({ value, label: tc(value) }))];
 
   return (
-    <section aria-labelledby="builder-options-title" className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-4 md:p-[22px]">
+    <section aria-labelledby="builder-options-title" className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-4 md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <h2 id="builder-options-title" className="m-0 text-[22px] font-bold">{t("title", { slot: slotName })}</h2>
         <div role="group" aria-label={t("conditionTabs")} className="flex gap-1 rounded-card bg-paper p-1">

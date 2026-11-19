@@ -58,7 +58,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
         <button type="button" onClick={() => setNewType(true)} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("newType")}</button>

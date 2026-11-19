@@ -22,9 +22,9 @@ function Skeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }, (_, index) => <div key={index} className="h-[104px] animate-pulse rounded-[10px] border border-line bg-surface" />)}
+        {Array.from({ length: 6 }, (_, index) => <div key={index} className="h-[104px] animate-pulse rounded-card border border-line bg-surface" />)}
       </div>
-      <div className="h-80 animate-pulse rounded-[10px] border border-line bg-surface" />
+      <div className="h-80 animate-pulse rounded-card border border-line bg-surface" />
     </div>
   );
 }
@@ -38,7 +38,7 @@ function Content({ from, to }: DateRange) {
   if (state.status === "loading") return <div role="status" aria-label={t("loading")}><Skeleton /></div>;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
         <p className="m-0 font-bold">{t("failed")}</p>
         <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
       </div>

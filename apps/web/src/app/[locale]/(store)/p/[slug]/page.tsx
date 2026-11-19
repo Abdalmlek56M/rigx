@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <div className="pb-28 md:pb-0">
       <JsonLd data={structuredData} />
-      <nav aria-label={t("breadcrumb")} className="mx-auto max-w-[1240px] px-4 pt-6 text-sm text-ink-muted md:px-6">
+      <nav aria-label={t("breadcrumb")} className="shell pt-6 text-sm text-ink-muted">
         <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
           <li><Link href="/" className="hover:underline">{t("home")}</Link></li>
           {trail.map((node) => (
@@ -94,12 +94,11 @@ export default async function ProductPage({ params }: Props) {
         </ol>
       </nav>
 
-      <section className="mx-auto grid max-w-[1240px] items-start gap-6 px-4 py-6 md:grid-cols-2 md:gap-10 md:px-6 md:py-9">
+      <section className="grid shell items-start gap-6 py-6 md:grid-cols-2 md:gap-10 md:py-9">
         <Gallery photos={item.photos} alt={item.modelName} />
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2.5">
             <ConditionBadge condition={condition} />
-            <span dir="ltr" className="font-mono text-[13px] text-ink-muted">{item.code}</span>
             <span className={`text-[13px] font-bold ${soldOut ? "text-ink-muted" : "text-success"}`}>{availability}</span>
           </div>
           <h1 dir="ltr" className="m-0 text-start text-2xl leading-[1.3] font-bold [unicode-bidi:isolate] md:text-[32px]">{item.modelName}</h1>
@@ -120,7 +119,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </section>
 
-      <div className="mx-auto flex max-w-[1240px] flex-col gap-10 px-4 pb-14 md:px-6">
+      <div className="flex shell flex-col gap-10 pb-14">
         <SpecsTable rows={specRows(item.specs, defs)} />
         {faqs.length > 0 ? (
           <section className="flex flex-col gap-3">

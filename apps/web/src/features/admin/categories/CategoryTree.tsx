@@ -15,10 +15,10 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle 
   const t = useTranslations("admin.categories");
   const rows = flattenTree(nodes, collapsed);
   if (nodes.length === 0) {
-    return <p className="m-0 rounded-[10px] border border-line bg-surface p-5 text-sm text-ink-muted">{t("emptyTree")}</p>;
+    return <p className="m-0 rounded-card border border-line bg-surface p-5 text-sm text-ink-muted">{t("emptyTree")}</p>;
   }
   return (
-    <div aria-label={t("treeLabel")} role="group" className="rounded-[10px] border border-line bg-surface">
+    <div aria-label={t("treeLabel")} role="group" className="rounded-card border border-line bg-surface">
       <ul className="m-0 flex list-none flex-col p-0">
         {rows.map(({ node, depth }) => {
           const hasChildren = node.children.length > 0;

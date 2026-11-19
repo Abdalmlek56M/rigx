@@ -24,7 +24,7 @@ export function RequestsList() {
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {requests.map((request) => (
-                <li key={request.code} className="flex flex-col gap-2 rounded-[10px] border border-line bg-surface p-5">
+                <li key={request.code} className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{request.code}</span>
                     <span className="text-sm text-ink-muted">{formatDate(request.createdAtUtc, locale)}</span>

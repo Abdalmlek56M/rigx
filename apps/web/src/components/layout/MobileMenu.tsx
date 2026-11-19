@@ -21,13 +21,13 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
   const close = () => setOpen(false);
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         type="button"
         aria-label={t("menu")}
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className="flex h-11 w-11 items-center justify-center text-on-carbon"
+        className="-ms-2 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-paper"
       >
         <MenuIcon size={22} />
       </button>
@@ -39,7 +39,7 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
               type="button"
               aria-label={tc("close")}
               onClick={close}
-              className="flex h-11 w-11 items-center justify-center rounded-control border border-input-line"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-line"
             >
               <CloseIcon size={18} />
             </button>
@@ -81,7 +81,7 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
               </li>
             </ul>
           </nav>
-          <div className="flex gap-2 border-t border-line bg-carbon p-3">
+          <div className="flex gap-2 border-t border-line p-3">
             <ThemeToggle />
             {englishEnabled ? <LocaleSwitch /> : null}
           </div>

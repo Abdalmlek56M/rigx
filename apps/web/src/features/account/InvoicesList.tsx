@@ -27,7 +27,7 @@ export function InvoicesList() {
               {invoices.map((invoice) => {
                 const kind = invoiceKindKey(invoice.kind);
                 return (
-                  <li key={invoice.accessToken} className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-line bg-surface p-5">
+                  <li key={invoice.accessToken} className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface p-5">
                     <div className="flex flex-col gap-1">
                       <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{invoice.number}</span>
                       <span className="text-sm text-ink-muted">

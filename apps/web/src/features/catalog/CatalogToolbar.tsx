@@ -5,6 +5,7 @@ import { categoryBySlug, effectiveSpecs, type CategoryNode } from "@/lib/categor
 import { activeFilters, catalogHref, type CatalogState, type SortKey } from "./catalog-query";
 import { FiltersDrawer } from "./FiltersDrawer";
 import { SortSelect } from "./SortSelect";
+import { CloseIcon } from "@/components/ui/icons";
 
 const SORT_KEYS: readonly SortKey[] = ["newest", "price_asc", "price_desc"];
 
@@ -63,7 +64,7 @@ export async function CatalogToolbar({ state, tree, total, panel, queryKey }: Ca
                   className="flex min-h-9 items-center gap-1.5 rounded-full bg-carbon px-3 text-on-carbon"
                 >
                   <span dir="auto" className="[unicode-bidi:isolate]">{text}</span>
-                  <span aria-hidden="true">✕</span>
+                  <CloseIcon size={14} />
                 </Link>
               </li>
             );

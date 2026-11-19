@@ -62,8 +62,6 @@ export function BuildPurchasePanel({ build, whatsApp, pageUrl }: BuildPurchasePa
       {whatsAppHref ? (
         <a
           href={whatsAppHref}
-          target="_blank"
-          rel="noopener noreferrer"
           className="press hidden h-[54px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold md:flex"
         >
           <WhatsAppIcon size={20} />
@@ -80,8 +78,6 @@ export function BuildPurchasePanel({ build, whatsApp, pageUrl }: BuildPurchasePa
         {whatsAppHref ? (
           <a
             href={whatsAppHref}
-            target="_blank"
-            rel="noopener noreferrer"
             aria-label={whatsAppLabel}
             className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-card border-[1.5px] border-ink"
           >

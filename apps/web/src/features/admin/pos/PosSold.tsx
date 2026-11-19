@@ -43,7 +43,7 @@ export function PosSold({ order: sold, canDeliver, onNewSale }: PosSoldProps) {
   }, t("delivered"));
 
   return (
-    <section className="flex flex-col gap-4 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+    <section className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5 md:p-6">
       <h2 className="m-0 text-xl font-bold">{sold.status === "New" ? t("pending") : t("confirmed")}</h2>
       <dl className="m-0 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <Figure label={t("reference")} value={order.reference} mono />

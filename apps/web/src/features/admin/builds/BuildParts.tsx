@@ -109,7 +109,7 @@ export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & {
   }
 
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title", { count: build.units.length })}</h2>
         {canEdit ? (

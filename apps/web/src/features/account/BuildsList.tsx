@@ -1,6 +1,6 @@
 "use client";
 
-import { CaseIcon } from "@/components/ui/icons";
+import { CaseIcon, TrashIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
@@ -44,7 +44,7 @@ export function BuildsList() {
               {builds.map((build) => {
                 const usage = parseUsage(build.usage);
                 return (
-                  <li key={build.token} className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-line bg-surface p-5">
+                  <li key={build.token} className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface p-5">
                     <div className="flex min-w-0 flex-col gap-1">
                       <b dir="auto" className="[unicode-bidi:isolate]">{build.name?.trim() || t("unnamed")}</b>
                       <span className="text-sm text-ink-muted">
@@ -53,7 +53,7 @@ export function BuildsList() {
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4">
                       <Link href={`/builder?saved=${encodeURIComponent(build.token)}`} className="inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover">{t("open")}</Link>
-                      <ConfirmButton label={t("delete")} onConfirm={() => void remove(build.token)} />
+                      <ConfirmButton label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={() => void remove(build.token)} />
                     </div>
                   </li>
                 );

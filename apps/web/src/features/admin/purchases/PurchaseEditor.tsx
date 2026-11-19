@@ -52,7 +52,7 @@ export function PurchaseEditor({ id }: { id: string | null }) {
     return (
       <>
         {header}
-        <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" />
+        <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />
       </>
     );
   }
@@ -60,7 +60,7 @@ export function PurchaseEditor({ id }: { id: string | null }) {
     return (
       <>
         {header}
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
           <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
         </div>

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { STEP_UP_HEADER, unwrap } from "@rigx/api-client";
+import { GoogleIcon, MailIcon, UnlinkIcon } from "@/components/ui/icons";
 import { GoogleButton } from "@/features/auth/GoogleButton";
 import { browserApi } from "@/lib/api/browser";
 import { fetchLoginMethods } from "./account-api";
@@ -11,12 +12,15 @@ import { LoadBoundary } from "./LoadBoundary";
 import { StepUpCode } from "./StepUpCode";
 import { useLoad } from "@/lib/hooks/use-load";
 
-function Row({ name, status, action }: { name: string; status: string; action?: React.ReactNode }) {
+function Row({ icon, name, status, action }: { icon: React.ReactNode; name: string; status: string; action?: React.ReactNode }) {
   return (
-    <li className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2 last:border-b-0">
-      <div className="flex flex-col">
+    <li className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3 last:border-b-0">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-paper">{icon}</span>
+        <div className="flex min-w-0 flex-col">
         <b className="text-sm">{name}</b>
-        <span dir="auto" className="text-sm text-ink-muted [unicode-bidi:isolate]">{status}</span>
+        <span dir="auto" className="break-all text-sm text-ink-muted [unicode-bidi:isolate]">{status}</span>
+        </div>
       </div>
       {action}
     </li>
@@ -54,11 +58,12 @@ export function LoginMethods() {
         {(methods) => (
           <>
             <ul className="m-0 list-none p-0">
-              <Row name={t("emailCode")} status={t("on")} />
+              <Row icon={<MailIcon size={18} />} name={t("emailCode")} status={t("on")} />
               <Row
+                icon={<GoogleIcon size={18} />}
                 name="Google"
                 status={methods.googleEmail ?? t("notLinked")}
-                action={methods.googleEmail ? <ConfirmButton label={t("unlink")} onConfirm={() => void unlink()} /> : undefined}
+                action={methods.googleEmail ? <ConfirmButton label={t("unlink")} icon={<UnlinkIcon size={16} />} onConfirm={() => void unlink()} /> : undefined}
               />
             </ul>
             {failed ? <p role="alert" className="m-0 text-sm text-error">{t("unlinkFailed")}</p> : null}

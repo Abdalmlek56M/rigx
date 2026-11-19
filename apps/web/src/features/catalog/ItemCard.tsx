@@ -11,7 +11,7 @@ import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { itemLine } from "@/features/cart/cart-rules";
 import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
 
-const buttonBase = "inline-flex h-11 items-center justify-center gap-2 rounded-control px-3 text-[13px] font-bold whitespace-nowrap";
+const buttonBase = "inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-bold whitespace-nowrap";
 
 /**
  * One catalog card (catalog grid, home "just arrived"). Priced as the item bought alone; a sold-out item shows "خلص"
@@ -29,13 +29,13 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
     <article className="lift flex w-full flex-col overflow-hidden rounded-card border border-line bg-surface">
       <Link
         href={href}
-        // The accessible name includes the visible badge, code and "sold out" text (WCAG label-in-name).
-        aria-label={[item.modelName, condition ? tc(condition) : null, item.code, soldOut ? t("soldOutBadge") : null].filter(Boolean).join(" ")}
-        className={`relative flex h-[170px] items-center justify-center text-muted ${condition === "New" ? "bg-paper" : "bg-sand"} ${soldOut ? "grayscale" : ""}`}
+        // The accessible name includes the visible badge and "sold out" text (WCAG label-in-name).
+        aria-label={[item.modelName, condition ? tc(condition) : null, soldOut ? t("soldOutBadge") : null].filter(Boolean).join(" ")}
+        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-paper text-muted ${soldOut ? "grayscale" : ""}`}
       >
         {item.thumbnailStorageKey ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={250} height={170} loading="lazy" className="h-full w-full object-contain" />
+          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={240} loading="lazy" className="h-full w-full object-contain p-3" />
         ) : (
           <ImagePlaceholderIcon />
         )}
@@ -44,10 +44,8 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
             <ConditionBadge condition={condition} />
           </span>
         ) : null}
-        {/* The page direction places the code (opposite the condition badge); the inner span keeps it left-to-right. */}
-        <span className="absolute end-3 top-3 font-mono text-xs text-ink-muted"><span dir="ltr">{item.code}</span></span>
         {soldOut ? (
-          <span className="absolute bottom-3 start-3 rounded bg-paper px-2 py-[3px] text-xs font-bold text-ink-muted">{t("soldOutBadge")}</span>
+          <span className="absolute bottom-3 start-3 rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted shadow-soft">{t("soldOutBadge")}</span>
         ) : null}
       </Link>
       <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3.5">
@@ -64,11 +62,11 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
             </>
           ) : (
             <>
-              <span className="text-[17px] font-bold">{formatEgp(item.prices.alone, locale)}</span>
+              <span className="text-[18px] font-bold tracking-tight">{formatEgp(item.prices.alone, locale)}</span>
               {condition ? (
                 <AddToCartButton
                   line={itemLine({ ...item, condition }, "Alone", item.prices.alone)}
-                  className={`${buttonBase} bg-orange text-on-orange`}
+                  className={`${buttonBase} bg-orange text-on-orange transition-[filter] hover:brightness-105`}
                 />
               ) : null}
             </>

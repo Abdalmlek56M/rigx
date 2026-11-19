@@ -25,15 +25,15 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
         aria-expanded={open}
         aria-controls="categories-panel"
         onClick={() => setOpen((value) => !value)}
-        className="flex min-h-11 items-center gap-1 text-[15px]"
+        className="flex min-h-11 items-center gap-1 rounded-full px-3 text-[15px] font-medium transition-colors hover:bg-paper aria-expanded:bg-paper"
       >
         {t("allCategories")}
-        <ChevronDownIcon size={16} />
+        <span className="transition-transform duration-200 [[aria-expanded=true]>&]:rotate-180"><ChevronDownIcon size={16} /></span>
       </button>
       {open ? (
         <ul
           id="categories-panel"
-          className="pop-down absolute start-0 top-full z-30 mt-1 max-h-[70vh] w-72 overflow-y-auto overscroll-contain rounded-panel border border-line bg-surface p-2 text-ink shadow-[0_10px_30px_rgba(0,0,0,.15)]"
+          className="pop-down absolute start-0 top-full z-30 mt-1 max-h-[70vh] w-72 overflow-y-auto overscroll-contain rounded-panel border border-line bg-surface p-2 text-ink shadow-lift"
         >
           {categories.map((category) => (
             <li key={category.slug}>

@@ -2,16 +2,21 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { publishedPolicySlugs } from "@/features/policies/published-policies";
 import { Platform, SOCIAL_PLATFORMS, contactHref, displayPhone, findLink } from "@/lib/contact";
 import type { StorefrontData } from "@/lib/storefront";
 import { PlatformIcon } from "./PlatformIcon";
 
-const linkClass = "flex min-h-11 items-center text-sm text-footer-text hover:text-on-carbon md:min-h-0";
-const headingClass = "font-bold text-on-carbon";
-const contactClass = "flex items-center gap-2.5 text-on-carbon";
+const linkClass = "flex min-h-11 items-center text-sm text-footer-text transition-colors hover:text-on-carbon md:min-h-9";
+const headingClass = "m-0 text-[13px] font-bold uppercase tracking-wide text-on-carbon";
+const contactClass =
+  "group flex min-h-11 items-center gap-3 text-sm text-footer-text transition-colors hover:text-on-carbon";
+const contactIconClass =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-footer-line text-on-carbon transition-colors group-hover:border-orange group-hover:text-orange";
 
+/** Dark footer (both themes): brand, shop links, help (only published policies + FAQ), contact. */
 export async function Footer({ storefront }: { storefront: StorefrontData }) {
-  const t = await getTranslations("footer");
+  const [t, tp, policies] = await Promise.all([getTranslations("footer"), getTranslations("policies.kinds"), publishedPolicySlugs()]);
   const social = storefront.contactLinks.filter((l) => l.showOnSite && (SOCIAL_PLATFORMS as readonly string[]).includes(l.platform));
   const whatsApp = findLink(storefront.contactLinks, Platform.WhatsApp);
   const phone = findLink(storefront.contactLinks, Platform.Phone);
@@ -24,88 +29,82 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
     { href: "/builder", label: t("shop.builder") }
   ];
   const help = [
-    { href: "/policies/warranty", label: t("warranty") },
-    { href: "/policies/returns", label: t("returns") },
-    { href: "/policies/shipping", label: t("shipping") },
-    { href: "/policies/privacy", label: t("privacy") },
-    { href: "/about", label: t("about") },
-    { href: "/articles", label: t("articles") }
+    ...policies.map((slug) => ({ href: `/policies/${slug}`, label: tp(slug) })),
+    { href: "/warranty", label: t("warrantyLookup") },
+    { href: "/faq", label: t("faq") }
   ];
 
   return (
-    <footer className="bg-carbon text-footer-text">
-      <div className="mx-auto grid max-w-[1240px] gap-8 px-6 pb-7 pt-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
-        <div className="flex flex-col gap-4">
-          <Logo width={140} />
-          <span className="text-sm leading-[1.8]">{t("tagline")}</span>
+    <footer className="mt-10 bg-chrome text-footer-text">
+      <div className="shell grid grid-cols-2 gap-x-6 gap-y-10 pb-10 pt-14 lg:grid-cols-[1.5fr_1fr_1fr_1.3fr] lg:gap-12">
+        <div className="col-span-2 flex flex-col gap-4 lg:col-span-1">
+          <Link href="/" aria-label="RIGX" className="flex self-start text-on-carbon">
+            <Logo width={132} />
+          </Link>
+          <p className="m-0 max-w-[32ch] text-sm leading-[1.8]">{t("tagline")}</p>
           {social.length > 0 ? (
-            <div className="flex flex-col gap-2.5">
-              <span className={headingClass}>{t("follow")}</span>
-              <div className="flex flex-wrap gap-2">
-                {social.map((link) => (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {social.map((link) => {
+                const external = link.platform !== Platform.WhatsApp;
+                return (
                   <a
                     key={link.platform}
                     href={contactHref(link)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     aria-label={t(`platforms.${link.platform as (typeof SOCIAL_PLATFORMS)[number]}`)}
-                    className="flex h-11 w-11 items-center justify-center rounded-card border border-header-line text-on-carbon"
+                    className="press flex h-11 w-11 items-center justify-center rounded-full border border-footer-line text-on-carbon transition-colors hover:border-orange hover:text-orange"
                   >
                     <PlatformIcon platform={link.platform} />
                   </a>
-                ))}
-              </div>
+                );
+              })}
             </div>
           ) : null}
         </div>
 
-        <nav aria-label={t("shop.title")} className="flex flex-col gap-2.5">
-          <span className={headingClass}>{t("shop.title")}</span>
+        <nav aria-labelledby="footer-shop" className="flex flex-col gap-1">
+          <h2 id="footer-shop" className={`${headingClass} mb-2`}>{t("shop.title")}</h2>
           {shop.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass}>{item.label}</Link>
           ))}
         </nav>
 
-        <nav aria-label={t("help")} className="flex flex-col gap-2.5">
-          <span className={headingClass}>{t("help")}</span>
+        <nav aria-labelledby="footer-help" className="flex flex-col gap-1">
+          <h2 id="footer-help" className={`${headingClass} mb-2`}>{t("help")}</h2>
           {help.map((item) => (
             <Link key={item.href} href={item.href} className={linkClass}>{item.label}</Link>
           ))}
         </nav>
 
-        <div className="flex flex-col gap-3">
-          <span className={headingClass}>{t("contact")}</span>
+        <div className="col-span-2 flex flex-col gap-1 lg:col-span-1">
+          <h2 className={`${headingClass} mb-2`}>{t("contact")}</h2>
           {whatsApp ? (
-            <a href={contactHref(whatsApp)} className={`${contactClass} min-h-11`}>
-              <WhatsAppIcon />
-              <span className="ltr-text text-[15px]">{displayPhone(whatsApp.value)}</span>
+            <a href={contactHref(whatsApp)} className={contactClass}>
+              <span className={contactIconClass}><WhatsAppIcon size={18} /></span>
+              <span className="ltr-text">{displayPhone(whatsApp.value)}</span>
             </a>
           ) : null}
           {phone ? (
-            <a href={contactHref(phone)} className={`${contactClass} min-h-11`}>
-              <PhoneIcon />
-              <span className="ltr-text text-[15px]">{displayPhone(phone.value)}</span>
+            <a href={contactHref(phone)} className={contactClass}>
+              <span className={contactIconClass}><PhoneIcon size={18} /></span>
+              <span className="ltr-text">{displayPhone(phone.value)}</span>
             </a>
           ) : null}
           {storefront.email ? (
-            <a href={`mailto:${storefront.email}`} className={`${contactClass} min-h-11 text-sm`}>
-              <MailIcon />
-              <span className="ltr-text text-[13px]">{storefront.email}</span>
+            <a href={`mailto:${storefront.email}`} className={contactClass}>
+              <span className={contactIconClass}><MailIcon size={18} /></span>
+              <span className="ltr-text min-w-0 break-all text-[13px]">{storefront.email}</span>
             </a>
           ) : null}
-          {storefront.whatsAppHours ? <span className="text-[13px] leading-[1.7]">{storefront.whatsAppHours}</span> : null}
-          {storefront.pickupAddress ? <span className="text-[13px] leading-[1.7]">{storefront.pickupAddress}</span> : null}
-          <Link
-            href="/support"
-            className="inline-flex h-11 items-center self-start rounded-control border-[1.5px] border-on-carbon px-4 text-sm font-bold text-on-carbon"
-          >
-            {t("support")}
-          </Link>
+          {storefront.whatsAppHours ? <p className="m-0 mt-2 text-[13px] leading-[1.7]">{storefront.whatsAppHours}</p> : null}
+          {storefront.pickupAddress ? <p className="m-0 text-[13px] leading-[1.7]">{storefront.pickupAddress}</p> : null}
         </div>
       </div>
-      <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-2 border-t border-footer-line px-6 py-[18px] text-xs text-footer-text">
-        <span>{t("copyright", { year: new Date().getFullYear() })}</span>
-        {storefront.domain ? <span className="ltr-text text-[13px]">{storefront.domain}</span> : null}
+      <div className="shell">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-footer-line py-5 text-xs">
+          <span>{t("copyright", { year: new Date().getFullYear() })}</span>
+          {storefront.domain ? <span className="ltr-text text-[13px]">{storefront.domain}</span> : null}
+        </div>
       </div>
     </footer>
   );

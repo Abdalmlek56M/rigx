@@ -50,9 +50,9 @@ export default async function FaqPage({ params }: Props) {
         ))
       )}
       {number ? (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[10px] border border-line bg-surface p-5">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-card border border-line bg-surface p-5">
           <span className="font-bold">{t("moreTitle")}</span>
-          <a href={whatsAppUrl(number, text)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
+          <a href={whatsAppUrl(number, text)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
             <WhatsAppIcon size={16} />
             {t("moreLink")}
           </a>

@@ -35,4 +35,13 @@ public static class EgyptGovernorates
     };
 
     public static bool IsKnown(string? code) => code is not null && NamesByCode.ContainsKey(code);
+
+    /// <summary>The Arabic name for a governorate given by its Arabic name or its code; <c>null</c> when it is not one of the 27.</summary>
+    public static string? NameOf(string? value)
+    {
+        var clean = value?.Trim();
+        if (string.IsNullOrEmpty(clean)) return null;
+        if (NamesByCode.TryGetValue(clean.ToUpperInvariant(), out var name)) return name;
+        return NamesByCode.Values.FirstOrDefault(known => string.Equals(known, clean, StringComparison.Ordinal));
+    }
 }

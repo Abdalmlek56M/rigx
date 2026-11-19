@@ -6,6 +6,7 @@ import { unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { formatDateTime } from "@/lib/format";
 import { fetchSessions } from "./account-api";
+import { LogoutIcon } from "@/components/ui/icons";
 import { ConfirmButton } from "./ConfirmButton";
 import { LoadBoundary } from "./LoadBoundary";
 import { useLoad } from "@/lib/hooks/use-load";
@@ -45,14 +46,14 @@ export function SessionsList() {
                     <span className="text-sm text-ink-muted">{t("lastActive")} {formatDateTime(session.lastActivityAtUtc, locale)}</span>
                   </div>
                   {session.isCurrent ? null : (
-                    <ConfirmButton label={t("signOut")} onConfirm={() => void run(() => unwrap(browserApi().DELETE("/api/v1/identity/sessions/{id}", { params: { path: { id: session.id } } })))} />
+                    <ConfirmButton label={t("signOut")} icon={<LogoutIcon size={16} />} onConfirm={() => void run(() => unwrap(browserApi().DELETE("/api/v1/identity/sessions/{id}", { params: { path: { id: session.id } } })))} />
                   )}
                 </li>
               ))}
             </ul>
             {sessions.some((session) => !session.isCurrent) ? (
               <div>
-                <ConfirmButton label={t("signOutOthers")} onConfirm={() => void run(() => unwrap(browserApi().DELETE("/api/v1/identity/sessions/others")))} />
+                <ConfirmButton label={t("signOutOthers")} icon={<LogoutIcon size={16} />} onConfirm={() => void run(() => unwrap(browserApi().DELETE("/api/v1/identity/sessions/others")))} />
               </div>
             ) : null}
           </>

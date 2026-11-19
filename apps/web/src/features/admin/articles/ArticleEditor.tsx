@@ -54,7 +54,7 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
       }}
     >
       <div className="flex min-w-0 flex-col gap-4">
-        <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+        <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
           <div className="grid gap-3 sm:grid-cols-2">
             <TextField label={t("fields.titleAr")} name="titleAr" dir="rtl" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={errors.titleAr} required />
             <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={errors.titleEn} required />
@@ -66,7 +66,7 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
           </div>
         </section>
 
-        <section className="flex flex-col gap-5 rounded-[10px] border border-line bg-surface p-5">
+        <section className="flex flex-col gap-5 rounded-card border border-line bg-surface p-5">
           <FormMessage message={errors.blocksAr ?? errors.blocksEn ?? null} />
           <ArticleBlocksEditor title={t("blocksArabic")} dir="rtl" rows={form.blocksAr} onChange={(blocksAr) => set({ blocksAr })} />
           <div className="border-t border-line pt-4">

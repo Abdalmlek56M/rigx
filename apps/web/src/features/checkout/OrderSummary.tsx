@@ -38,7 +38,7 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
   const shipping = quote ? (quote.shippingFee > 0 ? formatEgp(quote.shippingFee, locale) : t("freeShipping")) : t("shippingPending");
 
   return (
-    <aside className="flex flex-col gap-3.5 rounded-[10px] border border-line bg-surface p-5 md:sticky md:top-24 md:self-start md:p-6">
+    <aside className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 md:sticky md:top-24 md:self-start md:p-6">
       <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
       <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {lines.map((line) => (

@@ -36,14 +36,14 @@ export default async function BuildsPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <section className="mx-auto flex max-w-[1240px] flex-col gap-5 px-4 pb-5 pt-8 md:px-6 md:pt-10">
+      <section className="flex shell flex-col gap-5 pb-5 pt-8 md:pt-10">
         <div className="flex flex-col gap-2">
           <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
           <span className="text-base text-ink-muted">{t("subtitle")}</span>
         </div>
         <BuildsFilters state={state} />
       </section>
-      <section className="mx-auto max-w-[1240px] px-4 pb-10 md:px-6">
+      <section className="shell pb-10">
         {builds === null ? (
           <p role="alert" className="rounded-card border border-line bg-surface p-6 text-center">{t("loadFailed")}</p>
         ) : builds.length === 0 ? (
@@ -62,7 +62,7 @@ export default async function BuildsPage({ params, searchParams }: Props) {
           </ul>
         )}
       </section>
-      <section className="mx-auto max-w-[1240px] px-4 pb-16 md:px-6 md:pb-[72px]">
+      <section className="shell pb-16 md:pb-[72px]">
         <AskUsBanner number={whatsAppNumber(storefront.contactLinks)} template={storefront.whatsAppTemplates.general} />
       </section>
     </>

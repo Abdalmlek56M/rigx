@@ -36,7 +36,7 @@ export function SummaryPanel({ evaluation, checking, checkFailed, slotCount, slo
     <aside
       aria-label={t("label")}
       aria-busy={checking}
-      className="fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col gap-4 overflow-y-auto rounded-t-[14px] bg-carbon p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-on-carbon lg:static lg:z-auto lg:max-h-none lg:rounded-[10px] lg:p-[22px]"
+      className="fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col gap-4 overflow-y-auto rounded-t-[14px] bg-carbon p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-on-carbon lg:static lg:z-auto lg:max-h-none lg:rounded-card lg:p-[22px]"
     >
       <div className="flex items-center justify-between gap-3">
         <span className="text-lg font-bold">{t("title")}</span>

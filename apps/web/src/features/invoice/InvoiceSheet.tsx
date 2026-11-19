@@ -63,7 +63,7 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
   const placeLine = [storefront.email, branding.pickupAddress].filter(Boolean).join(" · ");
 
   return (
-    <article data-print-invoice className="relative isolate overflow-hidden rounded-[10px] border border-line bg-surface p-6 md:p-10 print:rounded-none print:border-0 print:p-0">
+    <article data-print-invoice className="relative isolate overflow-hidden rounded-card border border-line bg-surface p-6 md:p-10 print:rounded-none print:border-0 print:p-0">
       {branding.showBackgroundLogo ? (
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 flex select-none items-center justify-center overflow-hidden">
           <span dir="ltr" className="-rotate-[28deg] whitespace-nowrap text-[96px] font-bold uppercase tracking-widest text-ink opacity-[0.045] [print-color-adjust:exact]">{branding.storeName}</span>

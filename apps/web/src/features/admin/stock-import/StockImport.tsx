@@ -55,7 +55,7 @@ export function StockImport() {
         <FormMessage message={fileError ?? check.errors.general} />
         {result && summary ? (
           <>
-            <div className="overflow-x-auto rounded-[10px] border border-line bg-surface">
+            <div className="overflow-x-auto rounded-card border border-line bg-surface">
               <table aria-label={t("table.label")} className="w-full border-collapse text-sm">
                 <thead className="bg-paper text-[13px] text-ink-muted">
                   <tr>

@@ -30,8 +30,6 @@ export function ServiceCard({ service, whatsApp }: ServiceCardProps) {
       {whatsApp.number ? (
         <a
           href={whatsAppUrl(whatsApp.number, text)}
-          target="_blank"
-          rel="noopener noreferrer"
           className={`mt-auto inline-flex h-12 items-center self-start rounded-control px-[22px] font-bold ${dark ? "bg-orange text-on-orange" : "bg-carbon text-on-carbon"}`}
         >
           {t("cta")}

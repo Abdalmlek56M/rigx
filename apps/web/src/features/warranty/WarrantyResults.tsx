@@ -41,7 +41,7 @@ async function WarrantyItem({ item, orderReference, whatsApp }: { item: Schemas[
         {days !== null ? <b className="text-ink"> · {t("daysLeft", { days })}</b> : null}
       </p>
       {whatsApp.number ? (
-        <a href={whatsAppUrl(whatsApp.number, text)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
+        <a href={whatsAppUrl(whatsApp.number, text)} className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
           <WhatsAppIcon size={16} />
           {t("problem")}
         </a>
@@ -58,7 +58,7 @@ export async function WarrantyResults({ groups, whatsApp }: { groups: Schemas["W
   return (
     <div className="flex flex-col gap-4">
       {groups.map((group) => (
-        <section key={`${group.orderReference}-${group.invoiceNumber ?? ""}`} className="rounded-[10px] border border-line bg-surface p-5 md:p-6">
+        <section key={`${group.orderReference}-${group.invoiceNumber ?? ""}`} className="rounded-card border border-line bg-surface p-5 md:p-6">
           <header className="flex flex-col gap-1 border-b border-line pb-3">
             <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-bold">
               <span>{t("order")} <span dir="ltr" className="font-mono">{group.orderReference}</span></span>

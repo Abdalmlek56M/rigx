@@ -9,7 +9,7 @@ import { NewDeviceAlerts } from "./NewDeviceAlerts";
 import { ProfileForm } from "./ProfileForm";
 import { SessionsList } from "./SessionsList";
 
-const card = "flex flex-col gap-4 rounded-[10px] border border-line bg-surface p-5 md:p-6";
+const card = "flex flex-col gap-4 rounded-card border border-line bg-surface p-5 md:p-6";
 
 /** "بياناتي والأمان": profile, picture, email, login methods, new-device alerts and signed-in devices. */
 export function ProfilePanel() {

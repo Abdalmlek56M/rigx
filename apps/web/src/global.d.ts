@@ -17,7 +17,9 @@ declare global {
   interface GoogleButtonOptions {
     theme: "outline" | "filled_blue" | "filled_black";
     size: "large" | "medium" | "small";
+    shape: "rectangular" | "pill" | "circle" | "square";
     text: "signin_with" | "signup_with" | "continue_with" | "signin";
+    logo_alignment: "left" | "center";
     locale: string;
     width: number;
   }

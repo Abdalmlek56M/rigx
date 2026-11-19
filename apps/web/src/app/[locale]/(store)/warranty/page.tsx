@@ -57,12 +57,12 @@ export default async function WarrantyPage({ params, searchParams }: Props) {
       ) : (
         <p role="alert" className="m-0 rounded-card border border-line bg-surface p-6 text-center">{t(lookup.status)}</p>
       )}
-      <aside className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+      <aside className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:p-6">
         <p className="m-0 font-bold">{t("stickerNote")}</p>
         <div className="flex flex-wrap items-center gap-x-6">
           <Link href="/policies/warranty" className={help}>{t("policy")}</Link>
           {number ? (
-            <a href={whatsAppUrl(number, helpText)} target="_blank" rel="noopener noreferrer" className={help}>
+            <a href={whatsAppUrl(number, helpText)} className={help}>
               <WhatsAppIcon size={16} />
               {t("helpLink")}
             </a>

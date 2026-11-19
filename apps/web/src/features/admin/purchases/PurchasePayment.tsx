@@ -21,7 +21,7 @@ export function PurchasePayment({ form, errors, onChange }: {
   const tradeIn = Number(form.tradeInValue) || 0;
 
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <dl className="m-0 grid grid-cols-2 gap-3 rounded-control bg-paper p-3 text-sm">
         <div className="flex flex-col gap-0.5">

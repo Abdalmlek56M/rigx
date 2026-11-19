@@ -82,7 +82,7 @@ export function SecurityView({ values, set }: { values: AuditValues; set: AuditS
         {values.entry && state.status === "ready" ? selected ? (
           <SecurityEventDetail event={selected} onClose={clear} />
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-line bg-surface p-5 text-sm text-ink-muted">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-line bg-surface p-5 text-sm text-ink-muted">
             {t("security.notOnPage")}
             <button type="button" onClick={clear} className="h-11 rounded-control border border-input-line bg-surface px-4 font-bold text-ink">{t("close")}</button>
           </div>

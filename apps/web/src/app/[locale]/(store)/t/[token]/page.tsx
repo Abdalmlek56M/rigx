@@ -27,7 +27,7 @@ export default async function TrackingPage({ params }: Props) {
   if (!view) notFound();
 
   return (
-    <section className="mx-auto max-w-[1240px] px-4 pb-16 pt-8 md:px-6 md:pt-10">
+    <section className="shell pb-16 pt-8 md:pt-10">
       <TrackingOrder
         view={view}
         token={token}

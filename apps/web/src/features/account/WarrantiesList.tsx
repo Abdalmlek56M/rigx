@@ -33,7 +33,7 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
   const action = "inline-flex min-h-11 items-center gap-1.5 text-sm font-bold";
 
   return (
-    <li className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <span dir="auto" className="font-bold [unicode-bidi:isolate]">{warranty.name}</span>
@@ -54,7 +54,7 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
       <div className="flex flex-wrap gap-x-5">
         {invoiceToken ? <Link href={`/i/${invoiceToken}`} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>{t("invoice")}</Link> : null}
         {whatsApp.number ? (
-          <a href={whatsAppUrl(whatsApp.number, text)} target="_blank" rel="noopener noreferrer" className={`${action} text-orange-text underline hover:text-orange-text-hover`}>
+          <a href={whatsAppUrl(whatsApp.number, text)} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>
             <WhatsAppIcon size={16} />
             {t("problem")}
           </a>

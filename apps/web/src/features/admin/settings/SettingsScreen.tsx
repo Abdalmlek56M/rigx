@@ -79,7 +79,7 @@ export function SettingsScreen() {
         <FilterSelect label={t("sectionsLabel")} value={section} onChange={(next) => set({ section: next })} options={options} />
       </div>
       <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
-        <nav aria-label={t("sectionsLabel")} className="hidden flex-col gap-1 rounded-[10px] border border-line bg-surface p-2 lg:flex">
+        <nav aria-label={t("sectionsLabel")} className="hidden flex-col gap-1 rounded-card border border-line bg-surface p-2 lg:flex">
           {SETTINGS_SECTIONS.map((key) => (
             <button
               key={key} type="button" aria-current={key === section ? "page" : undefined}
@@ -93,16 +93,16 @@ export function SettingsScreen() {
 
         <div className="min-w-0">
           {state.status === "error" ? (
-            <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+            <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
               <p className="m-0 font-bold">{t("failed")}</p>
               <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
             </div>
           ) : view ? (
-            <section key={`${section}-${generation}`} className="min-w-0 rounded-[10px] border border-line bg-surface p-5">
+            <section key={`${section}-${generation}`} className="min-w-0 rounded-card border border-line bg-surface p-5">
               <SectionBody section={section} view={view} rates={state.status === "ready" ? state.data.rates.governorates : []} onSaved={onSaved} onStale={onStale} />
             </section>
           ) : (
-            <div aria-hidden="true" className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" />
+            <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" />
           )}
         </div>
       </div>

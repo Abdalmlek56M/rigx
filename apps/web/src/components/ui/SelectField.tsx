@@ -22,7 +22,7 @@ export function SelectField<T extends string>({ label, name, value, onChange, op
           const chosen = options.find((option) => option.value === event.target.value);
           if (chosen) onChange(chosen.value);
         }}
-        className="h-11 w-full rounded-control border border-input-line bg-surface px-2.5 text-sm font-normal text-ink"
+        className="h-12 w-full rounded-control border border-input-line bg-surface px-2.5 text-sm font-normal text-ink"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>{option.label}</option>

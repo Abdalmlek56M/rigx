@@ -23,7 +23,7 @@ export function PurchaseLines({ lines, minLines, tree, partners, warrantyLabels,
 }) {
   const t = useTranslations("admin.purchases.lines");
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {lines.map((line, index) => (

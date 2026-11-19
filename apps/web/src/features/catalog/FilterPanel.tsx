@@ -4,6 +4,7 @@ import type { Locale } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs, type CategoryNode } from "@/lib/categories";
 import { CONDITIONS } from "@/lib/condition";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
+import { CheckIcon } from "@/components/ui/icons";
 
 const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] hover:bg-paper";
 const legend = "mb-2 text-sm font-bold";
@@ -81,7 +82,7 @@ export async function FilterPanel({ state, tree, categoryId, showSoldOut, idPref
                 aria-hidden="true"
                 className={`flex h-[18px] w-[18px] items-center justify-center rounded-sm border text-xs ${selected ? "border-carbon bg-carbon text-on-carbon" : "border-input-line"}`}
               >
-                {selected ? "✓" : ""}
+                {selected ? <CheckIcon size={13} /> : null}
               </span>
               {tc(condition)}
             </Link>

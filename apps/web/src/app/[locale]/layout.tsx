@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Alexandria, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -18,6 +18,14 @@ const sans = IBM_Plex_Sans_Arabic({
   display: "swap"
 });
 
+/** Display face for page and section headings (h1/h2): geometric Arabic + Latin that matches the wordmark. */
+const display = Alexandria({
+  subsets: ["arabic", "latin"],
+  weight: ["600", "700"],
+  variable: "--font-display-face",
+  display: "swap"
+});
+
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["500", "600"],
@@ -29,7 +37,13 @@ const mono = IBM_Plex_Mono({
 export const revalidate = 300;
 
 /** `viewportFit: "cover"` lets sticky bars pad themselves with the safe-area insets (notch, home bar). */
-export const viewport: Viewport = { themeColor: "#15171B", viewportFit: "cover" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#17191D" }
+  ],
+  viewportFit: "cover"
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -54,7 +68,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} dir={localeDirection[locale]} className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang={locale} dir={localeDirection[locale]} className={`${sans.variable} ${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

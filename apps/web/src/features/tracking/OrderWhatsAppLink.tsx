@@ -16,7 +16,7 @@ export function OrderWhatsAppLink({ whatsApp, reference, label, className }: { w
   const text = fillTemplate(whatsApp.template, { order: reference }) || t("whatsAppMessage", { reference });
 
   return (
-    <a href={whatsAppUrl(whatsApp.number, text)} target="_blank" rel="noopener noreferrer" className={className}>
+    <a href={whatsAppUrl(whatsApp.number, text)} className={className}>
       <WhatsAppIcon size={18} />
       {label}
     </a>

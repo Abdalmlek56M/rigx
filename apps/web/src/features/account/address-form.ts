@@ -49,7 +49,7 @@ export function addressErrors(form: AddressForm): AddressField[] {
 
 const optional = (value: string): string | null => value.trim() || null;
 
-/** The request body; the governorate is sent as the name the person picked (the API stores free text). */
+/** The request body; the governorate is the Arabic name picked from the list (the API accepts only the 27 governorates). */
 export function toAddressRequest(form: AddressForm): CreateRequest {
   return {
     label: form.label.trim(),
@@ -75,7 +75,7 @@ export function toUpdateRequest(form: AddressForm, rowVersion: number): UpdateRe
   return { ...toAddressRequest(form), rowVersion };
 }
 
-/** Dropdown options: the shipping governorates, plus the saved one when it is no longer in the list. */
+/** Dropdown options: the 27 governorates (from the shipping rates), plus a saved legacy value so the form shows it until it is re-picked. */
 export function governorateOptions(names: readonly string[], current: string): { value: string; label: string }[] {
   const all = current && !names.includes(current) ? [current, ...names] : [...names];
   return all.map((name) => ({ value: name, label: name }));

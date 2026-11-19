@@ -18,8 +18,6 @@ export function CartWhatsAppLink({ number, onClick }: { number: string | null; o
   return (
     <a
       href={whatsAppUrl(number, text)}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={onClick}
       className="press flex h-[52px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold"
     >

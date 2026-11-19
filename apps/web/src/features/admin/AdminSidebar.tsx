@@ -41,9 +41,9 @@ export function AdminSidebar({ user, groups, active, onNavigate, onSignOut }: Ad
   const name = user.fullName || user.email;
 
   return (
-    <nav aria-label={t("shell.navLabel")} className="flex h-full flex-col gap-1 overflow-y-auto bg-carbon px-3 py-[18px] text-footer-text">
+    <nav aria-label={t("shell.navLabel")} className="flex h-full flex-col gap-1 overflow-y-auto bg-chrome px-3 py-[18px] text-footer-text">
       <div className="flex items-center justify-between px-2 pb-3">
-        <Link href="/admin" onClick={onNavigate} aria-label={t("shell.home")}><Logo width={96} /></Link>
+        <Link href="/admin" onClick={onNavigate} aria-label={t("shell.home")} className="text-on-carbon"><Logo width={96} /></Link>
         <span className="font-mono text-[10px] tracking-[1px] text-muted">ADMIN</span>
       </div>
 

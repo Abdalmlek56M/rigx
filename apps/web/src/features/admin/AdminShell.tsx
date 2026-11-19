@@ -21,7 +21,7 @@ function Blank() {
 function Forbidden({ withStoreLink }: { withStoreLink: boolean }) {
   const t = useTranslations("admin.shell.forbidden");
   return (
-    <section role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-8">
+    <section role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-8">
       <h1 className="m-0 text-2xl font-bold">{t("title")}</h1>
       <p className="m-0 text-ink-muted">{t("body")}</p>
       {withStoreLink ? <Link href="/" className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("store")}</Link> : null}
@@ -76,11 +76,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-14 items-center justify-between bg-carbon px-4 md:hidden">
+          <header className="sticky top-0 z-10 flex h-14 items-center justify-between bg-chrome px-4 md:hidden">
             <button type="button" onClick={() => setMenuOpen(true)} aria-label={t("openMenu")} className="flex h-11 w-11 items-center justify-center text-on-carbon">
               <MenuIcon />
             </button>
-            <Link href="/admin" aria-label={t("home")}><Logo width={88} /></Link>
+            <Link href="/admin" aria-label={t("home")} className="text-on-carbon"><Logo width={88} /></Link>
             <span className="w-11" />
           </header>
           <ModalSheet open={menuOpen} onClose={closeMenu} label={t("navLabel")} edge="start" fullHeight>

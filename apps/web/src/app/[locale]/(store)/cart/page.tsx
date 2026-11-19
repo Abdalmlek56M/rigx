@@ -26,7 +26,7 @@ export default async function CartRoute({ params }: Props) {
   const storefront = await loadStorefront();
 
   return (
-    <section className="mx-auto flex max-w-[1240px] flex-col gap-5 px-4 pb-16 pt-8 md:px-6 md:pt-10">
+    <section className="flex shell flex-col gap-5 pb-16 pt-8 md:pt-10">
       <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
       <CartPage whatsAppNumber={whatsAppNumber(storefront.contactLinks)} />
     </section>

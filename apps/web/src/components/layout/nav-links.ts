@@ -16,3 +16,6 @@ export const NAV_LINKS: readonly NavLink[] = [
 export function categoryHref(slug: string): string {
   return `/products?category=${encodeURIComponent(slug)}`;
 }
+
+/** Round icon control of the header (account, theme, language, cart). */
+export const HEADER_ICON_BUTTON = "flex h-11 min-w-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-paper";

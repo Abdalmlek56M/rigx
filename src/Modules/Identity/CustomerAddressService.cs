@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -361,7 +362,7 @@ public sealed class CustomerAddressService(
             Required(phoneNumber, 32, "Phone number"),
             country,
             calling,
-            Required(governorate, 128, "Governorate"),
+            Governorate(country, Required(governorate, 128, "Governorate")),
             Required(city, 128, "City"),
             Optional(district, 128),
             Required(street, 255, "Street"),
@@ -373,6 +374,10 @@ public sealed class CustomerAddressService(
             Optional(instructions, 1000),
             isDefault);
     }
+
+    /// <summary>An Egyptian address names one of the 27 governorates (stored as its Arabic name; a code is accepted and converted).</summary>
+    private static string Governorate(string country, string value) =>
+        country != "EG" ? value : EgyptGovernorates.NameOf(value) ?? throw new IdentityException(400, "Unknown governorate.");
 
     private static string Required(string? value, int max, string label)
     {

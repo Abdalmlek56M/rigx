@@ -32,11 +32,11 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
         {open && view.deliveryTime ? <p className="m-0 text-base text-ink-muted">{t("expected", { time: view.deliveryTime })}</p> : null}
       </header>
 
-      <section aria-label={t("timeline")} className="rounded-[10px] border border-line bg-surface p-5 pb-0 md:p-6 md:pb-1">
+      <section aria-label={t("timeline")} className="rounded-card border border-line bg-surface p-5 pb-0 md:p-6 md:pb-1">
         <TrackingTimeline steps={trackingSteps(view.status, view.fulfillmentMethod, view.timeline)} />
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+      <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:p-6">
         <dl className="m-0 flex flex-col gap-2.5">
           {view.courierName ? <Detail label={t("courier")} value={view.courierName} /> : null}
           {view.waybillNumber ? <Detail label={t("waybill")} value={view.waybillNumber} mono /> : null}
@@ -50,7 +50,7 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
         />
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+      <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:p-6">
         <h2 className="m-0 text-lg font-bold">{t("items")}</h2>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {view.items.map((item) => (

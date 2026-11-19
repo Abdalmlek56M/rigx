@@ -2,26 +2,24 @@
 
 import { useTranslations } from "next-intl";
 import { CartIcon } from "@/components/ui/icons";
+import { HEADER_ICON_BUTTON } from "@/components/layout/nav-links";
 import { useCart } from "./cart-context";
 
-/** Header cart control: icon on mobile, orange labelled button with the count badge from md up. */
+/** Header cart control: the cart icon alone with an orange count badge; the count is in the accessible name. */
 export function CartButton() {
   const t = useTranslations("cart");
   const { count, open } = useCart();
 
   return (
-    <button
-      type="button"
-      aria-label={t("buttonAria", { count })}
-      aria-haspopup="dialog"
-      onClick={open}
-      className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-control px-2.5 font-bold text-on-carbon md:bg-orange md:text-on-orange"
-    >
-      <CartIcon size={20} />
-      <span className="hidden md:inline">{t("button")}</span>
+    <button type="button" aria-label={t("buttonAria", { count })} aria-haspopup="dialog" onClick={open} className={`relative ${HEADER_ICON_BUTTON}`}>
+      <CartIcon size={22} />
       {count > 0 ? (
-        <span aria-hidden="true" className="rounded-full bg-orange px-[7px] font-mono text-xs text-on-orange md:bg-carbon md:text-on-carbon">
-          {count}
+        <span
+          key={count}
+          aria-hidden="true"
+          className="badge-pop absolute -top-0.5 end-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange px-1.5 font-mono text-[11px] font-semibold leading-none text-on-orange ring-2 ring-surface"
+        >
+          {count > 99 ? "99+" : count}
         </span>
       ) : null}
     </button>

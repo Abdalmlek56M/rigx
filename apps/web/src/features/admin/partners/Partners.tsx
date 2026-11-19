@@ -72,7 +72,7 @@ export function Partners() {
       {kpis.length > 0 ? (
         <dl className="m-0 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {kpis.map((kpi) => (
-            <div key={kpi.key} className="flex flex-col gap-1 rounded-[10px] border border-line bg-surface p-4">
+            <div key={kpi.key} className="flex flex-col gap-1 rounded-card border border-line bg-surface p-4">
               <dt className="text-[13px] text-ink-muted">{kpi.label}</dt>
               <dd className="m-0 text-[19px] font-bold">{kpi.value}</dd>
             </div>

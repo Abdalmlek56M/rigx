@@ -38,7 +38,7 @@ export function CodeStep({ email, resendAfterSeconds, sentAt, busy, error, codeD
   return (
     <form onSubmit={submit} className="flex flex-col gap-[18px]">
       <div className="flex flex-col gap-1.5">
-        <h1 className="m-0 text-[26px] font-bold">{t("title")}</h1>
+        <h1 className="m-0 text-[28px] font-bold">{t("title")}</h1>
         <p className="m-0 text-[15px] text-ink-muted">
           {t.rich("sentTo", {
             email: () => <bdi dir="ltr" className="font-mono text-sm text-ink">{maskEmail(email)}</bdi>
@@ -64,7 +64,7 @@ export function CodeStep({ email, resendAfterSeconds, sentAt, busy, error, codeD
       <button
         type="submit"
         disabled={busy || code.length < 6 || codeDead}
-        className="h-[52px] w-full rounded-control bg-carbon px-4 text-base font-bold text-on-carbon disabled:opacity-60"
+        className="h-[52px] w-full rounded-full bg-orange px-4 text-base font-bold text-on-orange shadow-[0_10px_24px_-12px_rgba(255,106,43,.8)] transition-[filter,opacity] hover:brightness-105 disabled:opacity-60"
       >
         {busy ? t("submitting") : t("submit")}
       </button>
@@ -83,7 +83,7 @@ export function CodeStep({ email, resendAfterSeconds, sentAt, busy, error, codeD
         </button>
       </div>
       <label className="flex items-center gap-2 text-[13px]">
-        <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="h-4 w-4 accent-carbon" />
+        <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="h-4 w-4 accent-orange" />
         {t("remember")}
       </label>
     </form>

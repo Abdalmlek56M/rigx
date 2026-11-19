@@ -16,7 +16,7 @@ import { policyForm, policyPublishable, policySavable, sameForm, toPolicyInput, 
 function Preview({ title, text, dir }: { title: string; text: string; dir: "rtl" | "ltr" }) {
   const t = useTranslations("admin.policies");
   return (
-    <section dir={dir} className="flex flex-col gap-3 rounded-[10px] border border-line bg-canvas p-4">
+    <section dir={dir} className="flex flex-col gap-3 rounded-card border border-line bg-canvas p-4">
       <h3 className="m-0 text-base font-bold">{title}</h3>
       {text.trim() === "" ? <p className="m-0 text-sm text-ink-muted">{t("previewEmpty")}</p> : <PolicyBody body={text} />}
     </section>

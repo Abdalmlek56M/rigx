@@ -1,13 +1,13 @@
 import { useId } from "react";
 
-/** RIGX wordmark with the orange X, drawn for a dark (carbon) background. */
+/** RIGX wordmark with the orange X, drawn in the current text colour (ink on light, near-white on carbon). */
 export function Logo({ width = 128 }: { width?: number }) {
   const maskId = useId();
   return (
     <svg width={width} height={(width * 100) / 365} viewBox="40 40 365 100" aria-hidden="true" className="shrink-0">
       <g transform="translate(40 40)">
-        <g fill="#EDEFF2">
-          <g fill="none" stroke="#EDEFF2" strokeWidth="22" strokeLinejoin="miter">
+        <g fill="currentColor">
+          <g fill="none" stroke="currentColor" strokeWidth="22" strokeLinejoin="miter">
             <path d="M11 100V11H60L77 28V46L60 63H11" />
             <path d="M84 24L70 11H30L11 30V70L30 89H70L89 70V52H52" transform="translate(149 0)" />
           </g>
@@ -20,7 +20,7 @@ export function Logo({ width = 128 }: { width?: number }) {
             <polygon points="0,0 30,0 100,100 70,100" fill="#000" stroke="#000" strokeWidth="13" />
           </mask>
           <polygon points="70,0 100,0 30,100 0,100" fill="#FF6A2B" mask={`url(#${maskId})`} />
-          <polygon points="0,0 30,0 100,100 70,100" fill="#EDEFF2" />
+          <polygon points="0,0 30,0 100,100 70,100" fill="currentColor" />
         </g>
       </g>
     </svg>

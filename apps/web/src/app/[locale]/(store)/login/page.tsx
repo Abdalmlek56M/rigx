@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { DocumentIcon, ShieldIcon, TruckIcon } from "@/components/ui/icons";
 import { LoginFlow } from "@/features/auth/LoginFlow";
 import { routing } from "@/i18n/routing";
 
@@ -17,28 +18,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("title"), robots: { index: false } };
 }
 
+/** Sign-in: the card (Google pill, then email code) beside a graphite panel listing what the account holds. */
 export default async function LoginPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const t = await getTranslations("auth.aside");
   const { next } = await searchParams;
+  const points = [
+    { icon: <TruckIcon size={20} />, text: t("orders") },
+    { icon: <ShieldIcon size={20} />, text: t("warranty") },
+    { icon: <DocumentIcon size={20} />, text: t("invoices") }
+  ];
 
   return (
-    <div className="flex min-h-[640px]">
-      <aside className="hidden w-[360px] shrink-0 flex-col justify-end gap-3.5 bg-carbon bg-[linear-gradient(rgba(244,242,237,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(244,242,237,.035)_1px,transparent_1px)] bg-[length:40px_40px] p-10 text-on-carbon md:flex">
-        <span dir="ltr" className="font-mono text-xs tracking-[2px] text-orange">{t("kicker")}</span>
-        <p className="m-0 text-[30px] leading-[1.4] font-bold">
+    <div className="shell grid items-stretch gap-6 py-8 md:py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
+      <div className="flex items-center justify-center">
+        <div className="w-full max-w-[440px] rounded-panel border border-line bg-surface p-6 shadow-soft sm:p-9">
+          <LoginFlow next={Array.isArray(next) ? next[0] : next} />
+        </div>
+      </div>
+      <aside className="relative hidden min-h-[520px] flex-col justify-end gap-6 overflow-hidden rounded-panel bg-carbon p-10 text-on-carbon lg:flex">
+        <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -end-16 -top-16 h-[420px] w-[420px] text-orange opacity-90">
+          <polygon points="70,0 100,0 30,100 0,100" fill="currentColor" />
+          <polygon points="0,0 30,0 100,100 70,100" fill="currentColor" opacity="0.18" />
+        </svg>
+        <p className="relative m-0 text-[34px] font-bold leading-[1.35]" style={{ fontFamily: "var(--font-display)" }}>
           {t("line1")}
           <br />
           {t("line2")}
         </p>
+        <ul className="relative m-0 flex list-none flex-col gap-3 p-0 text-[15px] text-footer-text">
+          {points.map((point) => (
+            <li key={point.text} className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-footer-line text-on-carbon">{point.icon}</span>
+              {point.text}
+            </li>
+          ))}
+        </ul>
       </aside>
-      <div className="flex flex-1 items-start justify-center px-4 py-10 md:px-10 md:py-14">
-        <div className="w-full max-w-[400px] rounded-[14px] border border-line bg-surface p-6 md:p-[30px]">
-          <LoginFlow next={Array.isArray(next) ? next[0] : next} />
-        </div>
-      </div>
     </div>
   );
 }

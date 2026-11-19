@@ -44,7 +44,7 @@ export function TextField({ label, name, value, onChange, type = "text", ltr = f
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className={`h-11 w-full rounded-control border border-input-line bg-surface px-3 text-sm font-normal text-ink ${ltr ? "text-start" : ""}`}
+        className={`h-12 w-full rounded-control border border-input-line bg-surface px-3 text-sm font-normal text-ink ${ltr ? "text-start" : ""}`}
       />
       {error ? (
         <span id={errorId} role="alert" className="text-xs font-normal text-error">

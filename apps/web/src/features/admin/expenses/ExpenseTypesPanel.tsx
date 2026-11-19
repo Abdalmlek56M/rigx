@@ -20,7 +20,7 @@ export function ExpenseTypesPanel({ types, canManage, onChanged }: { types: read
   ];
 
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
         {canManage ? <button type="button" onClick={() => setEditing("new")} className="h-11 rounded-control border border-carbon bg-surface px-4 text-sm font-bold">{t("add")}</button> : null}

@@ -77,6 +77,21 @@ public sealed class CustomerAddressPostgreSqlTests(OwnerBootstrapPostgreSqlFixtu
         var missing = await Assert.ThrowsAsync<IdentityException>(() =>
             service.CreateAsync(accountId, CreateRequest("Home", false) with { Street = " " }));
         Assert.Equal(400, missing.StatusCode);
+
+        var unknownGovernorate = await Assert.ThrowsAsync<IdentityException>(() =>
+            service.CreateAsync(accountId, CreateRequest("Home", false) with { Governorate = "Cairo" }));
+        Assert.Equal(400, unknownGovernorate.StatusCode);
+    }
+
+    [Fact]
+    public async Task Stores_a_governorate_code_as_its_arabic_name()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var accountId = await CreateAccountAsync(database, "address-governorate");
+        var service = database.CreateAddressService();
+
+        var created = await service.CreateAsync(accountId, CreateRequest("Home", true) with { Governorate = "alx" });
+        Assert.Equal("الإسكندرية", created.Governorate);
     }
 
     private static CustomerAddressCreateRequest CreateRequest(string label, bool isDefault) =>
@@ -86,7 +101,7 @@ public sealed class CustomerAddressPostgreSqlTests(OwnerBootstrapPostgreSqlFixtu
             "1000000000",
             "EG",
             "+20",
-            "Cairo",
+            "القاهرة",
             "Cairo",
             "Nasr City",
             "Street 1",
@@ -105,7 +120,7 @@ public sealed class CustomerAddressPostgreSqlTests(OwnerBootstrapPostgreSqlFixtu
             "1000000000",
             "EG",
             "+20",
-            "Cairo",
+            "القاهرة",
             "Cairo",
             "Nasr City",
             "Street 1",

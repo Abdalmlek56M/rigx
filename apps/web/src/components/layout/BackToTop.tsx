@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUpIcon } from "@/components/ui/icons";
 
-const SHOW_AFTER_PX = 600;
+const SHOW_AFTER_PX = 480;
 
 function subscribe(onChange: () => void): () => void {
   window.addEventListener("scroll", onChange, { passive: true });
@@ -14,6 +14,7 @@ function subscribe(onChange: () => void): () => void {
 const isScrolled = () => window.scrollY > SHOW_AFTER_PX;
 const isScrolledOnServer = () => false;
 
+/** Round arrow at the bottom start corner (bottom-right in Arabic), shown once the page is scrolled. */
 export function BackToTop() {
   const t = useTranslations();
   const visible = useSyncExternalStore(subscribe, isScrolled, isScrolledOnServer);
@@ -30,7 +31,7 @@ export function BackToTop() {
       type="button"
       aria-label={t("backToTop")}
       onClick={scrollTop}
-      className="floating-lift fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] start-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-[0_8px_24px_rgba(0,0,0,.15)] md:bottom-6 md:start-6"
+      className="back-to-top floating-lift fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] start-4 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-lift transition-colors hover:border-orange hover:text-orange-text md:bottom-6 md:start-6"
     >
       <ArrowUpIcon />
     </button>

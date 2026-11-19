@@ -13,7 +13,7 @@ import { fetchOrder, type Order } from "./account-api";
 import { LoadBoundary } from "./LoadBoundary";
 import { useLoad } from "@/lib/hooks/use-load";
 
-const card = "flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:p-6";
+const card = "flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:p-6";
 
 function Row({ label, value, mono, strong }: { label: string; value: string; mono?: boolean; strong?: boolean }) {
   return (
@@ -110,7 +110,7 @@ function OrderBody({ order, whatsApp, pickupAddress }: { order: Order; whatsApp:
         <h2 className="m-0 text-2xl font-bold">{tStatus(status)}</h2>
         <span className="text-sm text-ink-muted">{formatDate(order.createdAtUtc, locale)}</span>
       </header>
-      <section aria-label={t("timeline")} className="rounded-[10px] border border-line bg-surface p-5 pb-0 md:p-6 md:pb-1">
+      <section aria-label={t("timeline")} className="rounded-card border border-line bg-surface p-5 pb-0 md:p-6 md:pb-1">
         <TrackingTimeline steps={trackingSteps(order.status, order.fulfillmentMethod, order.timeline)} />
       </section>
       <Items order={order} />
@@ -136,7 +136,7 @@ export function OrderDetail({ id, whatsApp, pickupAddress }: { id: string; whats
         order ? (
           <OrderBody order={order} whatsApp={whatsApp} pickupAddress={pickupAddress} />
         ) : (
-          <div role="status" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+          <div role="status" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
             <p className="m-0 text-lg font-bold">{t("notFound")}</p>
             <Link href="/account" className="text-orange-text underline hover:text-orange-text-hover">{t("back")}</Link>
           </div>

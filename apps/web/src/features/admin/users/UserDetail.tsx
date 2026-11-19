@@ -15,7 +15,7 @@ import { UserRolesCard } from "./UserRolesCard";
 import { isSameAccount } from "./user-rules.ts";
 import { fetchUser, updateUser, type StaffRole, type StaffUser } from "./users-api";
 
-const card = "flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5";
+const card = "flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5";
 
 function ProfileCard({ user, isSelf, onSaved }: { user: StaffUser; isSelf: boolean; onSaved: () => void }) {
   const t = useTranslations("admin.users.detail");
@@ -68,10 +68,10 @@ export function UserDetail({ id, roles, onChanged, onClose }: { id: string; role
   const session = useSession();
   const { state, reload } = useLoad(useCallback(() => fetchUser(id), [id]));
 
-  if (state.status === "loading") return <div aria-hidden="true" className="h-40 animate-pulse rounded-[10px] border border-line bg-surface" />;
+  if (state.status === "loading") return <div aria-hidden="true" className="h-40 animate-pulse rounded-card border border-line bg-surface" />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-5">
+      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("failed")}</p>
         <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
       </div>

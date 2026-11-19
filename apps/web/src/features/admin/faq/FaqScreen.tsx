@@ -80,16 +80,16 @@ export function FaqScreen() {
         />
       </FilterBar>
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
           <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
-          {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" /> : (
+          {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
             <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: data.faqs }} onRetry={reload} rowKey={(faq) => faq.id} empty={t("empty")} />
           )}
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
             <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
             {creating ? (
               <FaqForm key="new" faq={null} categories={data.categories} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onDeleted={() => reload()} onStale={reload} onCancel={() => setCreating(false)} />

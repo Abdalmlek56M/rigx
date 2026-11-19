@@ -25,7 +25,7 @@ export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) 
   if (!mounted) return null;
   if (lines.length === 0) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 rounded-[10px] border border-line bg-surface p-10 text-center">
+      <div role="status" className="flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-10 text-center">
         <EmptyIcon icon={CartIcon} />
         <p className="m-0 text-lg font-bold">{t("empty")}</p>
         <Link href="/products" className="text-orange-text underline hover:text-orange-text-hover">{t("browse")}</Link>
@@ -35,7 +35,7 @@ export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) 
 
   return (
     <div className="grid items-start gap-5 md:grid-cols-[1fr_340px]">
-      <div className="rounded-[10px] border border-line bg-surface px-5 py-2 md:px-6">
+      <div className="rounded-card border border-line bg-surface px-5 py-2 md:px-6">
         {removedNotice ? <p role="status" className="m-0 border-b border-line py-3 text-sm text-ink-muted">{t("removedNotice")}</p> : null}
         <ul className="m-0 list-none p-0">
           {lines.map((line) => (
@@ -43,7 +43,7 @@ export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) 
           ))}
         </ul>
       </div>
-      <aside className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:sticky md:top-24 md:p-6">
+      <aside className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:sticky md:top-24 md:p-6">
         <div className="flex justify-between gap-3 text-sm">
           <span className="text-ink-muted">{t("shipping")}</span>
           <span>{t("shippingNote")}</span>

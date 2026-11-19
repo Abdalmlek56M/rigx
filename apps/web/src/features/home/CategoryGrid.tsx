@@ -10,16 +10,16 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
   if (categories.length === 0) return null;
 
   return (
-    <section className="mx-auto flex max-w-[1240px] flex-col gap-5 px-4 pb-6 pt-10 md:px-6 md:pt-14">
+    <section className="flex shell flex-col gap-5 pb-6 pt-10 md:pt-14">
       <h2 className="m-0 text-[22px] font-bold md:text-[30px]">{t("title")}</h2>
-      <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 p-0">
+      <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 p-0 xl:grid-cols-[repeat(auto-fill,minmax(170px,1fr))]">
         {categories.map((category) => (
-          <li key={category.slug}>
+          <li key={category.slug} className="flex [&>a]:w-full">
             <Link
               href={categoryHref(category.slug)}
-              className="lift press flex min-h-14 items-center gap-3 rounded-card border border-line bg-surface px-3.5 py-[18px] text-base font-bold"
+              className="lift press flex h-full min-h-[120px] flex-col items-start justify-between gap-4 rounded-card border border-line bg-surface p-4 text-base font-bold"
             >
-              <span className="text-orange-text"><CategoryIcon slug={category.slug} size={22} /></span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-soft text-orange-text"><CategoryIcon slug={category.slug} size={22} /></span>
               {category.name}
             </Link>
           </li>

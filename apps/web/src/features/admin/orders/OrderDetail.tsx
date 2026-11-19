@@ -73,11 +73,11 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
   const [updated, setUpdated] = useState<Order | null>(null);
 
   if (state.status === "loading") {
-    return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" />;
+    return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
   }
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-5">
+      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("detail.failed")}</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("detail.retry")}</button>
@@ -103,7 +103,7 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
   const formKey = order.rowVersion;
 
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h2 className="m-0 text-[17px] font-bold">

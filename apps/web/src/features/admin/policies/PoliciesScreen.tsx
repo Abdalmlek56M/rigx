@@ -55,20 +55,20 @@ export function PoliciesScreen() {
     <>
       <PageHeader title={t("title")} />
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
           <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
-          {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" /> : (
+          {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
             <ul className="m-0 flex list-none flex-col gap-2 p-0">
               {POLICY_KINDS.map((kind) => {
                 const info = kindSummary(kind.api, policies);
                 const current = kind.slug === active.slug;
                 return (
                   <li key={kind.slug}>
-                    <button type="button" aria-current={current ? "true" : undefined} onClick={() => set({ kind: kind.slug })} className={`flex w-full flex-col items-start gap-1 rounded-[10px] border bg-surface p-4 text-start ${current ? "border-orange" : "border-line"}`}>
+                    <button type="button" aria-current={current ? "true" : undefined} onClick={() => set({ kind: kind.slug })} className={`flex w-full flex-col items-start gap-1 rounded-card border bg-surface p-4 text-start ${current ? "border-orange" : "border-line"}`}>
                       <span className="font-bold">{kindsText(kind.slug)}</span>
                       {info.published ? (
                         <span className="text-xs text-ink-muted">
@@ -82,7 +82,7 @@ export function PoliciesScreen() {
               })}
             </ul>
           )}
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
             <h2 className="m-0 text-[17px] font-bold">{kindsText(active.slug)}</h2>
             {state.status === "loading" ? null : summary.draft ? (
               <PolicyEditor key={`${summary.draft.id}-${summary.draft.rowVersion}`} policy={summary.draft} onSaved={reload} onStale={reload} />

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /** A white dashboard card with a title, an optional action at the end and an optional footnote. */
 export function Panel({ title, action, note, children }: { title: ReactNode; action?: ReactNode; note?: string; children: ReactNode }) {
   return (
-    <section className="flex min-w-0 flex-col gap-3.5 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-3.5 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <h2 className="m-0 text-[17px] font-bold">{title}</h2>
         {action}

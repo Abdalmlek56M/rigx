@@ -56,7 +56,7 @@ export function PurchaseForm({ purchase, today, lookups, onUpdated, onReceived, 
         }}
       />
       <fieldset disabled={readOnly} className="m-0 flex min-w-0 flex-col gap-4 border-0 p-0">
-        <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+        <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
           <h2 className="m-0 text-[17px] font-bold">{t("kindTitle")}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <SelectField

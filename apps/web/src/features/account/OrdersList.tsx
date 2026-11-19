@@ -19,7 +19,7 @@ function OrderCard({ order }: { order: Order }) {
   const { shown, more } = itemsPreview(order.items.map((item) => item.name), PREVIEW_ITEMS);
 
   return (
-    <li className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{order.reference}</span>
         <span className="text-sm text-ink-muted">{formatDate(order.createdAtUtc, locale)}</span>

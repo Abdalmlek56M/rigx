@@ -67,7 +67,7 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
   }
 
   return (
-    <div className="overflow-x-auto rounded-[10px] border border-line bg-surface">
+    <div className="overflow-x-auto rounded-card border border-line bg-surface">
       <table aria-label={label} aria-busy={state.status === "loading"} className="w-full border-collapse text-sm">
         <thead className="bg-paper text-[13px] text-ink-muted">
           <tr>

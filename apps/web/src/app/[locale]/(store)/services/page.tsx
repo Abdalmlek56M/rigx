@@ -32,7 +32,7 @@ export default async function ServicesPage({ params }: Props) {
 
   return (
     <>
-      <section className="mx-auto flex max-w-[1240px] flex-col gap-4 px-4 pb-10 pt-12 md:px-6 md:pt-16">
+      <section className="flex shell flex-col gap-4 pb-10 pt-12 md:pt-16">
         <span dir="ltr" className="font-mono text-[13px] font-semibold tracking-[2px] text-orange-text">RIGX SERVICES</span>
         <h1 className="m-0 text-[34px] leading-[1.2] font-bold md:text-[54px]">
           {t("hero.line1")}
@@ -41,13 +41,13 @@ export default async function ServicesPage({ params }: Props) {
         </h1>
         <p className="m-0 max-w-[680px] text-base leading-[1.75] text-ink-muted md:text-lg">{t("hero.body")}</p>
       </section>
-      <section className="mx-auto grid max-w-[1240px] gap-4 px-4 pb-14 md:grid-cols-[repeat(auto-fit,minmax(340px,1fr))] md:px-6">
+      <section className="grid shell gap-4 pb-14 md:grid-cols-[repeat(auto-fit,minmax(340px,1fr))]">
         {SERVICES.map((service) => (
           <ServiceCard key={service.id} service={service} whatsApp={whatsApp} />
         ))}
       </section>
       <section className="bg-carbon text-on-carbon">
-        <div className="mx-auto flex max-w-[1240px] flex-wrap gap-12 px-4 py-14 md:px-6 md:py-16">
+        <div className="flex shell flex-wrap gap-12 py-14 md:py-16">
           <div className="flex flex-1 basis-[340px] flex-col gap-3.5">
             <span className="text-[13px] font-bold text-orange">{t("sell.eyebrow")}</span>
             <h2 className="m-0 text-[28px] leading-[1.35] font-bold md:text-4xl">{t("sell.title")}</h2>

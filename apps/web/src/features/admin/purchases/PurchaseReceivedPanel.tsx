@@ -11,7 +11,7 @@ export function PurchaseReceivedPanel({ result }: { result: PurchaseReceived }) 
   const assemblyId = result.purchase.assemblyId;
 
   return (
-    <section role="status" className="flex flex-col gap-3 rounded-[10px] border border-orange bg-surface p-5">
+    <section role="status" className="flex flex-col gap-3 rounded-card border border-orange bg-surface p-5">
       <h2 className="m-0 text-[17px] font-bold">{t("title", { count: items.length })}</h2>
       <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
         {items.map((item) => (

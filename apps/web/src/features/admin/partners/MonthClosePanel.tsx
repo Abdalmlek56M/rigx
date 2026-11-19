@@ -42,7 +42,7 @@ export function MonthClosePanel({ today, onClosed }: { today: string; onClosed: 
     : [];
 
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <p className="m-0 text-sm text-ink-muted">{t("hint")}</p>
       <form

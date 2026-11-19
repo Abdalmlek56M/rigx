@@ -19,10 +19,10 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   const load = useCallback(() => fetchEntry(id), [id]);
   const { state, reload } = useLoad(load);
   const { has } = usePermissions();
-  if (state.status === "loading") return <div aria-hidden="true" className="h-40 animate-pulse rounded-[10px] border border-line bg-surface" />;
+  if (state.status === "loading") return <div aria-hidden="true" className="h-40 animate-pulse rounded-card border border-line bg-surface" />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-5">
+      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
         <p className="m-0 font-bold">{t("failed")}</p>
         <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
       </div>
@@ -32,7 +32,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   const entry = state.data;
   const rows = changeRows(entry.changes);
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("changes.title")}</h2>
         <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>

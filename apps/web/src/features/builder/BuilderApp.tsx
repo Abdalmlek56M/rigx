@@ -37,11 +37,11 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
     if (window.matchMedia(MOBILE_QUERY).matches) panel.current?.scrollIntoView({ block: "start" });
   }
 
-  if (!b.ready) return <p role="status" className="mx-auto max-w-[1320px] px-4 py-16 text-center text-ink-muted md:px-6">{t("opening")}</p>;
-  if (active === null) return <p role="alert" className="mx-auto max-w-[1320px] px-4 py-16 text-center md:px-6">{t("noSlots")}</p>;
+  if (!b.ready) return <p role="status" className="shell py-16 text-center text-ink-muted">{t("opening")}</p>;
+  if (active === null) return <p role="alert" className="shell py-16 text-center">{t("noSlots")}</p>;
 
   return (
-    <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-4 pb-32 pt-2 md:px-6 lg:pb-16">
+    <div className="flex shell flex-col gap-4 pb-32 pt-2 lg:pb-16">
       {b.openFailed ? <p role="alert" className="m-0 rounded-card border border-line bg-surface p-4 text-sm">{t("openFailed")}</p> : null}
       {b.unmatched.length > 0 ? (
         <div role="status" className="rounded-card border border-line bg-surface p-4 text-sm">

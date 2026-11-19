@@ -33,7 +33,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
   const user = session.status === "signedIn" ? session.user : null;
 
   return (
-    <section className="mx-auto max-w-[1240px] px-4 pb-16 pt-8 md:px-6 md:pt-10">
+    <section className="shell pb-16 pt-8 md:pt-10">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="m-0 text-2xl font-bold md:text-[32px]">
           {user ? t("greeting", { name: user.fullName || user.email }) : <span aria-hidden="true" className="inline-block h-8 w-56 animate-pulse rounded-control bg-line" />}

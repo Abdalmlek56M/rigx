@@ -33,7 +33,7 @@ export function BuildCardForm({ warrantyLabels, canEdit, ...action }: BuildActio
 
   return (
     <form
-      className="flex min-w-0 flex-col gap-3 rounded-[10px] border border-line bg-surface p-5"
+      className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5"
       onSubmit={(event) => {
         event.preventDefault();
         void save();

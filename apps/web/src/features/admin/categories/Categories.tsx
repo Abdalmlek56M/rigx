@@ -53,19 +53,19 @@ export function Categories() {
         ) : null}
       />
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
           <button type="button" onClick={reload} className={`${button} bg-carbon text-on-carbon`}>{t("retry")}</button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
           <div className="flex flex-col gap-2">
-            {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-[10px] border border-line bg-surface" /> : (
+            {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
               <CategoryTree nodes={tree} selectedId={activeId} collapsed={collapsed} onSelect={(id) => { setSelectedId(id); setCreating(null); }} onToggle={toggle} />
             )}
           </div>
 
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
             {creating ? (
               <>
                 <h2 className="m-0 text-[17px] font-bold">

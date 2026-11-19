@@ -27,7 +27,7 @@ export default async function CheckoutPage({ params }: Props) {
   const [storefront, rates] = await Promise.all([loadStorefront(), loadShippingRates()]);
 
   return (
-    <section className="mx-auto flex max-w-[1240px] flex-col gap-5 px-4 pb-16 pt-8 md:px-6 md:pt-10">
+    <section className="flex shell flex-col gap-5 pb-16 pt-8 md:pt-10">
       <div className="flex flex-col gap-2.5">
         <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
         <CheckoutSteps current={2} />

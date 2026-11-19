@@ -43,7 +43,7 @@ export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null;
   }
 
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold [overflow-wrap:anywhere]">{role ? t("editTitle", { name: label(role) }) : t("newTitle")}</h2>
         <button type="button" onClick={onClose} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold">{t("close")}</button>

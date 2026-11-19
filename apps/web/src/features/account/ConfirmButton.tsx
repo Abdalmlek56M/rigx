@@ -1,25 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 interface ConfirmButtonProps {
   label: string;
+  /** Drawn before the label (unlink, delete, sign out), from the shared icon set. */
+  icon: ReactNode;
   onConfirm: () => void;
   busy?: boolean;
   className?: string;
 }
 
-const base = "inline-flex min-h-11 items-center rounded-control px-3 text-sm font-bold";
+const base = "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-bold transition-colors";
 
 /** An action that asks "are you sure?" in place before it runs (delete, unlink, sign out of a device). */
-export function ConfirmButton({ label, onConfirm, busy = false, className = "" }: ConfirmButtonProps) {
+export function ConfirmButton({ label, icon, onConfirm, busy = false, className = "" }: ConfirmButtonProps) {
   const t = useTranslations("account.state");
   const [asking, setAsking] = useState(false);
 
   if (!asking) {
     return (
-      <button type="button" onClick={() => setAsking(true)} className={`${base} text-error hover:underline ${className}`}>
+      <button type="button" onClick={() => setAsking(true)} className={`${base} border border-line text-error hover:border-error hover:bg-error/5 ${className}`}>
+        {icon}
         {label}
       </button>
     );
@@ -32,11 +35,12 @@ export function ConfirmButton({ label, onConfirm, busy = false, className = "" }
           setAsking(false);
           onConfirm();
         }}
-        className={`${base} bg-error text-surface disabled:opacity-60`}
+        className={`${base} pop-down bg-error text-white disabled:opacity-60`}
       >
+        {icon}
         {t("confirm")}
       </button>
-      <button type="button" onClick={() => setAsking(false)} className={`${base} text-ink-muted hover:underline`}>{t("cancel")}</button>
+      <button type="button" onClick={() => setAsking(false)} className={`${base} text-ink-muted hover:bg-paper`}>{t("cancel")}</button>
     </span>
   );
 }

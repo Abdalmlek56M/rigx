@@ -26,7 +26,7 @@ export function CustomerProfileCard({ profile, rates }: { profile: CustomerProfi
   const governorate = governorateName(rates.governorates, profile.governorate);
 
   return (
-    <section className="flex flex-col gap-4 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
       <div className="flex items-center gap-3">
         <span aria-hidden="true" className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-carbon text-lg font-bold text-on-carbon">
           {initials(account.name)}

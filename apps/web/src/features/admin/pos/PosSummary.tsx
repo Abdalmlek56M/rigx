@@ -33,7 +33,7 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
   const egp = (amount: number) => formatEgp(amount, locale);
 
   return (
-    <aside aria-label={t("title")} className="flex flex-col gap-3.5 rounded-[10px] border border-line bg-surface p-5 xl:sticky xl:top-4 xl:self-start">
+    <aside aria-label={t("title")} className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 xl:sticky xl:top-4 xl:self-start">
       <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
       {preview === null ? <p className="m-0 text-sm text-ink-muted">{lineCount === 0 ? t("empty") : t("calculating")}</p> : (
         <dl className="m-0 flex flex-col gap-2">

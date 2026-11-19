@@ -31,7 +31,7 @@ interface CheckoutFormProps {
 type Problem = { kind: "incomplete" | "gone" | "signIn" | "failed" } | { kind: "invalid"; messages: string[] };
 
 function Notice({ children }: { children: ReactNode }) {
-  return <div role="status" className="flex flex-col items-center gap-3 rounded-[10px] border border-line bg-surface p-10 text-center">{children}</div>;
+  return <div role="status" className="flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-10 text-center">{children}</div>;
 }
 
 const linkClass = "text-orange-text underline hover:text-orange-text-hover";
@@ -98,7 +98,9 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
     return session.status === "loading" ? null : (
       <Notice>
         <p className="m-0 text-lg font-bold">{t("loginRequired")}</p>
-        <Link href={loginHref("/checkout")} className={linkClass}>{t("loginLink")}</Link>
+        <Link href={loginHref("/checkout")} className="press inline-flex h-12 items-center justify-center rounded-full bg-orange px-7 font-bold text-on-orange transition-[filter] hover:brightness-105">
+          {t("loginLink")}
+        </Link>
       </Notice>
     );
   }

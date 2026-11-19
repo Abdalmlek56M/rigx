@@ -34,7 +34,7 @@ export function RatingForm({ token, canRate, score }: { token: string; canRate: 
 
   if (sent !== null) {
     return (
-      <p role="status" className="m-0 rounded-[10px] border border-line bg-surface p-5 text-sm">
+      <p role="status" className="m-0 rounded-card border border-line bg-surface p-5 text-sm">
         {score === null ? t("thanks") : t("already")} <b dir="ltr" className="font-mono">{sent}/5</b>
       </p>
     );
@@ -42,7 +42,7 @@ export function RatingForm({ token, canRate, score }: { token: string; canRate: 
   if (!canRate) return null;
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <form onSubmit={submit} className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
         <legend className="mb-2 p-0 font-bold">{t("title")}</legend>
         <div className="flex gap-2">

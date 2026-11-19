@@ -21,8 +21,6 @@ export async function AskUsBanner({ number, template }: AskUsBannerProps) {
       </div>
       <a
         href={whatsAppUrl(number, text)}
-        target="_blank"
-        rel="noopener noreferrer"
         className="inline-flex h-[50px] items-center rounded-control bg-orange px-6 font-bold text-on-orange"
       >
         {t("cta")}

@@ -75,8 +75,8 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         title={await catalogTitle(state, category)}
         counts={result?.counts ?? { new: 0, used: 0 }}
       />
-      <section className="mx-auto flex max-w-[1240px] items-start gap-7 px-4 pb-16 pt-2 md:px-6">
-        <aside aria-label={t("filters.panelLabel")} className="hidden w-[280px] shrink-0 rounded-[10px] border border-line bg-surface p-5 md:block">
+      <section className="flex shell items-start gap-7 pb-16 pt-2">
+        <aside aria-label={t("filters.panelLabel")} className="sticky top-24 hidden max-h-[calc(100dvh-7rem)] w-[272px] shrink-0 overflow-y-auto overscroll-contain rounded-card border border-line bg-surface p-5 md:block">
           {panel("side")}
         </aside>
         <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -91,7 +91,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
               <Link href="/products" className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("empty.clear")}</Link>
             </div>
           ) : (
-            <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3 p-0 md:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] md:gap-4">
+            <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3 p-0 md:grid-cols-[repeat(auto-fill,minmax(230px,1fr))] md:gap-4 2xl:gap-5">
               {result.items.map((item) => (
                 <li key={item.code} className="flex">
                   <ItemCard item={item} />

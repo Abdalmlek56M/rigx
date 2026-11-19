@@ -110,8 +110,8 @@
     "builds": "تجميعات",
     "builder": "جمّع جهازك",
     "services": "خدماتنا",
-    "searchLabel": "ابحث بالموديل أو رقم القطعة",
-    "searchPlaceholder": "RTX 3060 أو RX-0142",
+    "searchLabel": "ابحث في المتجر",
+    "searchPlaceholder": "دوّر على قطعة أو تجميعة",
     "account": "حسابي",
     "menu": "القائمة",
     "darkMode": "الوضع الليلي",
@@ -123,7 +123,6 @@
   },
   "footer": {
     "tagline": "قطع كمبيوتر جديدة ومستعملة، وتجميعات.",
-    "follow": "تابعنا",
     "shop": {
       "title": "تسوّق",
       "new": "جديد",
@@ -132,15 +131,10 @@
       "builder": "جمّع جهازك"
     },
     "allProducts": "كل المنتجات",
+    "warrantyLookup": "استعلام عن الضمان",
+    "faq": "الأسئلة الشائعة",
     "help": "المساعدة",
-    "warranty": "سياسة الضمان",
-    "returns": "الاسترجاع والاستبدال",
-    "shipping": "الشحن والعربون",
-    "privacy": "الخصوصية",
-    "about": "إزاي بنشتغل",
-    "articles": "المقالات",
-    "contact": "تواصل معانا",
-    "support": "الدعم الفني",
+    "contact": "تواصل معنا",
     "copyright": "© {year} RIGX Hardware",
     "platforms": {
       "WhatsApp": "واتساب",
@@ -152,16 +146,15 @@
     }
   },
   "floatingContact": {
-    "label": "تواصل معانا",
+    "label": "تواصل معنا",
     "call": "اتصل بينا",
-    "support": "الدعم الفني",
+    "warranty": "استعلام عن الضمان",
     "faq": "الأسئلة الشائعة"
   },
   "backToTop": "ارجع لفوق",
   "cart": {
     "title": "السلة",
     "titleWithCount": "السلة · {count}",
-    "button": "السلة",
     "buttonAria": "{count, plural, =0 {السلة} other {السلة، # منتجات}}",
     "empty": "السلة فاضية",
     "browse": "تصفح المنتجات",
@@ -629,14 +622,16 @@
   "auth": {
     "title": "تسجيل الدخول",
     "aside": {
-      "kicker": "NEW · USED · BUILDS",
       "line1": "طلباتك وضمانك",
-      "line2": "في مكان واحد."
+      "line2": "في مكان واحد.",
+      "orders": "حالة كل طلب لحد ما يوصلك",
+      "warranty": "ضمان كل قطعة بتاريخه",
+      "invoices": "فواتيرك وقت ما تحتاجها"
     },
     "email": {
       "title": "ادخل حسابك",
       "subtitle": "تابع طلباتك وضمان قطعك.",
-      "google": "أو بكود",
+      "google": "أو بكود على الإيميل",
       "label": "الإيميل",
       "placeholder": "name@gmail.com",
       "send": "ابعتلي كود على الإيميل",

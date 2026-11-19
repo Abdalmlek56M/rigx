@@ -83,7 +83,7 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
   const ready = <T,>(rows: readonly T[]): Load<readonly T[]> => ({ status: "ready", data: rows });
 
   return (
-    <section className="flex min-w-0 flex-col gap-3.5 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex min-w-0 flex-col gap-3.5 rounded-card border border-line bg-surface p-5">
       <div role="group" aria-label={t("detailTitle")} className="flex flex-wrap gap-1 rounded-card border border-line bg-surface p-1">
         {(["orders", "warranties", "requests", "notes"] as const).map((key) => {
           const count = key === "orders" ? orders.length : key === "warranties" ? warranties.length : key === "requests" ? requests.length : null;

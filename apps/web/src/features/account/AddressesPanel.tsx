@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinIcon } from "@/components/ui/icons";
+import { MapPinIcon, TrashIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap, type Schemas } from "@rigx/api-client";
@@ -21,7 +21,7 @@ const actionClass = "inline-flex min-h-11 items-center px-3 text-sm font-bold te
 function AddressCard({ address, onEdit, onDefault, onDelete }: { address: Address; onEdit: () => void; onDefault: () => void; onDelete: () => void }) {
   const t = useTranslations("account.addresses");
   return (
-    <li className="flex flex-col gap-2 rounded-[10px] border border-line bg-surface p-5">
+    <li className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center gap-2">
         <b dir="auto" className="[unicode-bidi:isolate]">{address.label}</b>
         {address.isDefault ? <span className="rounded-full bg-carbon px-3 py-1 text-xs font-bold text-on-carbon">{t("default")}</span> : null}
@@ -35,7 +35,7 @@ function AddressCard({ address, onEdit, onDefault, onDelete }: { address: Addres
       <div className="-mx-3 flex flex-wrap items-center">
         <button type="button" onClick={onEdit} className={actionClass}>{t("edit")}</button>
         {address.isDefault ? null : <button type="button" onClick={onDefault} className={actionClass}>{t("setDefault")}</button>}
-        <ConfirmButton label={t("delete")} onConfirm={onDelete} />
+        <ConfirmButton label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={onDelete} />
       </div>
     </li>
   );

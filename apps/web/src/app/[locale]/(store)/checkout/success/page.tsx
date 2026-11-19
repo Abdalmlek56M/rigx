@@ -26,7 +26,7 @@ export default async function OrderSuccessPage({ params }: Props) {
   const storefront = await loadStorefront();
 
   return (
-    <section className="mx-auto flex max-w-[1240px] flex-col gap-6 px-4 pb-16 pt-8 md:px-6 md:pt-10">
+    <section className="flex shell flex-col gap-6 pb-16 pt-8 md:pt-10">
       <div className="mx-auto w-full max-w-[760px]">
         <CheckoutSteps current={3} />
       </div>

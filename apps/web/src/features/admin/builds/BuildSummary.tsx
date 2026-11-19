@@ -14,7 +14,7 @@ export function BuildSummary({ build }: { build: Build }) {
   if (build.componentCost !== null) rows.push({ key: "profit", label: t("profit"), value: build.salePrice - build.componentCost, strong: true });
 
   return (
-    <section className="flex flex-col gap-2 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <dl className="m-0 flex flex-col">
         {rows.map((row) => (

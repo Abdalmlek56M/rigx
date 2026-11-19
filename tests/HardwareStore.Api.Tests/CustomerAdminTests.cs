@@ -151,8 +151,8 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
 
         var profile = await ReadAsync<CustomerProfile>(await client.GetAsync($"{Admin}/{alice}"));
 
-        Assert.Equal(("alice", "alice@example.test", AlicePhone, true, "CAIRO"),
-            (profile.Account.Name, profile.Account.Email, profile.Account.Phone, profile.Account.IsActive, profile.Account.DefaultGovernorate?.ToUpperInvariant()));
+        Assert.Equal(("alice", "alice@example.test", AlicePhone, true, "القاهرة"),
+            (profile.Account.Name, profile.Account.Email, profile.Account.Phone, profile.Account.IsActive, profile.Account.DefaultGovernorate));
         Assert.StartsWith("PER-", profile.Account.PersonCode);
         Assert.Equal(("alice@example.test", true, "alice@gmail.test"), (profile.LoginMethods.Email, profile.LoginMethods.EmailCode, profile.LoginMethods.GoogleEmail));
         Assert.Empty(profile.Restrictions);
@@ -517,6 +517,6 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
     }
 
     private static CustomerAddressCreateRequest Address(string label, bool isDefault) =>
-        new(label, "Recipient", "1000000000", "EG", "+20", "Cairo", "Cairo", "Nasr City", "Street 1", "12", "3", "5", "Near the mall", "11511",
+        new(label, "Recipient", "1000000000", "EG", "+20", "القاهرة", "Cairo", "Nasr City", "Street 1", "12", "3", "5", "Near the mall", "11511",
             "Call before arrival", isDefault);
 }

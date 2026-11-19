@@ -1,50 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f4f2ed;
+  /* "Workshop white" (4.10): light by default — a near-white page, pure white surfaces, graphite ink, the RIGX orange as the one accent. */
+  --paper: #f5f5f2;
   --surface: #ffffff;
-  --carbon: #15171b;
-  --ink: #15171b;
-  --ink-muted: #4a4d53;
-  --line: #d8d3c8;
-  --sand: #d8d3c8;
+  --carbon: #121418;
+  /* Footer and top strip: graphite in both themes. */
+  --chrome: #121418;
+  --ink: #121418;
+  --ink-muted: #4f535a;
+  --line: #e3e2dd;
+  --sand: #e3e2dd;
   --orange: #ff6a2b;
+  --orange-soft: #fff0e8;
   --orange-text: #b84a12;
   --orange-text-hover: #8f380c;
   --success: #1f8a55;
-  --field: #24262b;
-  --header-line: #3a3d43;
-  --footer-text: #bfc1c5;
-  --footer-line: #2e3036;
+  --whatsapp: #1fa855;
+  --field: #f5f5f2;
+  --header-line: #e3e2dd;
+  --footer-text: #b4b7bd;
+  --footer-line: #2a2d33;
   --muted: #6b6e74;
-  --input-line: #bdb7aa;
+  --input-line: #c9c8c1;
   --error: #a3321a;
-  --disabled: #e2ded5;
-  --on-carbon: #f4f2ed;
-  --on-orange: #15171b;
+  --disabled: #ebeae5;
+  --on-carbon: #f5f5f2;
+  --on-orange: #121418;
+  --shadow-soft: 0 1px 2px rgba(18, 20, 24, 0.04), 0 8px 24px -12px rgba(18, 20, 24, 0.12);
+  --shadow-lift: 0 2px 4px rgba(18, 20, 24, 0.04), 0 18px 40px -18px rgba(18, 20, 24, 0.28);
 }
 
 [data-theme="dark"] {
-  --paper: #111214;
-  --surface: #1b1d21;
-  --carbon: #0b0c0e;
+  --paper: #0e0f12;
+  --surface: #17191d;
+  /* Lifted graphite in dark mode, so "selected" fills and dark cards stand out from the page. */
+  --carbon: #2c3037;
+  --chrome: #08090b;
   --ink: #eceae5;
   --ink-muted: #a9abb0;
-  --line: #2e3036;
+  --line: #2a2d33;
+  --sand: #2a2d33;
+  --orange-soft: #2a1a12;
   --orange-text: #ff8a5c;
   --orange-text-hover: #ffa684;
   --success: #3fd08a;
+  --field: #0e0f12;
+  --header-line: #2a2d33;
+  --input-line: #3d4148;
+  --disabled: #24272c;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 18px 40px -18px rgba(0, 0, 0, 0.8);
 }
 
 @theme inline {
   --color-paper: var(--paper);
   --color-surface: var(--surface);
   --color-carbon: var(--carbon);
+  --color-chrome: var(--chrome);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-line: var(--line);
   --color-sand: var(--sand);
   --color-orange: var(--orange);
+  --color-orange-soft: var(--orange-soft);
+  --color-whatsapp: var(--whatsapp);
   --color-orange-text: var(--orange-text);
   --color-orange-text-hover: var(--orange-text-hover);
   --color-success: var(--success);
@@ -60,9 +80,12 @@
   --color-on-orange: var(--on-orange);
   --font-sans: var(--font-plex-sans), sans-serif;
   --font-mono: var(--font-plex-mono), monospace;
-  --radius-control: 6px;
-  --radius-card: 8px;
-  --radius-panel: 12px;
+  --font-display: var(--font-display-face), var(--font-plex-sans), sans-serif;
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-panel: 20px;
 }
 
 html {
@@ -91,11 +114,51 @@ body {
   a {
     color: inherit;
   }
+
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--orange);
+    color: var(--on-orange);
+  }
+
+  input,
+  textarea {
+    caret-color: var(--orange);
+  }
+}
+
+/* The page container: wide (1440px) with a fluid side gutter, 16px on phones. */
+@utility shell {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3.2vw, 48px);
 }
 
 :focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 2px;
+}
+
+/* Text fields everywhere: a soft orange focus ring instead of the outline, a red edge when invalid. */
+:where(input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"]), select, textarea) {
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+:where(input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"]), select, textarea):focus-visible {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px var(--orange-soft);
+}
+
+:where(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--error);
 }
 
 .ltr-text {
@@ -169,7 +232,7 @@ body {
   .lift:hover {
     transform: translateY(-2px);
     border-color: var(--input-line);
-    box-shadow: 0 10px 24px -14px rgba(21, 23, 27, 0.35);
+    box-shadow: var(--shadow-lift);
   }
 
   .lift:hover img {
@@ -260,6 +323,171 @@ dialog[data-sheet="side"][data-edge="start"] {
     --sheet-x: calc(var(--dir) * -100%);
     --sheet-y: 0;
   }
+}
+
+/* Home hero: a warm orange glow behind the headline, fading into the white surface. */
+.hero-glow {
+  background:
+    radial-gradient(60% 70% at 85% 10%, color-mix(in srgb, var(--orange) 9%, transparent), transparent 70%),
+    var(--surface);
+}
+
+[dir="rtl"] .hero-glow {
+  background:
+    radial-gradient(60% 70% at 15% 10%, color-mix(in srgb, var(--orange) 9%, transparent), transparent 70%),
+    var(--surface);
+}
+
+/* Tiles with an arrow: the arrow slides a little toward the reading direction on hover. */
+.path-arrow {
+  transition: translate 200ms var(--ease-out), color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .path-tile:hover .path-arrow {
+    translate: calc(var(--dir) * 4px) 0;
+    color: var(--orange-text);
+  }
+}
+
+/* —— 4.10 motion layer —— */
+
+/* A new page rises in section by section (sections holding a fixed/sticky bar only fade, so the bar keeps its place). */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.page-in > :not(:has([data-sticky-bar], .fixed)) {
+  animation: rise-in 460ms var(--ease-out) both;
+}
+
+.page-in > :nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.page-in > :nth-child(n + 3) {
+  animation-delay: 100ms;
+}
+
+/* The header gains a soft shadow as the page scrolls under it (scroll-driven, no JS). */
+@keyframes header-shadow {
+  to {
+    box-shadow: 0 10px 30px -18px rgba(18, 20, 24, 0.35);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .site-header {
+    animation: header-shadow linear both;
+    animation-timeline: scroll();
+    animation-range: 0 120px;
+  }
+}
+
+/* Cart count badge pops when the count changes (re-keyed on every change). */
+@keyframes badge-pop {
+  from {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+
+.badge-pop {
+  animation: badge-pop 320ms var(--ease-out);
+}
+
+@keyframes icon-swap {
+  from {
+    opacity: 0;
+    transform: rotate(-60deg) scale(0.6);
+  }
+}
+
+.icon-swap {
+  animation: icon-swap 220ms var(--ease-out);
+}
+
+/* WhatsApp button: a soft ring breathes out every few seconds. */
+@keyframes wa-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  45%,
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+.wa-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--whatsapp);
+  z-index: -1;
+  animation: wa-ring 3.2s var(--ease-out) 1.2s infinite;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wa-fab:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.back-to-top {
+  --pop-y: 10px;
+  animation: pop-in 260ms var(--ease-out);
+}
+
+/* Choice chips (radio/checkbox styled as pills): clear hover, selected and press states. */
+.chip {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 140ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--ink);
+  }
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+.chip[aria-pressed="true"],
+.chip:has(:checked) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+  box-shadow: 0 6px 16px -8px rgba(18, 20, 24, 0.45);
+}
+
+.chip:has(:focus-visible),
+.chip:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+/* Text fields everywhere: a soft orange focus ring instead of the outline, a red edge when invalid. */
+:where(input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"]), select, textarea) {
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+:where(input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"]), select, textarea):focus-visible {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px var(--orange-soft);
+}
+
+:where(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--error);
 }
 
 @media (prefers-reduced-motion: reduce) {

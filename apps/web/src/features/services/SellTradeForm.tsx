@@ -9,6 +9,7 @@ import { addPhotos, MAX_PHOTOS, PHOTO_TYPES, type PhotoProblem } from "@/feature
 import { submitRequest, type SubmitOutcome } from "@/features/requests/submit-request";
 import { uploadRequestPhotos } from "@/features/requests/upload-photos";
 import { PART_TYPES, SELL_WANTS, type PartType, type SellWant } from "./services-data";
+import { CloseIcon } from "@/components/ui/icons";
 
 type Errors = Partial<Record<"name" | "phone" | "model", string>>;
 type Result = { outcome: SubmitOutcome; photosFailed: number };
@@ -106,7 +107,7 @@ export function SellTradeForm() {
                   onClick={() => setPhotos(photos.filter((_, position) => position !== index))}
                   className="flex h-8 w-8 items-center justify-center"
                 >
-                  ✕
+                  <CloseIcon size={16} />
                 </button>
               </li>
             ))}

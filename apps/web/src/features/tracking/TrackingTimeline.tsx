@@ -1,6 +1,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { formatDateTime } from "@/lib/format";
 import type { TrackingStep } from "./tracking-steps";
+import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 
 const DOT: Record<TrackingStep["state"], string> = {
   done: "border-success bg-success text-surface",
@@ -22,7 +23,7 @@ export function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
               aria-hidden="true"
               className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${step.status === "Cancelled" ? "border-error bg-error text-surface" : DOT[step.state]}`}
             >
-              {step.state === "done" ? "✓" : step.status === "Cancelled" ? "✕" : "●"}
+              {step.state === "done" ? <CheckIcon size={14} /> : step.status === "Cancelled" ? <CloseIcon size={14} /> : <span className="h-2 w-2 rounded-full bg-current" />}
             </span>
             {index < steps.length - 1 ? <span aria-hidden="true" className={`w-0.5 flex-1 ${step.state === "done" ? "bg-success" : "bg-line"}`} /> : null}
           </span>

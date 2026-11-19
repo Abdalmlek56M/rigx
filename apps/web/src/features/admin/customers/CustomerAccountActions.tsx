@@ -87,7 +87,7 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
   }
 
   return (
-    <section className="flex flex-col gap-2.5 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-2.5 rounded-card border border-line bg-surface p-5">
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       {canManage ? (
         <>

@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { MoonIcon, SunIcon } from "@/components/ui/icons";
+import { HEADER_ICON_BUTTON } from "./nav-links";
 import { THEME_STORAGE_KEY } from "./theme-script";
 
 type Theme = "light" | "dark";
@@ -35,7 +36,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       type="button"
       aria-label={theme === "dark" ? t("lightMode") : t("darkMode")}
       onClick={toggle}
-      className={`flex h-11 w-11 items-center justify-center rounded-control border border-header-line text-on-carbon ${className}`}
+      className={`${HEADER_ICON_BUTTON} ${className}`}
     >
       {theme === "dark" ? <SunIcon /> : <MoonIcon />}
     </button>

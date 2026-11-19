@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { categoryHref } from "@/components/layout/nav-links";
-import { POLICY_KINDS } from "@/features/policies/policy-body";
-import { loadPolicy } from "@/features/policies/load-policy";
+import { publishedPolicySlugs } from "@/features/policies/published-policies";
 import { createServerApi } from "@/lib/api/server";
 import { indexedLocales } from "@/lib/seo/page-seo";
 import { absoluteUrl, languageAlternates, localizedPath, productPath } from "@/lib/seo/urls";
@@ -34,8 +33,7 @@ async function buildCodes(): Promise<string[]> {
 }
 
 async function policyPaths(): Promise<string[]> {
-  const published = await Promise.all(POLICY_KINDS.map(async (kind) => ((await loadPolicy(kind.api)) ? `/policies/${kind.slug}` : null)));
-  return published.filter((path) => path !== null);
+  return (await publishedPolicySlugs()).map((slug) => `/policies/${slug}`);
 }
 
 function categoryPaths(nodes: CategoryNode[]): string[] {

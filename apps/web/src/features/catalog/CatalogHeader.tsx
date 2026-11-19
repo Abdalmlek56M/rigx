@@ -23,7 +23,7 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
   ] as const;
 
   return (
-    <section className="mx-auto flex max-w-[1240px] flex-col gap-4 px-4 pb-4 pt-6 md:px-6 md:pt-8">
+    <section className="flex shell flex-col gap-4 pb-4 pt-6 md:pt-8">
       <nav aria-label={t("breadcrumb")} className="text-sm text-ink-muted">
         <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
           <li><Link href="/" className="hover:underline">{t("home")}</Link></li>

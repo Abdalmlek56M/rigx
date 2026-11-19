@@ -25,7 +25,7 @@ export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-col gap-0.5">
         <h2 className="m-0 text-[17px] font-bold">{t("panelTitle")}</h2>
         <p className="m-0 text-xs text-ink-muted">{t("panelNote")}</p>

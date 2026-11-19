@@ -55,8 +55,6 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
       {whatsApp.number ? (
         <a
           href={whatsAppUrl(whatsApp.number, message)}
-          target="_blank"
-          rel="noopener noreferrer"
           aria-disabled={!hasParts}
           className={`flex h-[50px] items-center justify-center rounded-control border-[1.5px] border-on-carbon font-bold ${hasParts ? "" : "pointer-events-none opacity-50"}`}
         >

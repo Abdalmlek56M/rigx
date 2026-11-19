@@ -29,7 +29,7 @@ function NextSteps({ order }: { order: PlacedOrder }) {
   ];
 
   return (
-    <section className="flex flex-col gap-3.5 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+    <section className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 md:p-6">
       <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
       <ol className="m-0 flex list-none flex-col gap-3.5 p-0">
         {steps.map((step, index) => (
@@ -48,7 +48,7 @@ function Summary({ order }: { order: PlacedOrder }) {
   const locale = useLocale();
 
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:p-6">
       <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {order.items.map((item) => (
@@ -79,7 +79,7 @@ function TrackCard({ order }: { order: PlacedOrder }) {
   const session = useSession();
 
   return (
-    <section className="flex flex-col gap-3 rounded-[10px] bg-carbon p-5 text-on-carbon md:p-6">
+    <section className="flex flex-col gap-3 rounded-card bg-carbon p-5 text-on-carbon md:p-6">
       <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
       {session.status === "signedOut" ? <p className="m-0 text-sm leading-7 text-footer-text">{t("accountHint")}</p> : null}
       <Link href={`/t/${order.trackingToken}`} className="flex h-12 items-center justify-center rounded-control bg-orange font-bold text-on-orange">
@@ -103,7 +103,7 @@ export function OrderSuccess({ whatsApp }: { whatsApp: OrderWhatsApp }) {
 
   if (!order) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 rounded-[10px] border border-line bg-surface p-10 text-center">
+      <div role="status" className="flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-10 text-center">
         <p className="m-0 text-lg font-bold">{t("missing")}</p>
         <Link href="/" className={linkClass}>{t("home")}</Link>
         <Link href="/warranty" className={linkClass}>{t("trackingHelp")}</Link>

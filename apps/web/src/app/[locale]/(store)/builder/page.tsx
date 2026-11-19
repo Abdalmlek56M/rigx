@@ -36,7 +36,7 @@ export default async function BuilderPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <section className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-4 px-4 pb-4 pt-8 md:px-6">
+      <section className="flex shell flex-wrap items-end justify-between gap-4 pb-4 pt-8">
         <div className="flex flex-col gap-1.5">
           <h1 className="m-0 text-3xl font-bold md:text-[38px]">{t("title")}</h1>
           <span className="text-[15px] text-ink-muted">
@@ -47,7 +47,7 @@ export default async function BuilderPage({ params, searchParams }: Props) {
         {builds ? <QuickStart builds={builds} /> : null}
       </section>
       {slots === null ? (
-        <p role="alert" className="mx-auto max-w-[1320px] px-4 py-16 text-center md:px-6">{t("loadFailed")}</p>
+        <p role="alert" className="shell py-16 text-center">{t("loadFailed")}</p>
       ) : (
         <BuilderApp
           start={start}

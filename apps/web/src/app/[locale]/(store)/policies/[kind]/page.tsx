@@ -41,7 +41,7 @@ export default async function PolicyPage({ params }: Props) {
   const helpText = fillTemplate(storefront.whatsAppTemplates.general, {}) || t("helpMessage", { policy: title });
 
   return (
-    <section className="mx-auto grid max-w-[1240px] gap-8 px-4 pb-16 pt-8 md:px-6 md:pt-10 lg:grid-cols-[240px_minmax(0,1fr)]">
+    <section className="grid shell gap-8 pb-16 pt-8 md:pt-10 lg:grid-cols-[240px_minmax(0,1fr)]">
       <nav aria-label={t("navLabel")} className="lg:sticky lg:top-24 lg:self-start">
         <ul className="m-0 flex list-none flex-row flex-wrap gap-2 p-0 lg:flex-col lg:gap-1">
           {POLICY_KINDS.map((item) => (
@@ -66,13 +66,13 @@ export default async function PolicyPage({ params }: Props) {
             {t("version", { version: policy.versionNumber })}
           </span>
         </header>
-        <div className="rounded-[10px] border border-line bg-surface p-5 md:p-8">
+        <div className="rounded-card border border-line bg-surface p-5 md:p-8">
           <PolicyBody body={localized(locale, policy.bodyAr, policy.bodyEn)} />
         </div>
         {number ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span className="font-bold">{t("helpTitle")}</span>
-            <a href={whatsAppUrl(number, helpText)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
+            <a href={whatsAppUrl(number, helpText)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
               <WhatsAppIcon size={16} />
               {t("helpLink")}
             </a>

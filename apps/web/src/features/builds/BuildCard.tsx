@@ -31,9 +31,8 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
           <ImagePlaceholderIcon size={96} />
         )}
         {usage ? (
-          <span className="absolute end-3.5 top-3.5 rounded bg-carbon px-2.5 py-1 text-xs font-bold text-on-carbon">{tu(usage)}</span>
+          <span className="absolute end-3.5 top-3.5 rounded-full bg-carbon px-2.5 py-1 text-xs font-bold text-on-carbon">{tu(usage)}</span>
         ) : null}
-        <span dir="ltr" className="absolute start-3.5 top-3.5 font-mono text-xs text-ink-muted">{build.code}</span>
       </Link>
       <div className="flex flex-1 flex-col gap-3.5 p-5 md:p-[22px]">
         <h2 className="m-0 text-[22px] font-bold">

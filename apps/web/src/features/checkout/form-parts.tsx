@@ -20,7 +20,7 @@ export function useFieldError(errors: readonly FieldKey[]): (key: FieldKey) => s
 
 export function FormSection({ title, hint, aside, children }: { title: string; hint?: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-3.5 rounded-[10px] border border-line bg-surface p-5 md:p-6">
+    <section className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 md:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="m-0 text-lg font-bold">{title}</h2>
         {aside}

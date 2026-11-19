@@ -29,7 +29,7 @@ const FILTERS = { period: "month", from: "", to: "" };
 
 function Kpi({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-[10px] border border-line bg-surface p-4">
+    <div className="flex flex-col gap-1 rounded-card border border-line bg-surface p-4">
       <span className="text-xs text-ink-muted">{label}</span>
       <b className="text-xl">{value}</b>
       {note ? <span className="text-xs text-ink-muted">{note}</span> : null}
@@ -54,10 +54,10 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
     return { expenses, summary, types, recurring, accounts, partners };
   }, [from, to, canViewVaults]);
   const { state, reload } = useLoad(load);
-  if (state.status === "loading") return <div aria-hidden="true" className="h-72 animate-pulse rounded-[10px] border border-line bg-surface" />;
+  if (state.status === "loading") return <div aria-hidden="true" className="h-72 animate-pulse rounded-card border border-line bg-surface" />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-[10px] border border-line bg-surface p-6">
+      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
         <p className="m-0 font-bold">{t("failed")}</p>
         <button type="button" onClick={reload} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("retry")}</button>
       </div>
@@ -107,7 +107,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: expenses }} onRetry={reload} rowKey={(expense) => expense.id} empty={t("empty")} />
-        <section className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-5">
+        <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
           <h2 className="m-0 text-[17px] font-bold">{t("splits.title")}</h2>
           {summary.byType.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("splits.empty")}</p> : (
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
