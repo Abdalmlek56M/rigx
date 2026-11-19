@@ -88,7 +88,7 @@ export function AddressesPanel({ governorates }: { governorates: readonly string
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 text-xl font-bold">{t("title")}</h2>
+        <h2 className="sr-only">{t("title")}</h2>
         {editing ? null : <button type="button" onClick={() => setEditing({ kind: "new" })} className="h-11 rounded-control bg-orange px-5 font-bold text-on-orange">{t("add")}</button>}
       </div>
       {failed && !editing ? <p role="alert" className="m-0 text-sm text-error">{t("actionFailed")}</p> : null}

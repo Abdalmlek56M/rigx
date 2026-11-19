@@ -9,7 +9,8 @@ export interface ContactLink {
   showOnSite: boolean;
   showInFloatingButton: boolean;
 }
-export type MenuCategory = { name: string; slug: string; children: MenuCategory[] };
+/** A menu category; `image` is the uploaded category picture (often a transparent PNG), null when there is none. */
+export type MenuCategory = { id: string; name: string; slug: string; image: string | null; children: MenuCategory[] };
 /** An active brand (catalog filter, product page). */
 export type Brand = { id: string; name: string; slug: string };
 
@@ -95,7 +96,7 @@ function logOnce(error: unknown) {
 function toMenu(categories: Schemas["CategoryView"][]): MenuCategory[] {
   return categories
     .filter((c) => c.showInMenu && c.isEffectivelyActive)
-    .map((c) => ({ name: c.name, slug: c.slug, children: toMenu(c.children) }));
+    .map((c) => ({ id: c.id, name: c.name, slug: c.slug, image: c.iconStorageKey ?? null, children: toMenu(c.children) }));
 }
 
 function toTree(categories: Schemas["CategoryView"][]): CategoryNode[] {

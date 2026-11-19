@@ -44,13 +44,13 @@ export default async function ServicesPage({ params }: Props) {
           <ServiceCard key={service.id} service={service} whatsApp={whatsApp} />
         ))}
       </section>
-      <section id="sell" className="scroll-mt-24 border-y border-feature-line bg-feature text-on-carbon">
+      <section id="sell" className="hero-glow scroll-mt-24 border-y border-line">
         <div className="flex shell flex-wrap gap-12 py-14 md:py-16">
           <div className="flex flex-1 basis-[340px] flex-col gap-3.5">
-            <span className="text-[13px] font-bold text-orange">{t("sell.eyebrow")}</span>
+            <span className="text-[13px] font-bold text-orange-text">{t("sell.eyebrow")}</span>
             <h2 className="m-0 text-[28px] leading-[1.35] font-bold md:text-4xl">{t("sell.title")}</h2>
-            <p className="m-0 text-base leading-[1.8] text-footer-text">{t("sell.body")}</p>
-            <ol className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-footer-text">
+            <p className="m-0 text-base leading-[1.8] text-ink-muted">{t("sell.body")}</p>
+            <ol className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-ink-muted">
               {([1, 2, 3, 4] as const).map((step) => (
                 <li key={step}>{t(`sell.steps.${step}`)}</li>
               ))}

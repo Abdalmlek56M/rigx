@@ -31,9 +31,15 @@
       }
     },
     "categories": {
-      "title": "الأقسام",
+      "title": "الأقسام"
+    },
+    "rail": {
       "scrollLeft": "حرّك للشمال",
       "scrollRight": "حرّك لليمين"
+    },
+    "gpus": {
+      "title": "كروت الشاشة",
+      "seeAll": "شوف كل الكروت"
     },
     "latest": {
       "title": "لسه واصل",
@@ -110,6 +116,7 @@
     "seeAll": "شوف كل {name}",
     "conditionNew": "{name} جديد",
     "conditionUsed": "{name} مستعمل",
+    "megaLatest": "لسه واصل",
     "used": "مستعمل",
     "new": "جديد",
     "builds": "تجميعات",

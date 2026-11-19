@@ -2,18 +2,18 @@ export type ServiceId = "consult" | "build" | "test" | "maintenance" | "sourcing
 
 export interface ServiceDef {
   id: ServiceId;
-  /** `dark` is the highlighted card. */
-  tone: "dark" | "light";
+  /** `accent` is the highlighted card. */
+  tone: "accent" | "plain";
 }
 
 /** The services page cards in display order (copy, including the list of steps, in the `services.items` messages). */
 export const SERVICES: readonly ServiceDef[] = [
-  { id: "consult", tone: "dark" },
-  { id: "build", tone: "light" },
-  { id: "test", tone: "light" },
-  { id: "maintenance", tone: "light" },
-  { id: "sourcing", tone: "light" },
-  { id: "upgrade", tone: "light" }
+  { id: "consult", tone: "accent" },
+  { id: "build", tone: "plain" },
+  { id: "test", tone: "plain" },
+  { id: "maintenance", tone: "plain" },
+  { id: "sourcing", tone: "plain" },
+  { id: "upgrade", tone: "plain" }
 ];
 
 /** What the visitor wants to do with the part. */

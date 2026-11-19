@@ -1,28 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import { unwrap, type Schemas } from "@rigx/api-client";
+import type { Schemas } from "@rigx/api-client";
 import { ItemCard } from "@/features/catalog/ItemCard";
-import { required } from "@/lib/api/required";
-import { createServerApi } from "@/lib/api/server";
-import type { Condition } from "@/lib/condition";
 import { LatestTabs } from "./LatestTabs";
+import { newestItems } from "./newest-items";
 
 const COUNT = 4;
-
-/** Newest available items; an API failure just means an empty list. */
-async function newest(condition: Condition | null): Promise<Schemas["StoreItemCard"][]> {
-  try {
-    const page = await required(
-      unwrap(
-        createServerApi().GET("/api/v1/store/items", {
-          params: { query: { inStock: true, sort: "newest", pageSize: COUNT, ...(condition ? { condition } : {}) } }
-        })
-      )
-    );
-    return page.items;
-  } catch {
-    return [];
-  }
-}
 
 function Grid({ items }: { items: Schemas["StoreItemCard"][] }) {
   return (
@@ -40,7 +22,7 @@ function Grid({ items }: { items: Schemas["StoreItemCard"][] }) {
 export async function LatestItems() {
   const t = await getTranslations("home.latest");
   const tc = await getTranslations("common.condition");
-  const [all, used, fresh] = await Promise.all([newest(null), newest("Used"), newest("New")]);
+  const [all, used, fresh] = await Promise.all([newestItems(COUNT), newestItems(COUNT, { condition: "Used" }), newestItems(COUNT, { condition: "New" })]);
   if (all.length === 0) return null;
 
   return (

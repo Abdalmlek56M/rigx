@@ -15,7 +15,7 @@ describe("textList", () => {
 describe("SERVICES", () => {
   it("has unique ids and exactly one highlighted card", () => {
     assert.equal(new Set(SERVICES.map((service) => service.id)).size, SERVICES.length);
-    assert.equal(SERVICES.filter((service) => service.tone === "dark").length, 1);
+    assert.equal(SERVICES.filter((service) => service.tone === "accent").length, 1);
   });
 });
 

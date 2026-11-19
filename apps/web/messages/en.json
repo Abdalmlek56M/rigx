@@ -31,9 +31,15 @@
       }
     },
     "categories": {
-      "title": "Categories",
+      "title": "Categories"
+    },
+    "rail": {
       "scrollLeft": "Scroll left",
       "scrollRight": "Scroll right"
+    },
+    "gpus": {
+      "title": "Graphics cards",
+      "seeAll": "See all cards"
     },
     "latest": {
       "title": "Just arrived",
@@ -110,6 +116,7 @@
     "seeAll": "See all {name}",
     "conditionNew": "New {name}",
     "conditionUsed": "Used {name}",
+    "megaLatest": "Just in",
     "used": "Used",
     "new": "New",
     "builds": "Builds",

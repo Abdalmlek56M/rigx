@@ -16,7 +16,7 @@ export function RequestsList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="m-0 text-xl font-bold">{t("title")}</h2>
+      <h2 className="sr-only">{t("title")}</h2>
       <LoadBoundary state={state} reload={reload}>
         {(requests) =>
           requests.length === 0 ? (

@@ -3,12 +3,16 @@ namespace HardwareStore.Modules.Catalog;
 /// <summary>A category the store starts with; <see cref="ParentSlug"/> is null for a main category.</summary>
 public sealed record BaseCategory(string Slug, string Name, string? ParentSlug = null);
 
+/// <summary>A base category whose starting name changed: the old name becomes the new one only where the owner kept the old name.</summary>
+public sealed record BaseCategoryRename(string Slug, string OldName, string NewName);
+
 /// <summary>A brand the store starts with.</summary>
 public sealed record BaseBrand(string Slug, string Name);
 
 /// <summary>
 /// The category tree and brand list the store starts with (owner decision, 19 Nov 2026). They are added when missing and
-/// never renamed or removed afterwards: the owner edits them in the admin like any other category or brand.
+/// never removed afterwards: the owner edits them in the admin like any other category or brand. A starting name is renamed only
+/// through <see cref="Renames"/>, and only while the owner has not changed it.
 /// The storefront picks a category icon from these slugs (<c>apps/web/src/components/ui/category-icon.tsx</c>).
 /// </summary>
 public static class BaseCatalog
@@ -23,10 +27,16 @@ public static class BaseCatalog
         new("accessories", "إكسسوارات"),
         new("motherboards", "بوردات"),
         new("memory", "رامات"),
-        new("cases", "كيسات"),
+        new("cases", "كيس"),
         new("power-supplies", "باورات"),
         new("storage", "وحدات تخزين"),
         new("cooling", "تبريد")
+    ];
+
+    /// <summary>Starting names the owner asked to change (round 3, 19 Nov 2026).</summary>
+    public static readonly IReadOnlyList<BaseCategoryRename> Renames =
+    [
+        new("cases", "كيسات", "كيس")
     ];
 
     public static readonly IReadOnlyList<BaseBrand> Brands =

@@ -62,6 +62,44 @@ public sealed class BaseCatalogPostgreSqlTests(OwnerBootstrapPostgreSqlFixture f
     }
 
     [Fact]
+    public async Task A_renamed_starting_category_is_renamed_only_where_the_owner_kept_the_old_name()
+    {
+        var kept = await fixture.CreateDatabaseAsync();
+        await using (var owner = kept.CreateCatalogContext())
+        {
+            owner.Categories.Add(Category("cases", "كيسات"));
+            await owner.SaveChangesAsync();
+        }
+        var changed = await fixture.CreateDatabaseAsync();
+        await using (var owner = changed.CreateCatalogContext())
+        {
+            owner.Categories.Add(Category("cases", "كيسات جيمنج"));
+            await owner.SaveChangesAsync();
+        }
+        var otherSlug = await fixture.CreateDatabaseAsync();
+        await using (var owner = otherSlug.CreateCatalogContext())
+        {
+            owner.Categories.Add(Category("pc-cases", "كيسات"));
+            await owner.SaveChangesAsync();
+        }
+
+        await using var keptDb = kept.CreateCatalogContext();
+        var first = await BaseCatalogSeeder.SeedAsync(keptDb, Now);
+        var second = await BaseCatalogSeeder.SeedAsync(keptDb, Now);
+        await using var changedDb = changed.CreateCatalogContext();
+        var changedResult = await BaseCatalogSeeder.SeedAsync(changedDb, Now);
+        await using var otherDb = otherSlug.CreateCatalogContext();
+        await BaseCatalogSeeder.SeedAsync(otherDb, Now);
+
+        Assert.Equal((1, 0), (first.CategoriesRenamed, second.CategoriesRenamed));
+        Assert.Equal("كيس", (await keptDb.Categories.AsNoTracking().SingleAsync(category => category.Slug == "cases")).Name);
+        Assert.Equal(0, changedResult.CategoriesRenamed);
+        Assert.Equal("كيسات جيمنج", (await changedDb.Categories.AsNoTracking().SingleAsync(category => category.Slug == "cases")).Name);
+        var others = await otherDb.Categories.AsNoTracking().Where(category => category.ParentId == null).ToListAsync();
+        Assert.Single(others, category => category.Name is "كيس" or "كيسات");
+    }
+
+    [Fact]
     public async Task A_saved_contact_list_gets_the_missing_social_links_once_and_keeps_the_owner_links()
     {
         var name = $"social_links_{Guid.NewGuid():N}";

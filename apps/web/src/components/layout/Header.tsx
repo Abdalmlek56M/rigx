@@ -8,7 +8,7 @@ import type { StorefrontData } from "@/lib/storefront";
 import { CategoriesMenu } from "./CategoriesMenu";
 import { LocaleSwitch } from "./LocaleSwitch";
 import { MobileMenu } from "./MobileMenu";
-import { HEADER_ICON_BUTTON, NAV_LINKS } from "./nav-links";
+import { HEADER_ICON_BUTTON, HEADER_ICON_CLUSTER, NAV_LINKS } from "./nav-links";
 import { SearchForm } from "./SearchForm";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -38,12 +38,12 @@ export function Header({ storefront }: { storefront: StorefrontData }) {
         <div className="order-last w-full md:order-none md:ms-auto md:w-auto md:min-w-[240px] md:max-w-[440px] md:flex-1">
           <SearchForm />
         </div>
-        <div className="ms-auto flex items-center gap-1 md:ms-0">
+        <div className={`ms-auto md:ms-0 ${HEADER_ICON_CLUSTER}`}>
+          <ThemeToggle className="max-md:hidden" />
+          {storefront.englishEnabled ? <LocaleSwitch className="max-md:hidden" /> : null}
           <AccountLink ariaLabel={t("account")} className={`${HEADER_ICON_BUTTON} max-md:hidden`}>
             <UserIcon />
           </AccountLink>
-          <ThemeToggle className="max-md:hidden" />
-          {storefront.englishEnabled ? <LocaleSwitch className="max-md:hidden" /> : null}
           <CartButton />
         </div>
       </div>

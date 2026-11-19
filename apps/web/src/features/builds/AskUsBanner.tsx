@@ -7,17 +7,17 @@ interface AskUsBannerProps {
   template: string;
 }
 
-/** "مش لاقي تجميعة مناسبة؟": the dark banner under the builds list, opening a WhatsApp chat with the store's message. */
+/** "مش لاقي تجميعة مناسبة؟": the accent banner under the builds list, opening a WhatsApp chat with the store's message. */
 export async function AskUsBanner({ number, template }: AskUsBannerProps) {
   const t = await getTranslations("builds.banner");
   if (!number) return null;
   const text = [fillTemplate(template, {}), t("message")].filter(Boolean).join("\n");
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-[18px] rounded-panel border border-feature-line bg-feature px-6 py-7 text-on-carbon md:px-8">
+    <div className="flex flex-wrap items-center justify-between gap-[18px] accent-panel rounded-panel border px-6 py-7 md:px-8">
       <div className="flex flex-col gap-1.5">
         <span className="text-[22px] font-bold">{t("title")}</span>
-        <span className="text-[15px] text-footer-text">{t("body")}</span>
+        <span className="text-[15px] text-ink-muted">{t("body")}</span>
       </div>
       <a
         {...NEW_TAB} href={whatsAppUrl(number, text)}

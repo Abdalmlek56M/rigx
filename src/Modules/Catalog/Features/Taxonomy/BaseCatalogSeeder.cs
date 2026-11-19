@@ -2,22 +2,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
 
-public sealed record BaseCatalogSeedResult(int CategoriesAdded, int BrandsAdded);
+public sealed record BaseCatalogSeedResult(int CategoriesAdded, int BrandsAdded, int CategoriesRenamed = 0);
 
 /// <summary>
 /// Adds the <see cref="BaseCatalog"/> categories and brands that are missing. Runs after every migration (production too), so it
 /// only adds: an entry counts as present when its slug is taken or the owner already has one with the same name (same parent
-/// for a category), and existing rows are never changed. Categories and brands cannot be deleted, only switched off, so
-/// nothing the owner removed comes back.
+/// for a category), and existing rows are never changed except by <see cref="BaseCatalog.Renames"/> on a row that still has the old
+/// starting name. Categories and brands cannot be deleted, only switched off, so nothing the owner removed comes back.
 /// </summary>
 public static class BaseCatalogSeeder
 {
     public static async Task<BaseCatalogSeedResult> SeedAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
+        var categoriesRenamed = await RenameCategoriesAsync(db, now, cancellationToken);
         var categoriesAdded = await SeedCategoriesAsync(db, now, cancellationToken);
         var brandsAdded = await SeedBrandsAsync(db, now, cancellationToken);
-        if (categoriesAdded + brandsAdded > 0) await db.SaveChangesAsync(cancellationToken);
-        return new BaseCatalogSeedResult(categoriesAdded, brandsAdded);
+        if (categoriesRenamed + categoriesAdded + brandsAdded > 0) await db.SaveChangesAsync(cancellationToken);
+        return new BaseCatalogSeedResult(categoriesAdded, brandsAdded, categoriesRenamed);
+    }
+
+    /// <summary>Applies a rename only where the category still has its old starting name (the owner never renamed it).</summary>
+    private static async Task<int> RenameCategoriesAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var renamed = 0;
+        foreach (var rename in BaseCatalog.Renames)
+        {
+            var category = await db.Categories.FirstOrDefaultAsync(category => category.Slug == rename.Slug, cancellationToken);
+            if (category is null || !SameName(category.Name, rename.OldName)) continue;
+            category.Name = rename.NewName;
+            category.UpdatedAtUtc = now;
+            renamed++;
+        }
+        return renamed;
     }
 
     private static async Task<int> SeedCategoriesAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken)
@@ -32,7 +48,7 @@ public static class BaseCatalogSeeder
             Guid? parentId = entry.ParentSlug is null ? null : idBySlug[entry.ParentSlug];
             var match = known.FirstOrDefault(category => category.Slug == entry.Slug).Id;
             if (match == Guid.Empty)
-                match = known.FirstOrDefault(category => category.ParentId == parentId && SameName(category.Name, entry.Name)).Id;
+                match = known.FirstOrDefault(category => category.ParentId == parentId && KnownNames(entry).Any(name => SameName(category.Name, name))).Id;
             if (match != Guid.Empty)
             {
                 idBySlug[entry.Slug] = match;
@@ -75,6 +91,10 @@ public static class BaseCatalogSeeder
         }
         return added;
     }
+
+    /// <summary>The entry's name and its old starting names, so a category still named the old way is not added twice.</summary>
+    private static IEnumerable<string> KnownNames(BaseCategory entry) =>
+        BaseCatalog.Renames.Where(rename => rename.Slug == entry.Slug).Select(rename => rename.OldName).Prepend(entry.Name);
 
     private static bool SameName(string left, string right) => string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
 }

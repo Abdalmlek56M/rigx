@@ -18,7 +18,7 @@ export function LocaleSwitch({ className = "" }: { className?: string }) {
       locale={target}
       hrefLang={target}
       aria-label={t("switchAria")}
-      className={`${HEADER_ICON_BUTTON} px-3 font-mono text-sm font-semibold ${className}`}
+      className={`${HEADER_ICON_BUTTON} font-mono text-xs font-semibold ${className}`}
     >
       {t("switchLabel")}
     </Link>

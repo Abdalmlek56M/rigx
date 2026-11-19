@@ -38,7 +38,7 @@ export default async function LoginPage({ params, searchParams }: Props) {
           <LoginFlow next={Array.isArray(next) ? next[0] : next} />
         </div>
       </div>
-      <aside className="relative hidden min-h-[520px] flex-col justify-end gap-6 overflow-hidden rounded-panel border border-feature-line bg-feature p-10 text-on-carbon lg:flex">
+      <aside className="relative hidden min-h-[520px] flex-col justify-end gap-6 overflow-hidden accent-panel rounded-panel border p-10 lg:flex">
         <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -end-16 -top-16 h-[420px] w-[420px] text-orange opacity-90">
           <polygon points="70,0 100,0 30,100 0,100" fill="currentColor" />
           <polygon points="0,0 30,0 100,100 70,100" fill="currentColor" opacity="0.18" />
@@ -48,10 +48,10 @@ export default async function LoginPage({ params, searchParams }: Props) {
           <br />
           {t("line2")}
         </p>
-        <ul className="relative m-0 flex list-none flex-col gap-3 p-0 text-[15px] text-footer-text">
+        <ul className="relative m-0 flex list-none flex-col gap-3 p-0 text-[15px] text-ink-muted">
           {points.map((point) => (
             <li key={point.text} className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-footer-line text-on-carbon">{point.icon}</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-soft text-orange-text">{point.icon}</span>
               {point.text}
             </li>
           ))}

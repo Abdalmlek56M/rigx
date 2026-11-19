@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { BuilderPromo } from "@/features/home/BuilderPromo";
 import { CategoryGrid } from "@/features/home/CategoryGrid";
 import { FaqSection } from "@/features/home/FaqSection";
+import { GpuRail } from "@/features/home/GpuRail";
 import { Hero } from "@/features/home/Hero";
 import { LatestItems } from "@/features/home/LatestItems";
 import { RecommendWidget } from "@/features/home/RecommendWidget";
@@ -60,6 +61,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Hero />
       <CategoryGrid categories={storefront.categories} />
       <LatestItems />
+      <GpuRail tree={storefront.categoryTree} />
       <section className="flex shell flex-wrap items-stretch gap-[18px] pb-4 pt-12 md:pt-16">
         {number ? <RecommendWidget whatsApp={{ number, template: general }} /> : null}
         <BuilderPromo />
