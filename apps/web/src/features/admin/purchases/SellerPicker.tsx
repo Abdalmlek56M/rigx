@@ -17,9 +17,10 @@ const MIN_QUERY = 3;
 type Editing = { seller: Seller | null; phone: string } | null;
 
 /** The seller: look one up by phone or name, pick a match or create one; a picked seller can be changed or (with the permission) edited. */
-export function SellerPicker({ seller, readOnly, governorates, onPick }: {
+export function SellerPicker({ seller, readOnly, missing = false, governorates, onPick }: {
   seller: SellerSummary | null;
   readOnly: boolean;
+  missing?: boolean;
   governorates: readonly Governorate[];
   onPick: (seller: SellerSummary | null) => void;
 }) {
@@ -50,8 +51,9 @@ export function SellerPicker({ seller, readOnly, governorates, onPick }: {
   };
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section data-field="seller" className={`flex flex-col gap-3 rounded-card border bg-surface p-5 ${missing ? "border-error" : "border-line"}`}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
+      {missing ? <p role="alert" className="m-0 text-sm font-bold text-error">{t("required")}</p> : null}
       {editing ? (
         <SellerFormCard
           key={editing.seller?.rowVersion ?? "new"} seller={editing.seller} phone={editing.phone} governorates={governorates}

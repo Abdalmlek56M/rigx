@@ -4,6 +4,8 @@
  * Messages live under `admin.purchases`.
  */
 import { amountOk, amountText, applySuggestion, editModel, optionalAmountOk, parseAmount } from "../stock/stock-fields.ts";
+import type { Category } from "../categories/categories-api";
+import { categoryPath } from "../inventory/inventory-rules.ts";
 import type { StockItem } from "../inventory/inventory-api";
 import type { ModelSuggestion, Purchase, PurchaseLineRequest, PurchaseLineView, PurchaseRequest, Seller, SellerRequest, SellerSummary } from "./purchases-api";
 
@@ -193,17 +195,57 @@ export function withMethod(form: PurchaseForm, paymentMethod: PaymentMethod): Pu
   };
 }
 
-export function lineValid(line: LineForm): boolean {
-  return line.modelName.trim() !== "" && lineQuantity(line) > 0 && amountOk(line.unitCost) && amountOk(line.price)
-    && optionalAmountOk(line.withBoardExtra) && optionalAmountOk(line.aloneExtra) && optionalAmountOk(line.partnerPercent);
+/** What is missing on the screen, in reading order; `label` is a key under `admin.purchases.form.missing`. */
+export type MissingLabel =
+  | "seller" | "category" | "model" | "condition" | "quantity" | "unitCost" | "price"
+  | "withBoardExtra" | "aloneExtra" | "partnerPercent" | "fullPcParts" | "paidAmount" | "tradeInValue" | "tradeInNote" | "overpaid";
+
+export interface MissingField {
+  /** The field key (line fields match the input name after `line{index}-`; `lines`/`sellerId` are section markers). */
+  field: string;
+  line: number | null;
+  label: MissingLabel;
 }
 
-/** Enough to send: a seller, valid lines (a whole PC has at least two), payment amounts that fit the method and the total. */
-export function purchaseFormValid(form: PurchaseForm): boolean {
-  if (!form.sellerId || form.lines.length === 0 || !form.lines.every(lineValid)) return false;
-  if (form.kind === "FullPc" && form.lines.length < 2) return false;
-  if (!optionalAmountOk(form.paidAmount) || !optionalAmountOk(form.tradeInValue) || isOverpaid(form)) return false;
-  return !hasTradeIn(form.paymentMethod) || form.tradeInNote.trim() !== "";
+/** The card title: the model, else the category path, else the caller's fallback ("القطعة 2"). */
+export function lineDisplayName(line: LineForm, tree: readonly Category[], fallback: string): string {
+  const model = line.modelName.trim();
+  if (model) return model;
+  return categoryPath(tree, line.categoryId) || fallback;
+}
+
+/**
+ * Seller, each line's inputs, the whole-PC part count, then payment. Empty when the form can be sent.
+ * A used piece's serial stays optional (not every used part has a readable one), as on the server.
+ */
+export function missingFields(form: PurchaseForm): MissingField[] {
+  const missing: MissingField[] = [];
+  if (!form.sellerId) missing.push({ field: "sellerId", line: null, label: "seller" });
+
+  form.lines.forEach((line, index) => {
+    if (!line.categoryId) missing.push({ field: "categoryId", line: index, label: "category" });
+    if (!line.modelName.trim()) missing.push({ field: "modelName", line: index, label: "model" });
+    if (line.condition !== "New" && line.condition !== "Used")
+      missing.push({ field: "condition", line: index, label: "condition" });
+    if (line.condition === "New" && lineQuantity(line) === 0)
+      missing.push({ field: "quantity", line: index, label: "quantity" });
+    if (!amountOk(line.unitCost)) missing.push({ field: "unitCost", line: index, label: "unitCost" });
+    if (!amountOk(line.price)) missing.push({ field: "price", line: index, label: "price" });
+    if (!optionalAmountOk(line.withBoardExtra)) missing.push({ field: "withBoardExtra", line: index, label: "withBoardExtra" });
+    if (!optionalAmountOk(line.aloneExtra)) missing.push({ field: "aloneExtra", line: index, label: "aloneExtra" });
+    if (!optionalAmountOk(line.partnerPercent)) missing.push({ field: "partnerPercent", line: index, label: "partnerPercent" });
+  });
+
+  if (form.kind === "FullPc" && form.lines.length < 2)
+    missing.push({ field: "lines", line: null, label: "fullPcParts" });
+
+  if (!optionalAmountOk(form.paidAmount)) missing.push({ field: "paidAmount", line: null, label: "paidAmount" });
+  if (!optionalAmountOk(form.tradeInValue)) missing.push({ field: "tradeInValue", line: null, label: "tradeInValue" });
+  if (hasTradeIn(form.paymentMethod) && !form.tradeInNote.trim())
+    missing.push({ field: "tradeInNote", line: null, label: "tradeInNote" });
+  if (isOverpaid(form)) missing.push({ field: "paidAmount", line: null, label: "overpaid" });
+
+  return missing;
 }
 
 export function toLineRequest(line: LineForm): PurchaseLineRequest {

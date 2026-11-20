@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Purchase } from "./purchases-api.ts";
 import {
-  dropPhotoCopy, emptyLine, emptyPurchase, lineFromItem, pickModel, toLineRequest, typeModel, isDraft, isOverpaid, kindKey, lineQuantity, purchaseFormValid, purchaseFromView,
-  purchaseTotal, remainingAmount, sellerFormValid, statusKey, toPurchaseRequest, toSellerRequest, emptySeller, looksLikePhone, sellerQuery, withMethod, type LineForm, type PurchaseForm
+  dropPhotoCopy, emptyLine, emptyPurchase, lineFromItem, pickModel, toLineRequest, typeModel, isDraft, isOverpaid, kindKey, lineQuantity,
+  lineDisplayName, missingFields, purchaseFromView, purchaseTotal, remainingAmount, sellerFormValid, statusKey,
+  toPurchaseRequest, toSellerRequest, emptySeller, looksLikePhone, sellerQuery, withMethod, type LineForm, type PurchaseForm
 } from "./purchase-rules.ts";
 
 const line = (patch: Partial<LineForm> = {}): LineForm => ({ ...emptyLine("k"), modelName: "RX 6600", unitCost: "1000", price: "1500", ...patch });
+const completeLine = (patch: Partial<LineForm> = {}): LineForm =>
+  line({ categoryId: "cat", condition: "Used", serialNumber: "SN-1", ...patch });
 
 /** The first line of a built request or form (a test fails when there is none). */
 function firstLine<T>(lines: readonly T[] | null | undefined): T {
@@ -44,25 +47,6 @@ describe("purchase money", () => {
 });
 
 describe("purchase form", () => {
-  it("needs a seller and a valid line", () => {
-    assert.equal(purchaseFormValid(form()), true);
-    assert.equal(purchaseFormValid(form({ sellerId: "" })), false);
-    assert.equal(purchaseFormValid(form({ lines: [line({ modelName: " " })] })), false);
-    assert.equal(purchaseFormValid(form({ lines: [line({ unitCost: "" })] })), false);
-    assert.equal(purchaseFormValid(form({ lines: [] })), false);
-  });
-
-  it("needs two parts for a whole PC", () => {
-    assert.equal(purchaseFormValid(form({ kind: "FullPc" })), false);
-    assert.equal(purchaseFormValid(form({ kind: "FullPc", lines: [line(), line({ key: "b" })] })), true);
-  });
-
-  it("needs the trade-in note and not more than the total", () => {
-    assert.equal(purchaseFormValid(form({ paymentMethod: "TradeIn", tradeInValue: "500", tradeInNote: "" })), false);
-    assert.equal(purchaseFormValid(form({ paymentMethod: "TradeIn", tradeInValue: "500", tradeInNote: "mouse" })), true);
-    assert.equal(purchaseFormValid(form({ paidAmount: "5000" })), false);
-  });
-
   it("builds the request: the build name only for a kept whole PC, no money for a pure trade-in", () => {
     const parts = toPurchaseRequest(form({ keepAsBuild: true, buildName: "X" }));
     assert.equal(parts.keepAsBuild, false);
@@ -103,6 +87,52 @@ describe("purchase form", () => {
     assert.equal(firstLine(restored.lines).key, "k0");
     assert.equal(firstLine(restored.lines).quantity, "2");
     assert.deepEqual(firstLine(restored.lines).specs, { a: "1" });
+  });
+});
+
+describe("missing fields", () => {
+  it("is empty for a complete parts purchase", () => {
+    assert.deepEqual(missingFields(form({ lines: [completeLine()] })), []);
+  });
+
+  it("starts with the seller, then checks a line in screen order", () => {
+    const missing = missingFields(form({ sellerId: "", lines: [completeLine({ categoryId: "", modelName: "" })] }));
+    assert.deepEqual(missing.map((entry) => entry.label), ["seller", "category", "model"]);
+    assert.deepEqual([missing[0]?.field, missing[0]?.line], ["sellerId", null]);
+    assert.deepEqual([missing[1]?.field, missing[1]?.line], ["categoryId", 0]);
+  });
+
+  it("keeps a used serial optional and asks for the quantity on a new line", () => {
+    assert.deepEqual(missingFields(form({ lines: [completeLine({ serialNumber: " " })] })), []);
+    assert.deepEqual(missingFields(form({ lines: [completeLine({ condition: "New", quantity: "0" })] })).map((entry) => entry.label), ["quantity"]);
+  });
+
+  it("asks for the cost and the sale price, and flags bad optional amounts", () => {
+    assert.deepEqual(missingFields(form({ lines: [completeLine({ unitCost: "", price: " " })] })).map((entry) => entry.label), ["unitCost", "price"]);
+    assert.deepEqual(
+      missingFields(form({ lines: [completeLine({ withBoardExtra: "-5", aloneExtra: "x", partnerPercent: "-1" })] })).map((entry) => entry.label),
+      ["withBoardExtra", "aloneExtra", "partnerPercent"]
+    );
+  });
+
+  it("needs two parts for a whole PC", () => {
+    const missing = missingFields(form({ kind: "FullPc", lines: [completeLine()] }));
+    assert.deepEqual(missing, [{ field: "lines", line: null, label: "fullPcParts" }]);
+  });
+
+  it("checks the payment fields and never lets the payment pass the total", () => {
+    assert.deepEqual(
+      missingFields(form({ lines: [completeLine()], paymentMethod: "TradeIn", tradeInNote: "" })).map((entry) => entry.label),
+      ["tradeInNote"]
+    );
+    assert.deepEqual(missingFields(form({ lines: [completeLine()], paidAmount: "-1" })).map((entry) => entry.label), ["paidAmount"]);
+    assert.deepEqual(missingFields(form({ lines: [completeLine()], paidAmount: "99999999" })).map((entry) => entry.label), ["overpaid"]);
+    assert.deepEqual(missingFields(form({ lines: [completeLine()], paidAmount: "" })), []);
+  });
+
+  it("names a line by its model, then its category, then the fallback", () => {
+    assert.equal(lineDisplayName(line({ modelName: "  i5 12400F " }), [], "القطعة 1"), "i5 12400F");
+    assert.equal(lineDisplayName(line({ modelName: "" }), [], "القطعة 1"), "القطعة 1");
   });
 });
 

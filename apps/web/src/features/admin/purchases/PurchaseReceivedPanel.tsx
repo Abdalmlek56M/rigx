@@ -27,6 +27,7 @@ export function PurchaseReceivedPanel({ result }: { result: PurchaseReceived }) 
       </ul>
       <p className="m-0 text-sm text-ink-muted">{t("photosHint")}</p>
       {assemblyId ? <Link href={`/admin/builds/${assemblyId}`} className={`${buttonClass({ variant: "primary" })} self-start`}><ArrowEndIcon size={buttonIconSize()} />{t("openBuild")}</Link> : null}
+      {assemblyId ? <p className="m-0 text-xs text-ink-muted">{t("addPartsHint")}</p> : null}
     </section>
   );
 }
