@@ -12,6 +12,7 @@ import { usePermissions } from "../use-permissions";
 import { cancelPurchase, createPurchase, receivePurchase, updatePurchase, type Purchase, type PurchaseReceived } from "./purchases-api";
 import { toPurchaseRequest, type PurchaseForm } from "./purchase-rules";
 import { BanIcon, BoxIcon, SaveIcon } from "@/components/ui/icons";
+import { ApiError } from "@rigx/api-client";
 import { Button } from "../kit/Button";
 
 /** The first thing the server said was wrong, for a toast (a field error when there is one). */
@@ -73,7 +74,8 @@ export function PurchaseActions({ purchase, form, onValidate, onCreated, submit,
       onReceived(await guard(() => receivePurchase(purchase.id)));
       toast(t("receivedToast"));
     } catch (error) {
-      toast(failureMessage(error, t("failed")), "error");
+      const shortOfCash = error instanceof ApiError && error.status === 409 && /balance is not enough/i.test(error.problem.title ?? "");
+      toast(shortOfCash ? t("notEnoughCash") : failureMessage(error, t("failed")), "error");
       throw error;
     }
   }

@@ -46,6 +46,18 @@ export function PurchasePayment({ form, errors, missing, submitted, onChange }: 
         {hasTradeIn(form.paymentMethod) ? <TextField label={t("tradeInValue")} name="tradeInValue" type="number" ltr value={form.tradeInValue} onChange={(tradeInValue) => set({ tradeInValue })} error={errorFor("tradeInValue")} /> : null}
         <TextField label={t("date")} name="purchaseDate" type="date" ltr value={form.purchaseDate} onChange={(purchaseDate) => set({ purchaseDate })} error={errors.purchaseDate} />
       </div>
+      {hasMoney(form.paymentMethod) ? (
+        <label className="flex items-start gap-2 rounded-control border border-line bg-paper p-3 text-sm">
+          <input
+            type="checkbox" checked={form.payFromCash} onChange={(event) => set({ payFromCash: event.target.checked })}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-orange"
+          />
+          <span className="flex flex-col gap-0.5">
+            <b>{t("payFromCash")}</b>
+            <span className="text-xs font-normal text-ink-muted">{t(form.payFromCash ? "payFromCashOn" : "payFromCashOff")}</span>
+          </span>
+        </label>
+      ) : null}
       {hasTradeIn(form.paymentMethod) ? (
         <TextAreaField label={t("tradeInNote")} name="tradeInNote" value={form.tradeInNote} onChange={(tradeInNote) => set({ tradeInNote })} rows={2} maxLength={500} hint={t("tradeInHint")} error={errorFor("tradeInNote")} />
       ) : null}

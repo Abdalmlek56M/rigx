@@ -72,6 +72,8 @@ export interface PurchaseForm {
   paidAmount: string;
   tradeInValue: string;
   tradeInNote: string;
+  /** false = old stock paid earlier or outside the store accounts: receiving it takes no money from them. */
+  payFromCash: boolean;
   lines: LineForm[];
 }
 
@@ -87,7 +89,7 @@ export function emptyLine(key: string): LineForm {
 export function emptyPurchase(today: string, firstLineKey: string, firstLine?: LineForm): PurchaseForm {
   return {
     sellerId: "", kind: "Parts", keepAsBuild: false, buildName: "", purchaseDate: today, notes: "", paymentMethod: "Cash",
-    paidAmount: "", tradeInValue: "", tradeInNote: "", lines: [firstLine ?? emptyLine(firstLineKey)]
+    paidAmount: "", tradeInValue: "", tradeInNote: "", payFromCash: true, lines: [firstLine ?? emptyLine(firstLineKey)]
   };
 }
 
@@ -158,6 +160,7 @@ export function purchaseFromView(purchase: Purchase, keyOf: (index: number) => s
     paidAmount: purchase.paidAmount > 0 ? amountText(purchase.paidAmount) : "",
     tradeInValue: purchase.tradeInValue > 0 ? amountText(purchase.tradeInValue) : "",
     tradeInNote: purchase.tradeInNote ?? "",
+    payFromCash: purchase.payFromCash,
     lines: purchase.lines.map((line, index) => lineFromView(line, keyOf(index)))
   };
 }
@@ -286,6 +289,7 @@ export function toPurchaseRequest(form: PurchaseForm, rowVersion?: number): Purc
     paidAmount: hasMoney(form.paymentMethod) ? moneyOf(form.paidAmount) : 0,
     tradeInValue: hasTradeIn(form.paymentMethod) ? moneyOf(form.tradeInValue) : 0,
     tradeInNote: hasTradeIn(form.paymentMethod) ? form.tradeInNote.trim() || null : null,
+    payFromCash: form.payFromCash,
     lines: form.lines.map(toLineRequest),
     rowVersion
   };

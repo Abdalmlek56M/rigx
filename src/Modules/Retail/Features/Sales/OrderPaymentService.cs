@@ -55,6 +55,10 @@ public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> conte
         if (order.RowVersion != request.RowVersion) throw new RetailException(409, "The order was changed by another user.");
         if (order.PaymentStatus == PaymentStatus.Waived) throw new RetailException(409, "Payment was waived for this order.");
         if (order.Status is OrderStatus.Cancelled) throw new RetailException(409, "A cancelled order cannot change payment.");
+        // Recorded payments are the truth: a fully paid order cannot be marked unpaid by a stale status form.
+        if (next != PaymentStatus.Paid && order.PaidAmount >= order.Total)
+            throw new RetailException(409, "The recorded payments already cover the order total.");
+        if (next == order.PaymentStatus) return OrderMapping.ToView(order);
         order.PaymentStatus = next;
         order.UpdatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime(); order.RowVersion++;
         order.Events.Add(OrderMapping.Event($"Payment:{next}", request.Notes?.Trim(), actorId, order.UpdatedAtUtc));

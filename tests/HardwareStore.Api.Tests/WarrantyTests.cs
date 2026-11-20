@@ -138,45 +138,56 @@ public sealed class WarrantyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
     // ---------------------------------------------------------------- public lookup
 
     [Fact]
-    public async Task Public_lookup_by_phone_masks_the_phone_hides_private_fields_and_groups_per_order()
+    public async Task Public_lookup_returns_a_flat_newest_first_list_without_order_phone_or_serial()
     {
         var (retail, clock) = await StartAsync();
-        var (first, firstOrder) = await SoldAsync(retail, Line("Lookup GPU", serial: "SN-SECRET-9"));
+        var (first, firstOrder) = await SoldAsync(retail, Line("Lookup GPU", serial: "SN-SHARED-9"));
         clock.Advance(TimeSpan.FromHours(1));
-        var (_, secondOrder) = await SoldAsync(retail, Line("Lookup RAM"));
-        await SoldAsync(retail, Line("Other phone"), phone: "01099999999");
+        var (second, secondOrder) = await SoldAsync(retail, Line("Lookup RAM", serial: "SN-SHARED-9"));
 
-        var result = await retail.Warranties.LookupAsync("0128 918 6840");
+        var result = await retail.Warranties.LookupAsync("sn-shared-9");
 
-        Assert.Equal([secondOrder.Reference, firstOrder.Reference], result.Groups.Select(group => group.OrderReference));
-        Assert.All(result.Groups, group => Assert.Equal("********840", group.PhoneMasked));
-        Assert.Equal(first.Code, Assert.Single(result.Groups[1].Items).Code);
+        Assert.Equal([second.Code, first.Code], result.Items.Select(item => item.Code));
         var json = JsonSerializer.Serialize(result);
-        Assert.DoesNotContain("SN-SECRET-9", json);
+        Assert.DoesNotContain("SN-SHARED-9", json);
+        Assert.DoesNotContain(firstOrder.Reference, json);
+        Assert.DoesNotContain(secondOrder.Reference, json);
         Assert.DoesNotContain("01289186840", json);
         Assert.DoesNotContain("Customer", json);
     }
 
     [Fact]
-    public async Task Public_lookup_finds_by_item_code_serial_and_order_reference_and_unknown_is_empty()
+    public async Task Public_lookup_finds_by_item_code_and_serial_and_unknown_is_empty()
     {
         var (retail, _) = await StartAsync();
-        var (item, order) = await SoldAsync(retail, Line("Find GPU", serial: "SN-Find-77"));
+        var (item, _) = await SoldAsync(retail, Line("Find GPU", serial: "SN-Find-77"));
 
-        var byCode = await retail.Warranties.LookupAsync(item.Code.ToLowerInvariant());
-        var bySerial = await retail.Warranties.LookupAsync("sn-find-77");
-        var byOrder = await retail.Warranties.LookupAsync(order.Reference);
-
-        foreach (var result in new[] { byCode, bySerial, byOrder })
-        {
-            var group = Assert.Single(result.Groups);
-            Assert.Equal(order.Reference, group.OrderReference);
-            Assert.Equal(item.Code, Assert.Single(group.Items).Code);
-        }
-        Assert.Empty((await retail.Warranties.LookupAsync("RX-9999")).Groups);
-        Assert.Empty((await retail.Warranties.LookupAsync("01111111111")).Groups);
-        Assert.Empty((await retail.Warranties.LookupAsync("RIGX-00000000-0000")).Groups);
+        foreach (var query in new[] { item.Code, item.Code.ToLowerInvariant(), "sn-find-77" })
+            Assert.Equal(item.Code, Assert.Single((await retail.Warranties.LookupAsync(query)).Items).Code);
+        Assert.Empty((await retail.Warranties.LookupAsync("RX-9999")).Items);
         Assert.Equal(400, await StatusCodeAsync(() => retail.Warranties.LookupAsync(" ")));
+    }
+
+    [Theory]
+    [InlineData("0128 918 6840")]
+    [InlineData("RIGX-00000000-0000")]
+    [InlineData("INV-2026-0001")]
+    public async Task Public_lookup_refuses_phone_order_reference_and_invoice_number(string query)
+    {
+        var (retail, _) = await StartAsync();
+        await SoldAsync(retail, Line("Private GPU"));
+
+        Assert.Equal(400, await StatusCodeAsync(() => retail.Warranties.LookupAsync(query)));
+    }
+
+    [Fact]
+    public async Task Admin_list_still_finds_by_phone_and_order_reference()
+    {
+        var (retail, _) = await StartAsync();
+        var (item, order) = await SoldAsync(retail, Line("Admin find GPU"));
+
+        Assert.Equal(item.Code, Assert.Single((await retail.Warranties.ListAdminAsync("0128 918 6840", null, 1, true, true)).Items).Code);
+        Assert.Equal(item.Code, Assert.Single((await retail.Warranties.ListAdminAsync(order.Reference, null, 1, true, true)).Items).Code);
     }
 
     [Fact]
@@ -185,10 +196,10 @@ public sealed class WarrantyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
         var (retail, clock) = await StartAsync();
         var (item, _) = await SoldAsync(retail, Line("Expiring GPU", months: 1));
 
-        Assert.Equal(WarrantyStatus.Active, Assert.Single(Assert.Single((await retail.Warranties.LookupAsync(item.Code)).Groups).Items).Status);
+        Assert.Equal(WarrantyStatus.Active, Assert.Single((await retail.Warranties.LookupAsync(item.Code)).Items).Status);
         clock.Advance(TimeSpan.FromDays(45));
 
-        var view = Assert.Single(Assert.Single((await retail.Warranties.LookupAsync(item.Code)).Groups).Items);
+        var view = Assert.Single((await retail.Warranties.LookupAsync(item.Code)).Items);
         Assert.Equal((WarrantyStatus.Expired, 0), (view.Status, view.DaysLeft));
         Assert.Equal(1, await AdminTotalAsync(retail, WarrantyStatus.Expired));
         Assert.Equal(0, await AdminTotalAsync(retail, WarrantyStatus.Active));
@@ -245,7 +256,7 @@ public sealed class WarrantyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixt
         Assert.Equal((WarrantyStatus.Void, "Sticker removed", row.RowVersion + 1), (voided.Status, voided.VoidReason, voided.RowVersion));
         Assert.Equal("01289186840", voided.PhoneNumber);
         Assert.Equal(409, await StatusCodeAsync(() => retail.Warranties.VoidAsync(row.Id, new WarrantyVoidRequest("Again", voided.RowVersion), Actor)));
-        var publicView = Assert.Single(Assert.Single((await retail.Warranties.LookupAsync(item.Code)).Groups).Items);
+        var publicView = Assert.Single((await retail.Warranties.LookupAsync(item.Code)).Items);
         Assert.Equal(WarrantyStatus.Void, publicView.Status);
     }
 

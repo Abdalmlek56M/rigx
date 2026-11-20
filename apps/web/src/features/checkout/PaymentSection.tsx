@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { CheckoutSettings, PaymentMethods } from "@/lib/storefront";
 import { formatEgp } from "@/lib/format";
@@ -12,29 +13,31 @@ interface PaymentSectionProps extends SectionProps {
   pickupEnabled: boolean;
 }
 
-/** What is paid before the order is prepared, worded from the owner's settings (nothing hardcoded). */
-function UpfrontNote({ settings, payment, pickupEnabled }: Pick<PaymentSectionProps, "settings" | "payment" | "pickupEnabled">) {
+/** What is paid before the order is prepared, for the fulfilment the customer chose, worded from the owner's settings. */
+function UpfrontNote({ settings, payment, pickup }: Pick<PaymentSectionProps, "settings" | "payment"> & { pickup: boolean }) {
   const t = useTranslations("checkout.payment.note");
   const locale = useLocale();
+  if (pickup) return <NoteBox>{t("pickup")}</NoteBox>;
   const deposit = settings.depositPercent > 0;
-  const transfer = payment.instaPay || payment.wallet;
   if (!settings.shippingPaidUpfront && !deposit) return null;
+  const transfer = payment.instaPay || payment.wallet;
   const percent = String(settings.depositPercent);
   const depositText = settings.depositThreshold > 0
     ? t("deposit", { threshold: formatEgp(settings.depositThreshold, locale), percent })
     : t("depositAll", { percent });
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-card bg-paper p-3.5 text-[13px] leading-6 text-ink-muted">
-      {settings.shippingPaidUpfront ? <b className="text-sm text-ink">{t("shipping")}</b> : null}
-      <p className="m-0">
-        {transfer ? `${t("transfer")} ` : ""}
-        {deposit ? `${depositText} ` : ""}
-        {payment.cash ? `${t("rest")} ` : ""}
-        {pickupEnabled ? t("pickup") : ""}
-      </p>
-    </div>
+    <NoteBox>
+      {settings.shippingPaidUpfront ? <b className="block text-sm text-ink">{t("shipping")}</b> : null}
+      {transfer ? `${t("transfer")} ` : ""}
+      {deposit ? `${depositText} ` : ""}
+      {payment.cash ? t("rest") : ""}
+    </NoteBox>
   );
+}
+
+function NoteBox({ children }: { children: ReactNode }) {
+  return <div className="flex flex-col gap-1.5 rounded-card bg-paper p-3.5 text-[13px] leading-6 text-ink-muted">{children}</div>;
 }
 
 const METHODS: readonly { method: PaymentMethod; enabled: (payment: PaymentMethods) => boolean }[] = [
@@ -64,7 +67,7 @@ export function PaymentSection({ form, set, errors, payment, settings, pickupEna
         ))}
       </div>
       <FieldAlert>{error("paymentMethod")}</FieldAlert>
-      <UpfrontNote settings={settings} payment={payment} pickupEnabled={pickupEnabled} />
+      <UpfrontNote settings={settings} payment={payment} pickup={pickupEnabled && form.fulfillment === "Pickup"} />
     </FormSection>
   );
 }

@@ -18,6 +18,7 @@ public sealed class Purchase
     public decimal PaidAmount { get; set; }
     public decimal TradeInValue { get; set; }
     public string? TradeInNote { get; set; }
+    public bool PayFromCash { get; set; } = true;
     public decimal Remaining { get; set; }
     public DateTimeOffset? ReceivedAtUtc { get; set; }
     public Guid? AssemblyId { get; set; }
@@ -41,6 +42,7 @@ public sealed class Purchase
         PaidAmount = checkedPurchase.Payment.PaidAmount;
         TradeInValue = checkedPurchase.Payment.TradeInValue;
         TradeInNote = checkedPurchase.Payment.TradeInNote;
+        PayFromCash = checkedPurchase.Payment.PayFromCash;
         Remaining = checkedPurchase.Remaining;
         UpdatedAtUtc = now;
         Lines.Clear();

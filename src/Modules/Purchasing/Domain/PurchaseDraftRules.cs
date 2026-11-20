@@ -33,7 +33,7 @@ public static class PurchaseDraftRules
         var lines = requested.Select(BuildLine).ToList();
         var total = lines.Sum(line => line.LineTotal);
         var payment = new SellerPayment(request.PaymentMethod?.Trim() ?? string.Empty, request.PaidAmount, request.TradeInValue,
-            TextRules.Optional(request.TradeInNote, MaxTradeInNoteLength, "Trade-in note"));
+            TextRules.Optional(request.TradeInNote, MaxTradeInNoteLength, "Trade-in note"), request.PayFromCash);
         var remaining = PurchaseRules.Remaining(total, payment);
         var buildName = request.KeepAsBuild ? TextRules.Optional(request.BuildName, MaxBuildNameLength, "Build name") : null;
         return new CheckedPurchase(kind, request.KeepAsBuild, buildName, request.PurchaseDate ?? today,

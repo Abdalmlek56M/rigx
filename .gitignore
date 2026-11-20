@@ -41,3 +41,6 @@ docs/review/
 
 # Local media and data written by the API at runtime (uploads, demo photos)
 src/Host/HardwareStore.Api/App_Data/
+
+# Brand files for the owner (exported, not source)
+brand-kit/

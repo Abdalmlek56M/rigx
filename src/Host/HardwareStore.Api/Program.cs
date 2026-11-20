@@ -26,6 +26,8 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration["Sentry:Dsn"]))
     {
         options.TracesSampleRate = 0;
         options.SendDefaultPii = false;
+        // Business failures (AppException → 4xx ProblemDetails) are expected answers, not bugs; only real faults reach Sentry.
+        options.SetBeforeSend(sentryEvent => sentryEvent.Exception is HardwareStore.Common.Domain.AppException ? null : sentryEvent);
     });
 
 builder.Host.UseSerilog((_, _, configuration) => configuration

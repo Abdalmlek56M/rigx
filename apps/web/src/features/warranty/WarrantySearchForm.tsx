@@ -34,7 +34,6 @@ export function WarrantySearchForm({ initial }: { initial: string }) {
         />
         <button type="submit" className="h-12 rounded-control bg-orange px-6 font-bold text-on-orange">{t("submit")}</button>
       </div>
-      <span className="text-[13px] text-ink-muted">{t("phoneHint")}</span>
     </form>
   );
 }

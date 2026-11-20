@@ -88,7 +88,7 @@ public sealed record BlacklistView(Guid Id, string? Name, string? PhoneNumber, s
 
 /// <summary>Public tracking page (/t/{token}): no login, no customer name or phone.</summary>
 public sealed record TrackingView(string Reference, string Status, string FulfillmentMethod, IReadOnlyList<TrackingStep> Timeline,
-    string? CourierName, string? WaybillNumber, string? Area, string? Street, IReadOnlyList<TrackingItem> Items, decimal Total,
+    string? CourierName, string? WaybillNumber, string? Area, IReadOnlyList<TrackingItem> Items, decimal Total,
     decimal Remaining, decimal UpfrontDue, string? DeliveryTime, bool CanRate, int? SatisfactionScore);
 public sealed record TrackingStep(string Status, DateTimeOffset At);
 public sealed record TrackingItem(string Name, string? Code, int Quantity);

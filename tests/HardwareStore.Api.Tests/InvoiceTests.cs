@@ -329,19 +329,18 @@ public sealed class InvoicePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Warranty_lookup_by_invoice_number_returns_the_order_group_with_the_number(bool lowercase)
+    public async Task Public_warranty_lookup_refuses_an_invoice_number_but_staff_can_search_by_it(bool lowercase)
     {
         await using var env = await Env.StartAsync(fixture);
         var (item, order) = await env.DeliveredAsync("Lookup invoice GPU");
         await env.DeliveredAsync("Other invoice GPU");
         var number = (await env.InvoiceOfAsync(order)).Invoice.Number;
+        var query = Uri.EscapeDataString(lowercase ? number.ToLowerInvariant() : number);
 
-        var result = await Env.GetAsync<WarrantyLookupResult>(env.Anonymous,
-            $"/api/v1/warranty/lookup?q={Uri.EscapeDataString(lowercase ? number.ToLowerInvariant() : number)}");
-
-        var group = Assert.Single(result.Groups);
-        Assert.Equal((order.Reference, number), (group.OrderReference, group.InvoiceNumber));
-        Assert.Equal(item.Code, Assert.Single(group.Items).Code);
+        using var refused = await env.Anonymous.GetAsync($"/api/v1/warranty/lookup?q={query}");
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        var found = Assert.Single((await Env.GetAsync<PagedResult<WarrantyAdminView>>(env.Staff, $"{AdminRoot}/warranties?q={query}")).Items);
+        Assert.Equal((item.Code, order.Reference, number), (found.Code, found.OrderReference, found.InvoiceNumber));
     }
 
     // ---------------------------------------------------------------- lists

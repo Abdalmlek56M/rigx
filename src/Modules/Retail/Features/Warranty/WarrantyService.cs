@@ -4,27 +4,23 @@ using Microsoft.EntityFrameworkCore;
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>
-/// Warranty registry: the public lookup (phone, order number, item code or serial), a customer's own warranties and the
+/// Warranty registry: the public lookup (item code or serial only), a customer's own warranties and the
 /// admin list with manual voiding (sticker removed or damaged).
 /// </summary>
 public sealed class WarrantyService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
     private const int PageSize = 50;
     private const int LookupLimit = 100;
+    private const string PublicLookupHint = "Search by the item code on the RIGX sticker or the serial number. Your full warranty list is in your account.";
 
     public async Task<WarrantyLookupResult> LookupAsync(string? query, CancellationToken cancellationToken = default)
     {
         var (kind, value) = WarrantyRules.ParseLookup(query);
+        if (!WarrantyRules.IsPublicLookup(kind)) throw new RetailException(400, PublicLookupHint);
         var now = timeProvider.GetUtcNow();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var rows = await Matching(db, kind, value).OrderByDescending(w => w.StartsAtUtc).ThenBy(w => w.Code).Take(LookupLimit)
-            .Join(db.Orders, w => w.OrderId, o => o.Id, (w, o) => new { Warranty = w, o.Reference }).ToListAsync(cancellationToken);
-        var numbers = await InvoiceNumbersAsync(db, rows.Select(row => row.Warranty.OrderId), cancellationToken);
-        var groups = rows.GroupBy(row => row.Warranty.OrderId).Select(group => new WarrantyLookupGroup(
-                group.First().Reference, numbers.GetValueOrDefault(group.Key), WarrantyRules.MaskPhone(group.First().Warranty.PhoneNumber), group.Min(row => row.Warranty.StartsAtUtc),
-                group.Select(row => PublicView(row.Warranty, now)).ToList()))
-            .OrderByDescending(group => group.PurchasedAtUtc).ToList();
-        return new WarrantyLookupResult(groups);
+        var rows = await Matching(db, kind, value).OrderByDescending(w => w.StartsAtUtc).ThenBy(w => w.Code).Take(LookupLimit).ToListAsync(cancellationToken);
+        return new WarrantyLookupResult(rows.Select(w => PublicView(w, now)).ToList());
     }
 
     public async Task<IReadOnlyList<WarrantyAccountView>> ListMineAsync(Guid userId, CancellationToken cancellationToken = default)

@@ -9,7 +9,7 @@ public sealed record PurchaseLineRequest(string? ModelName, string? Condition, i
 /// <summary>Create/update body; <paramref name="RowVersion"/> is required on update only. No date means today.</summary>
 public sealed record PurchaseRequest(Guid SellerId, string? Kind, bool KeepAsBuild, string? BuildName, DateOnly? PurchaseDate,
     string? Notes, string? PaymentMethod, decimal PaidAmount, decimal TradeInValue, string? TradeInNote,
-    IReadOnlyList<PurchaseLineRequest>? Lines, long? RowVersion = null);
+    IReadOnlyList<PurchaseLineRequest>? Lines, long? RowVersion = null, bool PayFromCash = true);
 
 public sealed record PurchaseLineView(Guid Id, int SortOrder, Guid? CategoryId, Guid? ProductId, string ModelName, string Condition,
     int Quantity, decimal UnitCost, decimal LineTotal, decimal Price, decimal? WithBoardExtra, decimal? AloneExtra,
@@ -20,7 +20,7 @@ public sealed record PurchaseView(Guid Id, string Code, SellerSummary Seller, st
     string Status, DateOnly PurchaseDate, string? Notes, decimal Total, string PaymentMethod, decimal PaidAmount,
     decimal TradeInValue, string? TradeInNote, decimal Remaining, DateTimeOffset? ReceivedAtUtc, Guid? AssemblyId,
     Guid CreatedByUserAccountId, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long RowVersion,
-    IReadOnlyList<PurchaseLineView> Lines);
+    IReadOnlyList<PurchaseLineView> Lines, bool PayFromCash);
 
 public sealed record PurchaseListItem(Guid Id, string Code, SellerSummary Seller, string Kind, string Status, DateOnly PurchaseDate,
     decimal Total, decimal Remaining, int LineCount, DateTimeOffset CreatedAtUtc);

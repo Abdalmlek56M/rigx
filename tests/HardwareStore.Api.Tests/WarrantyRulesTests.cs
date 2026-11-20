@@ -71,6 +71,15 @@ public sealed class WarrantyRulesTests
         Assert.Equal((kind, value), WarrantyRules.ParseLookup(query));
 
     [Theory]
+    [InlineData("RX-0142", true)]
+    [InlineData("SN-abc123", true)]
+    [InlineData("RIGX-20261113-0007", false)]
+    [InlineData("INV-2026-0001", false)]
+    [InlineData("01289186840", false)]
+    public void IsPublicLookup_allows_only_item_code_and_serial(string query, bool allowed) =>
+        Assert.Equal(allowed, WarrantyRules.IsPublicLookup(WarrantyRules.ParseLookup(query).Kind));
+
+    [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]

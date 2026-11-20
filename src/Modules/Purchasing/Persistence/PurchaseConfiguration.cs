@@ -37,6 +37,7 @@ internal sealed class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
         e.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(16).IsRequired();
         e.Property(x => x.PaidAmount).HasColumnName("paid_amount").HasPrecision(18, 2);
         e.Property(x => x.TradeInValue).HasColumnName("trade_in_value").HasPrecision(18, 2);
+        e.Property(x => x.PayFromCash).HasColumnName("pay_from_cash").HasDefaultValue(true).HasSentinel(true);
         e.Property(x => x.TradeInNote).HasColumnName("trade_in_note").HasMaxLength(PurchaseDraftRules.MaxTradeInNoteLength);
         e.Property(x => x.Remaining).HasColumnName("remaining").HasPrecision(18, 2);
         e.Property(x => x.ReceivedAtUtc).HasColumnName("received_at_utc").HasColumnType("timestamp with time zone");

@@ -45,13 +45,16 @@ export default async function WarrantyPage({ params, searchParams }: Props) {
         <span className="text-[15px] text-ink-muted">{t("subtitle")}</span>
       </div>
       <WarrantySearchForm key={query} initial={query} />
+      <p className="m-0 text-[13px] text-ink-muted">
+        {t.rich("accountNote", { link: (chunks) => <Link href="/account/warranties" className="font-bold text-orange-text underline hover:text-orange-text-hover">{chunks}</Link> })}
+      </p>
       {lookup === null ? null : lookup.status === "ok" ? (
         <div className="flex flex-col gap-3" aria-live="polite">
           <h2 className="m-0 text-lg font-bold">{t("resultsFor", { query })}</h2>
-          {lookup.groups.length === 0 ? (
+          {lookup.items.length === 0 ? (
             <p role="status" className="m-0 rounded-card border border-line bg-surface p-8 text-center text-ink-muted">{t("empty")}</p>
           ) : (
-            <WarrantyResults groups={lookup.groups} whatsApp={{ number, template: storefront.whatsAppTemplates.warranty }} />
+            <WarrantyResults items={lookup.items} whatsApp={{ number, template: storefront.whatsAppTemplates.warranty }} />
           )}
         </div>
       ) : (

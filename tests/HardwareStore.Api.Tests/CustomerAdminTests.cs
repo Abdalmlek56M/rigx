@@ -427,7 +427,7 @@ public sealed class CustomerAdminTests(OwnerBootstrapPostgreSqlFixture fixture) 
         Assert.Equal((warranty.Id, 3, warranty.EndsAtUtc, view.EndsAtUtc, "Goodwill"), (history.WarrantyId, history.Months, history.PreviousEndUtc, history.NewEndUtc, history.Reason));
         Assert.NotEqual(Guid.Empty, history.ActorUserAccountId);
         var lookup = await retail.Warranties.LookupAsync(warranty.Code);
-        Assert.Equal(view.EndsAtUtc, lookup.Groups.Single().Items.Single().EndsAtUtc);
+        Assert.Equal(view.EndsAtUtc, lookup.Items.Single().EndsAtUtc);
         using var again = await TestSignIn.PostJsonAsync(admin, $"/api/v1/admin/retail/warranties/{warranty.Id}/extend", new { months = 2, reason = "More" });
         Assert.Equal(5, (await ReadAsync<WarrantyAdminView>(again)).ExtendedMonths);
     }

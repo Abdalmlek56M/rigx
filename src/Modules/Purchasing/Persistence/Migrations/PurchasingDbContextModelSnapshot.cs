@@ -71,6 +71,12 @@ namespace HardwareStore.Modules.Purchasing.Persistence.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("paid_amount");
 
+                    b.Property<bool>("PayFromCash")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("pay_from_cash");
+
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasMaxLength(16)

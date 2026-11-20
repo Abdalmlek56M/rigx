@@ -26196,6 +26196,10 @@
               "integer"
             ],
             "format": "int64"
+          },
+          "payFromCash": {
+            "type": "boolean",
+            "default": true
           }
         }
       },
@@ -26234,7 +26238,8 @@
           "createdAtUtc",
           "updatedAtUtc",
           "rowVersion",
-          "lines"
+          "lines",
+          "payFromCash"
         ],
         "type": "object",
         "properties": {
@@ -26333,6 +26338,9 @@
             "items": {
               "$ref": "#/components/schemas/PurchaseLineView"
             }
+          },
+          "payFromCash": {
+            "type": "boolean"
           }
         }
       },
@@ -29099,7 +29107,6 @@
           "courierName",
           "waybillNumber",
           "area",
-          "street",
           "items",
           "total",
           "remaining",
@@ -29138,12 +29145,6 @@
             ]
           },
           "area": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "street": {
             "type": [
               "null",
               "string"
@@ -29864,50 +29865,16 @@
           }
         }
       },
-      "WarrantyLookupGroup": {
+      "WarrantyLookupResult": {
         "required": [
-          "orderReference",
-          "invoiceNumber",
-          "phoneMasked",
-          "purchasedAtUtc",
           "items"
         ],
         "type": "object",
         "properties": {
-          "orderReference": {
-            "type": "string"
-          },
-          "invoiceNumber": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "phoneMasked": {
-            "type": "string"
-          },
-          "purchasedAtUtc": {
-            "type": "string",
-            "format": "date-time"
-          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WarrantyPublicView"
-            }
-          }
-        }
-      },
-      "WarrantyLookupResult": {
-        "required": [
-          "groups"
-        ],
-        "type": "object",
-        "properties": {
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WarrantyLookupGroup"
             }
           }
         }

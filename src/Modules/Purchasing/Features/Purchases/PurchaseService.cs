@@ -176,5 +176,5 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
         purchase.Lines.OrderBy(line => line.SortOrder).Select(line => new PurchaseLineView(line.Id, line.SortOrder, line.CategoryId,
             line.ProductId, line.ModelName, line.Condition, line.Quantity, line.UnitCost, line.LineTotal, line.Price,
             line.WithBoardExtra, line.AloneExtra, line.SerialNumber, line.PartnerPercent, line.PartnerId, line.IsHidden, line.WarrantyLabel,
-            line.HasBox, line.InternalNote, line.Specs, line.BrandId, line.CopyPhotosFromItemId)).ToList());
+            line.HasBox, line.InternalNote, line.Specs, line.BrandId, line.CopyPhotosFromItemId)).ToList(), purchase.PayFromCash);
 }

@@ -462,7 +462,8 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
 
         Assert.Equal(OrderStatus.Shipped, view.Status);
         Assert.Equal([OrderStatus.New, OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.Shipped], view.Timeline.Select(step => step.Status));
-        Assert.Equal(("Bosta", "WB-77", "Nasr City", "Abbas St"), (view.CourierName, view.WaybillNumber, view.Area, view.Street));
+        Assert.Equal(("Bosta", "WB-77", "Nasr City"), (view.CourierName, view.WaybillNumber, view.Area));
+        Assert.DoesNotContain("Abbas St", JsonSerializer.Serialize(view));
         Assert.Equal((item.Code, 1), (view.Items[0].Code, view.Items[0].Quantity));
         Assert.Equal(550m, view.Total);
         Assert.Equal((450m, 0m), (view.Remaining, view.UpfrontDue));

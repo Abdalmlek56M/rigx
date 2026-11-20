@@ -67,6 +67,19 @@ public sealed class MoneyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
     }
 
     [Fact]
+    public async Task A_fully_paid_order_cannot_be_marked_unpaid_by_hand()
+    {
+        var retail = await StartAsync();
+        var item = await retail.ReceiveItemAsync(Line("GPU", 100m, 300m));
+        var order = await retail.PosAsync(RetailSales.Sale([RetailSales.StockLine(item.Id, 1, 300m)]));
+        order = await retail.Payments.AddPaymentAsync(order.Id, new OrderPaymentRequest("Cash", 300m, null, order.RowVersion), Actor);
+
+        Assert.Equal(PaymentStatus.Paid, order.PaymentStatus);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.Payments.UpdatePaymentAsync(order.Id,
+            new PaymentStatusRequest(PaymentStatus.Unpaid, null, order.RowVersion), Actor)));
+    }
+
+    [Fact]
     public async Task A_refund_lowers_the_account_and_is_refused_when_it_cannot_cover_it()
     {
         var retail = await StartAsync();

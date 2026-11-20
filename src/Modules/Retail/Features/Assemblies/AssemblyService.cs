@@ -49,6 +49,8 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
             if (claimed.Count != unitIds.Count) throw new RetailException(409, "Some selected units are no longer available.");
             foreach (var unit in claimed) AssemblyEditing.Link(assembly, unit, 0m);
             AssemblyEditing.ResetAllocations(assembly);
+            // The starting sale price is the parts' in-build prices added up; the owner can change it on the build card.
+            assembly.SalePrice = decimal.Round(assembly.Units.Sum(link => link.PartPrice), 2);
             db.Assemblies.Add(assembly);
             await AssemblyEditing.SaveAsync(db, cancellationToken);
             await transaction.CommitAsync(cancellationToken);

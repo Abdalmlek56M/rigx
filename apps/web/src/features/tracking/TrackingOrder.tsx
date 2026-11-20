@@ -21,7 +21,6 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
   const locale = useLocale();
   const status = orderStatusKey(view.status);
   const open = status !== "Delivered" && status !== "Cancelled";
-  const address = [view.area, view.street].filter(Boolean).join("، ");
   const showRemaining = open && view.remaining > 0;
 
   return (
@@ -40,7 +39,7 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
         <dl className="m-0 flex flex-col gap-2.5">
           {view.courierName ? <Detail label={t("courier")} value={view.courierName} /> : null}
           {view.waybillNumber ? <Detail label={t("waybill")} value={view.waybillNumber} mono /> : null}
-          {address ? <Detail label={t("address")} value={address} /> : null}
+          {view.area ? <Detail label={t("address")} value={view.area} /> : null}
           {showRemaining ? <Detail label={t("remaining")} value={formatEgp(view.remaining, locale)} /> : null}
           {open && view.upfrontDue > 0 ? <Detail label={t("upfrontDue")} value={formatEgp(view.upfrontDue, locale)} /> : null}
         </dl>

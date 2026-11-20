@@ -41,7 +41,7 @@ public sealed class OrderTrackingService(IDbContextFactory<RetailDbContext> cont
 
     private static TrackingView ToView(StoreOrder order) =>
         new(order.Reference, OrderMapping.CustomerStatus(order), order.FulfillmentMethod, OrderMapping.CustomerTimeline(order),
-            order.CourierName, order.WaybillNumber, order.Area, order.Street,
+            order.CourierName, order.WaybillNumber, order.Area,
             order.Items.Select(item => new TrackingItem(item.Name, item.Code, item.Quantity)).ToList(), order.Total,
             OrderRules.Remaining(order), OrderRules.UpfrontDue(order), order.DeliveryTime, CanRate(order), order.SatisfactionScore);
 

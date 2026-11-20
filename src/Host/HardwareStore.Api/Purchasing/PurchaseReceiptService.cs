@@ -15,7 +15,7 @@ public sealed class PurchaseReceiptService(PurchaseService purchases, InventoryU
     public async Task<PurchaseReceived> ReceiveAsync(Guid purchaseId, Guid actorId, CancellationToken cancellationToken)
     {
         var purchase = await purchases.GetDraftAsync(purchaseId, cancellationToken);
-        var payKind = MoneyMethodOf(purchase.PaymentMethod);
+        var payKind = purchase.PayFromCash ? MoneyMethodOf(purchase.PaymentMethod) : null;
         if (purchase.PaidAmount > 0 && payKind is not null) await money.EnsureCanPayAsync(payKind, purchase.PaidAmount, cancellationToken);
         var warranties = await WarrantyChoice.LoadOptionsAsync(settings, cancellationToken);
         var lines = new List<ReceiptLine>();

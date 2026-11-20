@@ -3,7 +3,7 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>What a public warranty search text means.</summary>
 public enum WarrantyLookupKind { Code, OrderReference, InvoiceNumber, Phone, Serial }
 
-/// <summary>Warranty rules: end date, computed status, public search parsing, phone masking and voiding.</summary>
+/// <summary>Warranty rules: end date, computed status, search parsing, phone masking and voiding.</summary>
 public static class WarrantyRules
 {
     private const int MaxQueryLength = 64;
@@ -29,8 +29,11 @@ public static class WarrantyRules
     public static string MaskPhone(string digits) =>
         digits.Length <= 3 ? digits : new string('*', digits.Length - 3) + digits[^3..];
 
+    /// <summary>The public, no-login lookup accepts only what is printed on the sticker or the unit: an item code or a serial number.</summary>
+    public static bool IsPublicLookup(WarrantyLookupKind kind) => kind is WarrantyLookupKind.Code or WarrantyLookupKind.Serial;
+
     /// <summary>
-    /// Reads the public search text: an invoice number (INV-2026-0001), RX- an item code, RIGX- an order reference
+    /// Reads the search text: an invoice number (INV-2026-0001), RX- an item code, RIGX- an order reference
     /// (staff use), all digits a phone number, anything else a serial number.
     /// </summary>
     public static (WarrantyLookupKind Kind, string Value) ParseLookup(string? query)

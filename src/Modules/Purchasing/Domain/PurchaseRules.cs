@@ -40,7 +40,8 @@ public static class SellerPaymentMethod
 }
 
 /// <summary>Money side of a purchase: total owed to the seller, paid in money, given as trade-in, and what is left.</summary>
-public sealed record SellerPayment(string Method, decimal PaidAmount, decimal TradeInValue, string? TradeInNote);
+/// <summary>How the seller is paid. <c>PayFromCash</c> false = paid earlier or outside the store accounts (old stock): nothing leaves the cash accounts on receipt.</summary>
+public sealed record SellerPayment(string Method, decimal PaidAmount, decimal TradeInValue, string? TradeInNote, bool PayFromCash = true);
 
 public static class PurchaseRules
 {

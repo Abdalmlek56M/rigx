@@ -266,6 +266,36 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
     }
 
     [Fact]
+    public async Task Old_stock_paid_outside_the_cash_accounts_is_received_without_touching_them()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        await harness.Retail.FundAsync(100m);
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 2000m, Used("RTX 3060")) with { PayFromCash = false }, Actor);
+
+        var received = await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+
+        Assert.False(received.Purchase.PayFromCash);
+        Assert.Equal((2000m, 0m), (received.Purchase.PaidAmount, received.Purchase.Remaining));
+        Assert.Equal(100m, await harness.Retail.BalanceAsync());
+        Assert.DoesNotContain(await harness.Retail.Money.ListMovementsAsync((await harness.Retail.AccountAsync()).Id, null, null),
+            item => item.Source == MoneySource.Purchase);
+    }
+
+    [Fact]
+    public async Task A_build_purchase_starts_its_sale_price_at_the_parts_total()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(FullPc(seller.Id, Used("RTX 3060"), Used("i5 12400F")), Actor);
+
+        var received = await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default);
+
+        var build = await harness.Retail.Assemblies.GetAsync(received.Purchase.AssemblyId!.Value, includeCosts: true);
+        Assert.Equal(6000m, build.SalePrice);
+    }
+
+    [Fact]
     public async Task A_pure_trade_in_moves_no_money_and_the_cash_part_of_a_mixed_one_comes_from_cash()
     {
         var harness = new Harness(await fixture.CreateDatabaseAsync());

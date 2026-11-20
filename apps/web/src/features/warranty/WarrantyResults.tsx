@@ -13,13 +13,13 @@ export interface WarrantyWhatsApp {
   template: string;
 }
 
-async function WarrantyItem({ item, orderReference, whatsApp }: { item: Schemas["WarrantyPublicView"]; orderReference: string; whatsApp: WarrantyWhatsApp }) {
+async function WarrantyItem({ item, whatsApp }: { item: Schemas["WarrantyPublicView"]; whatsApp: WarrantyWhatsApp }) {
   const t = await getTranslations("account.warranties");
   const locale = await getLocale();
   const status = warrantyStatusKey(item.status);
   const condition = parseCondition(item.condition);
   const days = daysLeftToShow(item.status, item.daysLeft);
-  const text = fillTemplate(whatsApp.template, { item: item.name, code: item.code, order: orderReference })
+  const text = fillTemplate(whatsApp.template, { item: item.name, code: item.code })
     || t("whatsAppMessage", { name: item.name, code: item.code });
 
   return (
@@ -50,31 +50,15 @@ async function WarrantyItem({ item, orderReference, whatsApp }: { item: Schemas[
   );
 }
 
-/** One card per order the search matched, with every part's warranty. */
-export async function WarrantyResults({ groups, whatsApp }: { groups: Schemas["WarrantyLookupGroup"][]; whatsApp: WarrantyWhatsApp }) {
-  const t = await getTranslations("warranty");
-  const locale = await getLocale();
-
+/** One card with the warranty of every item the search matched. */
+export async function WarrantyResults({ items, whatsApp }: { items: Schemas["WarrantyPublicView"][]; whatsApp: WarrantyWhatsApp }) {
   return (
-    <div className="flex flex-col gap-4">
-      {groups.map((group) => (
-        <section key={`${group.orderReference}-${group.invoiceNumber ?? ""}`} className="rounded-card border border-line bg-surface p-5 md:p-6">
-          <header className="flex flex-col gap-1 border-b border-line pb-3">
-            <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-bold">
-              <span>{t("order")} <span dir="ltr" className="font-mono">{group.orderReference}</span></span>
-              {group.invoiceNumber ? <span className="text-ink-muted">{t("invoice")} <span dir="ltr" className="font-mono">{group.invoiceNumber}</span></span> : null}
-            </span>
-            <span className="text-sm text-ink-muted">
-              {t("purchased", { date: formatDate(group.purchasedAtUtc, locale) })} · {t("phone", { phone: group.phoneMasked })}
-            </span>
-          </header>
-          <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
-            {group.items.map((item) => (
-              <WarrantyItem key={item.code} item={item} orderReference={group.orderReference} whatsApp={whatsApp} />
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
+    <section className="rounded-card border border-line bg-surface p-5 md:p-6">
+      <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
+        {items.map((item) => (
+          <WarrantyItem key={item.code} item={item} whatsApp={whatsApp} />
+        ))}
+      </ul>
+    </section>
   );
 }

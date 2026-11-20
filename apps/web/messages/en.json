@@ -765,7 +765,7 @@
         "deposit": "If the order is over {threshold}, a {percent}% deposit is also paid and deducted from the total.",
         "depositAll": "A {percent}% deposit is paid and deducted from the total.",
         "rest": "The rest is paid in cash on delivery.",
-        "pickup": "If you pick up yourself, nothing is paid upfront."
+        "pickup": "When you pick up from the store, nothing is paid upfront; you pay on pickup."
       }
     },
     "summary": {
@@ -1124,20 +1124,16 @@
   },
   "warranty": {
     "title": "Your parts warranty",
-    "subtitle": "Search by phone number, invoice number or part code and see how long the warranty runs.",
-    "label": "Phone number, invoice number or part code",
-    "placeholder": "e.g. INV-2026-0143 or RX-0154",
+    "subtitle": "Check the warranty status of any part you bought from RIGX.",
+    "label": "Item code (on the RIGX sticker) or serial number",
+    "placeholder": "e.g. RX-0154",
     "submit": "Search",
-    "phoneHint": "When you search by phone, only the last 3 digits of each number are shown.",
+    "accountNote": "To see all your warranties, sign in and open “<link>My warranties</link>” in your account.",
     "resultsFor": "Results for {query}",
-    "empty": "We found no warranty for that. Check the number and try again, or message us on WhatsApp.",
+    "empty": "We found no warranty for that. Check the code or serial number and try again, or message us on WhatsApp.",
     "rateLimited": "Please wait a moment and try again.",
-    "badQuery": "Enter a valid phone number, invoice number (e.g. INV-2026-0143) or part code (e.g. RX-0154).",
+    "badQuery": "Enter the item code printed on the RIGX sticker (e.g. RX-0154) or the serial number. To see all your warranties, sign in to your account.",
     "failed": "Something went wrong while searching. Please try again shortly.",
-    "order": "Order",
-    "invoice": "Invoice",
-    "purchased": "Bought on {date}",
-    "phone": "Phone {phone}",
     "stickerNote": "The warranty needs an intact RIGX sticker on the part.",
     "helpTitle": "Need help with a warranty?",
     "helpLink": "Message us on WhatsApp",
@@ -2789,6 +2785,9 @@
         "dropPhotos": "Without the photos"
       },
       "payment": {
+        "payFromCash": "Take the paid amount from the cash accounts",
+        "payFromCashOn": "The paid amount leaves the payment method's account when the purchase is received.",
+        "payFromCashOff": "Nothing leaves the cash accounts (old stock paid earlier). The paid amount is only recorded on the purchase.",
         "title": "Payment to the seller",
         "total": "Purchase total",
         "remaining": "Remaining to the seller",
@@ -2813,6 +2812,7 @@
         "receive": "Receive into stock",
         "cancel": "Cancel purchase",
         "saved": "Draft saved.",
+        "notEnoughCash": "The payment method's account does not have enough money. Add money in \"Cash\", or untick \"Take the paid amount from the cash accounts\" if this stock was paid earlier.",
         "receivedToast": "The purchase was received and added to stock.",
         "cancelledToast": "The purchase was cancelled.",
         "failed": "The action could not be completed. Try again.",
