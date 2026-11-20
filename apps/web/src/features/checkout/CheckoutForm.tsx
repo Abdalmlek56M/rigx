@@ -10,6 +10,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import type { CheckoutSettings, PaymentMethods } from "@/lib/storefront";
 import { EMPTY_FORM, toCheckoutRequest, validateCheckout, type CheckoutFormState, type FieldKey } from "./checkout-request";
+import { isEgyptMobile, normalizePhone } from "../requests/request-fields";
+import type { AppliedCoupon } from "./CouponBox";
 import { CustomerSection } from "./CustomerSection";
 import { ExtrasSection } from "./ExtrasSection";
 import { FulfillmentSection } from "./FulfillmentSection";
@@ -49,6 +51,8 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [busy, setBusy] = useState(false);
   const [placed, setPlaced] = useState(false);
+  const [coupon, setCoupon] = useState<(AppliedCoupon & { forTotal: number }) | null>(null);
+  const [couponProblem, setCouponProblem] = useState<string | null>(null);
   const quote = useQuote(form.fulfillment === "Pickup", form.governorate, subtotal);
 
   useEffect(() => {
@@ -62,6 +66,12 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
   }
 
   const set: SetField = (key, value) => setForm((current) => ({ ...current, [key]: value }));
+  const removeCoupon = () => {
+    setCoupon(null);
+    setForm((current) => ({ ...current, couponCode: "" }));
+  };
+  // A discount worked out for an older cart total no longer holds: the customer applies the code again.
+  if (coupon && coupon.forTotal !== subtotal) removeCoupon();
   const minimum = settings.minimumOrderAmount > 0 && subtotal < settings.minimumOrderAmount ? settings.minimumOrderAmount : null;
 
   async function submit(event: FormEvent) {
@@ -80,6 +90,12 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
       return;
     }
     if (outcome.status === "gone") await refresh();
+    if (outcome.status === "coupon") {
+      removeCoupon();
+      setCouponProblem(outcome.problem);
+      setBusy(false);
+      return;
+    }
     setProblem(outcome.status === "invalid" ? { kind: "invalid", messages: outcome.messages } : { kind: outcome.status });
     setBusy(false);
   }
@@ -120,6 +136,15 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
       </div>
       <OrderSummary
         form={form} set={set} errors={errors} lines={lines} subtotal={subtotal} quote={quote} minimum={minimum} busy={busy}
+        coupon={{
+          applied: coupon, problem: couponProblem, phone: isEgyptMobile(form.phone) ? normalizePhone(form.phone) : null,
+          onApplied: (applied) => {
+            setCoupon({ ...applied, forTotal: subtotal });
+            setForm((current) => ({ ...current, couponCode: applied.code }));
+          },
+          onRemoved: removeCoupon,
+          onProblem: setCouponProblem
+        }}
         problem={
           problem ? (
             <div role="alert" className="flex flex-col gap-1 text-sm text-error">

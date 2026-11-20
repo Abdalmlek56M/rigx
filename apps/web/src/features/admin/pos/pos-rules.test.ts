@@ -85,6 +85,11 @@ describe("sale request", () => {
     assert.equal(request.confirm, false);
   });
 
+  it("sends the coupon code upper-cased, or null when empty", () => {
+    assert.equal(toSaleRequest([itemLine(item)], form, true).couponCode, null);
+    assert.equal(toSaleRequest([itemLine(item)], { ...form, couponCode: " ahmed10 " }, true).couponCode, "AHMED10");
+  });
+
   it("sends only filled payments and an empty delivery fee as the settings' fee", () => {
     const request = toSaleRequest([itemLine(item)], {
       ...form, fulfillment: "Delivery", governorate: "C", area: "Nasr City", street: "Abbas",

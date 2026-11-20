@@ -38,6 +38,10 @@ describe("toCheckoutRequest", () => {
     assert.equal(request.notes, null);
     assert.equal(request.termsAccepted, true);
   });
+  it("sends the applied coupon code, or null", () => {
+    assert.equal(toCheckoutRequest(valid(), [item()]).couponCode, null);
+    assert.equal(toCheckoutRequest(valid({ couponCode: "AHMED10" }), [item()]).couponCode, "AHMED10");
+  });
   it("sends no address for pickup", () => {
     assert.equal(toCheckoutRequest(valid({ fulfillment: "Pickup" }), [item()]).address, null);
   });

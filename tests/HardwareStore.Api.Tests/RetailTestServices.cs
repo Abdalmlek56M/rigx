@@ -31,7 +31,8 @@ public sealed record RetailTestServices(
     MoneyAccountService Money,
     ExpenseTypeService ExpenseTypes,
     RecurringExpenseService Recurring,
-    DashboardService Dashboard)
+    DashboardService Dashboard,
+    CouponService Coupons)
 {
     public static RetailTestServices Create(IDbContextFactory<RetailDbContext> factory, TimeProvider time)
     {
@@ -42,7 +43,7 @@ public sealed record RetailTestServices(
             new(factory, time, zone), new(factory, time, zone), new(factory, time, zone), new(factory, time, zone), new(factory, time, zone),
             new(factory, reports, time), new(factory), new(factory), new(factory, reports, time, zone), reports, new(factory, time), new(factory),
             new(factory, time), new(factory, time), new(factory, time), new(factory, time, zone), new(factory, time),
-            new(factory, time, zone), new(factory, time), recurring, new(factory, reports, recurring, time));
+            new(factory, time, zone), new(factory, time), recurring, new(factory, reports, recurring, time), new(factory, time));
     }
 }
 

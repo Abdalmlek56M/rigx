@@ -15,6 +15,7 @@ public static class IdentityRateLimitPolicies
     public const string Checkout = "order-checkout";
     public const string OrderTracking = "order-tracking";
     public const string WarrantyLookup = "warranty-lookup";
+    public const string CouponCheck = "coupon-check";
     public const string BuilderSave = "builder-save";
     public const string ArticleView = "article-view";
 }
@@ -36,6 +37,7 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.Checkout, 10, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.OrderTracking, 60, TimeSpan.FromMinutes(1));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.WarrantyLookup, 20, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CouponCheck, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.BuilderSave, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.ArticleView, 60, TimeSpan.FromMinutes(10));
 
@@ -90,7 +92,8 @@ public static class IdentityRateLimiting
     {
         IdentityRateLimitPolicies.EmailChangeConfirm or IdentityRateLimitPolicies.EmailCodeVerify => "600",
         IdentityRateLimitPolicies.CatalogSuggest or IdentityRateLimitPolicies.OrderTracking => "60",
-        IdentityRateLimitPolicies.Checkout or IdentityRateLimitPolicies.WarrantyLookup or IdentityRateLimitPolicies.BuilderSave
+        IdentityRateLimitPolicies.Checkout or IdentityRateLimitPolicies.WarrantyLookup or IdentityRateLimitPolicies.CouponCheck
+            or IdentityRateLimitPolicies.BuilderSave
             or IdentityRateLimitPolicies.ArticleView or IdentityRateLimitPolicies.RequestPhoto => "600",
         _ => "3600"
     };
@@ -106,6 +109,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.CatalogSuggest => "Catalog.Search.RateLimited",
         IdentityRateLimitPolicies.Checkout => "Sales.Checkout.RateLimited",
         IdentityRateLimitPolicies.WarrantyLookup => "Sales.WarrantyLookup.RateLimited",
+        IdentityRateLimitPolicies.CouponCheck => "Sales.CouponCheck.RateLimited",
         IdentityRateLimitPolicies.BuilderSave => "Builder.Save.RateLimited",
         IdentityRateLimitPolicies.ArticleView => "Content.ArticleView.RateLimited",
         IdentityRateLimitPolicies.OrderTracking => "Sales.Tracking.RateLimited",

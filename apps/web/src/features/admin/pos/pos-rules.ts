@@ -170,6 +170,8 @@ export interface PosForm {
   /** Empty: the fee from the shipping settings for the governorate. */
   deliveryFee: string;
   discount: string;
+  /** A coupon code to apply after the staff discount; empty for none. */
+  couponCode: string;
   leadSource: string | null;
   usage: PosUsage | null;
   usageNote: string;
@@ -179,7 +181,7 @@ export interface PosForm {
 
 export const EMPTY_POS_FORM: PosForm = {
   name: "", phone: "", phoneHasWhatsApp: true, email: "", fulfillment: "Pickup", governorate: "", area: "", street: "",
-  building: "", landmark: "", deliveryFee: "", discount: "", leadSource: null, usage: null, usageNote: "", notes: "",
+  building: "", landmark: "", deliveryFee: "", discount: "", couponCode: "", leadSource: null, usage: null, usageNote: "", notes: "",
   payments: [{ key: "p0", method: "Cash", amount: "" }]
 };
 
@@ -212,6 +214,7 @@ export function toSaleRequest(cart: readonly CartLine[], form: PosForm, confirm:
       : null,
     items: sendableLines(cart).map(toOrderLine),
     discount: toMoney(form.discount) ?? 0,
+    couponCode: orNull(form.couponCode.toUpperCase()),
     deliveryFee: delivery ? toMoney(form.deliveryFee) : null,
     payments: filledPayments(form.payments).map((row) => ({ method: row.method, amount: toMoney(row.amount) ?? 0, moneyAccountId: null })),
     leadSource: form.leadSource,

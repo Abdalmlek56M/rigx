@@ -9,7 +9,8 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
 {
     /// <summary>
     /// Creates a <c>New</c> order from the cart: lines are re-priced from published items/builds, the fee and upfront part
-    /// come from the store settings (<paramref name="policy"/>), and a blacklisted customer's order is flagged.
+    /// come from the store settings (<paramref name="policy"/>), a coupon code takes its discount off the lines (the minimum order is
+    /// checked before it), and a blacklisted customer's order is flagged.
     /// </summary>
     public async Task<PlacedOrder> CreateOnlineAsync(CheckoutRequest request, CheckoutPolicy policy, CancellationToken cancellationToken = default)
     {
@@ -20,10 +21,14 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         if (!policy.PaymentMethods.Contains(method)) throw new RetailException(400, "This payment method is not available.");
         var (usage, usageNote) = OrderUsage.Parse(request.Usage, request.UsageNote);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Online, policy.BuildPrice, cancellationToken);
+        var itemsTotal = items.Sum(item => item.LineTotal - item.DiscountAmount);
+        if (itemsTotal < policy.MinimumOrder) throw new RetailException(400, $"The minimum order is {policy.MinimumOrder:0.##} EGP.");
         var now = timeProvider.GetUtcNow().ToUniversalTime();
+        var coupon = await CouponRedemption.RedeemAsync(db, request.CouponCode, request.Customer?.Phone, items, now, cancellationToken);
         var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Online, items, policy.Shipping, now);
-        if (order.Subtotal < policy.MinimumOrder) throw new RetailException(400, $"The minimum order is {policy.MinimumOrder:0.##} EGP.");
+        CouponRedemption.Stamp(order, coupon);
         order.UserAccountId = policy.UserAccountId;
         order.PaymentMethod = method;
         order.PaymentRequired = fulfillment == OrderFulfillment.Delivery;
@@ -38,6 +43,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         order.Events.Add(OrderMapping.Event("OrderCreated", OrderChannel.Online, policy.UserAccountId, now));
         db.Orders.Add(order);
         await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return new PlacedOrder(OrderMapping.ToView(order), OrderMapping.ToCustomerView(order));
     }
 

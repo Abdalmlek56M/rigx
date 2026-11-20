@@ -52,8 +52,9 @@ export function OrderMoney({ order }: { order: Order }) {
     const key = methodKey(value);
     return key ? t(`methods.${key}`) : value;
   };
-  const rows: { label: string; amount: number; strong: boolean }[] = [
+  const rows: { label: string; amount: number; strong: boolean; minus?: boolean }[] = [
     { label: t("detail.money.subtotal"), amount: order.subtotal, strong: false },
+    { label: t("detail.money.couponDiscount", { code: order.couponCode ?? "" }), amount: order.couponDiscount, strong: false, minus: true },
     { label: t("detail.money.deliveryFee"), amount: order.deliveryFee, strong: false },
     { label: t("detail.money.total"), amount: order.total, strong: true },
     { label: t("detail.money.upfrontDue"), amount: order.upfrontDue, strong: false },
@@ -69,7 +70,7 @@ export function OrderMoney({ order }: { order: Order }) {
         {rows.filter((row) => row.strong || row.amount > 0).map((row) => (
           <div key={row.label} className="flex justify-between gap-3 border-b border-line py-1.5 text-sm">
             <dt className="text-ink-muted">{row.label}</dt>
-            <dd className={`m-0 whitespace-nowrap ${row.strong ? "font-bold" : ""}`}>{formatEgp(row.amount, locale)}</dd>
+            <dd className={`m-0 whitespace-nowrap ${row.strong ? "font-bold" : ""}`}>{row.minus ? "− " : ""}{formatEgp(row.amount, locale)}</dd>
           </div>
         ))}
       </dl>

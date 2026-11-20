@@ -5,7 +5,7 @@ namespace HardwareStore.Modules.Retail;
 
 /// <summary>
 /// Store sales (POS): the sale price is typed at sale time (business §5), a warning shows below cost, the discount is
-/// limited per permission, payments may be split, and a build may be sold whole or part by part.
+/// limited per permission (a coupon is on top of it and outside the limit), payments may be split, and a build may be sold whole or part by part.
 /// </summary>
 public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider, TimeZoneInfo businessZone)
 {
@@ -14,6 +14,8 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var items = await PriceAsync(db, request, cancellationToken);
+        var staffDiscount = items.Sum(item => item.DiscountAmount);
+        var coupon = await PreviewCouponAsync(db, request, items, cancellationToken);
         var lines = new List<PosPreviewLine>();
         var warnings = new List<string>();
         var financed = new List<(Guid PartnerId, decimal? Percent, decimal Profit)>();
@@ -30,17 +32,16 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
             lines.Add(new PosPreviewLine(item.Name, item.Code, item.Quantity, item.UnitPrice, decimal.Round(sale / item.Quantity, 2),
                 includeCosts ? cost : null, belowCost));
         }
-        var discount = items.Sum(item => item.DiscountAmount);
         var linesTotal = items.Sum(item => item.LineTotal);
-        try { OrderRules.EnsureDiscountAllowed(linesTotal, discount, policy.MaxDiscountPercent, policy.UnlimitedDiscount); }
+        try { OrderRules.EnsureDiscountAllowed(linesTotal, staffDiscount, policy.MaxDiscountPercent, policy.UnlimitedDiscount); }
         catch (RetailException exception) { warnings.Add(exception.Message); }
-        var subtotal = linesTotal - discount;
+        var subtotal = linesTotal - staffDiscount - (coupon?.Discount ?? 0m);
         var fulfillment = OrderRules.Fulfillment(request.FulfillmentMethod);
         var fee = ShippingOf(request, fulfillment, policy).Fee;
         var costTotal = lines.Sum(line => line.Cost ?? 0m);
-        return new PosPreview(lines, linesTotal, discount, subtotal, fee, subtotal + fee, includeCosts ? costTotal : null,
+        return new PosPreview(lines, linesTotal, staffDiscount, subtotal, fee, subtotal + fee, includeCosts ? costTotal : null,
             includeCosts ? subtotal - costTotal : null, warnings, await ReturningPartsAsync(db, items, cancellationToken),
-            includeCosts ? await PartnerSharesAsync(db, financed, cancellationToken) : null);
+            includeCosts ? await PartnerSharesAsync(db, financed, cancellationToken) : null, coupon);
     }
 
     public async Task<OrderView> SellAsync(PosSaleRequest request, PosPolicy policy, Guid actorId, CancellationToken cancellationToken = default)
@@ -59,7 +60,9 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
             OrderRules.EnsureDiscountAllowed(items.Sum(item => item.LineTotal), items.Sum(item => item.DiscountAmount),
                 policy.MaxDiscountPercent, policy.UnlimitedDiscount);
             var now = timeProvider.GetUtcNow().ToUniversalTime();
+            var coupon = await CouponRedemption.RedeemAsync(db, request.CouponCode, request.Customer?.Phone, items, now, cancellationToken);
             var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Store, items, shipping, now);
+            CouponRedemption.Stamp(order, coupon);
             order.PaymentMethod = payments.Select(payment => payment.Method).Distinct().Count() switch
             {
                 0 => OrderPaymentMethod.Cash,
@@ -129,6 +132,19 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var governorate = request.Address?.Governorate?.Trim().ToUpperInvariant();
         var rate = EgyptGovernorates.IsKnown(governorate) ? policy.ShippingFor(governorate!) : new ShippingRate(0m, null);
         return request.DeliveryFee is decimal fee ? rate with { Fee = fee } : rate;
+    }
+
+    /// <summary>
+    /// The coupon on the preview, taken on what is left after the staff discount; it does not count toward the staff discount limit.
+    /// A code that does not work comes back with its problem and no discount, so the cashier sees why.
+    /// </summary>
+    private async Task<CouponCheckView?> PreviewCouponAsync(RetailDbContext db, PosSaleRequest request, List<OrderItem> items,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.CouponCode)) return null;
+        var (_, view) = await CouponRedemption.CheckAsync(db, request.CouponCode, request.Customer?.Phone,
+            items.Sum(item => item.LineTotal - item.DiscountAmount), timeProvider.GetUtcNow().ToUniversalTime(), cancellationToken);
+        return view;
     }
 
     private static async Task<List<OrderItem>> PriceAsync(RetailDbContext db, PosSaleRequest request, CancellationToken cancellationToken)

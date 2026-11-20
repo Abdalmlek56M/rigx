@@ -8,6 +8,7 @@ import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import type { CartLine } from "@/features/cart/cart-rules";
 import { FieldAlert, useFieldError, type SectionProps } from "./form-parts";
+import { CouponBox, type AppliedCoupon } from "./CouponBox";
 import type { Quote } from "./use-quote";
 
 interface OrderSummaryProps extends Pick<SectionProps, "form" | "set" | "errors"> {
@@ -17,6 +18,14 @@ interface OrderSummaryProps extends Pick<SectionProps, "form" | "set" | "errors"
   /** Set when the order is below the store's minimum. */
   minimum: number | null;
   busy: boolean;
+  coupon: {
+    applied: AppliedCoupon | null;
+    problem: string | null;
+    phone: string | null;
+    onApplied: (coupon: AppliedCoupon) => void;
+    onRemoved: () => void;
+    onProblem: (problem: string | null) => void;
+  };
   /** Why the last send failed (already worded), shown above the button. */
   problem: ReactNode;
 }
@@ -31,7 +40,7 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 }
 
 /** The cart lines, the amounts (shipping from the quote) and the confirm button with the terms tick. */
-export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimum, busy, problem }: OrderSummaryProps) {
+export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimum, busy, coupon, problem }: OrderSummaryProps) {
   const t = useTranslations("checkout.summary");
   const locale = useLocale();
   const error = useFieldError(errors);
@@ -62,13 +71,20 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
           </li>
         ))}
       </ul>
+      <div className="border-t border-line pt-3.5">
+        <CouponBox
+          orderTotal={subtotal} phone={coupon.phone} applied={coupon.applied} problem={coupon.problem}
+          onApplied={coupon.onApplied} onRemoved={coupon.onRemoved} onProblem={coupon.onProblem}
+        />
+      </div>
       <div className="flex flex-col gap-2 border-t border-line pt-3.5">
         <Row label={t("subtotal")} value={formatEgp(subtotal, locale)} />
+        {coupon.applied ? <Row label={t("couponDiscount")} value={`− ${formatEgp(coupon.applied.discount, locale)}`} /> : null}
         <Row label={t("shipping")} value={shipping} />
         {quote && quote.upfrontTotal > 0 ? <Row label={t("upfront")} value={formatEgp(quote.upfrontTotal, locale)} /> : null}
         <div className="flex items-baseline justify-between border-t border-line pt-2.5">
           <b>{t("total")}</b>
-          <b className="text-[22px]">{formatEgp(subtotal + (quote?.shippingFee ?? 0), locale)}</b>
+          <b className="text-[22px]">{formatEgp(subtotal - (coupon.applied?.discount ?? 0) + (quote?.shippingFee ?? 0), locale)}</b>
         </div>
       </div>
       <label className="flex items-start gap-2.5 text-[13px] leading-6">

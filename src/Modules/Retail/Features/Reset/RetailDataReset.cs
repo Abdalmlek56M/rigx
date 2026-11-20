@@ -7,7 +7,7 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>
 /// The Retail part of the "business" reset: stock, builds, orders, invoices and counters, warranties, money movements,
 /// expenses and the partner ledgers. Kept: money accounts (their balance falls back to the opening balance), partners,
-/// expense types and the blacklist.
+/// expense types, the blacklist and coupons (their results restart from zero with the orders).
 /// </summary>
 public sealed class RetailDataReset(IDbContextFactory<RetailDbContext> contextFactory) : IDataResetSource
 {

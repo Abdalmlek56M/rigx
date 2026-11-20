@@ -275,6 +275,12 @@ export const TagIcon = (p: IconProps) => (
     <circle cx="7.5" cy="7.5" r="1.5" />
   </Icon>
 );
+export const TicketIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 8a2 2 0 0 0 0 4v0a2 2 0 0 1 0 4v2h18v-2a2 2 0 0 1 0-4v0a2 2 0 0 0 0-4V6H3z" />
+    <path d="M14 6v2M14 11v2M14 16v2" />
+  </Icon>
+);
 export const TruckIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M2 6h12v10H2zM14 9h4l4 4v3h-8" />

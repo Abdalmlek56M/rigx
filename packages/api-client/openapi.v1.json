@@ -1592,6 +1592,45 @@
         }
       }
     },
+    "/api/v1/store/coupons/check": {
+      "post": {
+        "tags": [
+          "store"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponCheckView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/store/quote": {
       "post": {
         "tags": [
@@ -9218,6 +9257,180 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/retail/coupons": {
+      "get": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060System.StoreSettings\u0060.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CouponView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060System.StoreSettings\u0060.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/retail/coupons/{id}": {
+      "put": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060System.StoreSettings\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060System.StoreSettings\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           },
           "default": {
             "description": "Error (ProblemDetails).",
@@ -17578,6 +17791,12 @@
               "null",
               "boolean"
             ]
+          },
+          "couponCode": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -17824,6 +18043,268 @@
         ],
         "type": "object",
         "properties": {
+          "rowVersion": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "CouponCheckRequest": {
+        "required": [
+          "code",
+          "orderTotal"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "orderTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CouponCheckView": {
+        "required": [
+          "code",
+          "discount",
+          "problem"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "problem": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CouponInput": {
+        "required": [
+          "code",
+          "sourceName",
+          "discountKind",
+          "discountValue"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sourceName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "discountKind": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "discountValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "maxDiscount": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "minOrderTotal": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "maxUses": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "oncePerCustomer": {
+            "type": "boolean",
+            "default": true
+          },
+          "startsAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endsAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          }
+        }
+      },
+      "CouponView": {
+        "required": [
+          "id",
+          "code",
+          "sourceName",
+          "discountKind",
+          "discountValue",
+          "maxDiscount",
+          "minOrderTotal",
+          "maxUses",
+          "oncePerCustomer",
+          "startsAtUtc",
+          "endsAtUtc",
+          "isActive",
+          "isRunning",
+          "uses",
+          "completedUses",
+          "revenue",
+          "discountGiven",
+          "lastUsedAtUtc",
+          "createdAtUtc",
+          "updatedAtUtc",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "discountKind": {
+            "type": "string"
+          },
+          "discountValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "maxDiscount": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "minOrderTotal": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "maxUses": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "oncePerCustomer": {
+            "type": "boolean"
+          },
+          "startsAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endsAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isRunning": {
+            "type": "boolean"
+          },
+          "uses": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completedUses": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "revenue": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "discountGiven": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "lastUsedAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
           "rowVersion": {
             "type": "integer",
             "format": "int64"
@@ -18754,6 +19235,17 @@
             "items": {
               "$ref": "#/components/schemas/TrackingStep"
             }
+          },
+          "couponCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "couponDiscount": {
+            "type": "number",
+            "format": "double",
+            "default": 0
           }
         }
       },
@@ -22610,6 +23102,17 @@
             "items": {
               "$ref": "#/components/schemas/OrderEventView"
             }
+          },
+          "couponCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "couponDiscount": {
+            "type": "number",
+            "format": "double",
+            "default": 0
           }
         }
       },
@@ -24120,6 +24623,16 @@
             "items": {
               "$ref": "#/components/schemas/PartnerSharePreview"
             }
+          },
+          "coupon": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CouponCheckView"
+              }
+            ]
           }
         }
       },
@@ -24280,6 +24793,12 @@
           "confirm": {
             "type": "boolean",
             "default": true
+          },
+          "couponCode": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

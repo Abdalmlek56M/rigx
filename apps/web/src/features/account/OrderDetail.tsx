@@ -64,6 +64,7 @@ function Totals({ order }: { order: Order }) {
       <h2 className="m-0 text-lg font-bold">{t("totals")}</h2>
       <dl className="m-0 flex flex-col gap-2.5">
         <Row label={t("subtotal")} value={money(order.subtotal)} />
+        {order.couponDiscount > 0 ? <Row label={t("couponDiscount", { code: order.couponCode ?? "" })} value={`− ${money(order.couponDiscount)}`} /> : null}
         {order.fulfillmentMethod === "Delivery" ? <Row label={t("shipping")} value={money(order.deliveryFee)} /> : null}
         <Row label={t("total")} value={money(order.total)} strong />
         <Row label={t("paid")} value={money(order.paidAmount)} />

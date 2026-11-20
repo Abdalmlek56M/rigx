@@ -780,7 +780,17 @@
       "minimum": "أقل قيمة للطلب {amount}. زوّد حاجة للسلة عشان تكمّل.",
       "confirm": "أكّد الطلب",
       "sending": "بنبعت الطلب…",
-      "callNote": "بعد ما تأكد، هنكلمك على واتساب نقفل معاك التفاصيل."
+      "callNote": "بعد ما تأكد، هنكلمك على واتساب نقفل معاك التفاصيل.",
+      "couponDiscount": "خصم الكوبون"
+    },
+    "coupon": {
+      "label": "كود الخصم",
+      "placeholder": "اكتب الكود",
+      "apply": "تطبيق",
+      "checking": "بنراجع…",
+      "applied": "كوبون",
+      "remove": "شيل الكوبون {code}",
+      "failed": "ماقدرناش نراجع الكود دلوقتي. جرّب تاني بعد شوية."
     }
   },
   "orderSuccess": {
@@ -807,7 +817,8 @@
       "title": "ملخص الطلب",
       "shipping": "الشحن",
       "total": "الإجمالي",
-      "upfront": "المطلوب مقدّم"
+      "upfront": "المطلوب مقدّم",
+      "couponDiscount": "خصم الكوبون ({code})"
     },
     "track": {
       "title": "تابع طلبك",
@@ -908,7 +919,8 @@
       "waybill": "رقم البوليصة",
       "ask": "عندي سؤال عن الطلب",
       "track": "تتبع الطلب",
-      "notFound": "الطلب ده مش موجود."
+      "notFound": "الطلب ده مش موجود.",
+      "couponDiscount": "خصم الكوبون ({code})"
     },
     "warranties": {
       "title": "ضمان منتجاتي",
@@ -1203,7 +1215,8 @@
         "pos": "بيع جديد",
         "orders": "الطلبات",
         "customers": "العملاء",
-        "offers": "العروض والكوبونات",
+        "offers": "العروض",
+        "coupons": "الكوبونات",
         "inventory": "المخزون",
         "builds": "التجميعات",
         "purchases": "شراء واستلام",
@@ -1480,7 +1493,8 @@
           "remaining": "المتبقي",
           "refunded": "اترجع",
           "method": "طريقة الدفع",
-          "waived": "اتنازل عن الدفع {date} · {reason}"
+          "waived": "اتنازل عن الدفع {date} · {reason}",
+          "couponDiscount": "خصم الكوبون ({code})"
         },
         "payments": {
           "title": "الدفعات",
@@ -2403,7 +2417,9 @@
         "pending": "حفظ كطلب مستني",
         "empty": "ضيف حاجة للسلة عشان يتحسب الملخص.",
         "calculating": "بنحسب…",
-        "previewFailed": "مقدرناش نحدّث الملخص: {message}"
+        "previewFailed": "مقدرناش نحدّث الملخص: {message}",
+        "couponLabel": "كوبون · اختياري",
+        "couponDiscount": "خصم الكوبون ({code})"
       },
       "errors": {
         "lines": "ضيف قطعة أو تجميعة على الأقل.",
@@ -3244,6 +3260,7 @@
           "content_media_asset_usages": "استخدام الصور",
           "content_media_assets": "الصور",
           "content_policies": "السياسات",
+          "coupons": "الكوبونات",
           "customer_addresses": "عناوين العملاء",
           "customer_requests": "الطلبات الواردة",
           "expense_types": "أنواع المصاريف",
@@ -3348,6 +3365,9 @@
           "CostAmount": "التكلفة",
           "CountryCallingCode": "كود الدولة",
           "CountryCode": "الدولة",
+          "CouponCode": "كود الكوبون",
+          "CouponDiscount": "خصم الكوبون",
+          "CouponId": "الكوبون",
           "CourierName": "شركة الشحن",
           "CreatedAtUtc": "اتعمل في",
           "CreatedByUserAccountId": "اتعمل بواسطة",
@@ -3364,6 +3384,8 @@
           "DirectExpenseAmount": "مصاريف مباشرة",
           "DirectExpenseNote": "ملاحظة المصاريف",
           "DiscountAmount": "الخصم",
+          "DiscountKind": "نوع الخصم",
+          "DiscountValue": "قيمة الخصم",
           "District": "الحي",
           "EffectiveAtUtc": "ساري من",
           "Email": "الإيميل",
@@ -3433,9 +3455,12 @@
           "LossSharingEnabled": "بيشارك في الخسارة",
           "MainImageStorageKey": "الصورة الأساسية",
           "ManagerName": "اسم المسؤول",
+          "MaxDiscount": "أقصى خصم",
+          "MaxUses": "عدد مرات الاستخدام",
           "MergedIntoAccountId": "اتدمج في حساب",
           "Message": "الرسالة",
           "Method": "الطريقة",
+          "MinOrderTotal": "أقل قيمة للطلب",
           "ModelKey": "الموديل",
           "ModelName": "الموديل",
           "ModeratedAtUtc": "اتراجع في",
@@ -3461,6 +3486,7 @@
           "OfferPrice": "سعر العرض",
           "OffsetAmount": "مبلغ التسوية",
           "OffsetApplied": "التسوية اتطبقت",
+          "OncePerCustomer": "مرة واحدة لكل عميل",
           "OpeningBalance": "الرصيد الافتتاحي",
           "OpeningDate": "تاريخ الافتتاح",
           "OrderId": "الطلب",
@@ -4429,6 +4455,89 @@
       "slugHint": "حروف إنجليزي صغيرة وأرقام وشَرطة، وبيظهر في رابط فلتر الماركة.",
       "save": "حفظ الماركة",
       "saved": "اتحفظت الماركة"
+    },
+    "coupons": {
+      "title": "الكوبونات",
+      "new": "كوبون جديد",
+      "newTitle": "كوبون جديد",
+      "editTitle": "تعديل الكوبون",
+      "pick": "كوبون من القائمة",
+      "pickHint": "اختار كوبون من القائمة أو اعمل كوبون جديد.",
+      "empty": "مفيش كوبونات لسه.",
+      "failed": "ماقدرناش نحمّل الكوبونات.",
+      "retry": "جرّب تاني",
+      "save": "حفظ الكوبون",
+      "saved": "اتحفظ الكوبون",
+      "none": "—",
+      "delete": "مسح الكوبون",
+      "deleted": "اتمسح الكوبون",
+      "deleteBody": "الكوبون هيتمسح نهائي.",
+      "deleteUsed": "الكوبون ده اتستخدم قبل كده ومايتمسحش. أوقفه بدل ما تمسحه.",
+      "turnOff": "إيقاف",
+      "usedNote": "الكوبون ده اتستخدم، فمايتمسحش. تقدر توقفه.",
+      "hint": "التواريخ بتوقيت القاهرة؛ الكوبون بيبدأ أول اليوم وينتهي آخر اليوم.",
+      "endBeforeStart": "تاريخ النهاية لازم يكون بعد تاريخ البداية أو نفس اليوم.",
+      "sourcePlaceholder": "مثلاً: أحمد – تيك توك أو إعلان فيسبوك نوفمبر",
+      "maxDiscountNote": "حد أقصى {amount}",
+      "usesOf": "{uses} من {max}",
+      "completed": "{count} اتمّوا",
+      "totals": "الإجمالي: {uses} استخدام · {completed} اتمّوا",
+      "totalsMoney": "الإجمالي: {uses} استخدام · {completed} اتمّوا · إيرادات {revenue} · خصم {discount}",
+      "columns": {
+        "source": "المصدر",
+        "discount": "الخصم",
+        "status": "الحالة",
+        "uses": "الاستخدام",
+        "revenue": "الإيرادات",
+        "discountGiven": "إجمالي الخصم",
+        "lastUsed": "آخر استخدام"
+      },
+      "statuses": {
+        "running": "شغال",
+        "off": "متوقف",
+        "notStarted": "لسه مابدأش",
+        "ended": "خلص"
+      },
+      "kinds": {
+        "Percent": "نسبة",
+        "Amount": "مبلغ"
+      },
+      "fields": {
+        "code": "الكود",
+        "sourceName": "اسم المصدر (مؤثر أو إعلان)",
+        "discountKind": "نوع الخصم",
+        "percent": "النسبة %",
+        "amount": "المبلغ (ج)",
+        "maxDiscount": "أقصى خصم (ج) · اختياري",
+        "minOrderTotal": "أقل قيمة للطلب (ج) · اختياري",
+        "maxUses": "عدد مرات الاستخدام · فاضي = مفتوح",
+        "oncePerCustomer": "مرة واحدة لكل عميل",
+        "startDate": "من · اختياري",
+        "endDate": "لحد · اختياري",
+        "isActive": "شغال"
+      },
+      "errors": {
+        "code": "الكود لازم يكون من 3 لـ 30 حرف إنجليزي أو رقم أو شرطة، ومايكونش مستخدم قبل كده.",
+        "sourceName": "اكتب اسم المصدر.",
+        "discountKind": "اختار نوع الخصم.",
+        "discountValue": "النسبة من 1 لـ 90، أو مبلغ أكبر من صفر.",
+        "maxDiscount": "أقصى خصم للنسبة بس، ولازم يكون أكبر من صفر.",
+        "minOrderTotal": "لازم يكون أكبر من صفر.",
+        "maxUses": "لازم يكون رقم صحيح أكبر من صفر.",
+        "endsAtUtc": "تاريخ النهاية لازم يكون بعد البداية."
+      }
+    }
+  },
+  "coupon": {
+    "problems": {
+      "NotFound": "الكود ده مش موجود",
+      "Inactive": "الكود ده متوقف",
+      "NotStarted": "الكود ده لسه مابدأش",
+      "Expired": "الكود ده خلص",
+      "BelowMinimum": "الطلب أقل من الحد المطلوب للكود ده",
+      "UsedUp": "الكود ده خلص عدد مرات استخدامه",
+      "AlreadyUsed": "استخدمت الكود ده قبل كده",
+      "Other": "الكود ده مش شغال"
     }
   }
 }

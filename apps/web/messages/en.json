@@ -780,7 +780,17 @@
       "minimum": "The minimum order is {amount}. Add something to your cart to continue.",
       "confirm": "Confirm order",
       "sending": "Sending your order...",
-      "callNote": "After you confirm, we'll message you on WhatsApp to settle the details."
+      "callNote": "After you confirm, we'll message you on WhatsApp to settle the details.",
+      "couponDiscount": "Coupon discount"
+    },
+    "coupon": {
+      "label": "Discount code",
+      "placeholder": "Enter the code",
+      "apply": "Apply",
+      "checking": "Checking…",
+      "applied": "Coupon",
+      "remove": "Remove coupon {code}",
+      "failed": "We could not check the code right now. Try again in a moment."
     }
   },
   "orderSuccess": {
@@ -807,7 +817,8 @@
       "title": "Order summary",
       "shipping": "Shipping",
       "total": "Total",
-      "upfront": "Due upfront"
+      "upfront": "Due upfront",
+      "couponDiscount": "Coupon discount ({code})"
     },
     "track": {
       "title": "Track your order",
@@ -908,7 +919,8 @@
       "waybill": "Waybill number",
       "ask": "I have a question about this order",
       "track": "Track order",
-      "notFound": "This order does not exist."
+      "notFound": "This order does not exist.",
+      "couponDiscount": "Coupon discount ({code})"
     },
     "warranties": {
       "title": "My warranties",
@@ -1203,7 +1215,8 @@
         "pos": "New sale",
         "orders": "Orders",
         "customers": "Customers",
-        "offers": "Offers & coupons",
+        "offers": "Offers",
+        "coupons": "Coupons",
         "inventory": "Inventory",
         "builds": "Builds",
         "purchases": "Purchases",
@@ -1480,7 +1493,8 @@
           "remaining": "Remaining",
           "refunded": "Refunded",
           "method": "Payment method",
-          "waived": "Payment waived {date} · {reason}"
+          "waived": "Payment waived {date} · {reason}",
+          "couponDiscount": "Coupon discount ({code})"
         },
         "payments": {
           "title": "Payments",
@@ -2403,7 +2417,9 @@
         "pending": "Save as pending order",
         "empty": "Add something to the cart to see the summary.",
         "calculating": "Calculating…",
-        "previewFailed": "Could not update the summary: {message}"
+        "previewFailed": "Could not update the summary: {message}",
+        "couponLabel": "Coupon · optional",
+        "couponDiscount": "Coupon discount ({code})"
       },
       "errors": {
         "lines": "Add at least one item or build.",
@@ -3244,6 +3260,7 @@
           "content_media_asset_usages": "Image usage",
           "content_media_assets": "Images",
           "content_policies": "Policies",
+          "coupons": "Coupons",
           "customer_addresses": "Customer addresses",
           "customer_requests": "Incoming requests",
           "expense_types": "Expense types",
@@ -3348,6 +3365,9 @@
           "CostAmount": "Cost amount",
           "CountryCallingCode": "Country calling code",
           "CountryCode": "Country code",
+          "CouponCode": "Coupon code",
+          "CouponDiscount": "Coupon discount",
+          "CouponId": "Coupon",
           "CourierName": "Courier name",
           "CreatedAtUtc": "Created at",
           "CreatedByUserAccountId": "Created by user account id",
@@ -3364,6 +3384,8 @@
           "DirectExpenseAmount": "Direct expense amount",
           "DirectExpenseNote": "Direct expense note",
           "DiscountAmount": "Discount amount",
+          "DiscountKind": "Discount type",
+          "DiscountValue": "Discount value",
           "District": "District",
           "EffectiveAtUtc": "Effective at",
           "Email": "Email",
@@ -3433,9 +3455,12 @@
           "LossSharingEnabled": "Loss sharing enabled",
           "MainImageStorageKey": "Main image storage key",
           "ManagerName": "Manager name",
+          "MaxDiscount": "Max discount",
+          "MaxUses": "Uses allowed",
           "MergedIntoAccountId": "Merged into account id",
           "Message": "Message",
           "Method": "Method",
+          "MinOrderTotal": "Minimum order",
           "ModelKey": "Model key",
           "ModelName": "Model name",
           "ModeratedAtUtc": "Moderated at",
@@ -3461,6 +3486,7 @@
           "OfferPrice": "Offer price",
           "OffsetAmount": "Offset amount",
           "OffsetApplied": "Offset applied",
+          "OncePerCustomer": "Once per customer",
           "OpeningBalance": "Opening balance",
           "OpeningDate": "Opening date",
           "OrderId": "Order id",
@@ -4429,6 +4455,89 @@
       "slugHint": "Lowercase English letters, numbers and dashes. It appears in the brand filter link.",
       "save": "Save brand",
       "saved": "Brand saved"
+    },
+    "coupons": {
+      "title": "Coupons",
+      "new": "New coupon",
+      "newTitle": "New coupon",
+      "editTitle": "Edit coupon",
+      "pick": "A coupon from the list",
+      "pickHint": "Pick a coupon from the list or create a new one.",
+      "empty": "No coupons yet.",
+      "failed": "Could not load the coupons.",
+      "retry": "Try again",
+      "save": "Save coupon",
+      "saved": "Coupon saved",
+      "none": "—",
+      "delete": "Delete coupon",
+      "deleted": "Coupon deleted",
+      "deleteBody": "The coupon will be deleted for good.",
+      "deleteUsed": "This coupon has been used and cannot be deleted. Turn it off instead.",
+      "turnOff": "Turn off",
+      "usedNote": "This coupon has been used, so it cannot be deleted. You can turn it off.",
+      "hint": "Dates are in Cairo time; a coupon starts at the beginning of its first day and ends at the end of its last day.",
+      "endBeforeStart": "The end date must be on or after the start date.",
+      "sourcePlaceholder": "e.g. Ahmed – TikTok or Facebook ad November",
+      "maxDiscountNote": "up to {amount}",
+      "usesOf": "{uses} of {max}",
+      "completed": "{count} completed",
+      "totals": "Total: {uses} uses · {completed} completed",
+      "totalsMoney": "Total: {uses} uses · {completed} completed · revenue {revenue} · discount {discount}",
+      "columns": {
+        "source": "Source",
+        "discount": "Discount",
+        "status": "Status",
+        "uses": "Uses",
+        "revenue": "Revenue",
+        "discountGiven": "Total discount",
+        "lastUsed": "Last used"
+      },
+      "statuses": {
+        "running": "Running",
+        "off": "Off",
+        "notStarted": "Not started",
+        "ended": "Ended"
+      },
+      "kinds": {
+        "Percent": "Percent",
+        "Amount": "Amount"
+      },
+      "fields": {
+        "code": "Code",
+        "sourceName": "Source name (influencer or ad)",
+        "discountKind": "Discount type",
+        "percent": "Percent %",
+        "amount": "Amount (EGP)",
+        "maxDiscount": "Maximum discount (EGP) · optional",
+        "minOrderTotal": "Minimum order (EGP) · optional",
+        "maxUses": "Number of uses · empty = unlimited",
+        "oncePerCustomer": "Once per customer",
+        "startDate": "From · optional",
+        "endDate": "To · optional",
+        "isActive": "Running"
+      },
+      "errors": {
+        "code": "The code must be 3 to 30 letters, digits or dashes, and not used before.",
+        "sourceName": "Enter the source name.",
+        "discountKind": "Pick the discount type.",
+        "discountValue": "A percent from 1 to 90, or an amount above zero.",
+        "maxDiscount": "A cap applies to a percent only and must be above zero.",
+        "minOrderTotal": "Must be above zero.",
+        "maxUses": "Must be a whole number above zero.",
+        "endsAtUtc": "The end date must be after the start."
+      }
+    }
+  },
+  "coupon": {
+    "problems": {
+      "NotFound": "This code does not exist",
+      "Inactive": "This code is switched off",
+      "NotStarted": "This code has not started yet",
+      "Expired": "This code has ended",
+      "BelowMinimum": "The order is below the minimum for this code",
+      "UsedUp": "This code has reached its number of uses",
+      "AlreadyUsed": "You have already used this code",
+      "Other": "This code does not work"
     }
   }
 }

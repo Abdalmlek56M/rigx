@@ -22,7 +22,7 @@ public sealed record SplitPartRequest(Guid UnitId, decimal? SalePrice = null);
 /// <summary>Website checkout (guest or signed in).</summary>
 public sealed record CheckoutRequest(OrderCustomer? Customer, string? FulfillmentMethod, OrderAddress? Address, string? PaymentMethod,
     IReadOnlyList<OrderLineRequest>? Items, string? Notes = null, string? Usage = null, string? UsageNote = null,
-    string? LeadSource = null, bool? TermsAccepted = null);
+    string? LeadSource = null, bool? TermsAccepted = null, string? CouponCode = null);
 
 /// <summary>Shipping fee and promised delivery time for a governorate (from the shipping settings, read in Host).</summary>
 public sealed record ShippingRate(decimal Fee, string? DeliveryTime);
@@ -67,7 +67,7 @@ public sealed record OrderView(Guid Id, string Reference, string TrackingToken, 
     bool IsBlacklisted, DateTimeOffset? ReservedUntilUtc, bool ReservationAutoRelease, DateTimeOffset? ReservationExpiredAtUtc,
     string? CourierName, string? WaybillNumber, int? SatisfactionScore, string? SatisfactionComment, string? Notes,
     DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long RowVersion, IReadOnlyList<OrderItemView> Items,
-    IReadOnlyList<OrderPaymentView> Payments, IReadOnlyList<OrderEventView> Events);
+    IReadOnlyList<OrderPaymentView> Payments, IReadOnlyList<OrderEventView> Events, string? CouponCode = null, decimal CouponDiscount = 0m);
 /// <summary>
 /// The customer's own order (checkout result, "my orders", "view as customer"): no cost, profit, staff, payment-waiver or blacklist
 /// data. Status and timeline are the customer-facing ones ("Completed" shows as "Delivered").
@@ -76,7 +76,7 @@ public sealed record CustomerOrderView(Guid Id, string Reference, string Trackin
     string CustomerName, string PhoneNumber, string? CustomerEmail, OrderAddress? Address, string PaymentMethod, string PaymentStatus,
     decimal Subtotal, decimal DeliveryFee, string? DeliveryTime, decimal Total, decimal UpfrontAmount, decimal UpfrontDue, decimal PaidAmount,
     decimal Remaining, decimal RefundedAmount, string? CourierName, string? WaybillNumber, int? SatisfactionScore, DateTimeOffset CreatedAtUtc,
-    IReadOnlyList<CustomerOrderItemView> Items, IReadOnlyList<TrackingStep> Timeline);
+    IReadOnlyList<CustomerOrderItemView> Items, IReadOnlyList<TrackingStep> Timeline, string? CouponCode = null, decimal CouponDiscount = 0m);
 public sealed record CustomerOrderItemView(string Name, string? Code, string? ThumbnailStorageKey, int Quantity, decimal UnitPrice,
     decimal LineTotal, decimal DiscountAmount);
 /// <summary>A new website order: the full view (order emails) and the customer's view (the API response).</summary>

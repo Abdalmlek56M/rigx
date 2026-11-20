@@ -61,7 +61,7 @@ export type AuditGroup = (typeof AUDIT_GROUPS)[number];
 
 const GROUP_OF_ENTITY: Readonly<Record<string, AuditGroup>> = {
   invoices: "sales", store_orders: "sales", order_items: "sales", order_item_components: "sales", order_payments: "sales",
-  order_returns: "sales", warranties: "sales", warranty_extensions: "sales", offers: "sales", offer_items: "sales",
+  order_returns: "sales", warranties: "sales", warranty_extensions: "sales", offers: "sales", offer_items: "sales", coupons: "sales",
   stock_items: "stock", inventory_units: "stock", assemblies: "stock", assembly_units: "stock", warehouses: "stock",
   stock_imports: "stock", stock_item_old_slugs: "stock", purchases: "stock", purchase_lines: "stock", purchase_receipts: "stock", sellers: "stock",
   money_accounts: "money", money_movements: "money", retail_expenses: "money", recurring_expenses: "money", expense_types: "money",

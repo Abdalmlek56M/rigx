@@ -25,11 +25,13 @@ export interface CheckoutFormState {
   leadSource: string | null;
   paymentMethod: PaymentMethod | null;
   termsAccepted: boolean;
+  /** The coupon the customer applied (already checked); empty for none. */
+  couponCode: string;
 }
 
 export const EMPTY_FORM: CheckoutFormState = {
   name: "", phone: "", phoneHasWhatsApp: true, email: "", fulfillment: "Delivery", governorate: "", area: "", street: "",
-  building: "", landmark: "", notes: "", usage: null, usageNote: "", leadSource: null, paymentMethod: null, termsAccepted: false
+  building: "", landmark: "", notes: "", usage: null, usageNote: "", leadSource: null, paymentMethod: null, termsAccepted: false, couponCode: ""
 };
 
 /** Fields the form can flag; the message for each lives under `checkout.errors.<key>`. */
@@ -63,7 +65,8 @@ export function toCheckoutRequest(form: CheckoutFormState, lines: CartLine[]): S
     usage: form.usage,
     usageNote: form.usage === "Other" ? orNull(form.usageNote) : null,
     leadSource: form.leadSource,
-    termsAccepted: form.termsAccepted
+    termsAccepted: form.termsAccepted,
+    couponCode: orNull(form.couponCode)
   };
 }
 

@@ -20,7 +20,8 @@ internal static class OrderMapping
                 component.DirectExpenseAmount, component.CostAmount, component.NetProfit)).ToList())).ToList(),
         order.Payments.OrderBy(payment => payment.CreatedAtUtc)
             .Select(payment => new OrderPaymentView(payment.Method, payment.Amount, payment.Note, payment.CreatedAtUtc)).ToList(),
-        order.Events.OrderBy(entry => entry.CreatedAtUtc).Select(entry => new OrderEventView(entry.EventType, entry.Notes, entry.ActorUserAccountId, entry.CreatedAtUtc)).ToList());
+        order.Events.OrderBy(entry => entry.CreatedAtUtc).Select(entry => new OrderEventView(entry.EventType, entry.Notes, entry.ActorUserAccountId, entry.CreatedAtUtc)).ToList(),
+        order.CouponCode, order.CouponDiscount);
 
     public static CustomerOrderView ToCustomerView(StoreOrder order) => new(order.Id, order.Reference, order.TrackingToken,
         CustomerStatus(order), order.FulfillmentMethod, order.CustomerName, order.PhoneNumber, order.CustomerEmail, AddressOf(order),
@@ -29,7 +30,7 @@ internal static class OrderMapping
         order.WaybillNumber, order.SatisfactionScore, order.CreatedAtUtc,
         order.Items.Select(item => new CustomerOrderItemView(item.Name, item.Code, item.ThumbnailStorageKeySnapshot, item.Quantity,
             item.UnitPrice, item.LineTotal, item.DiscountAmount)).ToList(),
-        CustomerTimeline(order));
+        CustomerTimeline(order), order.CouponCode, order.CouponDiscount);
 
     /// <summary>"Completed" stays internal (owner decision D2), so the customer sees it as delivered.</summary>
     public static string CustomerStatus(StoreOrder order) => order.Status == OrderStatus.Completed ? OrderStatus.Delivered : order.Status;

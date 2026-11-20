@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.RateLimiting;
 public static partial class RetailEndpoints
 {
     private const string ReceiveGoods = "Purchasing.ReceiveGoods";
+    /// <summary>Coupons sit with offers: the store settings permission.</summary>
+    private const string CouponPermission = "System.StoreSettings";
 
     public static IEndpointRouteBuilder MapRetailEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -53,6 +55,10 @@ public static partial class RetailEndpoints
         admin.MapPost("/orders/{id:guid}/payments", AddPaymentAsync).RequirePermission("Finance.VerifyPayment");
         admin.MapPut("/orders/{id:guid}/shipping", SetShippingAsync).RequirePermission("Sales.ApproveOrder");
         admin.MapPut("/orders/{id:guid}/reservation", SetReservationAsync).RequirePermission("Sales.ApproveOrder");
+        admin.MapGet("/coupons", ListCouponsAsync).RequirePermission(CouponPermission);
+        admin.MapPost("/coupons", CreateCouponAsync).RequirePermission(CouponPermission);
+        admin.MapPut("/coupons/{id:guid}", UpdateCouponAsync).RequirePermission(CouponPermission);
+        admin.MapDelete("/coupons/{id:guid}", DeleteCouponAsync).RequirePermission(CouponPermission);
         admin.MapGet("/blacklist", ListBlacklistAsync).RequirePermission("Sales.ViewCustomerContact");
         admin.MapPost("/blacklist", AddBlacklistAsync).RequirePermission("Sales.ApproveOrder");
         admin.MapDelete("/blacklist/{id:guid}", RemoveBlacklistAsync).RequirePermission("Sales.ApproveOrder");
@@ -110,6 +116,7 @@ public static partial class RetailEndpoints
         endpoints.MapGet("/api/v1/warranties/mine", ListMyWarrantiesAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/invoices/mine", ListMyInvoicesAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/invoices/{token}", GetInvoiceByTokenAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
+        endpoints.MapPost("/api/v1/store/coupons/check", CheckCouponAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.CouponCheck);
         endpoints.MapPost("/api/v1/store/quote", QuoteAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
         endpoints.MapGet("/api/v1/admin/dashboard", GetDashboardAsync).RequirePermission("Finance.ViewReports");
         return endpoints;

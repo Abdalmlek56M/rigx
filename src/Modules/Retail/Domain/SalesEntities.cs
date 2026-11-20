@@ -34,6 +34,10 @@ public sealed class StoreOrder
     public Guid? PaymentWaivedByUserAccountId { get; set; }
     public string? PaymentWaiverReason { get; set; }
     public decimal Subtotal { get; set; }
+    /// <summary>The coupon used on the order (one per order); its discount is spread over the lines and already out of <see cref="Subtotal"/>.</summary>
+    public Guid? CouponId { get; set; }
+    public string? CouponCode { get; set; }
+    public decimal CouponDiscount { get; set; }
     public decimal DeliveryFee { get; set; }
     /// <summary>Delivery time promised by the shipping settings when the order was placed; null for pickup or when none was set.</summary>
     public string? DeliveryTime { get; set; }

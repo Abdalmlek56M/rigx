@@ -107,6 +107,7 @@ export function Pos({ leadSources, governorates }: PosProps) {
           <PosSummary
             lineCount={cart.length} preview={priced ? preview : null} previewError={priced ? previewError : null}
             busy={submit.busy} saleError={describe(submit.errors)} onSell={sell}
+            couponCode={form.couponCode} onCouponCode={(code) => set("couponCode", code)}
           />
         </div>
       )}

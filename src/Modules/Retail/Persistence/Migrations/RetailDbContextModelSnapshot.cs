@@ -253,6 +253,96 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.ToTable("blacklist_entries", (string)null);
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Retail.Coupon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("DiscountKind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("discount_kind");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("discount_value");
+
+                    b.Property<DateTimeOffset?>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at_utc");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<decimal?>("MaxDiscount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("max_discount");
+
+                    b.Property<int?>("MaxUses")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_uses");
+
+                    b.Property<decimal?>("MinOrderTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("min_order_total");
+
+                    b.Property<bool>("OncePerCustomer")
+                        .HasColumnType("boolean")
+                        .HasColumnName("once_per_customer");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("row_version");
+
+                    b.Property<string>("SourceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source_name");
+
+                    b.Property<DateTimeOffset?>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at_utc");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_coupons_code");
+
+                    b.ToTable("coupons", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_coupons_kind", "discount_kind IN ('Percent','Amount')");
+
+                            t.HasCheckConstraint("ck_coupons_value", "discount_value > 0 AND (discount_kind <> 'Percent' OR discount_value <= 90)");
+
+                            t.HasCheckConstraint("ck_coupons_window", "ends_at_utc IS NULL OR starts_at_utc IS NULL OR ends_at_utc > starts_at_utc");
+                        });
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Retail.ExpenseType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1716,6 +1806,22 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("channel");
 
+                    b.Property<string>("CouponCode")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("coupon_code");
+
+                    b.Property<decimal>("CouponDiscount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("coupon_discount");
+
+                    b.Property<Guid?>("CouponId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("coupon_id");
+
                     b.Property<string>("CourierName")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
@@ -1936,6 +2042,10 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnName("waybill_number");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CouponId")
+                        .HasDatabaseName("ix_store_orders_coupon")
+                        .HasFilter("coupon_id IS NOT NULL");
 
                     b.HasIndex("PhoneNumber")
                         .HasDatabaseName("ix_store_orders_phone");
@@ -2294,6 +2404,14 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasForeignKey("StockItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Retail.StoreOrder", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Retail.Coupon", null)
+                        .WithMany()
+                        .HasForeignKey("CouponId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Retail.WarrantyExtension", b =>

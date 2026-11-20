@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useCouponProblemText } from "@/lib/coupon-problem-text";
 import { formatEgp } from "@/lib/format";
 import { FormMessage } from "../kit/PageHeader";
 import type { PosPreview } from "./pos-api";
@@ -17,6 +18,8 @@ interface PosSummaryProps {
   /** The server's message for a sale that failed. */
   saleError: string | null;
   onSell: (confirm: boolean) => void;
+  couponCode: string;
+  onCouponCode: (code: string) => void;
 }
 
 function Row({ label, value, strong = false, tone }: { label: string; value: string; strong?: boolean; tone?: "error" }) {
@@ -29,10 +32,12 @@ function Row({ label, value, strong = false, tone }: { label: string; value: str
 }
 
 /** The sticky side: what the server priced (cost and profit only when the staff may see them), warnings and the two sell buttons. */
-export function PosSummary({ lineCount, preview, previewError, busy, saleError, onSell }: PosSummaryProps) {
+export function PosSummary({ lineCount, preview, previewError, busy, saleError, onSell, couponCode, onCouponCode }: PosSummaryProps) {
   const t = useTranslations("admin.pos.summary");
   const locale = useLocale();
   const egp = (amount: number) => formatEgp(amount, locale);
+  const problemText = useCouponProblemText();
+  const coupon = preview?.coupon ?? null;
 
   return (
     <aside aria-label={t("title")} className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 xl:sticky xl:top-4 xl:self-start">
@@ -42,6 +47,7 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
           <Row label={t("lines")} value={String(lineCount)} />
           <Row label={t("sale")} value={egp(preview.linesTotal)} />
           {preview.discount > 0 ? <Row label={t("discount")} value={`− ${egp(preview.discount)}`} /> : null}
+          {coupon && !coupon.problem ? <Row label={t("couponDiscount", { code: coupon.code ?? "" })} value={`− ${egp(coupon.discount)}`} /> : null}
           {preview.deliveryFee > 0 ? <Row label={t("delivery")} value={egp(preview.deliveryFee)} /> : null}
           {preview.costTotal !== null ? <Row label={t("cost")} value={egp(preview.costTotal)} /> : null}
           {preview.profit !== null ? <Row label={t("profit")} value={egp(preview.profit)} tone={preview.profit < 0 ? "error" : undefined} /> : null}
@@ -49,6 +55,15 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
           <Row label={t("total")} value={egp(preview.total)} strong />
         </dl>
       )}
+      <label className="flex flex-col gap-1.5 text-[13px] font-bold">
+        {t("couponLabel")}
+        <input
+          dir="ltr" value={couponCode} maxLength={30} autoComplete="off"
+          onChange={(event) => onCouponCode(event.target.value.toUpperCase())}
+          className="h-11 w-full rounded-control border border-input-line bg-surface px-3 text-start font-mono text-sm font-normal text-ink"
+        />
+        {coupon?.problem ? <span role="alert" className="text-xs font-normal text-error">{problemText(coupon.problem)}</span> : null}
+      </label>
       {preview && preview.warnings.length > 0 ? (
         <div role="status" className="flex flex-col gap-1 rounded-control bg-orange/15 px-3 py-2 text-sm">
           <b>{t("warnings")}</b>

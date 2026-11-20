@@ -62,6 +62,9 @@ function Summary({ order }: { order: PlacedOrder }) {
         ))}
       </ul>
       <div className="flex flex-col gap-2 border-t border-line pt-3">
+        {order.couponDiscount > 0 ? (
+          <div className="flex justify-between text-sm"><span className="text-ink-muted">{t("couponDiscount", { code: order.couponCode ?? "" })}</span><span>− {formatEgp(order.couponDiscount, locale)}</span></div>
+        ) : null}
         {order.deliveryFee > 0 ? (
           <div className="flex justify-between text-sm"><span className="text-ink-muted">{t("shipping")}</span><span>{formatEgp(order.deliveryFee, locale)}</span></div>
         ) : null}

@@ -19,6 +19,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
     public DbSet<OrderPayment> OrderPayments => Set<OrderPayment>();
     public DbSet<BlacklistEntry> Blacklist => Set<BlacklistEntry>();
+    public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<Partner> Partners => Set<Partner>();
     public DbSet<PartnerCapitalEntry> PartnerCapitalEntries => Set<PartnerCapitalEntry>();
     public DbSet<PartnerEarning> PartnerEarnings => Set<PartnerEarning>();
@@ -39,6 +40,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
     {
         model.ApplyConfiguration(new StockItemConfiguration());
         model.ApplyConfiguration(new StockItemOldSlugConfiguration());
+        model.ApplyConfiguration(new CouponConfiguration());
         model.ApplyConfiguration(new MoneyAccountConfiguration());
         model.ApplyConfiguration(new MoneyMovementConfiguration());
         model.ApplyConfiguration(new ExpenseTypeConfiguration());
@@ -177,6 +179,11 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.PaymentWaivedByUserAccountId).HasColumnName("payment_waived_by_user_account_id");
             e.Property(x => x.PaymentWaiverReason).HasColumnName("payment_waiver_reason").HasMaxLength(500);
             e.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
+            e.Property(x => x.CouponId).HasColumnName("coupon_id");
+            e.HasOne<Coupon>().WithMany().HasForeignKey(x => x.CouponId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => x.CouponId).HasDatabaseName("ix_store_orders_coupon").HasFilter("coupon_id IS NOT NULL");
+            e.Property(x => x.CouponCode).HasColumnName("coupon_code").HasMaxLength(CouponRules.MaxCodeLength);
+            e.Property(x => x.CouponDiscount).HasColumnName("coupon_discount").HasPrecision(18, 2).HasDefaultValue(0m);
             e.Property(x => x.DeliveryFee).HasColumnName("delivery_fee").HasPrecision(18, 2);
             e.Property(x => x.DeliveryTime).HasColumnName("delivery_time").HasMaxLength(60);
             e.Property(x => x.Total).HasColumnName("total").HasPrecision(18, 2);

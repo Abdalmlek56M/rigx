@@ -1,0 +1,129 @@
+"use client";
+
+import { useCallback, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { formatDateTime, formatEgp } from "@/lib/format";
+import { useLoad } from "@/lib/hooks/use-load";
+import { usePermissions } from "../use-permissions";
+import { Button } from "../kit/Button";
+import { DataTable, type Column } from "../kit/DataTable";
+import { PageHeader } from "../kit/PageHeader";
+import { useReveal } from "../kit/use-reveal";
+import { useUrlFilters } from "../kit/use-url-filters";
+import { CouponForm } from "./CouponForm";
+import { couponStatus, couponTotals, sortCoupons, type CouponStatus } from "./coupon-rules";
+import { fetchCoupons, type Coupon } from "./coupons-api";
+
+const FILTERS = { id: "" };
+
+const TONES: Record<CouponStatus, string> = {
+  running: "bg-success text-surface",
+  off: "bg-line text-ink-muted",
+  notStarted: "bg-line text-ink-muted",
+  ended: "bg-error text-surface"
+};
+
+function StatusBadge({ coupon }: { coupon: Coupon }) {
+  const t = useTranslations("admin.coupons.statuses");
+  const status = couponStatus(coupon, new Date());
+  return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${TONES[status]}`}>{t(status)}</span>;
+}
+
+/** ADM-Coupons: the report per code (source, discount, status, uses, revenue), then the form for the selected or a new code. */
+export function Coupons() {
+  const t = useTranslations("admin.coupons");
+  const locale = useLocale();
+  const { has } = usePermissions();
+  const { values, set } = useUrlFilters(FILTERS);
+  const [creating, setCreating] = useState(false);
+  const { state, reload } = useLoad(fetchCoupons);
+  const coupons = useMemo(() => (state.status === "ready" ? sortCoupons(state.data) : []), [state]);
+  const money = has("Finance.ViewReports");
+  const activeId = creating ? null : values.id || null;
+  const selected = coupons.find((coupon) => coupon.id === activeId) ?? null;
+  const panelRef = useReveal<HTMLElement>(creating ? "new" : values.id || null);
+  const totals = couponTotals(coupons);
+
+  const discount = useCallback((coupon: Coupon) => (
+    coupon.discountKind === "Amount" ? (
+      <span className="font-bold">{formatEgp(coupon.discountValue, locale)}</span>
+    ) : (
+      <span className="flex flex-col">
+        <span className="font-bold">{coupon.discountValue}%</span>
+        {coupon.maxDiscount !== null ? <span className="text-xs text-ink-muted">{t("maxDiscountNote", { amount: formatEgp(coupon.maxDiscount, locale) })}</span> : null}
+      </span>
+    )
+  ), [locale, t]);
+
+  const columns: Column<Coupon>[] = [
+    {
+      key: "source", header: t("columns.source"),
+      cell: (coupon) => (
+        <button type="button" aria-current={coupon.id === activeId ? "true" : undefined} onClick={() => { setCreating(false); set({ id: coupon.id }); }} className={`flex min-w-0 flex-col items-start gap-0.5 text-start ${coupon.id === activeId ? "text-orange-text" : ""}`}>
+          <span dir="auto" className="max-w-64 truncate font-bold [unicode-bidi:isolate]">{coupon.sourceName}</span>
+          <span dir="ltr" className="font-mono text-xs text-ink-muted">{coupon.code}</span>
+        </button>
+      )
+    },
+    { key: "discount", header: t("columns.discount"), cell: discount },
+    { key: "status", header: t("columns.status"), cell: (coupon) => <StatusBadge coupon={coupon} /> },
+    {
+      key: "uses", header: t("columns.uses"), align: "end",
+      cell: (coupon) => (
+        <span className="flex flex-col items-end whitespace-nowrap">
+          <span className="font-bold">{coupon.maxUses === null ? coupon.uses : t("usesOf", { uses: coupon.uses, max: coupon.maxUses })}</span>
+          <span className="text-xs text-ink-muted">{t("completed", { count: coupon.completedUses })}</span>
+        </span>
+      )
+    },
+    ...(money ? [
+      { key: "revenue", header: t("columns.revenue"), align: "end" as const, cell: (coupon: Coupon) => <span className="whitespace-nowrap font-bold">{formatEgp(coupon.revenue ?? 0, locale)}</span> },
+      { key: "discountGiven", header: t("columns.discountGiven"), align: "end" as const, cell: (coupon: Coupon) => <span className="whitespace-nowrap">{formatEgp(coupon.discountGiven ?? 0, locale)}</span> }
+    ] : []),
+    {
+      key: "lastUsed", header: t("columns.lastUsed"),
+      cell: (coupon) => <span className="whitespace-nowrap text-xs">{coupon.lastUsedAtUtc ? formatDateTime(coupon.lastUsedAtUtc, locale) : t("none")}</span>
+    }
+  ];
+
+  return (
+    <>
+      <PageHeader
+        title={t("title")}
+        actions={<Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); set({ id: "" }); }}>{t("new")}</Button>}
+      />
+      {state.status === "error" ? (
+        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
+          <p className="m-0 font-bold">{t("failed")}</p>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
+        </div>
+      ) : (
+        <>
+          {state.status === "loading" ? <div aria-hidden="true" className="h-48 animate-pulse rounded-card border border-line bg-surface" /> : (
+            <>
+              <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: coupons }} onRetry={reload} rowKey={(coupon) => coupon.id} empty={t("empty")} />
+              {coupons.length > 0 ? (
+                <p className="m-0 text-sm font-bold">
+                  {money
+                    ? t("totalsMoney", { uses: totals.uses, completed: totals.completedUses, revenue: formatEgp(totals.revenue, locale), discount: formatEgp(totals.discountGiven, locale) })
+                    : t("totals", { uses: totals.uses, completed: totals.completedUses })}
+                </p>
+              ) : null}
+            </>
+          )}
+          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+            <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
+            {creating ? (
+              <CouponForm key="new" coupon={null} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => setCreating(false)} />
+            ) : selected ? (
+              <CouponForm key={`${selected.id}-${selected.rowVersion}`} coupon={selected} onSaved={(saved) => { set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => set({ id: "" })} onDeleted={() => { set({ id: "" }); reload(); }} />
+            ) : (
+              <p className="m-0 text-sm text-ink-muted">{t("pickHint")}</p>
+            )}
+          </section>
+        </>
+      )}
+    </>
+  );
+}
