@@ -1,5 +1,6 @@
 "use client";
 
+import { latinNumber } from "@/lib/digits";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { formMessage } from "../form-message";
@@ -41,8 +42,8 @@ export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { ca
           <label key={part.unitId} className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
             <span dir="auto" className="truncate [unicode-bidi:isolate]">{part.name}</span>
             <input
-              type="number" dir="ltr" step="any" min="0" max="100" name={`allocation-${part.stockItemCode}`} value={form[part.unitId] ?? ""}
-              onChange={(event) => setForm((current) => ({ ...current, [part.unitId]: event.target.value }))}
+              type="text" inputMode="decimal" dir="ltr" name={`allocation-${part.stockItemCode}`} value={form[part.unitId] ?? ""}
+              onChange={(event) => setForm((current) => ({ ...current, [part.unitId]: latinNumber(event.target.value) }))}
               className="h-11 w-full rounded-control border border-input-line bg-surface px-3 text-start text-sm font-normal text-ink"
             />
           </label>

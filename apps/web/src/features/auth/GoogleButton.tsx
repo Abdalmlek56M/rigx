@@ -20,6 +20,7 @@ export function GoogleButton({ onCredential }: GoogleButtonProps) {
   const host = useRef<HTMLDivElement>(null);
   const callback = useRef(onCredential);
   const [ready, setReady] = useState(() => typeof window !== "undefined" && window.google !== undefined);
+  const [rendered, setRendered] = useState(false);
 
   useEffect(() => {
     callback.current = onCredential;
@@ -39,6 +40,7 @@ export function GoogleButton({ onCredential }: GoogleButtonProps) {
       locale,
       width: Math.min(400, Math.max(200, element.clientWidth))
     });
+    setRendered(true);
   }, [locale]);
 
   useEffect(() => {
@@ -50,7 +52,11 @@ export function GoogleButton({ onCredential }: GoogleButtonProps) {
     <>
       <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={() => setReady(true)} />
       {/* color-scheme light matches Google's frame, so the browser paints no white box behind the pill in dark mode. */}
-      <div ref={host} className="flex min-h-11 justify-center [color-scheme:light]" />
+      <div className="relative flex min-h-11 justify-center">
+        {/* Google's script takes a moment; a quiet pill holds the place so the form does not jump. */}
+        {rendered ? null : <div aria-hidden="true" className="absolute inset-x-0 top-0 mx-auto h-11 max-w-[400px] animate-pulse rounded-full border border-line bg-paper motion-reduce:animate-none" />}
+        <div ref={host} className="flex w-full justify-center [color-scheme:light]" />
+      </div>
     </>
   );
 }

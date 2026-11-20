@@ -1,5 +1,6 @@
 "use client";
 
+import { latinNumber } from "@/lib/digits";
 import { Fragment } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
@@ -70,8 +71,8 @@ function ItemRow({ line, below, onChange, onRemove }: LineProps<ItemLine>) {
       </td>
       <td className={CELL}>
         <input
-          type="number" min={1} max={pick.available} dir="ltr" aria-label={t("cart.columns.quantity")} value={line.quantity}
-          onChange={(event) => setQuantity(event.target.value)}
+          type="text" inputMode="numeric" dir="ltr" aria-label={t("cart.columns.quantity")} value={line.quantity}
+          onChange={(event) => setQuantity(latinNumber(event.target.value))}
           className="h-11 w-16 rounded-control border border-input-line bg-surface px-2 text-start text-sm"
         />
       </td>

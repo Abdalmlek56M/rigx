@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { setTheme, useTheme, type Theme } from "@/components/layout/use-theme";
 import { ChevronDownIcon, LogoutIcon, MoonIcon, SunIcon, UserIcon } from "@/components/ui/icons";
 import type { SessionUser } from "@/features/auth/session-store";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 
 const KNOWN_ROLES = ["Owner"] as const;
 type KnownRole = (typeof KNOWN_ROLES)[number];
@@ -26,11 +26,9 @@ interface AdminUserMenuProps {
   onNavigate?: () => void;
 }
 
-/** The sidebar footer: one button with the avatar, name, role and a menu above it (theme, language, profile, sign out). */
+/** The sidebar footer: one button with the avatar, name, role and a menu above it (theme, profile, sign out). */
 export function AdminUserMenu({ user, onSignOut, onNavigate }: AdminUserMenuProps) {
   const t = useTranslations("admin.shell");
-  const locale = useLocale();
-  const pathname = usePathname();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
@@ -113,11 +111,6 @@ export function AdminUserMenu({ user, onSignOut, onNavigate }: AdminUserMenuProp
     }
   }
 
-  const languages = [
-    { locale: "ar" as const, label: t("menu.arabic"), badge: "ع" },
-    { locale: "en" as const, label: t("menu.english"), badge: "EN" }
-  ];
-
   return (
     <div ref={root} className="relative" onKeyDown={menuKeyDown} onBlur={menuBlur}>
       <button
@@ -157,28 +150,6 @@ export function AdminUserMenu({ user, onSignOut, onNavigate }: AdminUserMenuProp
               <button type="button" role="menuitemradio" aria-checked={theme === "dark"} onClick={() => chooseTheme("dark")} className={CHOICE}>
                 <MoonIcon size={16} /> {t("menu.dark")}
               </button>
-            </div>
-          </div>
-
-          <div role="group" aria-label={t("menu.language")} className="flex flex-col gap-1 px-1">
-            <span aria-hidden="true" className="px-1 text-[11px] font-bold text-ink-muted">{t("menu.language")}</span>
-            <div className="grid grid-cols-2 gap-1">
-              {languages.map((language) => (
-                <Link
-                  key={language.locale} href={pathname} locale={language.locale} hrefLang={language.locale}
-                  role="menuitemradio" aria-checked={locale === language.locale}
-                  onClick={() => {
-                    close(false);
-                    onNavigate?.();
-                  }}
-                  className={CHOICE}
-                >
-                  <span aria-hidden="true" className="flex h-4 min-w-5 items-center justify-center rounded-[3px] border border-line px-0.5 font-mono text-[10px]">
-                    {language.badge}
-                  </span>
-                  {language.label}
-                </Link>
-              ))}
             </div>
           </div>
 

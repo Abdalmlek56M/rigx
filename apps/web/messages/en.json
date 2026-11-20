@@ -1222,9 +1222,6 @@
         "appearance": "Appearance",
         "light": "Light",
         "dark": "Dark",
-        "language": "Language",
-        "arabic": "العربية",
-        "english": "English",
         "profile": "Profile",
         "signOut": "Sign out"
       },

@@ -1,5 +1,6 @@
 "use client";
 
+import { latinNumber } from "@/lib/digits";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatEgp } from "@/lib/format";
@@ -33,8 +34,8 @@ export function OfferItems({ items, products, onChange, onReload }: {
       key: "price", header: t("offerPrice"), align: "end",
       cell: (item) => (
         <input
-          aria-label={t("offerPrice")} type="number" min="0" step="0.01" dir="ltr" value={item.offerPrice}
-          onChange={(event) => price(item.productId, event.target.value)}
+          aria-label={t("offerPrice")} type="text" inputMode="decimal" dir="ltr" value={item.offerPrice}
+          onChange={(event) => price(item.productId, latinNumber(event.target.value))}
           className="h-9 w-28 rounded-control border border-input-line bg-surface px-2 text-sm"
         />
       )

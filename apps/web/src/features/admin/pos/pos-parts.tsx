@@ -1,5 +1,6 @@
 "use client";
 
+import { latinNumber } from "@/lib/digits";
 import { useTranslations } from "next-intl";
 import type { PosField, PosForm } from "./pos-rules";
 
@@ -25,7 +26,7 @@ export function MoneyInput({ label, value, onChange, invalid = false, placeholde
   return (
     <input
       type="text" inputMode="decimal" dir="ltr" aria-label={label} placeholder={placeholder} value={value} aria-invalid={invalid || undefined}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={(event) => onChange(latinNumber(event.target.value))}
       className={`h-11 rounded-control border bg-surface px-3 text-start text-sm ${invalid ? "border-error" : "border-input-line"} ${className}`}
     />
   );
