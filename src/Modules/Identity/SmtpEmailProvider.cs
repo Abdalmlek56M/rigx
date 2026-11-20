@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Text;
 
 namespace HardwareStore.Modules.Identity;
@@ -45,117 +46,33 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
     public Task SendEmailCodeAsync(
         EmailCodeMessage message,
         CancellationToken cancellationToken = default) =>
-        SendAsync(
-            message.Email,
-            message.FullName,
-            message.Purpose == Authentication.EmailCodePurpose.StepUp
-                ? "Your RIGX confirmation code"
-                : "Your RIGX sign-in code",
-            $"""
-            Hello {message.FullName},
-
-            Your one-time code is: {message.Code}
-
-            It expires at {message.ExpiresAtUtc:u} and can be used once. Never share it with anyone, including RIGX staff.
-            If you did not request it, ignore this message.
-            """,
-            cancellationToken);
+        SendAsync(message.Email, message.FullName, EmailLayout.Code(message), cancellationToken);
 
     public Task SendStaffInvitationAsync(
         StaffInvitationMessage message,
         CancellationToken cancellationToken = default) =>
-        SendAsync(
-            message.Email,
-            message.FullName,
-            "You have been added to the RIGX team",
-            $"""
-            Hello {message.FullName},
-
-            You now have access to the RIGX dashboard ({string.Join(", ", message.Roles)}).
-            Sign in here with this email address, using a code sent to your email or your Google account:
-            {message.SignInUrl}
-
-            There is no password to set.
-            """,
-            cancellationToken);
+        SendAsync(message.Email, message.FullName, EmailLayout.Invitation(message), cancellationToken);
 
     public Task SendEmailChangeVerificationAsync(
         EmailChangeMessage message,
         CancellationToken cancellationToken = default) =>
-        SendAsync(
-            message.NewEmail,
-            message.FullName,
-            "Confirm your new RIGX email address",
-            $"""
-            Hello {message.FullName},
-
-            Confirm that this is your new sign-in email:
-            {message.ConfirmUrl}
-
-            This link expires in 30 minutes and can be used once. If you did not ask for this, ignore this message.
-            """,
-            cancellationToken);
+        SendAsync(message.NewEmail, message.FullName, EmailLayout.EmailChange(message), cancellationToken);
 
     public Task SendNewDeviceSignInAsync(
         NewDeviceSignInMessage message,
         CancellationToken cancellationToken = default) =>
-        SendAsync(
-            message.Email,
-            message.FullName,
-            "New sign-in to your RIGX account",
-            $"""
-            Hello {message.FullName},
+        SendAsync(message.Email, message.FullName, EmailLayout.NewDevice(message), cancellationToken);
 
-            Your RIGX account was just signed in from a new device: {message.Browser} on {message.Device}, at {message.SignedInAtUtc:yyyy-MM-dd HH:mm} UTC.
+    public Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default) =>
+        SendAsync(message.Email, message.FullName, EmailLayout.Order(message), cancellationToken);
 
-            If this was you, there is nothing to do. If not, open your account, sign out of the devices you do not know, and contact us.
-            """,
-            cancellationToken);
-
-    /// <summary>Customer order emails in Egyptian Arabic (business §2: short, no marketing promises).</summary>
-    public Task SendOrderUpdateAsync(OrderEmailMessage message, CancellationToken cancellationToken = default)
-    {
-        var (subject, line) = message.Stage switch
-        {
-            OrderEmailMessage.Confirmed => ($"طلبك {message.Reference} اتأكد", "طلبك اتأكد وبنجهزه دلوقتي."),
-            OrderEmailMessage.Shipped => ($"طلبك {message.Reference} اتشحن",
-                $"طلبك اتشحن مع {message.CourierName ?? "شركة الشحن"}{(message.WaybillNumber is null ? "" : $"، رقم البوليصة {message.WaybillNumber}")}."),
-            OrderEmailMessage.Invoiced => ($"فاتورة طلبك {message.InvoiceNumber}", "طلبك اتسلّم. دي فاتورتك، وفيها ضمان كل قطعة:"),
-            _ => ($"استلمنا طلبك {message.Reference}", "استلمنا طلبك، وهنكلمك نأكد كل حاجة قبل ما نجهزه.")
-        };
-        var link = message.Stage == OrderEmailMessage.Invoiced ? message.InvoiceUrl : $"تابع طلبك من هنا: {message.TrackingUrl}";
-        return SendAsync(message.Email, message.FullName, subject,
-            $"""
-            أهلًا {message.FullName}،
-
-            {line}
-
-            {link}
-
-            RIGX
-            """,
-            cancellationToken);
-    }
-
-    /// <summary>Notify-me customers: the item they asked about is available, with the link to its page.</summary>
     public Task SendBackInStockAsync(BackInStockEmailMessage message, CancellationToken cancellationToken = default) =>
-        SendAsync(message.Email, message.FullName, "القطعة اللي طلبتها اتوفرت",
-            $"""
-            أهلًا {message.FullName}،
-
-            القطعة اللي طلبتها اتوفرت: {message.ItemName}.
-
-            شوفها من هنا: {message.ItemUrl}
-
-            RIGX
-            """,
-            cancellationToken);
+        SendAsync(message.Email, message.FullName, EmailLayout.BackInStock(message), cancellationToken);
 
     private async Task SendAsync(
         string recipient,
         string recipientName,
-        string subject,
-        string body,
+        EmailContent content,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -169,16 +86,30 @@ public sealed class SmtpEmailProvider(SmtpEmailOptions options) : IEmailProvider
         if (!string.IsNullOrWhiteSpace(options.UserName))
             client.Credentials = new NetworkCredential(options.UserName, options.Password);
 
-        using var message = new MailMessage
+        using var message = BuildMessage(options, recipient, recipientName, content);
+        await client.SendMailAsync(message, cancellationToken);
+    }
+
+    /// <summary>The multipart message: the plain text as the body and the branded layout as the HTML alternate view.</summary>
+    internal static MailMessage BuildMessage(
+        SmtpEmailOptions options,
+        string recipient,
+        string recipientName,
+        EmailContent content)
+    {
+        var message = new MailMessage
         {
             From = new MailAddress(options.FromAddress!, options.FromName),
-            Subject = subject,
+            Subject = content.Subject,
             SubjectEncoding = Encoding.UTF8,
-            Body = body,
+            Body = content.Text,
             BodyEncoding = Encoding.UTF8,
             IsBodyHtml = false
         };
         message.To.Add(new MailAddress(recipient, recipientName));
-        await client.SendMailAsync(message, cancellationToken);
+        var html = AlternateView.CreateAlternateViewFromString(content.Html, Encoding.UTF8, "text/html");
+        html.TransferEncoding = TransferEncoding.QuotedPrintable;
+        message.AlternateViews.Add(html);
+        return message;
     }
 }

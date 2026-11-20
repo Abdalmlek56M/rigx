@@ -1021,10 +1021,14 @@
       }
     },
     "stepUp": {
-      "intro": "For your security we email you a code before this change.",
-      "send": "Send me the code",
+      "intro": "For your security, we email you a code before this change.",
+      "send": "Send the code",
       "sent": "We emailed you a code. Enter it here.",
+      "spam": "No code? Check your spam folder.",
       "code": "Code",
+      "resend": "Resend code",
+      "resendIn": "Resend in {seconds}s",
+      "resent": "We sent a new code. The old code no longer works.",
       "confirm": "Confirm",
       "cancel": "Cancel",
       "errors": {

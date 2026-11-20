@@ -5,6 +5,7 @@
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <ProjectReference Include="../Auditing/HardwareStore.Modules.Auditing.csproj" />
+    <InternalsVisibleTo Include="HardwareStore.Api.Tests" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common.Domain\Common.Domain.csproj" />
