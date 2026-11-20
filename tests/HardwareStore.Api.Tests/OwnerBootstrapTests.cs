@@ -209,7 +209,10 @@ public sealed class OwnerBootstrapDatabase(string connectionString)
     public RetailTestServices CreateRetailServices(TimeProvider? time = null) =>
         RetailTestServices.Create(new TestRetailContextFactory(connectionString), time ?? TimeProvider.System);
 
-    public WishlistService CreateWishlistService() =>
+    public FavouriteService CreateFavouriteService() =>
+        new(new TestStorefrontContextFactory(connectionString), TimeProvider.System);
+
+    public CustomerNotificationService CreateNotificationService() =>
         new(new TestStorefrontContextFactory(connectionString), TimeProvider.System);
 
     public FirstOwnerBootstrapService CreateService()

@@ -477,3 +477,14 @@ export const ArrowBackIcon = (p: IconProps) => (
     <path d="M19 12H5M11 6l-6 6 6 6" />
   </Icon>
 );
+export const HeartIcon = ({ filled = false, ...p }: IconProps & { filled?: boolean }) => (
+  <Icon {...p}>
+    <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill={filled ? "currentColor" : "none"} />
+  </Icon>
+);
+export const BellIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
+    <path d="M10 21h4" />
+  </Icon>
+);

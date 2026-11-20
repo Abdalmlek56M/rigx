@@ -61,11 +61,12 @@ export function invoiceTokenFor(
 
 export interface AccountNavItem {
   href: string;
-  key: "orders" | "warranties" | "invoices" | "requests" | "builds" | "addresses" | "profile";
+  key: "orders" | "favourites" | "warranties" | "invoices" | "requests" | "builds" | "addresses" | "profile";
 }
 
 export const ACCOUNT_NAV: readonly AccountNavItem[] = [
   { href: "/account", key: "orders" },
+  { href: "/account/favourites", key: "favourites" },
   { href: "/account/warranties", key: "warranties" },
   { href: "/account/invoices", key: "invoices" },
   { href: "/account/requests", key: "requests" },

@@ -14706,10 +14706,10 @@
         ]
       }
     },
-    "/api/v1/wishlist": {
+    "/api/v1/account/favourites": {
       "get": {
         "tags": [
-          "wishlist"
+          "account"
         ],
         "description": "Signed-in user.",
         "responses": {
@@ -14718,39 +14718,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WishlistItemView"
-                  }
+                  "$ref": "#/components/schemas/FavouriteList"
                 }
               }
             }
-          },
-          "default": {
-            "description": "Error (ProblemDetails).",
-            "content": {
-              "application/problem\u002Bjson": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "sessionCookie": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "wishlist"
-        ],
-        "description": "Signed-in user.",
-        "responses": {
-          "204": {
-            "description": "No Content"
           },
           "default": {
             "description": "Error (ProblemDetails).",
@@ -14770,20 +14741,19 @@
         ]
       }
     },
-    "/api/v1/wishlist/{productId}": {
-      "post": {
+    "/api/v1/account/favourites/{code}": {
+      "put": {
         "tags": [
-          "wishlist"
+          "account"
         ],
         "description": "Signed-in user.",
         "parameters": [
           {
-            "name": "productId",
+            "name": "code",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -14810,17 +14780,16 @@
       },
       "delete": {
         "tags": [
-          "wishlist"
+          "account"
         ],
         "description": "Signed-in user.",
         "parameters": [
           {
-            "name": "productId",
+            "name": "code",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -14846,17 +14815,17 @@
         ]
       }
     },
-    "/api/v1/wishlist/merge": {
+    "/api/v1/account/favourites/merge": {
       "post": {
         "tags": [
-          "wishlist"
+          "account"
         ],
         "description": "Signed-in user.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WishlistMergeRequest"
+                "$ref": "#/components/schemas/FavouriteMergeRequest"
               }
             }
           },
@@ -14868,13 +14837,112 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WishlistItemView"
-                  }
+                  "$ref": "#/components/schemas/FavouriteList"
                 }
               }
             }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/notifications": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "description": "Signed-in user.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerNotificationFeed"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/notifications/{id}/read": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "description": "Signed-in user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/notifications/read-all": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "description": "Signed-in user.",
+        "responses": {
+          "204": {
+            "description": "No Content"
           },
           "default": {
             "description": "Error (ProblemDetails).",
@@ -18954,6 +19022,65 @@
           }
         }
       },
+      "CustomerNotificationFeed": {
+        "required": [
+          "items",
+          "unreadCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerNotificationView"
+            }
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CustomerNotificationView": {
+        "required": [
+          "id",
+          "kind",
+          "subject",
+          "status",
+          "target",
+          "createdAtUtc",
+          "read"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "target": {
+            "type": "string"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean"
+          }
+        }
+      },
       "CustomerOrderItemView": {
         "required": [
           "name",
@@ -21034,6 +21161,44 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          }
+        }
+      },
+      "FavouriteList": {
+        "required": [
+          "codes",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreItemCard"
+            }
+          }
+        }
+      },
+      "FavouriteMergeRequest": {
+        "required": [
+          "codes"
+        ],
+        "type": "object",
+        "properties": {
+          "codes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -29913,76 +30078,6 @@
             "type": "string"
           }
         }
-      },
-      "WishlistItemView": {
-        "required": [
-          "productId",
-          "name",
-          "slug",
-          "sku",
-          "basePrice",
-          "primaryImageStorageKey",
-          "categorySlug",
-          "isAvailable",
-          "addedAtUtc"
-        ],
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "sku": {
-            "type": "string"
-          },
-          "basePrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "primaryImageStorageKey": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "categorySlug": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "isAvailable": {
-            "type": "boolean"
-          },
-          "addedAtUtc": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "WishlistMergeRequest": {
-        "required": [
-          "productIds"
-        ],
-        "type": "object",
-        "properties": {
-          "productIds": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        }
       }
     },
     "securitySchemes": {
@@ -30078,6 +30173,9 @@
     },
     {
       "name": "PurchasingEndpoints"
+    },
+    {
+      "name": "AccountEngagementEndpoints"
     }
   ]
 }

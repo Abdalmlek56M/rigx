@@ -12,6 +12,7 @@ import { SpecsTable } from "@/features/product/SpecsTable";
 import { loadItem } from "@/features/product/load-item";
 import { specRows } from "@/features/product/spec-rows";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { Link, permanentRedirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs } from "@/lib/categories";
@@ -102,6 +103,7 @@ export default async function ProductPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-2.5">
             <ConditionBadge condition={condition} />
             <span className={`text-[13px] font-bold ${soldOut ? "text-ink-muted" : "text-success"}`}>{availability}</span>
+            <FavouriteButton code={item.code} modelName={item.modelName} className="ms-auto" />
           </div>
           {brand ? (
             <Link

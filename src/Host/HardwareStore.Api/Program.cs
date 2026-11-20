@@ -220,6 +220,7 @@ app.MapCatalogEndpoints();
 app.MapPurchasingEndpoints();
 app.MapInventoryEndpoints();
 app.MapStorefrontEndpoints();
+app.MapAccountEngagementEndpoints();
 if (previewEnabled)
 {
     app.MapPreviewInitializationEndpoints();

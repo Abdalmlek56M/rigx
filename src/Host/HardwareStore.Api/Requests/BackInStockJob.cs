@@ -22,8 +22,9 @@ public sealed class BackInStockJob(IServiceScopeFactory scopeFactory, ILogger<Ba
     }
 }
 
-/// <summary>One run of the back-in-stock job: matches waiting requests to stock and emails the ones that gave an email, once.</summary>
-public sealed class BackInStockNotifier(NotifyMeService notifyMe, IdentityEmailOutboxWriter outbox, OrderLinks links)
+/// <summary>One run of the back-in-stock job: matches waiting requests to stock and emails the ones that gave an email and notifies
+/// the ones sent from an account, once.</summary>
+public sealed class BackInStockNotifier(NotifyMeService notifyMe, IdentityEmailOutboxWriter outbox, CustomerNotificationService notifications, OrderLinks links)
 {
     /// <summary>Returns how many requests found their item in this run.</summary>
     public async Task<int> RunAsync(CancellationToken cancellationToken)
@@ -32,6 +33,8 @@ public sealed class BackInStockNotifier(NotifyMeService notifyMe, IdentityEmailO
         foreach (var match in matches.Where(match => match.Email is not null))
             await outbox.EnqueueAsync(IdentityEmailOutboxWriter.BackInStockKind, match.UserAccountId,
                 new BackInStockEmailMessage(match.Email!, match.Name, match.ItemName, links.ItemUrl(match.ItemCode)), cancellationToken);
+        foreach (var match in matches.Where(match => match.UserAccountId is not null))
+            await notifications.AddBackInStockAsync(match.UserAccountId!.Value, match.ItemCode, match.ItemName, cancellationToken);
         return matches.Count;
     }
 }

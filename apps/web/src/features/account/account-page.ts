@@ -11,7 +11,7 @@ export interface AccountPageProps {
   params: Promise<{ locale: string }>;
 }
 
-export type AccountPageKey = "orders" | "order" | "warranties" | "invoices" | "requests" | "builds" | "addresses" | "profile";
+export type AccountPageKey = "orders" | "order" | "favourites" | "warranties" | "invoices" | "requests" | "builds" | "addresses" | "profile";
 
 /** Metadata of an account page: its own title, never indexed. `titleKey` is under `account.pages`. */
 export async function accountMetadata({ params }: AccountPageProps, titleKey: AccountPageKey): Promise<Metadata> {

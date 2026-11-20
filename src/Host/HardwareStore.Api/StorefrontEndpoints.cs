@@ -32,12 +32,6 @@ public static class StorefrontEndpoints
         settings.MapDelete("/logos/{kind}", RemoveLogoAsync).RequirePermission(SettingsPermission);
         settings.MapPost("/watermark/reapply", ReapplyWatermark).RequirePermission(SettingsPermission);
 
-        var wishlist = endpoints.MapGroup("/api/v1/wishlist").RequireAuthorization();
-        wishlist.MapGet("", ListWishlistAsync);
-        wishlist.MapPost("/{productId:guid}", AddWishlistAsync);
-        wishlist.MapDelete("/{productId:guid}", RemoveWishlistAsync);
-        wishlist.MapDelete("", ClearWishlistAsync);
-        wishlist.MapPost("/merge", MergeWishlistAsync);
         return endpoints;
     }
 
@@ -49,62 +43,6 @@ public static class StorefrontEndpoints
         // (they cannot emit code for T); the runtime binder handles each closed section type.
         Delegate handler = UpdateSectionAsync<T>;
         group.MapPut("/" + T.Key, handler).RequirePermission(SettingsPermission);
-    }
-
-    private static async Task<Ok<IReadOnlyList<WishlistItemView>>> ListWishlistAsync(
-        HttpContext context,
-        WishlistService wishlist,
-        CancellationToken cancellationToken)
-    {
-        var accountId = context.RequireUserId();
-        context.Response.Headers.CacheControl = "no-store";
-        return TypedResults.Ok(await wishlist.ListAsync(accountId, cancellationToken));
-    }
-
-    private static async Task<NoContent> AddWishlistAsync(
-        Guid productId,
-        HttpContext context,
-        WishlistService wishlist,
-        CancellationToken cancellationToken)
-    {
-        var accountId = context.RequireUserId();
-        await wishlist.AddAsync(accountId, productId, cancellationToken);
-        return TypedResults.NoContent();
-    }
-
-    private static async Task<NoContent> RemoveWishlistAsync(
-        Guid productId,
-        HttpContext context,
-        WishlistService wishlist,
-        CancellationToken cancellationToken)
-    {
-        var accountId = context.RequireUserId();
-        await wishlist.RemoveAsync(accountId, productId, cancellationToken);
-        return TypedResults.NoContent();
-    }
-
-    private static async Task<NoContent> ClearWishlistAsync(
-        HttpContext context,
-        WishlistService wishlist,
-        CancellationToken cancellationToken)
-    {
-        var accountId = context.RequireUserId();
-        await wishlist.ClearAsync(accountId, cancellationToken);
-        return TypedResults.NoContent();
-    }
-
-    private static async Task<Ok<IReadOnlyList<WishlistItemView>>> MergeWishlistAsync(
-        WishlistMergeRequest request,
-        HttpContext context,
-        WishlistService wishlist,
-        CancellationToken cancellationToken)
-    {
-        var accountId = context.RequireUserId();
-        await wishlist.MergeAsync(
-            accountId,
-            request.ProductIds ?? [],
-            cancellationToken);
-        return TypedResults.Ok(await wishlist.ListAsync(accountId, cancellationToken));
     }
 
     private static async Task<Ok<StoreSettingsPublicView>> GetPublicSettingsAsync(
@@ -183,4 +121,3 @@ public static class StorefrontEndpoints
     }
 }
 
-public sealed record WishlistMergeRequest(IReadOnlyList<Guid>? ProductIds);

@@ -17,7 +17,7 @@ export function categoryHref(slug: string): string {
   return `/products?category=${encodeURIComponent(slug)}`;
 }
 
-/** The header's icon cluster: one pill holding the theme, language, account and cart controls. */
+/** The header's icon cluster: one pill holding the theme, language, notifications (signed in), account and cart controls. */
 export const HEADER_ICON_CLUSTER = "flex items-center gap-0.5 rounded-full border border-line bg-paper p-1";
 
 /** One round control inside the header icon cluster (same size and icon size for all of them). */

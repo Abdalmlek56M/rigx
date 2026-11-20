@@ -18,7 +18,8 @@ public static class StorefrontPersistenceRegistration
         services.AddAuditedDbContextFactory<StorefrontDbContext>(connectionString);
         services.AddStorefrontAuditRestore();
         services.AddScoped<StoreSettingsService>();
-        services.AddScoped<WishlistService>();
+        services.AddScoped<FavouriteService>();
+        services.AddScoped<CustomerNotificationService>();
         services.AddScoped<ContentArticleService>();
         services.AddScoped<ContentFaqService>();
         services.AddScoped<ITrashSource, ArticleTrashSource>();

@@ -4,6 +4,7 @@ import { UserIcon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
 import { AccountLink } from "@/features/auth/AccountLink";
 import { CartButton } from "@/features/cart/CartButton";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import type { StorefrontData } from "@/lib/storefront";
 import { CategoriesMenu } from "./CategoriesMenu";
 import { LocaleSwitch } from "./LocaleSwitch";
@@ -41,6 +42,7 @@ export function Header({ storefront }: { storefront: StorefrontData }) {
         <div className={`ms-auto md:ms-0 ${HEADER_ICON_CLUSTER}`}>
           <ThemeToggle className="max-md:hidden" />
           {storefront.englishEnabled ? <LocaleSwitch className="max-md:hidden" /> : null}
+          <NotificationBell />
           <AccountLink ariaLabel={t("account")} className={`${HEADER_ICON_BUTTON} max-md:hidden`}>
             <UserIcon />
           </AccountLink>

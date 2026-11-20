@@ -864,6 +864,7 @@
     "navLabel": "My account",
     "nav": {
       "orders": "My orders",
+      "favourites": "Favourites",
       "warranties": "Warranties",
       "invoices": "Invoices",
       "requests": "Service requests",
@@ -879,7 +880,8 @@
       "requests": "Service requests",
       "builds": "Saved builds",
       "addresses": "Addresses",
-      "profile": "Profile and security"
+      "profile": "Profile and security",
+      "favourites": "Favourites"
     },
     "state": {
       "loading": "Loading",
@@ -1085,6 +1087,35 @@
         "signOutOthers": "Sign out of all other devices",
         "failed": "That did not work. Try again."
       }
+    }
+  },
+  "favourites": {
+    "title": "Favourites",
+    "add": "Add {item} to favourites",
+    "remove": "Remove {item} from favourites",
+    "failed": "Not saved. Try again.",
+    "empty": "Nothing in your favourites yet. Tap the heart on any product to save it.",
+    "browse": "Browse products"
+  },
+  "notifications": {
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} new",
+    "title": "Notifications",
+    "markAll": "Mark all as read",
+    "unread": "New:",
+    "loading": "Loading…",
+    "empty": "No notifications yet.",
+    "failed": "We couldn't load your notifications.",
+    "retry": "Try again",
+    "backInStock": "{item} is back in stock",
+    "other": "You have a new update",
+    "order": {
+      "Confirmed": "Your order {reference} is confirmed",
+      "Preparing": "We're preparing your order {reference}",
+      "Shipped": "Your order {reference} has shipped",
+      "Delivered": "Your order {reference} was delivered",
+      "Cancelled": "Your order {reference} was cancelled",
+      "Updated": "Your order {reference} was updated"
     }
   },
   "warranty": {

@@ -864,6 +864,7 @@
     "navLabel": "حسابي",
     "nav": {
       "orders": "طلباتي",
+      "favourites": "المفضلة",
       "warranties": "الضمان",
       "invoices": "الفواتير",
       "requests": "طلبات الخدمة",
@@ -879,7 +880,8 @@
       "requests": "طلبات الخدمة",
       "builds": "تجميعاتي المحفوظة",
       "addresses": "العناوين",
-      "profile": "بياناتي والأمان"
+      "profile": "بياناتي والأمان",
+      "favourites": "المفضلة"
     },
     "state": {
       "loading": "بنحمّل",
@@ -1085,6 +1087,35 @@
         "signOutOthers": "اخرج من كل الأجهزة التانية",
         "failed": "ماتمّش. جرّب تاني."
       }
+    }
+  },
+  "favourites": {
+    "title": "المفضلة",
+    "add": "ضيف {item} للمفضلة",
+    "remove": "شيل {item} من المفضلة",
+    "failed": "ماتحفظتش. جرّب تاني.",
+    "empty": "لسه مفيش حاجة في المفضلة. دوس على القلب في أي منتج عشان تحفظه.",
+    "browse": "تصفّح المنتجات"
+  },
+  "notifications": {
+    "bell": "الإشعارات",
+    "bellUnread": "الإشعارات، {count, plural, one {إشعار جديد} two {إشعارين جداد} few {{count} إشعارات جديدة} other {{count} إشعار جديد}}",
+    "title": "الإشعارات",
+    "markAll": "علّم الكل كمقروء",
+    "unread": "جديد:",
+    "loading": "بنحمّل…",
+    "empty": "مفيش إشعارات لسه.",
+    "failed": "ماقدرناش نحمّل الإشعارات.",
+    "retry": "جرّب تاني",
+    "backInStock": "{item} رجع متوفر",
+    "other": "عندك تحديث جديد",
+    "order": {
+      "Confirmed": "طلبك {reference} اتأكد",
+      "Preparing": "بنجهّز طلبك {reference}",
+      "Shipped": "طلبك {reference} اتشحن",
+      "Delivered": "طلبك {reference} اتسلم",
+      "Cancelled": "طلبك {reference} اتلغى",
+      "Updated": "طلبك {reference} اتحدّث"
     }
   },
   "warranty": {

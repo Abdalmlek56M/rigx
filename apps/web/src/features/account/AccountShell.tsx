@@ -6,12 +6,12 @@ import { loginHref } from "@/features/auth/auth-rules";
 import { signOut } from "@/features/auth/session-store";
 import { useSession } from "@/features/auth/use-session";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { BoxIcon, CaseIcon, DocumentIcon, InboxIcon, MapPinIcon, ShieldIcon, UserIcon } from "@/components/ui/icons";
+import { BoxIcon, CaseIcon, DocumentIcon, HeartIcon, InboxIcon, MapPinIcon, ShieldIcon, UserIcon } from "@/components/ui/icons";
 import { ACCOUNT_NAV, isActiveNav } from "./account-labels";
 import { SkeletonRows } from "./LoadBoundary";
 
 const NAV_ICONS = {
-  orders: BoxIcon, warranties: ShieldIcon, invoices: DocumentIcon, requests: InboxIcon, builds: CaseIcon, addresses: MapPinIcon, profile: UserIcon
+  orders: BoxIcon, favourites: HeartIcon, warranties: ShieldIcon, invoices: DocumentIcon, requests: InboxIcon, builds: CaseIcon, addresses: MapPinIcon, profile: UserIcon
 } as const;
 
 /** The frame of every account page: greeting, side nav (tabs on mobile), sign-out; sends signed-out visitors to sign-in. */

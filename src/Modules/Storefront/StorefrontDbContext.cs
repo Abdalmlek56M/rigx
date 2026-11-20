@@ -4,14 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Storefront;
 
-public sealed class WishlistItem
-{
-    public Guid Id { get; set; }
-    public Guid UserAccountId { get; set; }
-    public Guid ProductId { get; set; }
-    public DateTimeOffset CreatedAtUtc { get; set; }
-}
-
 public sealed class WishlistProductReference
 {
     public Guid Id { get; set; }
@@ -41,7 +33,8 @@ public sealed class WishlistProductImageReference
 public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> options) : DbContext(options)
 {
     public DbSet<StoreSettings> StoreSettings => Set<StoreSettings>();
-    public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<Favourite> Favourites => Set<Favourite>();
+    public DbSet<CustomerNotification> CustomerNotifications => Set<CustomerNotification>();
     public DbSet<WishlistProductReference> WishlistProducts => Set<WishlistProductReference>();
     public DbSet<WishlistProductImageReference> WishlistProductImages => Set<WishlistProductImageReference>();
     public DbSet<WishlistCategoryReference> WishlistCategories => Set<WishlistCategoryReference>();
@@ -57,19 +50,7 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
     protected override void OnModelCreating(ModelBuilder model)
     {
         CustomerRequestConfiguration.Configure(model);
-        model.Entity<WishlistItem>(entity =>
-        {
-            entity.ToTable("wishlist_items");
-            entity.HasKey(item => item.Id);
-            entity.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
-            entity.Property(item => item.UserAccountId).HasColumnName("user_account_id");
-            entity.Property(item => item.ProductId).HasColumnName("product_id");
-            entity.Property(item => item.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
-            entity.HasIndex(item => new { item.UserAccountId, item.ProductId }).IsUnique()
-                .HasDatabaseName("ux_wishlist_items_account_product");
-            entity.HasIndex(item => item.UserAccountId).HasDatabaseName("ix_wishlist_items_account");
-        });
-
+        CustomerAccountConfiguration.Configure(model);
         model.Entity<WishlistProductReference>(entity =>
         {
             entity.ToTable("products", table => table.ExcludeFromMigrations());
@@ -105,7 +86,7 @@ public sealed class StorefrontDbContext(DbContextOptions<StorefrontDbContext> op
         StoreSettingsConfiguration.Configure(model);
         ContentModelConfiguration.Configure(model);
         OfferModelConfiguration.Configure(model);
-        model.ExcludeFromAudit(typeof(WishlistItem), typeof(ContentArticleRevision));
+        model.ExcludeFromAudit(typeof(Favourite), typeof(CustomerNotification), typeof(ContentArticleRevision));
         model.ApplySoftDelete();
     }
 }

@@ -13,6 +13,8 @@ public sealed class CustomerMergeOrchestrator(
     CustomerSalesService sales,
     AccountRequestService requests,
     SavedBuildStore savedBuilds,
+    FavouriteService favourites,
+    CustomerNotificationService notifications,
     CustomerProfileComposer composer)
 {
     public async Task<CustomerProfile> MergeAsync(Guid targetId, Guid sourceId, Guid actorId, bool includeSerial, CancellationToken cancellationToken)
@@ -21,6 +23,8 @@ public sealed class CustomerMergeOrchestrator(
         var moved = await sales.MoveAsync(sourceId, targetId, cancellationToken);
         var movedRequests = await requests.MoveAsync(sourceId, targetId, cancellationToken);
         var movedBuilds = await savedBuilds.MoveOwnerAsync(sourceId, targetId, cancellationToken);
+        await favourites.MoveAsync(sourceId, targetId, cancellationToken);
+        await notifications.MoveAsync(sourceId, targetId, cancellationToken);
         await identity.MergeAsync(targetId, sourceId, actorId, new CustomerMergeCounts(moved.Orders, moved.Warranties, movedRequests, movedBuilds),
             cancellationToken);
         return await composer.GetAsync(targetId, includeSerial, cancellationToken);

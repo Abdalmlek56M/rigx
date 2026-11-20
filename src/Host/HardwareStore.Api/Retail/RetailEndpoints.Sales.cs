@@ -23,11 +23,12 @@ public static partial class RetailEndpoints
 
     /// <summary>
     /// Status change; confirming starts the reservation from the store settings, delivering issues the invoice (numbered with the
-    /// settings prefix, seller = the signed-in staff member) and the customer is emailed (confirmed, shipped, invoice).
+    /// settings prefix, seller = the signed-in staff member) and the customer is emailed (confirmed, shipped, invoice) and, with an
+    /// account, notified in the bell.
     /// </summary>
     private static async Task<Ok<OrderView>> UpdateStatusAsync(Guid id, OrderStatusRequest request, HttpContext context, OrderStatusService statuses,
         StoreSettingsService settings, IdentityProfileService profiles, InvoiceService invoices, IdentityEmailOutboxWriter outbox,
-        OrderLinks links, TimeZoneInfo businessTimeZone, CancellationToken ct)
+        OrderLinks links, CustomerNotificationService notifications, TimeZoneInfo businessTimeZone, CancellationToken ct)
     {
         var actorId = context.RequireUserId();
         var store = await settings.GetAdminAsync(ct);
@@ -36,6 +37,7 @@ public static partial class RetailEndpoints
             new InvoicePolicy(store.Invoice.NumberPrefix, seller, businessTimeZone), ct);
         // Same row version = the order was already in that status, so nothing changed and no email goes out again.
         if (order.Status != request.Status?.Trim() || order.RowVersion == request.RowVersion) return TypedResults.Ok(order);
+        await OrderNotifications.AddAsync(notifications, order, ct);
         if (order.Status == OrderStatus.Delivered) await OrderEmails.QueueInvoiceAsync(outbox, links, order, invoices, ct);
         var stage = order.Status switch
         {

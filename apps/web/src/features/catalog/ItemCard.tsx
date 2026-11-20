@@ -9,13 +9,14 @@ import { mediaUrl } from "@/lib/media";
 import { productPath } from "@/lib/seo/urls";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { itemLine } from "@/features/cart/cart-rules";
+import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
 
 const buttonBase = "inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-bold whitespace-nowrap";
 
 /**
  * One catalog card (catalog grid, home "just arrived"). Priced as the item bought alone; a sold-out item shows "خلص"
- * with the notify-me button instead of add-to-cart.
+ * with the notify-me button instead of add-to-cart. The heart sits on the photo's top end corner (the badge is on the start).
  */
 export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const t = useTranslations("item");
@@ -26,7 +27,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const href = productPath(item.slug);
 
   return (
-    <article className="lift flex w-full flex-col overflow-hidden rounded-card border border-line bg-surface">
+    <article className="lift relative flex w-full flex-col overflow-hidden rounded-card border border-line bg-surface">
       <Link
         href={href}
         // The accessible name includes the visible badge and "sold out" text (WCAG label-in-name).
@@ -48,6 +49,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
           <span className="absolute bottom-3 start-3 rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted shadow-soft">{t("soldOutBadge")}</span>
         ) : null}
       </Link>
+      <FavouriteButton code={item.code} modelName={item.modelName} className="absolute end-3 top-3" />
       <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3.5">
         <Link href={href} dir="ltr" className="text-start text-[15px] font-bold [unicode-bidi:isolate]">{item.modelName}</Link>
         {item.warrantyLabel ? <span className="text-xs text-ink-muted">{item.warrantyLabel}</span> : null}

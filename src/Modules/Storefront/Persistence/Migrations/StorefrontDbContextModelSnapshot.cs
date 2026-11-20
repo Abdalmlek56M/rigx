@@ -429,6 +429,60 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                     b.ToTable("content_policies", (string)null);
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Storefront.CustomerNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset?>("ReadAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at_utc");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("subject");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("target");
+
+                    b.Property<Guid>("UserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_account_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserAccountId", "CreatedAtUtc")
+                        .HasDatabaseName("ix_customer_notifications_account_created");
+
+                    b.ToTable("customer_notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_customer_notifications_kind", "kind IN ('OrderStatus','BackInStock')");
+                        });
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Storefront.CustomerRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -639,6 +693,28 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_customer_requests_type", "type IN ('Sell','TradeIn','Upgrade','NotifyMe','Support','Contact','Service')");
                         });
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Storefront.Favourite", b =>
+                {
+                    b.Property<Guid>("UserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_account_id");
+
+                    b.Property<string>("ItemCode")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("item_code");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.HasKey("UserAccountId", "ItemCode");
+
+                    b.ToTable("favourites", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Storefront.Offer", b =>
@@ -902,38 +978,6 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         {
                             t.ExcludeFromMigrations();
                         });
-                });
-
-            modelBuilder.Entity("HardwareStore.Modules.Storefront.WishlistItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
-                    b.Property<Guid>("UserAccountId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_account_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserAccountId")
-                        .HasDatabaseName("ix_wishlist_items_account");
-
-                    b.HasIndex("UserAccountId", "ProductId")
-                        .IsUnique()
-                        .HasDatabaseName("ux_wishlist_items_account_product");
-
-                    b.ToTable("wishlist_items", (string)null);
-
-                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Storefront.WishlistProductImageReference", b =>
