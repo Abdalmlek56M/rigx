@@ -5,7 +5,9 @@ RIGX is a live PC hardware store (https://rigxhardware.com). Claude (Opus) is th
 ## Read first
 1. `CLAUDE.md`: project rules. They apply to you too.
 2. `docs/04-engineering-standards.md`: how code is written here.
-3. The slice you were given, in `docs/checkpoints/4.10d-owner-feedback.md`.
+3. Your brief: `docs/briefs/deepseek-NN-*.md`. It lists the files you may change. Background: `docs/checkpoints/4.10d-owner-feedback.md`.
+
+You run in your own folder (a `git worktree` on branch `deepseek/NN-*`), never in Claude's main folder.
 
 ## Stack
 - API: .NET 10 modular monolith in `src/Modules/*` (vertical slices, rules in Domain, `Result` errors). PostgreSQL 17, EF Core migrations per module.
