@@ -1214,9 +1214,20 @@
       "navLabel": "لوحة الإدارة",
       "home": "نظرة عامة",
       "store": "المتجر",
-      "signOut": "خروج",
       "openMenu": "افتح القايمة",
       "eyebrow": "الإدارة",
+      "viewStore": "عرض المتجر",
+      "menu": {
+        "label": "قائمة المستخدم",
+        "appearance": "المظهر",
+        "light": "فاتح",
+        "dark": "داكن",
+        "language": "اللغة",
+        "arabic": "العربية",
+        "english": "English",
+        "profile": "الملف الشخصي",
+        "signOut": "تسجيل الخروج"
+      },
       "roles": {
         "Owner": "المالك",
         "staff": "فريق العمل"
@@ -1775,7 +1786,7 @@
         "spent": "إجمالي المشتريات",
         "lastOrder": "آخر طلب"
       },
-      "never": "ماجاش",
+      "never": "لا يوجد",
       "inactive": "موقوف",
       "detailTitle": "بيانات العميل",
       "back": "كل العملاء",
