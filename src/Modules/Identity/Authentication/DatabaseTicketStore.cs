@@ -279,7 +279,7 @@ public sealed class DatabaseTicketStore(
             : throw new InvalidOperationException($"Authentication ticket has no valid {claimType} claim.");
 
     /// <summary>
-    /// Customers stay signed in up to 30 days on a remembered device; staff sessions end within 8 hours.
+    /// Customers stay signed in up to 30 days on a remembered device; staff sessions end after 2 idle hours and within 8 hours.
     /// Without "remember this device" a session also ends within <see cref="UnrememberedMaxLifetime"/>.
     /// </summary>
     private static (TimeSpan Idle, TimeSpan Absolute) GetSessionPolicy(AuthenticationTicket ticket)
@@ -288,7 +288,7 @@ public sealed class DatabaseTicketStore(
         var customerOnly = principal.IsInRole("Customer") && principal.FindAll(ClaimTypes.Role).Count() == 1;
         var (idle, absolute) = customerOnly
             ? (TimeSpan.FromDays(14), TimeSpan.FromDays(30))
-            : (TimeSpan.FromMinutes(30), TimeSpan.FromHours(8));
+            : (TimeSpan.FromHours(2), TimeSpan.FromHours(8));
         return ticket.Properties.IsPersistent || absolute <= UnrememberedMaxLifetime
             ? (idle, absolute)
             : (idle, UnrememberedMaxLifetime);

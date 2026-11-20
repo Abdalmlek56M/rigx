@@ -1,4 +1,4 @@
-import { unwrap, type Schemas } from "@rigx/api-client";
+import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { buildTree } from "./category-rules";
@@ -28,7 +28,7 @@ export const fetchCategorySpecs = (id: string) =>
 export const uploadCategoryImage = (id: string, file: File) => {
   const form = new FormData();
   form.set("image", file);
-  return required(unwrap(api().POST("/api/v1/admin/catalog/categories/{id}/image", { params: { path: { id } }, bodySerializer: () => form })));
+  return required(unwrap(api().POST("/api/v1/admin/catalog/categories/{id}/image", { params: { path: { id } }, ...multipart(form) })));
 };
 
 export const deleteCategoryImage = (id: string) =>

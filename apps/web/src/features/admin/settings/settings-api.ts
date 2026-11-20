@@ -1,4 +1,4 @@
-import { unwrap, type Schemas } from "@rigx/api-client";
+import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
@@ -76,7 +76,7 @@ export const uploadLogo = (kind: StoreLogoKind, file: File) => {
   form.set("image", file);
   return required(unwrap(api().PUT("/api/v1/admin/storefront/settings/logos/{kind}", {
     params: { path: { kind } },
-    bodySerializer: () => form
+    ...multipart(form)
   })));
 };
 

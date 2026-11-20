@@ -1,4 +1,4 @@
-import { unwrap, type Schemas } from "@rigx/api-client";
+import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
@@ -26,7 +26,7 @@ export const createExpense = (input: ExpenseCreateRequest) =>
 export const uploadExpenseReceipt = (id: string, file: File) => {
   const form = new FormData();
   form.set("image", file);
-  return unwrap(api().PUT("/api/v1/admin/retail/expenses/{id}/receipt", { params: { path: { id } }, bodySerializer: () => form }));
+  return unwrap(api().PUT("/api/v1/admin/retail/expenses/{id}/receipt", { params: { path: { id } }, ...multipart(form) }));
 };
 
 /** The private receipt image (same-origin, so the session cookie applies). */

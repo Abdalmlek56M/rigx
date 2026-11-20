@@ -20,10 +20,11 @@ x-api-environment: &api-environment
   Identity__SignInUrl: ${SITE_URL:?Set SITE_URL}/login
   Identity__EmailChangeBaseUrl: ${SITE_URL}/change-email
   Identity__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
-  Identity__Email__Smtp__Host: smtp.gmail.com
-  Identity__Email__Smtp__Port: "587"
+  # Gmail by default; Brevo: SMTP_HOST=smtp-relay.brevo.com, SMTP_FROM=no-reply@rigxhardware.com.
+  Identity__Email__Smtp__Host: ${SMTP_HOST:-smtp.gmail.com}
+  Identity__Email__Smtp__Port: ${SMTP_PORT:-587}
   Identity__Email__Smtp__EnableSsl: "true"
-  Identity__Email__Smtp__FromAddress: ${SMTP_USERNAME:?Set SMTP_USERNAME}
+  Identity__Email__Smtp__FromAddress: ${SMTP_FROM:-${SMTP_USERNAME:?Set SMTP_USERNAME}}
   Identity__Email__Smtp__FromName: RIGX
   Identity__Email__Smtp__UserName: ${SMTP_USERNAME}
   Identity__Email__Smtp__Password: ${SMTP_APP_PASSWORD:?Set SMTP_APP_PASSWORD}

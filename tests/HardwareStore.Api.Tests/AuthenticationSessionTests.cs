@@ -129,7 +129,10 @@ public sealed class PostgreSqlAuthenticationSessionTests(PostgreSqlIdentityFixtu
         identity.AddClaim(new Claim(IdentityLoginService.RbacRevisionClaim, "0"));
         var key = await store.StoreAsync(new AuthenticationTicket(new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = true }, "Cookies"));
 
-        clock.Advance(TimeSpan.FromMinutes(31));
+        clock.Advance(TimeSpan.FromMinutes(119));
+        Assert.NotNull(await store.RetrieveAsync(key));
+
+        clock.Advance(TimeSpan.FromMinutes(121));
         Assert.Null(await store.RetrieveAsync(key));
     }
 

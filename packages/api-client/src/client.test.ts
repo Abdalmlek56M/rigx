@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApiError, createRigxClient, unwrap } from "./index.ts";
+import { ApiError, createRigxClient, multipart, unwrap } from "./index.ts";
 
 type Call = { method: string; path: string; csrf: string | null; credentials: RequestCredentials };
 
-function fakeServer(handler: (request: Request) => Response) {
+function fakeServer(handler: (request: Request) => Response | Promise<Response>) {
   const calls: Call[] = [];
   let issued = 0;
   const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -68,4 +68,20 @@ test("validation problems expose field errors", async () => {
 
   assert.ok(error instanceof ApiError);
   assert.deepEqual(error.fieldErrors, { email: ["Enter a valid email."] });
+});
+
+test("multipart uploads send the form with its boundary", async () => {
+  let received: { type: string | null; image: FormDataEntryValue | null } | undefined;
+  const server = fakeServer(async (request) => {
+    received = { type: request.headers.get("content-type"), image: (await request.formData()).get("image") };
+    return Response.json({ storageKey: "avatars/a.webp" });
+  });
+  const api = createRigxClient({ baseUrl: "http://api.test", fetch: server.fetch });
+  const form = new FormData();
+  form.set("image", new Blob(["png"], { type: "image/png" }), "a.png");
+
+  await unwrap(api.POST("/api/v1/identity/profile/avatar", multipart(form)));
+
+  assert.match(received?.type ?? "", /^multipart\/form-data; boundary=/);
+  assert.ok(received?.image instanceof Blob);
 });

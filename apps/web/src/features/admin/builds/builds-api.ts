@@ -1,4 +1,4 @@
-import { unwrap, type Schemas } from "@rigx/api-client";
+import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
@@ -60,7 +60,7 @@ export const replacePart = (id: string, unitId: string, replacementUnitId: strin
 export const uploadBuildPhoto = (id: string, file: File) => {
   const form = new FormData();
   form.set("image", file);
-  return required(unwrap(api().POST("/api/v1/admin/retail/assemblies/{id}/photos", { ...path(id), bodySerializer: () => form })));
+  return required(unwrap(api().POST("/api/v1/admin/retail/assemblies/{id}/photos", { ...path(id), ...multipart(form) })));
 };
 
 export const deleteBuildPhoto = (id: string, storageKey: string) =>

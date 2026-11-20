@@ -1,4 +1,4 @@
-import { unwrap, type Schemas } from "@rigx/api-client";
+import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
@@ -32,7 +32,7 @@ export const setItemsHidden = (ids: string[], hidden: boolean) =>
 export const uploadStockPhoto = (id: string, file: File) => {
   const form = new FormData();
   form.set("image", file);
-  return required(unwrap(api().POST("/api/v1/admin/retail/stock-items/{id}/photos", { ...path(id), bodySerializer: () => form })));
+  return required(unwrap(api().POST("/api/v1/admin/retail/stock-items/{id}/photos", { ...path(id), ...multipart(form) })));
 };
 
 export const deleteStockPhoto = (id: string, storageKey: string) =>

@@ -47,6 +47,15 @@ export type RigxClient = Client<paths> & {
  * The one client the frontend uses: cookie session (`credentials: include`), the CSRF token added to every unsafe
  * request (fetched once and refreshed after sign-in/out or a rejected token), and typed paths from the contract.
  */
+/**
+ * Options for a multipart upload. openapi-fetch only sends a body when `body` is set (a `bodySerializer` alone sends
+ * nothing), and it passes FormData through so the browser adds the multipart boundary. The spec has no request body
+ * for these endpoints, hence the cast.
+ */
+export function multipart(form: FormData): { body: never } {
+  return { body: form as never };
+}
+
 export function createRigxClient(options: RigxClientOptions = {}): RigxClient {
   const baseUrl = options.baseUrl ?? "";
   const fetchImpl = options.fetch ?? globalThis.fetch.bind(globalThis);

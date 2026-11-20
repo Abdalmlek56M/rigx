@@ -47,6 +47,13 @@ export const sessionStore = {
     listeners.add(listener);
     if (!started) {
       started = true;
+      // A 401 on any call means the session ended (idle or signed out elsewhere); the shells then send the user to sign in.
+      browserApi().use({
+        onResponse({ response }) {
+          if (response.status === 401 && session.status === "signedIn") set(SIGNED_OUT);
+          return response;
+        }
+      });
       void refreshSession();
     }
     return () => {

@@ -1,4 +1,4 @@
-import { unwrap, type Schemas } from "@rigx/api-client";
+import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { download } from "@/lib/api/download";
 import { required } from "@/lib/api/required";
@@ -16,5 +16,5 @@ export const downloadImportTemplate = () =>
 export const importStockFile = (file: File, dryRun: boolean) => {
   const form = new FormData();
   form.set("file", file);
-  return required(unwrap(api().POST("/api/v1/admin/retail/stock-import", { params: { query: { dryRun } }, bodySerializer: () => form })));
+  return required(unwrap(api().POST("/api/v1/admin/retail/stock-import", { params: { query: { dryRun } }, ...multipart(form) })));
 };

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { unwrap } from "@rigx/api-client";
+import { multipart, unwrap } from "@rigx/api-client";
 import { refreshSession, type SessionUser } from "@/features/auth/session-store";
 import { browserApi } from "@/lib/api/browser";
 import { mediaUrl } from "@/lib/media";
@@ -34,7 +34,7 @@ export function AvatarEditor({ user }: { user: SessionUser }) {
     if (refused) return setProblem(refused);
     const form = new FormData();
     form.set("image", file);
-    void run(() => unwrap(browserApi().POST("/api/v1/identity/profile/avatar", { bodySerializer: () => form })));
+    void run(() => unwrap(browserApi().POST("/api/v1/identity/profile/avatar", multipart(form))));
     if (input.current) input.current.value = "";
   }
 
