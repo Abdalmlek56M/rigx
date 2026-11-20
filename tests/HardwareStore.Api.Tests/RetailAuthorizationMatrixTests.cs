@@ -109,7 +109,7 @@ public sealed class RetailAuthorizationMatrixTests(OwnerBootstrapPostgreSqlFixtu
 
         using var seller = factory.CreatePreflightedClient(new() { HandleCookies = true });
         await LoginAsync(seller, factory, "pos-seller");
-        Assert.Equal(HttpStatusCode.NotFound, (await seller.GetAsync("/api/v1/admin/retail/pos/customers?phone=01000000000")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await seller.GetAsync("/api/v1/admin/retail/pos/customers?search=01000000000")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(seller, "/api/v1/admin/retail/pos/preview", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await PostAsync(seller, "/api/v1/admin/retail/pos/sales", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await seller.GetAsync("/api/v1/admin/retail/blacklist")).StatusCode);

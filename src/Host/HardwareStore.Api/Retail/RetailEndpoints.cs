@@ -45,7 +45,7 @@ public static partial class RetailEndpoints
         admin.MapGet("/orders/{id:guid}", GetOrderDetailAsync).RequirePermission("Sales.ViewOrders");
         admin.MapPost("/pos/preview", PreviewPosSaleAsync).RequirePermission("Sales.CreatePOS");
         admin.MapPost("/pos/sales", CreatePosSaleAsync).RequirePermission("Sales.CreatePOS");
-        admin.MapGet("/pos/customers", FindPosCustomerAsync).RequirePermission("Sales.CreatePOS");
+        admin.MapGet("/pos/customers", SearchPosCustomersAsync).RequirePermission("Sales.CreatePOS");
         admin.MapPost("/orders/{id:guid}/status", UpdateStatusAsync).RequirePermission("Sales.ApproveOrder");
         admin.MapPost("/orders/{id:guid}/complete", CompleteOrderAsync).RequirePermission("Sales.CompleteOrder");
         admin.MapPost("/orders/{id:guid}/payment", UpdatePaymentAsync).RequirePermission("Finance.VerifyPayment");

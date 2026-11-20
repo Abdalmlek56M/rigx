@@ -889,20 +889,25 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
     }
 
     [Fact]
-    public async Task Pos_customer_search_returns_the_latest_details_for_a_phone()
+    public async Task Pos_customer_search_finds_past_buyers_by_part_of_the_phone_or_the_name()
     {
         var (retail, _, clock) = await StartAsync();
-        var item = await retail.ReceiveItemAsync(new ReceiptLine("Known GPU", "New", 3, 100m, 500m));
+        var item = await retail.ReceiveItemAsync(new ReceiptLine("Known GPU", "New", 4, 100m, 500m));
         await retail.PosAsync(Sale([StockLine(item.Id)], phone: "0100 777 1234"));
         clock.Advance(TimeSpan.FromMinutes(1));
-        await retail.PosAsync(Sale([StockLine(item.Id)], phone: "01007771234", fulfillment: OrderFulfillment.Delivery));
+        await retail.PosAsync(Sale([StockLine(item.Id)], phone: "01007771234", fulfillment: OrderFulfillment.Delivery)
+            with { Customer = new OrderCustomer("Mona Adel", "01007771234") });
+        clock.Advance(TimeSpan.FromMinutes(1));
+        await retail.PosAsync(Sale([StockLine(item.Id)], phone: "01007770000") with { Customer = new OrderCustomer("Omar", "01007770000") });
 
-        var customer = await retail.Pos.FindCustomerAsync("0100 777 1234");
+        var byPhone = Assert.Single(await retail.Pos.SearchCustomersAsync("777 1234"));
+        Assert.Equal(("Mona Adel", "01007771234", 2), (byPhone.Name, byPhone.Phone, byPhone.OrderCount));
+        Assert.Equal("Nasr City", byPhone.Address?.Area);
 
-        Assert.NotNull(customer);
-        Assert.Equal(("Customer", "01007771234", 2), (customer.Name, customer.Phone, customer.OrderCount));
-        Assert.Equal("Nasr City", customer.Address?.Area);
-        Assert.Null(await retail.Pos.FindCustomerAsync("01234567890"));
-        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Pos.FindCustomerAsync("12")));
+        var byName = Assert.Single(await retail.Pos.SearchCustomersAsync("mona"));
+        Assert.Equal(("01007771234", 2), (byName.Phone, byName.OrderCount));
+        Assert.Equal(["01007770000", "01007771234"], (await retail.Pos.SearchCustomersAsync("0100 777")).Select(customer => customer.Phone));
+        Assert.Empty(await retail.Pos.SearchCustomersAsync("01234567890"));
+        Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Pos.SearchCustomersAsync("12")));
     }
 }

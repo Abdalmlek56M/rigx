@@ -17,7 +17,7 @@ import { PosPicker } from "./PosPicker";
 import { PosSold } from "./PosSold";
 import { PosSummary } from "./PosSummary";
 import type { SetForm } from "./pos-parts";
-import { addToCart, EMPTY_POS_FORM, sendableLines, toSaleRequest, validateSale, type CartLine, type PosForm } from "./pos-rules";
+import { addToCart, EMPTY_POS_FORM, sendableLines, toSaleRequest, validateSale, withCustomer, type CartLine, type PosForm } from "./pos-rules";
 import { ClockIcon } from "@/components/ui/icons";
 import { buttonClass, buttonIconSize } from "../kit/Button";
 
@@ -100,7 +100,7 @@ export function Pos({ leadSources, governorates }: PosProps) {
           <div className="flex min-w-0 flex-col gap-5">
             <PosPicker onAdd={(line) => setCart((current) => addToCart(current, line))} />
             <PosCart cart={cart} below={below} errors={errors} onChange={setCart} />
-            <PosCustomer form={form} set={set} errors={errors} />
+            <PosCustomer form={form} set={set} errors={errors} onPick={(customer) => setForm((current) => withCustomer(current, customer))} />
             <PosDelivery form={form} set={set} errors={errors} governorates={governorates} leadSources={leadSources} />
             <PosPayments form={form} set={set} errors={errors} total={total} />
           </div>

@@ -113,11 +113,8 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await pos.SellAsync(request, await PosPolicyAsync(context, settings, ct), actorId, ct));
     }
 
-    private static async Task<Ok<PosCustomerView>> FindPosCustomerAsync(PosService pos, CancellationToken ct, string? phone = null)
-    {
-        var customer = await pos.FindCustomerAsync(phone, ct);
-        return TypedResults.Ok(customer ?? throw new RetailException(StatusCodes.Status404NotFound, "The customer was not found."));
-    }
+    private static async Task<Ok<IReadOnlyList<PosCustomerView>>> SearchPosCustomersAsync(PosService pos, CancellationToken ct, string? search = null) =>
+        TypedResults.Ok(await pos.SearchCustomersAsync(search, ct));
 
     private static async Task EnsureLeadSourceAsync(StoreSettingsService settings, string? leadSource, CancellationToken ct)
     {

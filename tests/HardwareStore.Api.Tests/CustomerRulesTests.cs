@@ -150,4 +150,24 @@ public sealed class CustomerRulesTests
         Assert.False(CustomerAccounts.IsCustomer(["Customer", "Sales"]));
         Assert.False(CustomerAccounts.IsCustomer(["Owner"]));
     }
+
+    [Theory]
+    [InlineData("0100 777", "0100777", null)]
+    [InlineData("+20 100 777 1234", "01007771234", null)]
+    [InlineData("مني", null, "%مني%")]
+    [InlineData(@"  50%_off\ ", null, @"%50\%\_off\\%")]
+    public void Pos_customer_search_reads_phone_digits_or_part_of_a_name(string search, string? digits, string? pattern)
+    {
+        var query = PosCustomerQuery.Parse(search);
+
+        Assert.Equal((digits, pattern), (query.PhoneDigits, query.NamePattern));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(" ")]
+    [InlineData("010")]
+    [InlineData("م")]
+    public void Pos_customer_search_needs_four_digits_or_two_letters(string? search) =>
+        Assert.Equal(400, Assert.Throws<RetailException>(() => PosCustomerQuery.Parse(search)).StatusCode);
 }

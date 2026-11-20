@@ -16,14 +16,15 @@ interface MoneyInputProps {
   value: string;
   onChange: (value: string) => void;
   invalid?: boolean;
+  placeholder?: string;
   className?: string;
 }
 
 /** A bare money input for table cells and rows (the label is read by screen readers). */
-export function MoneyInput({ label, value, onChange, invalid = false, className = "w-28" }: MoneyInputProps) {
+export function MoneyInput({ label, value, onChange, invalid = false, placeholder, className = "w-28" }: MoneyInputProps) {
   return (
     <input
-      type="text" inputMode="decimal" dir="ltr" aria-label={label} value={value} aria-invalid={invalid || undefined}
+      type="text" inputMode="decimal" dir="ltr" aria-label={label} placeholder={placeholder} value={value} aria-invalid={invalid || undefined}
       onChange={(event) => onChange(event.target.value)}
       className={`h-11 rounded-control border bg-surface px-3 text-start text-sm ${invalid ? "border-error" : "border-input-line"} ${className}`}
     />

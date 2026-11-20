@@ -42,3 +42,33 @@ public static class CustomerStatsRules
             all.Select(order => order.Governorate).LastOrDefault(value => value is not null));
     }
 }
+
+/// <summary>
+/// What the POS customer search looks for: part of a phone number (4 digits or more, spaces, "+" and "-" ignored)
+/// or part of a name (2 letters or more, any case). Past buyers are found through their orders, newest first.
+/// </summary>
+public sealed record PosCustomerQuery(string? PhoneDigits, string? NamePattern)
+{
+    public const int MaxResults = 8;
+    private const int MaxLength = 100;
+
+    public static PosCustomerQuery Parse(string? search)
+    {
+        var text = (search ?? string.Empty).Trim();
+        if (text.Length is > 0 and <= MaxLength && text.All(ch => char.IsAsciiDigit(ch) || ch is ' ' or '+' or '-'))
+        {
+            var digits = OrderRules.TryPhone(text) ?? new string(text.Where(char.IsAsciiDigit).ToArray());
+            if (digits.Length >= 4) return new PosCustomerQuery(digits, null);
+        }
+        else if (text.Length is >= 2 and <= MaxLength)
+        {
+            return new PosCustomerQuery(null, $"%{EscapeLike(text)}%");
+        }
+        throw new RetailException(400, "Type at least 4 digits of the phone number or 2 letters of the name.");
+    }
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
+}

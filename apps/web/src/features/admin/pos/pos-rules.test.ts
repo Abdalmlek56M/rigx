@@ -2,16 +2,19 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   addToCart,
+  customerSearchReady,
   buildLine,
   EMPTY_POS_FORM,
   fillRemaining,
   itemLine,
   paidTotal,
+  paymentState,
   posPhone,
   toBuildPick,
   toItemPick,
   toSaleRequest,
   validateSale,
+  withCustomer,
   type BuildLine,
   type BuildPick,
   type ItemPick,
@@ -118,5 +121,36 @@ describe("payments", () => {
     const rows = fillRemaining([{ key: "a", method: "Cash", amount: "" }, { key: "b", method: "InstaPay", amount: "1500.5" }], 4000);
     assert.equal(rows[0]!.amount, "2499.5");
     assert.equal(paidTotal(rows), 4000);
+  });
+});
+
+describe("POS customer", () => {
+  it("searches from 4 phone digits or 2 letters of a name", () => {
+    assert.equal(customerSearchReady("010"), false);
+    assert.equal(customerSearchReady(" 0100 "), true);
+    assert.equal(customerSearchReady("+20 1"), false);
+    assert.equal(customerSearchReady("م"), false);
+    assert.equal(customerSearchReady("مني"), true);
+  });
+
+  it("takes the picked customer's phone and fills only the empty fields", () => {
+    const form: PosForm = { ...EMPTY_POS_FORM, name: "Mona A.", phone: "0100", governorate: "" };
+    const next = withCustomer(form, {
+      name: "Mona Adel", phone: "01007771234", phoneHasWhatsApp: false, email: "mona@example.com", orderCount: 2,
+      address: { governorate: "CAIRO", area: "Nasr City", street: "Abbas", building: null, landmark: null }
+    });
+    assert.deepEqual(
+      [next.name, next.phone, next.phoneHasWhatsApp, next.email, next.governorate, next.area, next.building],
+      ["Mona A.", "01007771234", false, "mona@example.com", "CAIRO", "Nasr City", ""]
+    );
+  });
+});
+
+describe("POS payment state", () => {
+  it("compares what was paid with the total", () => {
+    assert.deepEqual(paymentState(null, 100), { kind: "unpriced" });
+    assert.deepEqual(paymentState(1000, 400.5), { kind: "due", amount: 599.5 });
+    assert.deepEqual(paymentState(1000, 1000), { kind: "settled" });
+    assert.deepEqual(paymentState(1000, 1200), { kind: "over", amount: 200 });
   });
 });

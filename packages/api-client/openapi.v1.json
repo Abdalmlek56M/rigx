@@ -8806,7 +8806,7 @@
         "description": "Permission: \u0060Sales.CreatePOS\u0060.",
         "parameters": [
           {
-            "name": "phone",
+            "name": "search",
             "in": "query",
             "schema": {
               "type": "string"
@@ -8819,7 +8819,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PosCustomerView"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PosCustomerView"
+                  }
                 }
               }
             }

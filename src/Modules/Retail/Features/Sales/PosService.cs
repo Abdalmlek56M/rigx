@@ -92,15 +92,29 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
 
-    /// <summary>"عميل قديم": the latest details used with this phone number, for the POS customer search.</summary>
-    public async Task<PosCustomerView?> FindCustomerAsync(string? phone, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// "عميل قديم": past buyers matching part of a phone or a name (<see cref="PosCustomerQuery"/>), one per phone number with the
+    /// latest details used with it, the most recent buyer first.
+    /// </summary>
+    public async Task<IReadOnlyList<PosCustomerView>> SearchCustomersAsync(string? search, CancellationToken cancellationToken = default)
     {
-        var digits = OrderRules.Phone(phone);
+        var query = PosCustomerQuery.Parse(search);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var orders = db.Orders.AsNoTracking().Where(order => order.PhoneNumber == digits);
-        var latest = await orders.OrderByDescending(order => order.CreatedAtUtc).FirstOrDefaultAsync(cancellationToken);
-        return latest is null ? null : new PosCustomerView(latest.CustomerName, latest.PhoneNumber, latest.PhoneHasWhatsApp,
-            latest.CustomerEmail, OrderMapping.AddressOf(latest), await orders.CountAsync(cancellationToken));
+        var matching = query.PhoneDigits is string digits
+            ? db.Orders.Where(order => order.PhoneNumber.Contains(digits))
+            : db.Orders.Where(order => EF.Functions.ILike(order.CustomerName, query.NamePattern!));
+        var phones = await matching.GroupBy(order => order.PhoneNumber)
+            .Select(group => new { Phone = group.Key, Last = group.Max(order => order.CreatedAtUtc) })
+            .OrderByDescending(group => group.Last).Take(PosCustomerQuery.MaxResults).Select(group => group.Phone)
+            .ToListAsync(cancellationToken);
+        var orders = await db.Orders.AsNoTracking().Where(order => phones.Contains(order.PhoneNumber))
+            .OrderByDescending(order => order.CreatedAtUtc).ToListAsync(cancellationToken);
+        return orders.GroupBy(order => order.PhoneNumber).Select(group =>
+        {
+            var latest = group.First();
+            return new PosCustomerView(latest.CustomerName, latest.PhoneNumber, latest.PhoneHasWhatsApp, latest.CustomerEmail,
+                OrderMapping.AddressOf(latest), group.Count());
+        }).ToList();
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-import { ApiError, unwrap, type Schemas } from "@rigx/api-client";
+import { unwrap, type Schemas } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { toBuildPick, toItemPick, type BuildPick, type ItemPick } from "./pos-rules";
@@ -46,12 +46,6 @@ export const previewSale = (body: PosSaleRequest) =>
 export const createSale = (body: PosSaleRequest) =>
   required(unwrap(api().POST("/api/v1/admin/retail/pos/sales", { body })));
 
-/** "عميل قديم": the latest details used with this phone, or null when it has no order yet. */
-export async function findCustomer(phone: string): Promise<PosCustomer | null> {
-  try {
-    return (await unwrap(api().GET("/api/v1/admin/retail/pos/customers", { params: { query: { phone } } }))) ?? null;
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null;
-    throw error;
-  }
-}
+/** "عميل قديم": past buyers matching part of a phone or a name, newest first (see `customerSearchReady`). */
+export const searchCustomers = (search: string) =>
+  required(unwrap(api().GET("/api/v1/admin/retail/pos/customers", { params: { query: { search } } })));

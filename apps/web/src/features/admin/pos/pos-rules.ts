@@ -258,3 +258,41 @@ export function fillRemaining(payments: readonly PaymentRow[], total: number): P
   const left = Math.max(0, Math.round((total - others) * 100) / 100);
   return payments.map((row, index) => (index === 0 ? { ...row, amount: left > 0 ? String(left) : "" } : row));
 }
+
+/** The server's customer search needs 4 digits of a phone or 2 letters of a name (same rule as the API's `PosCustomerQuery`). */
+export function customerSearchReady(text: string): boolean {
+  const value = text.trim();
+  return /^[\d\s+-]+$/.test(value) ? value.replace(/\D/g, "").length >= 4 : value.length >= 2;
+}
+
+/** Picking a past buyer: the phone and its WhatsApp flag become theirs; their other details fill only what the cashier left empty. */
+export function withCustomer(form: PosForm, customer: Schemas["PosCustomerView"]): PosForm {
+  const keep = (current: string, known: string | null | undefined) => (current.trim() || !known ? current : known);
+  const address = customer.address;
+  return {
+    ...form,
+    phone: customer.phone,
+    phoneHasWhatsApp: customer.phoneHasWhatsApp,
+    name: keep(form.name, customer.name),
+    email: keep(form.email, customer.email),
+    governorate: keep(form.governorate, address?.governorate),
+    area: keep(form.area, address?.area),
+    street: keep(form.street, address?.street),
+    building: keep(form.building, address?.building),
+    landmark: keep(form.landmark, address?.landmark)
+  };
+}
+
+export type PaymentState =
+  | { kind: "unpriced" }
+  | { kind: "due"; amount: number }
+  | { kind: "settled" }
+  | { kind: "over"; amount: number };
+
+/** Where the payment stands against the server's total: nothing to compare yet, money still due, paid in full, or paid too much. */
+export function paymentState(total: number | null, paid: number): PaymentState {
+  if (total === null) return { kind: "unpriced" };
+  const left = Math.round((total - paid) * 100) / 100;
+  if (left > 0) return { kind: "due", amount: left };
+  return left === 0 ? { kind: "settled" } : { kind: "over", amount: -left };
+}
