@@ -36,7 +36,8 @@ public sealed record BuildPriceRule(IReadOnlySet<Guid> CpuCategoryIds, IReadOnly
 
 /// <summary>What the store settings decide for a checkout (read in Host): shipping, upfront rule, enabled methods, terms version.</summary>
 public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, ShippingRate Shipping,
-    Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder, BuildPriceRule? BuildPrice = null);
+    Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder, BuildPriceRule? BuildPrice = null,
+    Func<decimal, decimal>? DepositFor = null);
 
 /// <summary>Reservation defaults from the store settings, applied when an order is confirmed.</summary>
 public sealed record ReservationPolicy(int Hours, bool AutoRelease);
@@ -45,6 +46,7 @@ public sealed record OrderStatusRequest(string? Status, string? Notes, long RowV
 public sealed record CompleteOrderRequest(long RowVersion, string? Notes);
 public sealed record PaymentStatusRequest(string? PaymentStatus, string? Notes, long RowVersion);
 public sealed record WaivePaymentRequest(string? Reason, long RowVersion);
+public sealed record WaiveDepositRequest(string? Reason, long RowVersion);
 public sealed record OrderPaymentRequest(string? Method, decimal Amount, string? Note, long RowVersion, Guid? MoneyAccountId = null);
 public sealed record OrderShippingRequest(string? CourierName, string? WaybillNumber, long RowVersion);
 public sealed record OrderReservationRequest(int? Hours, bool AutoRelease, long RowVersion);
@@ -68,7 +70,8 @@ public sealed record OrderView(Guid Id, string Reference, string TrackingToken, 
     bool IsBlacklisted, DateTimeOffset? ReservedUntilUtc, bool ReservationAutoRelease, DateTimeOffset? ReservationExpiredAtUtc,
     string? CourierName, string? WaybillNumber, int? SatisfactionScore, string? SatisfactionComment, string? Notes,
     DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long RowVersion, IReadOnlyList<OrderItemView> Items,
-    IReadOnlyList<OrderPaymentView> Payments, IReadOnlyList<OrderEventView> Events, string? CouponCode = null, decimal CouponDiscount = 0m, string? WhatsAppNumber = null);
+    IReadOnlyList<OrderPaymentView> Payments, IReadOnlyList<OrderEventView> Events, string? CouponCode = null, decimal CouponDiscount = 0m, string? WhatsAppNumber = null,
+    decimal DepositAmount = 0m);
 /// <summary>
 /// The customer's own order (checkout result, "my orders", "view as customer"): no cost, profit, staff, payment-waiver or blacklist
 /// data. Status and timeline are the customer-facing ones ("Completed" shows as "Delivered").

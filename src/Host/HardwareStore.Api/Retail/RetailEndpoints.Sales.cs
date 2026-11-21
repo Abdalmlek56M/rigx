@@ -137,6 +137,12 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await payments.UpdatePaymentAsync(id, request, actorId, ct));
     }
 
+    private static async Task<Ok<OrderView>> WaiveDepositAsync(Guid id, WaiveDepositRequest request, HttpContext context, OrderPaymentService payments, CancellationToken ct)
+    {
+        var actorId = context.RequireUserId();
+        return TypedResults.Ok(await payments.WaiveDepositAsync(id, request, actorId, ct));
+    }
+
     private static async Task<Ok<OrderView>> WaivePaymentAsync(Guid id, WaivePaymentRequest request, HttpContext context, OrderPaymentService payments, CancellationToken ct)
     {
         var actorId = context.RequireUserId();
@@ -200,7 +206,7 @@ public static partial class RetailEndpoints
         if (store.Payment.WalletEnabled) methods.Add(OrderPaymentMethod.Wallet);
         var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, shipping,
             subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount,
-            await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct));
+            await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct), store.Payment.DepositFor);
         var placed = await orders.CreateOnlineAsync(request, policy, ct);
         await OrderEmails.QueueAsync(outbox, links, placed.Order, OrderEmailMessage.Received, ct);
         return TypedResults.Ok(placed.Customer);

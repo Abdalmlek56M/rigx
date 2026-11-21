@@ -108,6 +108,14 @@ public sealed class StoreSettingsRulesTests
     }
 
     [Fact]
+    public void No_deposit_is_asked_when_the_deposit_is_not_required_but_shipping_still_is()
+    {
+        var payment = new PaymentSettings { DepositRequired = false };
+        Assert.Equal(0m, payment.DepositFor(50_000m));
+        Assert.Equal(new UpfrontPayment(80m, 0m, 80m), payment.UpfrontFor(50_000m, 80m, false));
+    }
+
+    [Fact]
     public void Deposit_applies_only_above_the_threshold()
     {
         var payment = new PaymentSettings();

@@ -168,6 +168,18 @@ public static class OrderRules
     public static decimal UpfrontDue(StoreOrder order) =>
         order.PaymentStatus is PaymentStatus.Paid or PaymentStatus.Waived ? 0m : Math.Max(0m, order.UpfrontAmount - order.PaidAmount);
 
+    /// <summary>A deposit can be waived while the order is open, has one, and none of it has been paid yet.</summary>
+    public static bool CanWaiveDeposit(StoreOrder order) =>
+        order.DepositAmount > 0m && order.Status is not (OrderStatus.Completed or OrderStatus.Cancelled)
+        && order.PaymentStatus is not (PaymentStatus.Paid or PaymentStatus.Waived or PaymentStatus.Refunded)
+        && order.PaidAmount <= order.UpfrontAmount - order.DepositAmount;
+
+    public static void EnsureDepositWaivable(StoreOrder order)
+    {
+        if (!CanWaiveDeposit(order))
+            throw new RetailException(409, "This order has no deposit that can still be waived.");
+    }
+
     public static void EnsureUpfrontPaid(StoreOrder order)
     {
         if (UpfrontDue(order) > 0m)

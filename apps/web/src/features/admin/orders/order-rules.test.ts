@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   canSetPaymentStatus,
   canTakePayment,
+  canWaiveDeposit,
   canWaivePayment,
   completeBlock,
   customerWhatsAppNumber,
@@ -160,5 +161,22 @@ describe("address", () => {
     assert.equal(orderAddressText({ governorate: "alex", area: "العجمي", street: "شارع 9", building: "12", landmark: "بجوار المسجد" }, name), "الإسكندرية › العجمي › شارع 9 › 12 · بجوار المسجد");
     assert.equal(orderAddressText({ governorate: "alex", area: null, street: "شارع 9", building: null, landmark: null }, name), "الإسكندرية › شارع 9");
     assert.equal(orderAddressText(null, name), null);
+  });
+});
+
+describe("waiving only the deposit", () => {
+  const base = { status: "Confirmed", paymentStatus: "Unpaid", depositAmount: 200, upfrontAmount: 250, paidAmount: 0 } as never;
+  const with_ = (patch: object) => ({ ...(base as object), ...patch }) as never;
+
+  it("is offered while the order is open and nothing of the deposit is paid", () => {
+    assert.equal(canWaiveDeposit(base), true);
+    assert.equal(canWaiveDeposit(with_({ paidAmount: 50 })), true);
+  });
+
+  it("is hidden once the deposit is touched, the order is closed or settled, or there is no deposit", () => {
+    assert.equal(canWaiveDeposit(with_({ paidAmount: 100 })), false);
+    assert.equal(canWaiveDeposit(with_({ status: "Cancelled" })), false);
+    assert.equal(canWaiveDeposit(with_({ paymentStatus: "Paid" })), false);
+    assert.equal(canWaiveDeposit(with_({ depositAmount: 0 })), false);
   });
 });

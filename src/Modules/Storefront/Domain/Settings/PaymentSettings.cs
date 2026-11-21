@@ -10,6 +10,8 @@ public sealed record PaymentSettings : IStoreSettingsSection<PaymentSettings>
     public static PaymentSettings Read(StoreSettings settings) => settings.Payment;
     public static void Write(StoreSettings settings, PaymentSettings value) => settings.Payment = value;
 
+    /// <summary>False = no deposit is asked at all (shipping may still be); the owner can also waive it order by order.</summary>
+    public bool DepositRequired { get; init; } = true;
     public decimal DepositThreshold { get; init; } = 10_000m;
     public decimal DepositPercent { get; init; } = 10m;
     public bool ShippingPaidUpfront { get; init; } = true;
@@ -20,7 +22,7 @@ public sealed record PaymentSettings : IStoreSettingsSection<PaymentSettings>
     public string? WalletNumber { get; init; }
 
     public decimal DepositFor(decimal subtotal) =>
-        subtotal > DepositThreshold
+        DepositRequired && subtotal > DepositThreshold
             ? decimal.Round(subtotal * DepositPercent / 100m, 2, MidpointRounding.AwayFromZero)
             : 0m;
 

@@ -21,10 +21,13 @@ export function PaymentForm({ view, onSaved, onStale }: SectionProps) {
       title={t("title")} hint={t("hint")} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
       onSubmit={() => void save((rowVersion) => savePayment(paymentValue(form), rowVersion))}
     >
+      <CheckField label={t("depositRequired")} hint={t("depositRequiredHint")} checked={form.depositRequired} onChange={(depositRequired) => set({ depositRequired })} />
+      {form.depositRequired ? (
       <div className="grid gap-3 sm:grid-cols-2">
         <TextField label={t("depositThreshold")} name="depositThreshold" type="number" min="0" max="10000000" step="0.01" ltr value={form.depositThreshold} onChange={(depositThreshold) => set({ depositThreshold })} />
         <TextField label={t("depositPercent")} name="depositPercent" type="number" min="0" max="100" step="0.01" ltr value={form.depositPercent} onChange={(depositPercent) => set({ depositPercent })} />
       </div>
+      ) : null}
       <CheckField label={t("shippingUpfront")} hint={t("shippingUpfrontHint")} checked={form.shippingPaidUpfront} onChange={(shippingPaidUpfront) => set({ shippingPaidUpfront })} />
       <p className="m-0 text-xs text-ink-muted">{t("depositHint")}</p>
 

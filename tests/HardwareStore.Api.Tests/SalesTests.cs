@@ -681,6 +681,36 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
     }
 
     [Fact]
+    public async Task The_deposit_alone_can_be_waived_on_an_order_and_shipping_stays_due()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Deposit GPU", 4, 1000m);
+        var order = await retail.CheckoutAsync(Checkout([StockLine(item.Id)]));
+        Assert.Equal((200m, 200m), (order.UpfrontAmount, order.DepositAmount));
+
+        Assert.Equal(400, await RetailSales.StatusCodeAsync(() =>
+            retail.Payments.WaiveDepositAsync(order.Id, new WaiveDepositRequest("no", order.RowVersion), Actor)));
+        var waived = await retail.Payments.WaiveDepositAsync(order.Id, new WaiveDepositRequest("Regular customer", order.RowVersion), Actor);
+
+        Assert.Equal((0m, 0m, 0m), (waived.UpfrontAmount, waived.DepositAmount, waived.UpfrontDue));
+        Assert.Contains(waived.Events, entry => entry.EventType == "Deposit:Waived");
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() =>
+            retail.Payments.WaiveDepositAsync(order.Id, new WaiveDepositRequest("Regular customer", waived.RowVersion), Actor)));
+    }
+
+    [Fact]
+    public async Task A_deposit_with_money_already_paid_against_it_cannot_be_waived()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Paid Deposit GPU", 4, 1000m);
+        var order = await retail.CheckoutAsync(Checkout([StockLine(item.Id)]));
+        var paid = await retail.Payments.AddPaymentAsync(order.Id, new OrderPaymentRequest(OrderPaymentMethod.InstaPay, 100m, null, order.RowVersion), Actor);
+
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() =>
+            retail.Payments.WaiveDepositAsync(order.Id, new WaiveDepositRequest("Regular customer", paid.RowVersion), Actor)));
+    }
+
+    [Fact]
     public async Task Pos_delivery_takes_the_fee_and_time_from_the_shipping_settings_unless_staff_type_a_fee()
     {
         var (retail, _, _) = await StartAsync();

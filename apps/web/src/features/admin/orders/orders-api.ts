@@ -30,6 +30,9 @@ export const setPaymentStatus = (id: string, paymentStatus: string, notes: strin
 export const waivePayment = (id: string, reason: string, rowVersion: number) =>
   required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/payment/waive", { ...path(id), body: { reason, rowVersion } })));
 
+export const waiveDeposit = (id: string, reason: string, rowVersion: number) =>
+  required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/deposit/waive", { ...path(id), body: { reason, rowVersion } })));
+
 export const setShipping = (id: string, courierName: string | null, waybillNumber: string | null, rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/orders/{id}/shipping", { ...path(id), body: { courierName, waybillNumber, rowVersion } })));
 

@@ -1710,6 +1710,14 @@
           "submit": "Update status",
           "done": "Payment status updated"
         },
+        "waiveDeposit": {
+          "button": "No deposit",
+          "title": "Waive the deposit on this order?",
+          "body": "The deposit ({amount} EGP) is dropped; shipping stays due when it applies.",
+          "reason": "Reason (at least 5 characters)",
+          "confirm": "Waive deposit",
+          "done": "The deposit was waived."
+        },
         "waive": {
           "button": "Waive payment",
           "title": "Waive the payment?",
@@ -4446,6 +4454,8 @@
       "payment": {
         "title": "Payment & deposit",
         "hint": "The deposit applies above a set amount, and shipping can be paid upfront.",
+        "depositRequired": "Deposit required",
+        "depositRequiredHint": "When off, no order is asked for a deposit; you can also waive it for a single order from the order page.",
         "depositThreshold": "Deposit above",
         "depositPercent": "Deposit percent %",
         "shippingUpfront": "Shipping is paid upfront",

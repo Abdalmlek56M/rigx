@@ -189,6 +189,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.DeliveryTime).HasColumnName("delivery_time").HasMaxLength(60);
             e.Property(x => x.Total).HasColumnName("total").HasPrecision(18, 2);
             e.Property(x => x.UpfrontAmount).HasColumnName("upfront_amount").HasPrecision(18, 2);
+            e.Property(x => x.DepositAmount).HasColumnName("deposit_amount").HasPrecision(18, 2);
             e.Property(x => x.PaidAmount).HasColumnName("paid_amount").HasPrecision(18, 2);
             e.Property(x => x.RefundedAmount).HasColumnName("refunded_amount").HasPrecision(18, 2);
             e.Property(x => x.IsBlacklisted).HasColumnName("is_blacklisted");

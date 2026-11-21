@@ -9,9 +9,9 @@ import { usePermissions } from "../use-permissions";
 import { FormMessage } from "../kit/PageHeader";
 import { ReasonDialog } from "./ReasonDialog";
 import { RecordPaymentDialog } from "./RecordPaymentDialog";
-import { setPaymentStatus, waivePayment } from "./orders-api";
+import { setPaymentStatus, waiveDeposit, waivePayment } from "./orders-api";
 import {
-  canSetPaymentStatus, canTakePayment, canWaivePayment, SETTABLE_PAYMENT_STATUSES, waiverReasonValid
+  canSetPaymentStatus, canTakePayment, canWaiveDeposit, canWaivePayment, SETTABLE_PAYMENT_STATUSES, waiverReasonValid
 } from "./order-rules";
 import { useOrderAction, type OrderActionProps } from "./use-order-action";
 import { BanIcon, CheckIcon, WalletIcon } from "@/components/ui/icons";
@@ -54,11 +54,13 @@ export function OrderPaymentActions(props: OrderActionProps & { accounts: readon
   const { apply } = useOrderAction(props);
   const [recording, setRecording] = useState(false);
   const [waiving, setWaiving] = useState(false);
+  const [waivingDeposit, setWaivingDeposit] = useState(false);
   if (!has("Finance.VerifyPayment")) return null;
   const take = canTakePayment(order);
   const setStatus = canSetPaymentStatus(order);
   const waive = canWaivePayment(order);
-  if (!take && !setStatus && !waive) return null;
+  const waiveDepositOnly = canWaiveDeposit(order);
+  if (!take && !setStatus && !waive && !waiveDepositOnly) return null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -69,6 +71,17 @@ export function OrderPaymentActions(props: OrderActionProps & { accounts: readon
         />
       ) : null}
       {setStatus ? <PaymentStatusForm {...props} /> : null}
+      {waiveDepositOnly ? (
+        <>
+          <Button icon={BanIcon} className="self-start" onClick={() => setWaivingDeposit(true)}>{t("payment.waiveDeposit.button")}</Button>
+          <ReasonDialog
+            open={waivingDeposit} title={t("payment.waiveDeposit.title")} body={t("payment.waiveDeposit.body", { amount: order.depositAmount ?? 0 })}
+            label={t("payment.waiveDeposit.reason")} field="reason" maxLength={500} valid={waiverReasonValid}
+            confirmLabel={t("payment.waiveDeposit.confirm")} success={t("payment.waiveDeposit.done")}
+            onClose={() => setWaivingDeposit(false)} onConfirm={(reason) => apply(() => waiveDeposit(order.id, reason, order.rowVersion))}
+          />
+        </>
+      ) : null}
       {waive ? (
         <>
           <Button icon={BanIcon} className="self-start" onClick={() => setWaiving(true)}>{t("payment.waive.button")}</Button>

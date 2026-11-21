@@ -46,6 +46,8 @@ public sealed class StoreOrder
     public decimal Total { get; set; }
     /// <summary>Shipping (+ deposit) asked before the order is prepared; zero for pickup.</summary>
     public decimal UpfrontAmount { get; set; }
+    /// <summary>The deposit part of <see cref="UpfrontAmount"/>; the owner can waive it alone (it drops to zero, shipping stays).</summary>
+    public decimal DepositAmount { get; set; }
     public decimal PaidAmount { get; set; }
     public decimal RefundedAmount { get; set; }
     /// <summary>Set when the customer matched the blacklist; confirming then needs full prepayment.</summary>

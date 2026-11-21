@@ -66,6 +66,25 @@ public sealed class OrderPaymentService(IDbContextFactory<RetailDbContext> conte
         return OrderMapping.ToView(order);
     }
 
+    /// <summary>Drops only the deposit from what the customer must pay upfront (shipping stays); needs a reason, and is logged on the order.</summary>
+    public async Task<OrderView> WaiveDepositAsync(Guid id, WaiveDepositRequest request, Guid actorId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5)
+            throw new RetailException(400, "A waiver reason of at least 5 characters is required.");
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var order = await db.Orders.WithDetails()
+            .SingleOrDefaultAsync(item => item.Id == id, cancellationToken) ?? throw new RetailException(404, "Order was not found.");
+        if (order.RowVersion != request.RowVersion) throw new RetailException(409, "The order was changed by another user.");
+        OrderRules.EnsureDepositWaivable(order);
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        order.UpfrontAmount -= order.DepositAmount;
+        order.DepositAmount = 0m;
+        order.UpdatedAtUtc = now; order.RowVersion++;
+        order.Events.Add(OrderMapping.Event("Deposit:Waived", request.Reason.Trim(), actorId, now));
+        await db.SaveChangesAsync(cancellationToken);
+        return OrderMapping.ToView(order);
+    }
+
     public async Task<OrderView> WaivePaymentAsync(Guid id, WaivePaymentRequest request, Guid actorId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5)

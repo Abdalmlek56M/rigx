@@ -1852,6 +1852,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("delivery_time");
 
+                    b.Property<decimal>("DepositAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("deposit_amount");
+
                     b.Property<string>("FulfillmentMethod")
                         .IsRequired()
                         .HasMaxLength(32)

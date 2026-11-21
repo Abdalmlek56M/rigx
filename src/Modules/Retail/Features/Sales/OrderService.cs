@@ -33,6 +33,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         order.PaymentMethod = method;
         order.PaymentRequired = fulfillment == OrderFulfillment.Delivery;
         order.UpfrontAmount = fulfillment == OrderFulfillment.Delivery ? policy.UpfrontFor(order.Subtotal) : 0m;
+        order.DepositAmount = fulfillment == OrderFulfillment.Delivery ? Math.Min(policy.DepositFor?.Invoke(order.Subtotal) ?? 0m, order.UpfrontAmount) : 0m;
         order.LeadSource = OrderRules.Optional(request.LeadSource, 60, "Lead source");
         order.Usage = usage;
         order.UsageNote = usageNote;

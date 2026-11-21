@@ -4,6 +4,7 @@ import type { Schemas } from "@rigx/api-client";
 export type PaymentSettings = Schemas["PaymentSettings"];
 
 export interface PaymentForm {
+  depositRequired: boolean;
   depositThreshold: string;
   depositPercent: string;
   shippingPaidUpfront: boolean;
@@ -15,6 +16,7 @@ export interface PaymentForm {
 }
 
 export const paymentForm = (value: PaymentSettings): PaymentForm => ({
+  depositRequired: value.depositRequired ?? true,
   depositThreshold: String(value.depositThreshold ?? 0),
   depositPercent: String(value.depositPercent ?? 0),
   shippingPaidUpfront: value.shippingPaidUpfront ?? true,
@@ -26,6 +28,7 @@ export const paymentForm = (value: PaymentSettings): PaymentForm => ({
 });
 
 export const paymentValue = (form: PaymentForm): PaymentSettings => ({
+  depositRequired: form.depositRequired,
   depositThreshold: form.depositThreshold.trim() === "" ? 0 : Number(form.depositThreshold),
   depositPercent: form.depositPercent.trim() === "" ? 0 : Number(form.depositPercent),
   shippingPaidUpfront: form.shippingPaidUpfront,

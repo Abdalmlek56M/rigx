@@ -54,6 +54,7 @@ public static partial class RetailEndpoints
         admin.MapPost("/orders/{id:guid}/complete", CompleteOrderAsync).RequirePermission("Sales.CompleteOrder");
         admin.MapPost("/orders/{id:guid}/payment", UpdatePaymentAsync).RequirePermission("Finance.VerifyPayment");
         admin.MapPost("/orders/{id:guid}/payment/waive", WaivePaymentAsync).RequirePermission("Finance.VerifyPayment");
+        admin.MapPost("/orders/{id:guid}/deposit/waive", WaiveDepositAsync).RequirePermission("Finance.VerifyPayment");
         admin.MapPost("/orders/{id:guid}/payments", AddPaymentAsync).RequirePermission("Finance.VerifyPayment");
         admin.MapPut("/orders/{id:guid}/shipping", SetShippingAsync).RequirePermission("Sales.ApproveOrder");
         admin.MapPut("/orders/{id:guid}/reservation", SetReservationAsync).RequirePermission("Sales.ApproveOrder");

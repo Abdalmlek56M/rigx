@@ -6,6 +6,7 @@ import type { Order } from "./orders-api";
 
 type OrderState = Pick<Order,
   "status" | "fulfillmentMethod" | "isBlacklisted" | "paymentStatus" | "paymentRequired" | "upfrontDue" | "remaining">;
+type DepositState = Pick<Order, "status" | "paymentStatus" | "depositAmount" | "upfrontAmount" | "paidAmount">;
 
 export const ORDER_STATUSES = ["New", "Confirmed", "Preparing", "Shipped", "Delivered", "Completed", "Cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -78,6 +79,13 @@ export function canTakePayment(order: OrderState): boolean {
 
 export function canWaivePayment(order: OrderState): boolean {
   return !isClosed(order) && order.paymentStatus !== "Paid" && order.paymentStatus !== "Waived";
+}
+
+/** The deposit can be waived alone while the order is open, has one, and none of it has been paid (mirrors the API rule). */
+export function canWaiveDeposit(order: DepositState): boolean {
+  return (order.depositAmount ?? 0) > 0 && order.status !== "Completed" && order.status !== "Cancelled"
+    && order.paymentStatus !== "Paid" && order.paymentStatus !== "Waived" && order.paymentStatus !== "Refunded"
+    && order.paidAmount <= order.upfrontAmount - (order.depositAmount ?? 0);
 }
 
 /** The manual status select is hidden once nothing is left to pay (the API refuses "unpaid" on a paid order). */

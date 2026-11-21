@@ -9226,6 +9226,62 @@
         ]
       }
     },
+    "/api/v1/admin/retail/orders/{id}/deposit/waive": {
+      "post": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060Finance.VerifyPayment\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaiveDepositRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/retail/orders/{id}/payments": {
       "post": {
         "tags": [
@@ -23480,6 +23536,11 @@
               "null",
               "string"
             ]
+          },
+          "depositAmount": {
+            "type": "number",
+            "format": "double",
+            "default": 0
           }
         }
       },
@@ -24574,6 +24635,9 @@
       "PaymentSettings": {
         "type": "object",
         "properties": {
+          "depositRequired": {
+            "type": "boolean"
+          },
           "depositThreshold": {
             "type": "number",
             "format": "double"
@@ -29725,6 +29789,25 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "WaiveDepositRequest": {
+        "required": [
+          "reason",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rowVersion": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
