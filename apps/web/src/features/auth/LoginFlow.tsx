@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, unwrap } from "@rigx/api-client";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
@@ -14,8 +14,14 @@ import { useSession } from "./use-session";
 
 type Step = { name: "email" } | { name: "code"; resendAfterSeconds: number; sentAt: number };
 
+interface LoginFlowProps {
+  next: string | undefined;
+  /** Runs after a successful sign-in instead of navigating (the checkout sheet closes and keeps the page). */
+  onSignedIn?: () => void;
+}
+
 /** Email-code and Google sign-in; on success the session is refreshed and the person goes on to `next`. */
-export function LoginFlow({ next }: { next: string | undefined }) {
+export function LoginFlow({ next, onSignedIn }: LoginFlowProps) {
   const t = useTranslations("auth.errors");
   const router = useRouter();
   const session = useSession();
@@ -23,15 +29,23 @@ export function LoginFlow({ next }: { next: string | undefined }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<SignInFailure | null>(null);
+  const done = useRef(false);
   const target = safeNext(next);
 
+  const complete = useCallback(() => {
+    if (done.current) return;
+    done.current = true;
+    if (onSignedIn) onSignedIn();
+    else router.replace(target);
+  }, [onSignedIn, router, target]);
+
   useEffect(() => {
-    if (session.status === "signedIn") router.replace(target);
-  }, [session.status, router, target]);
+    if (session.status === "signedIn") complete();
+  }, [session.status, complete]);
 
   async function finish(): Promise<void> {
     await refreshSession();
-    router.replace(target);
+    complete();
   }
 
   async function sendCode(address: string) {

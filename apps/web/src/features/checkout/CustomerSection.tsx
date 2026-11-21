@@ -2,12 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/ui/TextField";
-import { loginHref } from "@/features/auth/auth-rules";
-import { Link } from "@/i18n/navigation";
-import { FormSection, useFieldError, type SectionProps } from "./form-parts";
+import { FormSection, OptionalPill, useFieldError, type SectionProps } from "./form-parts";
 
-/** Name, mobile (+ WhatsApp tick) and optional email; guests get a sign-in link. */
-export function CustomerSection({ form, set, errors, showLogin }: SectionProps & { showLogin: boolean }) {
+/** Name, mobile (+ WhatsApp tick), optional email with its confirmation; guests can sign in without leaving the page. */
+export function CustomerSection({ form, set, errors, showLogin, onLogin }: SectionProps & { showLogin: boolean; onLogin: () => void }) {
   const t = useTranslations("checkout.customer");
   const error = useFieldError(errors);
 
@@ -18,7 +16,9 @@ export function CustomerSection({ form, set, errors, showLogin }: SectionProps &
         showLogin ? (
           <span className="text-sm text-ink-muted">
             {t("haveAccount")}{" "}
-            <Link href={loginHref("/checkout")} className="text-orange-text underline hover:text-orange-text-hover">{t("login")}</Link>
+            <button type="button" onClick={onLogin} className="text-orange-text underline hover:text-orange-text-hover">
+              {t("login")}
+            </button>
           </span>
         ) : undefined
       }
@@ -37,7 +37,18 @@ export function CustomerSection({ form, set, errors, showLogin }: SectionProps &
         />
         {t("whatsApp")}
       </label>
-      <TextField label={t("email")} name="email" type="email" ltr autoComplete="email" value={form.email} onChange={(v) => set("email", v)} />
+      <div className="grid gap-3.5 sm:grid-cols-2">
+        <TextField
+          label={t("email")} labelEnd={<OptionalPill />} name="email" type="email" ltr autoComplete="email"
+          value={form.email} onChange={(v) => set("email", v)}
+        />
+        {form.email.trim() ? (
+          <TextField
+            label={t("emailConfirm")} name="emailConfirm" type="email" ltr autoComplete="off"
+            value={form.emailConfirm} onChange={(v) => set("emailConfirm", v)} error={error("emailConfirm")}
+          />
+        ) : null}
+      </div>
       <p className="m-0 text-[13px] text-ink-muted">{t("note")}</p>
     </FormSection>
   );

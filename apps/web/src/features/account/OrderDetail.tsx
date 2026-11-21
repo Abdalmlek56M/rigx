@@ -8,7 +8,7 @@ import { orderStatusKey, trackingSteps } from "@/features/tracking/tracking-step
 import { Link } from "@/i18n/navigation";
 import { formatDate, formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
-import { paymentMethodKey } from "./account-labels";
+import { ORDER_BADGE, paymentMethodKey } from "./account-labels";
 import { fetchOrder, type Order } from "./account-api";
 import { LoadBoundary } from "./LoadBoundary";
 import { useLoad } from "@/lib/hooks/use-load";
@@ -101,18 +101,27 @@ function OrderBody({ order, whatsApp, pickupAddress }: { order: Order; whatsApp:
   const tStatus = useTranslations("orderStatus");
   const locale = useLocale();
   const status = orderStatusKey(order.status);
+  const count = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const button = "flex h-11 items-center justify-center gap-2 rounded-control px-5 font-bold";
 
   return (
     <div className="flex flex-col gap-4">
       <Link href="/account" className="inline-flex min-h-11 items-center text-sm text-orange-text underline hover:text-orange-text-hover">{t("back")}</Link>
-      <header className="flex flex-col gap-1">
-        <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{order.reference}</span>
-        <h2 className="m-0 text-2xl font-bold">{tStatus(status)}</h2>
-        <span className="text-sm text-ink-muted">{formatDate(order.createdAtUtc, locale)}</span>
-      </header>
-      <section aria-label={t("timeline")} className="rounded-card border border-line bg-surface p-5 pb-0 md:p-6 md:pb-1">
+      <section aria-label={t("timeline")} className={card}>
         <TrackingTimeline steps={trackingSteps(order.status, order.fulfillmentMethod, order.timeline)} />
+        <div className="flex flex-col gap-1.5 border-t border-line pt-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{order.reference}</span>
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${ORDER_BADGE[status]}`}>{tStatus(status)}</span>
+          </div>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <span className="text-sm text-ink-muted">{formatDate(order.createdAtUtc, locale)}</span>
+            <span className="flex items-baseline gap-3 text-sm">
+              <span className="text-ink-muted">{t("itemCount", { count })}</span>
+              <b className="text-lg">{formatEgp(order.total, locale)}</b>
+            </span>
+          </div>
+        </div>
       </section>
       <Items order={order} />
       <Totals order={order} />

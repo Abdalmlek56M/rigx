@@ -1,46 +1,56 @@
 "use client";
 
-import { BoxIcon } from "@/components/ui/icons";
+import { BoxIcon, EyeIcon, TruckIcon } from "@/components/ui/icons";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDate, formatEgp } from "@/lib/format";
-import { itemsPreview } from "./account-labels";
+import { orderStatusKey } from "@/features/tracking/tracking-steps";
+import { itemsPreview, ORDER_BADGE } from "./account-labels";
 import { fetchOrders, type Order } from "./account-api";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
 import { OrderProgress } from "./OrderProgress";
+import { RowLink } from "./RowAction";
 import { useLoad } from "@/lib/hooks/use-load";
 
 const PREVIEW_ITEMS = 2;
-const linkClass = "inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover";
 
 function OrderCard({ order }: { order: Order }) {
   const t = useTranslations("account.orders");
+  const tStatus = useTranslations("orderStatus");
   const locale = useLocale();
   const { shown, more } = itemsPreview(order.items.map((item) => item.name), PREVIEW_ITEMS);
+  const status = orderStatusKey(order.status);
+  const count = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{order.reference}</span>
-        <span className="text-sm text-ink-muted">{formatDate(order.createdAtUtc, locale)}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`rounded-full px-3 py-1 text-xs font-bold ${ORDER_BADGE[status]}`}>{tStatus(status)}</span>
+          <span className="text-sm text-ink-muted">{formatDate(order.createdAtUtc, locale)}</span>
+        </div>
       </div>
       <OrderProgress order={order} />
       <p dir="auto" className="m-0 text-sm text-ink-muted [unicode-bidi:isolate]">
         {shown.join("، ")}
         {more > 0 ? ` ${t("more", { count: more })}` : ""}
       </p>
-      <div className="flex flex-wrap items-center justify-between gap-x-4">
-        <b>{formatEgp(order.total, locale)}</b>
-        <div className="flex flex-wrap gap-x-5">
-          <Link href={`/account/orders/${order.id}`} className={linkClass}>{t("details")}</Link>
-          <Link href={`/t/${order.trackingToken}`} className={linkClass}>{t("track")}</Link>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line pt-3">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <b>{formatEgp(order.total, locale)}</b>
+          <span className="text-sm text-ink-muted">{t("itemCount", { count })}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <RowLink href={`/account/orders/${order.id}`} label={t("details")} icon={EyeIcon} />
+          <RowLink href={`/t/${order.trackingToken}`} label={t("track")} icon={TruckIcon} />
         </div>
       </div>
     </li>
   );
 }
 
-/** "طلباتي": the person's orders, newest first (the API's order), each with its progress and links. */
+/** "طلباتي": the person's orders, newest first (the API's order), each with its status, progress and actions. */
 export function OrdersList() {
   const t = useTranslations("account.orders");
   const { state, reload } = useLoad(fetchOrders);

@@ -1,6 +1,6 @@
 "use client";
 
-import { CaseIcon, TrashIcon } from "@/components/ui/icons";
+import { CaseIcon, PencilIcon, TrashIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/format";
 import { fetchBuilds } from "./account-api";
 import { ConfirmButton } from "./ConfirmButton";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
+import { RowLink } from "./RowAction";
 import { useLoad } from "@/lib/hooks/use-load";
 
 /** "تجميعاتي المحفوظة": open one in the builder, or delete it (after a confirmation). */
@@ -51,8 +52,8 @@ export function BuildsList() {
                         {usage ? `${tUsage(usage)} · ` : ""}{t("parts", { count: build.partCount })} · {formatDate(build.updatedAtUtc, locale)}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-4">
-                      <Link href={`/builder?saved=${encodeURIComponent(build.token)}`} className="inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover">{t("open")}</Link>
+                    <div className="flex items-center gap-1.5">
+                      <RowLink href={`/builder?saved=${encodeURIComponent(build.token)}`} label={t("open")} icon={PencilIcon} />
                       <ConfirmButton iconOnly label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={() => void remove(build.token)} />
                     </div>
                   </li>

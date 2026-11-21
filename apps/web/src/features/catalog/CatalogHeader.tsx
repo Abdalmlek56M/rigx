@@ -21,6 +21,7 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
     { condition: "New", label: tc("New"), count: counts.new },
     { condition: "Used", label: tc("Used"), count: counts.used }
   ] as const;
+  const selected = tabs.findIndex((tab) => tab.condition === state.condition);
 
   return (
     <section className="flex shell flex-col gap-4 pb-4 pt-6 md:pt-8">
@@ -47,15 +48,20 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
             <Link href="/#recommend" className="text-orange-text underline hover:text-orange-text-hover">{t("recommendLink")}</Link>
           </span>
         </div>
-        <div role="group" aria-label={t("conditionGroup")} className="flex gap-1 rounded-card border border-line bg-surface p-1">
+        <div role="group" aria-label={t("conditionGroup")} className="relative grid grid-cols-3 gap-0 rounded-card border border-line bg-surface p-1">
+          <span
+            aria-hidden="true"
+            style={{ transform: `translateX(calc(var(--dir) * ${Math.max(0, selected)} * 100%))` }}
+            className="absolute inset-y-1 start-1 w-[calc((100%-0.5rem)/3)] rounded-control bg-carbon transition-transform duration-150 ease-out motion-reduce:transition-none"
+          />
           {tabs.map((tab) => {
-            const selected = state.condition === tab.condition;
+            const active = state.condition === tab.condition;
             return (
               <Link
                 key={tab.label}
                 href={catalogHref(state, { condition: tab.condition })}
-                aria-current={selected ? "true" : undefined}
-                className={`flex h-11 items-center rounded-control px-3.5 text-sm md:px-[18px] ${selected ? "bg-carbon font-bold text-on-carbon" : ""}`}
+                aria-current={active ? "true" : undefined}
+                className={`relative z-10 flex h-11 items-center justify-center rounded-control px-3 text-sm transition-colors duration-150 md:px-[18px] motion-reduce:transition-none ${active ? "font-bold text-on-carbon" : "hover:bg-paper"}`}
               >
                 {tab.label} · <span className="font-mono">{tab.count}</span>
               </Link>

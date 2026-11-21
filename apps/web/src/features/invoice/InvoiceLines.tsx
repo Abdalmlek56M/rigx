@@ -27,6 +27,7 @@ export async function InvoiceLines({ lines }: { lines: Schemas["InvoiceLineView"
   const t = await getTranslations("invoice");
   const locale = await getLocale();
   const head = "border-b border-ink py-2 text-start text-xs font-bold text-ink-muted";
+  const numberHead = `${head} text-end whitespace-nowrap`;
 
   return (
     <table className="w-full border-collapse text-sm">
@@ -34,9 +35,9 @@ export async function InvoiceLines({ lines }: { lines: Schemas["InvoiceLineView"
         <tr>
           <th scope="col" className={head}>{t("code")}</th>
           <th scope="col" className={head}>{t("item")}</th>
-          <th scope="col" className={head}>{t("qty")}</th>
-          <th scope="col" className={head}>{t("price")}</th>
-          <th scope="col" className={`${head} text-end`}>{t("lineTotal")}</th>
+          <th scope="col" className={numberHead}>{t("qty")}</th>
+          <th scope="col" className={numberHead}>{t("price")}</th>
+          <th scope="col" className={numberHead}>{t("lineTotal")}</th>
         </tr>
       </thead>
       <tbody>
@@ -49,9 +50,9 @@ export async function InvoiceLines({ lines }: { lines: Schemas["InvoiceLineView"
                 {row.parts.map((part) => <PartDetails key={part.code} part={part} withIdentity={row.listParts} />)}
               </div>
             </td>
-            <td className="py-2.5 pe-2">{row.quantity}</td>
-            <td className="whitespace-nowrap py-2.5 pe-2">{formatEgp(row.unitPrice, locale)}</td>
-            <td className="whitespace-nowrap py-2.5 text-end font-bold">{formatEgp(row.lineTotal, locale)}</td>
+            <td className="whitespace-nowrap py-2.5 pe-2 text-end tabular-nums">{row.quantity}</td>
+            <td className="whitespace-nowrap py-2.5 pe-2 text-end tabular-nums">{formatEgp(row.unitPrice, locale)}</td>
+            <td className="whitespace-nowrap py-2.5 text-end font-bold tabular-nums">{formatEgp(row.lineTotal, locale)}</td>
           </tr>
         ))}
       </tbody>

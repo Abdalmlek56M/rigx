@@ -1,12 +1,12 @@
 "use client";
 
-import { DocumentIcon } from "@/components/ui/icons";
+import { DocumentIcon, EyeIcon } from "@/components/ui/icons";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { formatDate, formatEgp } from "@/lib/format";
 import { fetchInvoices } from "./account-api";
 import { invoiceKindKey } from "./account-labels";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
+import { RowLink } from "./RowAction";
 import { useLoad } from "@/lib/hooks/use-load";
 
 /** "فواتيري": each invoice opens its own page; a cancelled order's invoice is marked void. */
@@ -37,7 +37,7 @@ export function InvoicesList() {
                     <div className="flex items-center gap-4">
                       {invoice.status === "Void" ? <span className="rounded-full bg-error px-3 py-1 text-xs font-bold text-surface">{t("void")}</span> : null}
                       <b>{formatEgp(invoice.total, locale)}</b>
-                      <Link href={`/i/${invoice.accessToken}`} className="inline-flex min-h-11 items-center text-sm font-bold text-orange-text underline hover:text-orange-text-hover">{t("open")}</Link>
+                      <RowLink href={`/i/${invoice.accessToken}`} label={t("open")} icon={EyeIcon} />
                     </div>
                   </li>
                 );

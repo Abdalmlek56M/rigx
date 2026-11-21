@@ -1,5 +1,9 @@
+import type { ReactNode } from "react";
+
 interface SelectFieldProps<T extends string> {
   label: string;
+  /** A small pill or note shown at the end of the label (for example "اختياري"). */
+  labelEnd?: ReactNode;
   name: string;
   value: T;
   onChange: (value: T) => void;
@@ -8,11 +12,11 @@ interface SelectFieldProps<T extends string> {
 }
 
 /** A labelled dropdown that matches `TextField`. */
-export function SelectField<T extends string>({ label, name, value, onChange, options, error }: SelectFieldProps<T>) {
+export function SelectField<T extends string>({ label, labelEnd, name, value, onChange, options, error }: SelectFieldProps<T>) {
   const errorId = `${name}-error`;
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
-      {label}
+      <span className="flex min-w-0 flex-wrap items-center gap-1.5">{label}{labelEnd}</span>
       <select
         name={name}
         value={value}

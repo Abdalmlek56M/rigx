@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { CartLine } from "../cart/cart-rules.ts";
-import { EMPTY_FORM, toCheckoutRequest, toOrderLines, validateCheckout, type CheckoutFormState } from "./checkout-request.ts";
+import { EMPTY_FORM, FIELD_ORDER, joinFieldNames, toCheckoutRequest, toOrderLines, validateCheckout, type CheckoutFormState, type FieldKey } from "./checkout-request.ts";
 
 const item = (overrides: Partial<CartLine> = {}): CartLine => ({
   kind: "Item", code: "RX-0001", modelName: "Ryzen 5 5600", condition: "New", warrantyLabel: null, thumbnailStorageKey: null,
@@ -67,5 +67,25 @@ describe("validateCheckout", () => {
   });
   it("needs a note when the usage is Other", () => {
     assert.deepEqual(validateCheckout(valid({ usage: "Other", usageNote: " " })), ["usageNote"]);
+  });
+
+  it("asks for the email confirmation only when an email was typed, and wants it to match", () => {
+    assert.deepEqual(validateCheckout(valid({ email: "", emailConfirm: "" })), []);
+    assert.deepEqual(validateCheckout(valid({ email: "omar@example.com", emailConfirm: "omar@example.com" })), []);
+    assert.deepEqual(validateCheckout(valid({ email: "omar@example.com", emailConfirm: "Omar@Example.com" })), []);
+    assert.deepEqual(validateCheckout(valid({ email: "omar@example.com", emailConfirm: "sara@example.com" })), ["emailConfirm"]);
+  });
+});
+
+describe("missing field names", () => {
+  const names: Record<FieldKey, string> = {
+    name: "الاسم", phone: "رقم الهاتف", emailConfirm: "تأكيد البريد الإلكتروني", governorate: "المحافظة", area: "المنطقة",
+    street: "اسم الشارع", usageNote: "تفاصيل الاستخدام", paymentMethod: "طريقة الدفع", terms: "الموافقة على الشروط"
+  };
+
+  it("names the fields in form order, separated by an Arabic comma", () => {
+    assert.equal(joinFieldNames(["phone", "governorate"], names), "رقم الهاتف، المحافظة");
+    assert.equal(joinFieldNames([], names), "");
+    assert.equal(FIELD_ORDER[0], "name");
   });
 });

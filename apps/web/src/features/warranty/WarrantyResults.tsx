@@ -13,7 +13,7 @@ export interface WarrantyWhatsApp {
   template: string;
 }
 
-async function WarrantyItem({ item, whatsApp }: { item: Schemas["WarrantyPublicView"]; whatsApp: WarrantyWhatsApp }) {
+async function WarrantyCard({ item, whatsApp }: { item: Schemas["WarrantyPublicView"]; whatsApp: WarrantyWhatsApp }) {
   const t = await getTranslations("account.warranties");
   const locale = await getLocale();
   const status = warrantyStatusKey(item.status);
@@ -23,7 +23,7 @@ async function WarrantyItem({ item, whatsApp }: { item: Schemas["WarrantyPublicV
     || t("whatsAppMessage", { name: item.name, code: item.code });
 
   return (
-    <li className="flex flex-col gap-2.5 py-4">
+    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <span dir="auto" className="font-bold [unicode-bidi:isolate]">{item.name}</span>
@@ -35,11 +35,26 @@ async function WarrantyItem({ item, whatsApp }: { item: Schemas["WarrantyPublicV
         </div>
         {status ? <span className={`rounded-full px-3 py-1 text-xs font-bold ${WARRANTY_BADGE[status]}`}>{t(`status.${status}`)}</span> : null}
       </div>
-      <p className="m-0 text-sm text-ink-muted">
-        {item.label} · {t("from")} {formatDate(item.startsAtUtc, locale)}
-        {item.endsAtUtc ? ` · ${t("until")} ${formatDate(item.endsAtUtc, locale)}` : ""}
-        {days !== null ? <b className="text-ink"> · {t("daysLeft", { days })}</b> : null}
-      </p>
+      <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <div className="flex flex-col gap-0.5">
+          <dt className="text-xs text-ink-muted">{t("plan")}</dt>
+          <dd className="m-0 font-bold">{item.label}</dd>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <dt className="text-xs text-ink-muted">{t("from")}</dt>
+          <dd className="m-0">{formatDate(item.startsAtUtc, locale)}</dd>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <dt className="text-xs text-ink-muted">{t("until")}</dt>
+          <dd className="m-0">{item.endsAtUtc ? formatDate(item.endsAtUtc, locale) : "—"}</dd>
+        </div>
+        {days !== null ? (
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-xs text-ink-muted">{t("daysLeftLabel")}</dt>
+            <dd className="m-0 font-bold text-success">{t("daysCount", { days })}</dd>
+          </div>
+        ) : null}
+      </dl>
       {whatsApp.number ? (
         <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)} className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
           <WhatsAppIcon size={16} />
@@ -50,15 +65,13 @@ async function WarrantyItem({ item, whatsApp }: { item: Schemas["WarrantyPublicV
   );
 }
 
-/** One card with the warranty of every item the search matched. */
+/** The warranty of every item the search matched, one card each. */
 export async function WarrantyResults({ items, whatsApp }: { items: Schemas["WarrantyPublicView"][]; whatsApp: WarrantyWhatsApp }) {
   return (
-    <section className="rounded-card border border-line bg-surface p-5 md:p-6">
-      <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
-        {items.map((item) => (
-          <WarrantyItem key={item.code} item={item} whatsApp={whatsApp} />
-        ))}
-      </ul>
-    </section>
+    <ul className={`m-0 grid list-none gap-3 p-0 ${items.length > 1 ? "md:grid-cols-2" : ""}`}>
+      {items.map((item) => (
+        <WarrantyCard key={item.code} item={item} whatsApp={whatsApp} />
+      ))}
+    </ul>
   );
 }

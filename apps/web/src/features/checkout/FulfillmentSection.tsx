@@ -5,7 +5,7 @@ import type { Schemas } from "@rigx/api-client";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
 import type { FulfillmentMethod } from "./checkout-request";
-import { FormSection, useFieldError, type SectionProps } from "./form-parts";
+import { FormSection, OptionalPill, useFieldError, type SectionProps } from "./form-parts";
 
 interface FulfillmentSectionProps extends SectionProps {
   pickupEnabled: boolean;
@@ -21,7 +21,7 @@ interface OptionProps extends Pick<SectionProps, "form" | "set"> {
 
 function Option({ method, form, set, title, body }: OptionProps) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-card border border-input-line p-3.5 has-[:checked]:border-carbon has-[:checked]:bg-paper">
+    <label className="flex cursor-pointer items-start gap-3 rounded-card border border-input-line p-3.5 transition-colors duration-150 has-[:checked]:border-carbon has-[:checked]:bg-paper motion-reduce:transition-none">
       <input
         type="radio" name="fulfillment" value={method} checked={form.fulfillment === method}
         onChange={() => set("fulfillment", method)} className="mt-1 h-[18px] w-[18px] accent-carbon"
@@ -58,9 +58,9 @@ export function FulfillmentSection({ form, set, errors, pickupEnabled, pickupAdd
           />
           <TextField label={t("area")} name="area" value={form.area} onChange={(v) => set("area", v)} autoComplete="address-level2" required error={error("area")} />
           <TextField label={t("street")} name="street" value={form.street} onChange={(v) => set("street", v)} autoComplete="street-address" required error={error("street")} />
-          <TextField label={t("building")} name="building" value={form.building} onChange={(v) => set("building", v)} />
+          <TextField label={t("building")} labelEnd={<OptionalPill />} name="building" value={form.building} onChange={(v) => set("building", v)} />
           <div className="sm:col-span-2">
-            <TextField label={t("landmark")} name="landmark" value={form.landmark} onChange={(v) => set("landmark", v)} />
+            <TextField label={t("landmark")} labelEnd={<OptionalPill />} name="landmark" value={form.landmark} onChange={(v) => set("landmark", v)} />
           </div>
         </div>
       ) : null}

@@ -498,6 +498,26 @@ export const AlertIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const ExpandIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+  </Icon>
+);
+
+export const ZoomInIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-4-4M11 8v6M8 11h6" />
+  </Icon>
+);
+
+export const ZoomOutIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-4-4M8 11h6" />
+  </Icon>
+);
+
 export const BellIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />

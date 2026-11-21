@@ -3,15 +3,15 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { ShieldIcon, WhatsAppIcon } from "@/components/ui/icons";
-import { Link } from "@/i18n/navigation";
+import { DocumentIcon, ShieldIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { parseCondition } from "@/lib/condition";
-import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { fetchInvoices, fetchWarranties } from "./account-api";
 import { invoiceTokenFor, warrantyStatusKey, WARRANTY_BADGE } from "./account-labels";
 import type { AccountContact } from "./account-page";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
+import { RowLink } from "./RowAction";
 import { useLoad } from "@/lib/hooks/use-load";
 
 type Warranty = Schemas["WarrantyAccountView"];
@@ -30,7 +30,6 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
   const condition = parseCondition(warranty.condition);
   const text = fillTemplate(whatsApp.warrantyTemplate, { item: warranty.name, code: warranty.code, order: warranty.orderReference })
     || t("whatsAppMessage", { name: warranty.name, code: warranty.code });
-  const action = "inline-flex min-h-11 items-center gap-1.5 text-sm font-bold";
 
   return (
     <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
@@ -51,14 +50,9 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
         {warranty.endsAtUtc ? <div className="flex justify-between gap-4"><dt className="text-ink-muted">{t("until")}</dt><dd className="m-0">{formatDate(warranty.endsAtUtc, locale)}</dd></div> : null}
       </dl>
       {status === "Active" && warranty.daysLeft !== null ? <p className="m-0 text-sm font-bold">{t("daysLeft", { days: warranty.daysLeft })}</p> : null}
-      <div className="flex flex-wrap gap-x-5">
-        {invoiceToken ? <Link href={`/i/${invoiceToken}`} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>{t("invoice")}</Link> : null}
-        {whatsApp.number ? (
-          <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)} className={`${action} text-orange-text underline hover:text-orange-text-hover`}>
-            <WhatsAppIcon size={16} />
-            {t("problem")}
-          </a>
-        ) : null}
+      <div className="flex flex-wrap items-center justify-end gap-1.5 border-t border-line pt-3">
+        {invoiceToken ? <RowLink href={`/i/${invoiceToken}`} label={t("invoice")} icon={DocumentIcon} /> : null}
+        {whatsApp.number ? <RowLink href={whatsAppUrl(whatsApp.number, text)} label={t("problem")} icon={WhatsAppIcon} external /> : null}
       </div>
     </li>
   );

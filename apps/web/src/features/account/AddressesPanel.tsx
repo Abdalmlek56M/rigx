@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinIcon, TrashIcon } from "@/components/ui/icons";
+import { CheckIcon, MapPinIcon, PencilIcon, TrashIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap, type Schemas } from "@rigx/api-client";
@@ -11,12 +11,11 @@ import { AddressFormView } from "./AddressFormView";
 import { addressLine, emptyAddressForm, formFromAddress, toAddressRequest, toUpdateRequest, type AddressForm } from "./address-form";
 import { ConfirmButton } from "./ConfirmButton";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
+import { RowButton } from "./RowAction";
 import { useLoad } from "@/lib/hooks/use-load";
 
 type Address = Schemas["CustomerAddressView"];
 type Editing = { kind: "new" } | { kind: "edit"; address: Address } | null;
-
-const actionClass = "inline-flex min-h-11 items-center px-3 text-sm font-bold text-orange-text hover:underline";
 
 function AddressCard({ address, onEdit, onDefault, onDelete }: { address: Address; onEdit: () => void; onDefault: () => void; onDelete: () => void }) {
   const t = useTranslations("account.addresses");
@@ -32,9 +31,9 @@ function AddressCard({ address, onEdit, onDefault, onDelete }: { address: Addres
       <p dir="auto" className="m-0 text-sm text-ink-muted [unicode-bidi:isolate]">
         {address.governorate}، {addressLine(address, { floor: t("floorShort"), apartment: t("apartmentShort") })}
       </p>
-      <div className="-mx-3 flex flex-wrap items-center">
-        <button type="button" onClick={onEdit} className={actionClass}>{t("edit")}</button>
-        {address.isDefault ? null : <button type="button" onClick={onDefault} className={actionClass}>{t("setDefault")}</button>}
+      <div className="flex items-center justify-end gap-1.5 border-t border-line pt-2">
+        <RowButton label={t("edit")} icon={PencilIcon} onClick={onEdit} />
+        {address.isDefault ? null : <RowButton label={t("setDefault")} icon={CheckIcon} onClick={onDefault} />}
         <ConfirmButton iconOnly label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={onDelete} />
       </div>
     </li>

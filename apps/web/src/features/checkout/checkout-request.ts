@@ -13,6 +13,8 @@ export interface CheckoutFormState {
   phone: string;
   phoneHasWhatsApp: boolean;
   email: string;
+  /** Typed again to catch a wrong address before the order is sent. */
+  emailConfirm: string;
   fulfillment: FulfillmentMethod;
   governorate: string;
   area: string;
@@ -30,12 +32,34 @@ export interface CheckoutFormState {
 }
 
 export const EMPTY_FORM: CheckoutFormState = {
-  name: "", phone: "", phoneHasWhatsApp: true, email: "", fulfillment: "Delivery", governorate: "", area: "", street: "",
-  building: "", landmark: "", notes: "", usage: null, usageNote: "", leadSource: null, paymentMethod: null, termsAccepted: false, couponCode: ""
+  name: "", phone: "", phoneHasWhatsApp: true, email: "", emailConfirm: "", fulfillment: "Delivery", governorate: "", area: "",
+  street: "", building: "", landmark: "", notes: "", usage: null, usageNote: "", leadSource: null, paymentMethod: null,
+  termsAccepted: false, couponCode: ""
 };
 
 /** Fields the form can flag; the message for each lives under `checkout.errors.<key>`. */
-export type FieldKey = "name" | "phone" | "governorate" | "area" | "street" | "usageNote" | "paymentMethod" | "terms";
+export type FieldKey = "name" | "phone" | "emailConfirm" | "governorate" | "area" | "street" | "usageNote" | "paymentMethod" | "terms";
+
+/** The order the form checks, top to bottom; the alert names them and focuses the first. */
+export const FIELD_ORDER: readonly FieldKey[] = ["name", "phone", "emailConfirm", "governorate", "area", "street", "usageNote", "paymentMethod", "terms"];
+
+/** The input a field lives on, for focusing the first missing one. */
+export const FIELD_INPUT: Record<FieldKey, string> = {
+  name: "name",
+  phone: "phone",
+  emailConfirm: "emailConfirm",
+  governorate: "governorate",
+  area: "area",
+  street: "street",
+  usageNote: "usageNote",
+  paymentMethod: "paymentMethod",
+  terms: "termsAccepted"
+};
+
+/** "رقم الهاتف، المحافظة": the missing fields' names in form order. */
+export function joinFieldNames(fields: readonly FieldKey[], names: Readonly<Record<FieldKey, string>>): string {
+  return fields.map((field) => names[field]).join("، ");
+}
 
 /** The order lines the API expects: public codes only. A build sells one copy per line, so N copies become N lines. */
 export function toOrderLines(lines: CartLine[]): Schemas["OrderLineRequest"][] {
@@ -75,6 +99,8 @@ export function validateCheckout(form: CheckoutFormState): FieldKey[] {
   const found: FieldKey[] = [];
   if (!form.name.trim()) found.push("name");
   if (!isEgyptMobile(form.phone)) found.push("phone");
+  const email = form.email.trim();
+  if (email && email.toLowerCase() !== form.emailConfirm.trim().toLowerCase()) found.push("emailConfirm");
   if (form.fulfillment === "Delivery") {
     if (!form.governorate) found.push("governorate");
     if (!form.area.trim()) found.push("area");

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CloseIcon } from "@/components/ui/icons";
+import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 import { useCouponProblemText } from "@/lib/coupon-problem-text";
 import { checkCoupon } from "./coupon-api";
 
@@ -55,11 +55,15 @@ export function CouponBox({ orderTotal, phone, applied, problem, onApplied, onRe
   if (applied) {
     return (
       <div className="flex items-center justify-between gap-3 rounded-control bg-paper px-3 py-2 text-sm">
-        <span className="flex items-center gap-2">
+        <span className="flex min-w-0 flex-wrap items-center gap-2">
+          <span aria-hidden="true" className="flex text-success"><CheckIcon size={16} /></span>
           <span className="text-ink-muted">{t("applied")}</span>
           <b dir="ltr" className="font-mono">{applied.code}</b>
         </span>
-        <button type="button" onClick={onRemoved} aria-label={t("remove", { code: applied.code })} className="flex size-9 items-center justify-center rounded-full text-ink-muted hover:bg-line hover:text-ink">
+        <button
+          type="button" onClick={onRemoved} aria-label={t("remove", { code: applied.code })} data-tip={t("remove", { code: applied.code })}
+          className="tip flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-line hover:text-ink"
+        >
           <CloseIcon size={16} />
         </button>
       </div>
@@ -78,9 +82,12 @@ export function CouponBox({ orderTotal, phone, applied, problem, onApplied, onRe
             event.preventDefault();
             void apply();
           }}
-          className="h-11 min-w-0 flex-1 rounded-control border border-input-line bg-surface px-3 text-start font-mono text-sm text-ink"
+          className="h-12 min-w-0 flex-1 rounded-control border border-input-line bg-surface px-3 text-start text-sm font-normal text-ink"
         />
-        <button type="button" disabled={checking || !draft.trim()} onClick={() => void apply()} className="h-11 shrink-0 rounded-control border border-input-line px-4 text-sm font-bold hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50">
+        <button
+          type="button" disabled={checking || !draft.trim()} onClick={() => void apply()}
+          className="h-12 shrink-0 rounded-control border border-input-line px-4 text-sm font-bold transition-colors hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50"
+        >
           {checking ? t("checking") : t("apply")}
         </button>
       </div>

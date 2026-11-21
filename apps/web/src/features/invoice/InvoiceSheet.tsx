@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import type { ReactNode } from "react";
 import type { Schemas } from "@rigx/api-client";
+import { Logo } from "@/components/ui/Logo";
 import { invoiceKindKey, paymentMethodKey } from "@/features/account/account-labels";
 import { displayPhone, Platform } from "@/lib/contact";
 import { formatDateTimeFull, formatEgp } from "@/lib/format";
@@ -25,7 +26,7 @@ async function TotalRow({ label, amount, strong = false }: { label: string; amou
   return (
     <div className={`flex justify-between gap-6 ${strong ? "border-t border-ink pt-2 text-base font-bold" : ""}`}>
       <dt>{label}</dt>
-      <dd className="m-0 whitespace-nowrap">{formatEgp(amount, locale)}</dd>
+      <dd className="m-0 whitespace-nowrap tabular-nums">{formatEgp(amount, locale)}</dd>
     </div>
   );
 }
@@ -74,19 +75,20 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
       ) : null}
 
       <header className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-ink pb-5">
-        <div className="flex flex-col gap-1">
-          <span dir="ltr" className="font-mono text-2xl font-semibold tracking-[3px]">{branding.storeName}</span>
-          {contactLine ? <span dir="ltr" className="text-xs text-ink-muted">{contactLine}</span> : null}
-          <span className="text-xs text-ink-muted">{placeLine}</span>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Logo width={140} />
+          <span className="sr-only">{branding.storeName}</span>
+          {contactLine ? <span dir="ltr" className="text-xs text-ink-muted [overflow-wrap:anywhere]">{contactLine}</span> : null}
+          {placeLine ? <span className="text-xs text-ink-muted [overflow-wrap:anywhere]">{placeLine}</span> : null}
         </div>
-        <div className="flex flex-col items-end gap-1 text-end">
+        <div className="flex shrink-0 flex-col items-end gap-1 text-end">
           <span className="text-2xl font-bold">{t("title")}</span>
           {kind ? <span className="text-sm text-ink-muted">{t(`kind.${kind}`)}</span> : null}
-          <span dir="ltr" className="font-mono text-lg font-semibold">{invoice.number}</span>
+          <span dir="ltr" className="font-mono text-lg font-semibold tabular-nums">{invoice.number}</span>
         </div>
       </header>
 
-      <dl className="m-0 grid grid-cols-2 gap-x-6 gap-y-4 py-5 md:grid-cols-3">
+      <dl className="m-0 grid break-inside-avoid grid-cols-2 gap-x-6 gap-y-4 py-5 md:grid-cols-3">
         <Field label={t("customer")}>{invoice.customerName}</Field>
         <Field label={t("phone")}><span dir="ltr">{invoice.phoneNumber}</span></Field>
         {address ? <Field label={t("address")}>{address}</Field> : null}
@@ -98,7 +100,7 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
       </dl>
 
       <InvoiceLines lines={invoice.lines} />
-      <div className="mt-5 flex flex-col-reverse gap-6 md:flex-row md:items-start md:justify-between">
+      <div className="mt-5 flex flex-col-reverse gap-6 break-inside-avoid md:flex-row md:items-start md:justify-between">
         {qr ? (
           <div className="flex items-start gap-3 break-inside-avoid">
             <div aria-hidden="true" className="size-24 shrink-0 [&>svg]:size-full [print-color-adjust:exact]" dangerouslySetInnerHTML={{ __html: qr }} />

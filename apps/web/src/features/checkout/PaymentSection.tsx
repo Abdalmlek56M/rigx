@@ -56,7 +56,7 @@ export function PaymentSection({ form, set, errors, payment, settings, pickupEna
         {METHODS.filter(({ enabled }) => enabled(payment)).map(({ method }) => (
           <label
             key={method}
-            className="flex min-h-12 flex-1 cursor-pointer items-center gap-2.5 rounded-card border border-input-line px-3.5 has-[:checked]:border-carbon has-[:checked]:bg-paper"
+            className="flex min-h-12 flex-1 cursor-pointer items-center gap-2.5 rounded-card border border-input-line px-3.5 transition-colors duration-150 has-[:checked]:border-carbon has-[:checked]:bg-paper motion-reduce:transition-none"
           >
             <input
               type="radio" name="paymentMethod" value={method} checked={form.paymentMethod === method}

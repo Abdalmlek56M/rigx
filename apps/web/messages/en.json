@@ -130,8 +130,12 @@
     "lightMode": "Light mode"
   },
   "locale": {
-    "switchLabel": "عربي",
-    "switchAria": "العربية"
+    "switchAria": "Choose language",
+    "arabic": "العربية",
+    "english": "EN",
+    "arabicAria": "Arabic",
+    "englishAria": "English",
+    "switchLabel": "العربية"
   },
   "footer": {
     "tagline": "New and used PC parts, and builds.",
@@ -234,8 +238,8 @@
       "used": "Used parts",
       "search": "Results for \"{query}\""
     },
-    "subtitle": "New and used. Not sure what to pick?",
-    "recommendLink": "Tell us what you'll use it for",
+    "subtitle": "New and used. Not sure what to choose?",
+    "recommendLink": "Tell us how you will use it",
     "conditionGroup": "Product type",
     "all": "All",
     "resultCount": "{count} products",
@@ -275,13 +279,13 @@
     },
     "empty": {
       "title": "No results",
-      "body": "Try removing some filters or searching for something else.",
+      "body": "Try removing some filters or searching for another word.",
       "clear": "Clear filters"
     },
-    "loadFailed": "We can't load the products right now. Please try again shortly.",
+    "loadFailed": "Products could not be loaded now. Please try again shortly.",
     "banner": {
-      "title": "Can't find what you're looking for?",
-      "body": "Send us the model and we'll find it. Price and timing are confirmed with you before you pay.",
+      "title": "Did not find what you are looking for?",
+      "body": "Send us the model and we will look for it. The price and time are confirmed with you before payment.",
       "cta": "Request a part"
     }
   },
@@ -292,14 +296,21 @@
     "availableUsed": "Available: one piece",
     "availableNew": "Available: {count}",
     "gallery": {
-      "photo": "Photo {number}"
+      "photo": "Photo {number}",
+      "open": "Open the full-size photo",
+      "viewer": "Photo viewer",
+      "previous": "Previous photo",
+      "next": "Next photo",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "close": "Close the photo viewer"
     },
     "price": {
-      "legend": "What will you take it with?",
+      "legend": "How will you buy it?",
       "inBuild": "With a full build from us",
       "withBoard": "With a motherboard from us",
-      "alone": "On its own",
-      "hint": "The price goes down when you take it with other parts from us.",
+      "alone": "Alone",
+      "hint": "The price is lower when you buy other parts with it.",
       "total": "Total"
     },
     "quantity": {
@@ -309,8 +320,8 @@
     },
     "buyNow": "Buy now",
     "askWhatsApp": "Ask about it on WhatsApp",
-    "whatsApp": "Hello RIGX, I'd like to ask about {item} ({code}).",
-    "fitsMyPc": "Will it fit your PC? Try it in \"Build your PC\"",
+    "whatsApp": "Hello RIGX, I would like to ask about {item} ({code}).",
+    "fitsMyPc": "Will it fit your PC? Try it in “Build your PC”",
     "specs": "Specifications",
     "faqs": "Questions about this part",
     "info": {
@@ -333,7 +344,7 @@
   },
   "builds": {
     "title": "Ready-made builds",
-    "subtitle": "Complete, assembled PCs. Pick by use and budget, or take any build and tweak it.",
+    "subtitle": "Complete assembled PCs. Choose by usage and budget, or choose a build and edit it.",
     "all": "All",
     "usageGroup": "Use",
     "budget": "Budget",
@@ -341,18 +352,19 @@
     "suitableFor": "Good for:",
     "priceNote": "Assembly included",
     "order": "Order it",
-    "edit": "Tweak it",
-    "loadFailed": "We can't load the builds right now. Please try again in a moment.",
+    "edit": "Edit the build",
+    "loadFailed": "Builds could not be loaded now. Please try again shortly.",
     "empty": {
-      "title": "No builds match this choice",
-      "body": "Try another use or budget, or tell us on WhatsApp and we'll recommend one."
+      "title": "No matching builds",
+      "body": "Try another usage or budget, or contact us on WhatsApp for a recommendation."
     },
     "banner": {
-      "title": "Can't find the right build?",
-      "body": "Tell us what you'll use the PC for and your budget, and we'll recommend a build.",
+      "title": "No suitable build?",
+      "body": "Tell us how you will use the PC and your budget, and we will recommend a build.",
       "cta": "Recommend one on WhatsApp",
-      "message": "I'd like a build recommendation."
-    }
+      "message": "I would like a build recommendation."
+    },
+    "specs": "Specifications"
   },
   "build": {
     "breadcrumb": "Breadcrumb",
@@ -363,21 +375,21 @@
     "total": "Total",
     "quantity": {
       "label": "Number of builds",
-      "decrease": "Decrease",
-      "increase": "Increase"
+      "decrease": "Decrease the quantity",
+      "increase": "Increase the quantity"
     },
-    "soldOut": "This build is sold out",
+    "soldOut": "This build is not available right now",
     "buyNow": "Buy now",
-    "askWhatsApp": "Ask about it on WhatsApp",
-    "whatsApp": "Hi RIGX, I'd like to ask about the build {item} ({code}).",
-    "edit": "Tweak it",
+    "askWhatsApp": "Ask on WhatsApp",
+    "whatsApp": "Hello RIGX, I would like to ask about the build {item} ({code}).",
+    "edit": "Edit the build",
     "parts": {
-      "title": "Parts in this build",
+      "title": "Parts in the build",
       "name": "Part",
       "condition": "Condition",
       "warranty": "Warranty",
       "price": "Price",
-      "splitNote": "Want just one part of this build? Ask us on WhatsApp."
+      "splitNote": "To order a single part from the build, contact us on WhatsApp."
     },
     "orderWhatsApp": "Order it on WhatsApp"
   },
@@ -630,48 +642,48 @@
     "aside": {
       "line1": "Your orders and warranty",
       "line2": "in one place.",
-      "orders": "Every order, until it reaches you",
-      "warranty": "Each part's warranty and its dates",
-      "invoices": "Your invoices whenever you need them"
+      "orders": "Every order until it arrives",
+      "warranty": "Every item's warranty and dates",
+      "invoices": "Your invoices when you need them"
     },
     "email": {
-      "title": "Sign in",
-      "subtitle": "Track your orders and your parts' warranty.",
-      "google": "or with an email code",
+      "title": "Sign in to your account",
+      "subtitle": "Follow your orders and warranties.",
+      "google": "Or with a code sent to your email",
       "label": "Email",
       "placeholder": "name@gmail.com",
-      "send": "Email me a code",
+      "send": "Send a code to my email",
       "sending": "Sending the code…",
-      "hint": "No password: we email you a 6-digit code.",
-      "invalid": "Enter a valid email."
+      "hint": "No passwords: we send a 6-digit code to your email.",
+      "invalid": "Please enter a valid email."
     },
     "code": {
       "title": "Enter the code",
-      "sentTo": "We sent it to <email>x</email>. Check Spam if you can't find it.",
+      "sentTo": "Sent to <email>x</email>. Check the spam folder if you cannot find it.",
       "label": "6-digit code",
       "submit": "Sign in",
-      "submitting": "Signing you in…",
+      "submitting": "Signing in…",
       "resendIn": "Resend in <time>x</time>",
       "resend": "Send a new code",
       "changeEmail": "Change email",
       "remember": "Remember me on this device"
     },
     "errors": {
-      "wrongCode": "That code isn't right. {count, plural, one {1 attempt} other {# attempts}} left.",
-      "expired": "The code expired or is wrong. Send a new one.",
+      "wrongCode": "The code is incorrect. {count, plural, one {One attempt} other {# attempts}} left.",
+      "expired": "The code has expired or is incorrect. Send a new code.",
       "tooManyAttempts": "Too many attempts. Send a new code.",
       "rateLimited": "Please wait a moment and try again.",
       "generic": "Something went wrong. Please try again shortly.",
-      "google": "We couldn't sign you in with Google. Try again or use a code."
+      "google": "Google sign-in failed. Try again or use the email code."
     }
   },
   "orderStatus": {
-    "New": "Order received",
+    "New": "Under review",
     "Confirmed": "Confirmed",
-    "Preparing": "Being prepared",
+    "Preparing": "Preparing",
     "Shipped": "Shipped",
     "Delivered": "Delivered",
-    "Cancelled": "Order cancelled"
+    "Cancelled": "Cancelled"
   },
   "cartPage": {
     "title": "Cart",
@@ -693,44 +705,46 @@
     },
     "empty": "Your cart is empty",
     "browse": "Browse products",
-    "loginRequired": "Please sign in to continue with your order.",
+    "loginRequired": "Sign in to complete your order.",
     "loginLink": "Sign in",
-    "loadFailed": "We could not load the shipping details. Please try again shortly.",
-    "redirecting": "Taking you to the confirmation page...",
-    "removedNotice": "An item sold out and was removed from your cart",
+    "loadFailed": "Shipping details could not be loaded. Please try again shortly.",
+    "redirecting": "Redirecting to the confirmation page…",
+    "removedNotice": "An item is no longer available and was removed from the cart.",
     "problems": {
-      "incomplete": "Some details above are missing. Check them and try again.",
-      "gone": "An item in your order sold out or changed. Review your cart and continue.",
-      "signIn": "Please sign in to continue with your order.",
-      "failed": "Something went wrong and the order was not sent. Please try again shortly."
+      "gone": "An item in your order is no longer available. Review the cart and continue.",
+      "signIn": "Sign in to complete your order.",
+      "failed": "The order could not be sent. Please try again shortly."
     },
     "errors": {
-      "name": "Enter your name.",
-      "phone": "Enter a valid Egyptian mobile number, like 01xxxxxxxxx.",
-      "governorate": "Choose the governorate.",
-      "area": "Enter the area.",
-      "street": "Enter the street name.",
-      "usageNote": "Tell us what you will use it for.",
-      "paymentMethod": "Choose a payment method.",
-      "terms": "You need to agree to continue."
+      "name": "Please enter your name.",
+      "phone": "Please enter a valid Egyptian phone number, such as 01xxxxxxxxx.",
+      "governorate": "Please choose a governorate.",
+      "area": "Please enter the area.",
+      "street": "Please enter the street name.",
+      "usageNote": "Please describe how you will use it.",
+      "paymentMethod": "Please choose a payment method.",
+      "terms": "You must accept the terms to continue.",
+      "emailConfirm": "The email and its confirmation do not match."
     },
     "customer": {
       "title": "Your details",
-      "haveAccount": "No account needed. Already have one?",
+      "haveAccount": "You can check out without an account. Have an account?",
       "login": "Sign in",
       "name": "Name",
       "phone": "Mobile number",
-      "whatsApp": "This number is on WhatsApp",
-      "email": "Email · optional",
-      "note": "We'll contact this number to confirm the order before we prepare it."
+      "whatsApp": "This number has WhatsApp",
+      "email": "Email",
+      "note": "We will contact you on this number to confirm the order before preparing it.",
+      "loginTitle": "Sign in",
+      "emailConfirm": "Confirm email"
     },
     "fulfillment": {
       "title": "Receiving",
       "pickup": "Pick up from {place}",
-      "pickupNoPlace": "Pick up yourself",
-      "pickupBody": "At a time we agree on. You can inspect the item when you collect it.",
-      "delivery": "Shipping to all governorates",
-      "deliveryBody": "With a courier. The fee appears once you choose the governorate.",
+      "pickupNoPlace": "Pick up in person",
+      "pickupBody": "At a time we agree on, with a chance to inspect the items on pickup.",
+      "delivery": "Delivery to all governorates",
+      "deliveryBody": "By courier. The cost appears after choosing the governorate.",
       "governorate": "Governorate",
       "governoratePlaceholder": "Choose the governorate",
       "area": "Area",
@@ -739,79 +753,93 @@
       "landmark": "Landmark"
     },
     "extras": {
-      "notes": "Order notes · optional",
-      "usage": "What will you use it for? · optional",
+      "notes": "Order notes",
+      "usage": "Usage",
       "usages": {
         "Gaming": "Gaming",
         "StudyWork": "Study and work",
         "Editing": "Editing and design",
         "Streaming": "Streaming",
-        "Upgrade": "Upgrading my PC",
-        "Other": "Something else"
+        "Upgrade": "Upgrade my PC",
+        "Other": "Other"
       },
-      "usageNote": "Tell us what you will use it for",
-      "leadSource": "How did you find us? · optional"
+      "usageNote": "Usage details",
+      "leadSource": "How did you hear about us?",
+      "leadSourceHint": "This helps us improve our service."
     },
     "payment": {
       "title": "Payment",
       "methods": {
         "CashOnDelivery": "Cash on delivery",
         "InstaPay": "InstaPay",
-        "Wallet": "Mobile wallet"
+        "Wallet": "E-wallet"
       },
       "note": {
-        "shipping": "Shipping is paid upfront",
-        "transfer": "Pay by InstaPay or wallet once we confirm the order with you.",
-        "deposit": "If the order is over {threshold}, a {percent}% deposit is also paid and deducted from the total.",
+        "shipping": "Shipping is paid in advance.",
+        "transfer": "The transfer is made by InstaPay or e-wallet after we confirm the order with you.",
+        "deposit": "If the order exceeds {threshold}, a {percent}% deposit is paid and deducted from the total.",
         "depositAll": "A {percent}% deposit is paid and deducted from the total.",
-        "rest": "The rest is paid in cash on delivery.",
-        "pickup": "When you pick up from the store, nothing is paid upfront; you pay on pickup."
+        "rest": "The remaining amount is paid in cash on delivery.",
+        "pickup": "There is no advance payment for store pickup; the amount is paid on pickup."
       }
     },
     "summary": {
       "title": "Your order",
       "subtotal": "Items",
       "shipping": "Shipping",
-      "shippingPending": "After you choose the governorate",
+      "shippingPending": "Set after choosing the governorate",
       "freeShipping": "No charge",
       "upfront": "Due upfront",
       "total": "Total",
       "terms": "I agree to the <terms>terms</terms>, the <warranty>warranty policy</warranty> and the <returns>returns policy</returns>.",
-      "minimum": "The minimum order is {amount}. Add something to your cart to continue.",
+      "minimum": "The minimum order is {amount}. Add another item to continue.",
       "confirm": "Confirm order",
-      "sending": "Sending your order...",
-      "callNote": "After you confirm, we'll message you on WhatsApp to settle the details.",
+      "sending": "Sending the order…",
+      "callNote": "After confirmation we will contact you on WhatsApp to confirm the details.",
       "couponDiscount": "Coupon discount"
     },
     "coupon": {
       "label": "Discount code",
-      "placeholder": "Enter the code",
+      "placeholder": "Enter the coupon code",
       "apply": "Apply",
       "checking": "Checking…",
-      "applied": "Coupon",
-      "remove": "Remove coupon {code}",
-      "failed": "We could not check the code right now. Try again in a moment."
+      "applied": "Coupon applied",
+      "remove": "Remove code {code}",
+      "failed": "The code could not be checked now. Please try again shortly."
+    },
+    "optional": "Optional",
+    "missingFields": "Please complete: {fields}",
+    "fieldNames": {
+      "name": "Name",
+      "phone": "Phone number",
+      "emailConfirm": "Email confirmation",
+      "governorate": "Governorate",
+      "area": "Area",
+      "street": "Street",
+      "usageNote": "Usage details",
+      "paymentMethod": "Payment method",
+      "terms": "Terms acceptance"
     }
   },
   "orderSuccess": {
     "pageTitle": "Order received",
     "title": "We got your order",
-    "lead": "It isn't confirmed yet. We'll message you on WhatsApp at <phone>x</phone> to confirm the details. In a hurry? Message us first.",
-    "missing": "There is no order to show here. If you just placed one, we will call your number.",
+    "lead": "The order is not confirmed yet. We will contact you on WhatsApp at <phone>x</phone> to confirm the details. If you are in a hurry, message us.",
+    "missing": "There is no order to show here. If you placed one, we will contact you on your number.",
     "home": "Home",
     "trackingHelp": "Warranty and order tracking",
     "steps": {
       "title": "What happens next",
       "confirmTitle": "Confirmation.",
-      "confirm": "We call or message you on WhatsApp to confirm the order.",
-      "confirmShipping": "We send you the shipping transfer details.",
+      "confirm": "We will contact you on WhatsApp or by phone to confirm the order.",
+      "confirmShipping": "We will send you the shipping payment details.",
       "confirmDeposit": "We also send the deposit transfer details ({amount}).",
-      "prepareTitle": "Preparing.",
-      "prepare": "We prepare and pack the items, each with a sticker showing its code and warranty.",
+      "prepareTitle": "Preparation.",
+      "prepare": "We prepare and pack the items, each with its code sticker and warranty.",
       "shipTitle": "Shipping.",
-      "ship": "We send you the waybill number and you follow it from your order link.",
+      "ship": "We will send the tracking number; you can follow it from the order link.",
       "pickupTitle": "Pickup.",
-      "pickup": "We agree on a pickup time with you."
+      "pickup": "We will agree on a pickup time with you."
     },
     "summary": {
       "title": "Order summary",
@@ -822,11 +850,11 @@
     },
     "track": {
       "title": "Track your order",
-      "accountHint": "Create an account with your email to follow the order and keep your warranties in one place.",
+      "accountHint": "Create an account with your email to follow the order and keep every warranty in one place.",
       "track": "Track your order",
       "createAccount": "Create an account"
     },
-    "whatsApp": "Finish the order on WhatsApp"
+    "whatsApp": "Complete the order on WhatsApp"
   },
   "tracking": {
     "title": "Order tracking",
@@ -859,7 +887,7 @@
     }
   },
   "account": {
-    "greeting": "Hi, {name}",
+    "greeting": "Welcome, {name}",
     "signOut": "Sign out",
     "navLabel": "My account",
     "nav": {
@@ -884,19 +912,20 @@
       "favourites": "Favourites"
     },
     "state": {
-      "loading": "Loading",
-      "failed": "We could not load this.",
+      "loading": "Loading…",
+      "failed": "The data could not be loaded.",
       "retry": "Try again",
-      "confirm": "Yes, I am sure",
-      "cancel": "No"
+      "confirm": "Yes, sure",
+      "cancel": "Cancel"
     },
     "orders": {
       "title": "My orders",
-      "empty": "You have no orders yet.",
+      "empty": "No orders yet.",
       "browse": "Browse products",
       "details": "Details",
       "track": "Track order",
-      "more": "and {count} more"
+      "more": "and {count} more",
+      "itemCount": "{count, plural, one {One item} other {# items}}"
     },
     "order": {
       "back": "Back to my orders",
@@ -919,10 +948,11 @@
       "payment": "Payment",
       "courier": "Courier",
       "waybill": "Waybill number",
-      "ask": "I have a question about this order",
+      "ask": "I have a question about the order",
       "track": "Track order",
       "notFound": "This order does not exist.",
-      "couponDiscount": "Coupon discount ({code})"
+      "couponDiscount": "Coupon discount ({code})",
+      "itemCount": "{count, plural, one {One item} other {# items}}"
     },
     "warranties": {
       "title": "My warranties",
@@ -937,8 +967,10 @@
       },
       "daysLeft": "{days, plural, one {{days} day left} other {{days} days left}}",
       "invoice": "Invoice",
-      "problem": "I have a problem",
-      "whatsAppMessage": "Hi RIGX, I have a problem with {name} ({code}) and it is under warranty."
+      "problem": "Report a problem",
+      "whatsAppMessage": "Hi RIGX, I have a problem with {name} ({code}) and it is under warranty.",
+      "daysLeftLabel": "Remaining",
+      "daysCount": "{days, plural, one {One day} other {# days}}"
     },
     "invoices": {
       "title": "My invoices",
@@ -948,7 +980,7 @@
         "Parts": "Single parts"
       },
       "void": "Void",
-      "open": "Open invoice"
+      "open": "Open the invoice"
     },
     "requests": {
       "title": "Service requests",
@@ -966,23 +998,23 @@
       },
       "status": {
         "New": "Received",
-        "Following": "We are following up",
+        "Following": "In progress",
         "Offered": "Offer sent",
         "Accepted": "Offer accepted",
-        "Rejected": "Offer declined",
-        "Converted": "Turned into an order",
+        "Rejected": "Offer rejected",
+        "Converted": "Converted to an order",
         "Closed": "Closed"
       }
     },
     "builds": {
       "title": "Saved builds",
-      "empty": "You have no saved builds.",
+      "empty": "No saved builds.",
       "start": "Start a build",
       "unnamed": "Unnamed build",
       "parts": "{count, plural, one {{count} part} other {{count} parts}}",
-      "open": "Open",
+      "open": "Open the build",
       "delete": "Delete",
-      "deleteFailed": "It was not deleted. Try again."
+      "deleteFailed": "It could not be deleted. Please try again."
     },
     "addresses": {
       "title": "Addresses",
@@ -990,34 +1022,34 @@
       "empty": "No saved addresses.",
       "default": "Default",
       "edit": "Edit",
-      "setDefault": "Make default",
+      "setDefault": "Set as default",
       "delete": "Delete",
       "label": "Address name",
       "labelPlaceholder": "Home",
       "recipientName": "Recipient name",
       "phone": "Mobile",
       "governorate": "Governorate",
-      "governoratePlaceholder": "Choose governorate",
+      "governoratePlaceholder": "Choose the governorate",
       "city": "Area",
       "street": "Street",
       "building": "Building",
       "floor": "Floor",
       "apartment": "Apartment",
       "landmark": "Landmark",
-      "makeDefault": "Make this my default address",
+      "makeDefault": "Set as my default address",
       "save": "Save",
       "cancel": "Cancel",
-      "saveFailed": "The address was not saved. Check the details and try again.",
-      "actionFailed": "That did not work. Try again.",
+      "saveFailed": "The address could not be saved. Check the details and try again.",
+      "actionFailed": "The action could not be completed. Please try again.",
       "floorShort": "floor",
       "apartmentShort": "apt",
       "errors": {
-        "label": "Enter a name for the address",
-        "recipientName": "Enter the recipient name",
-        "phone": "Enter a valid Egyptian mobile",
-        "governorate": "Choose the governorate",
-        "city": "Enter the area",
-        "street": "Enter the street"
+        "label": "Please enter a name for the address.",
+        "recipientName": "Please enter the recipient's name.",
+        "phone": "Please enter a valid Egyptian phone number.",
+        "governorate": "Please choose a governorate.",
+        "city": "Please enter the area.",
+        "street": "Please enter the street."
       }
     },
     "stepUp": {
@@ -1043,13 +1075,13 @@
       "form": {
         "fullName": "Name",
         "phone": "Mobile",
-        "phoneNote": "Your mobile is filled in automatically in enquiries and requests.",
+        "phoneNote": "The phone number is used in inquiry and order messages.",
         "save": "Save",
-        "saved": "Your details are saved.",
-        "failed": "Not saved. Try again.",
+        "saved": "Your details were saved.",
+        "failed": "It could not be saved. Please try again.",
         "errors": {
-          "fullName": "Enter your name",
-          "phone": "Enter a valid Egyptian mobile"
+          "fullName": "Please enter your name.",
+          "phone": "Please enter a valid Egyptian phone number."
         }
       },
       "avatar": {
@@ -1057,16 +1089,16 @@
         "change": "Change photo",
         "remove": "Remove photo",
         "errors": {
-          "type": "The photo must be JPG, PNG or WebP.",
-          "size": "The photo is larger than 12 MB.",
-          "failed": "The photo was not saved. Try again."
+          "type": "The image must be JPG, PNG or WebP.",
+          "size": "The image is larger than 12 MB.",
+          "failed": "The image could not be saved. Please try again."
         }
       },
       "email": {
         "label": "Email",
         "change": "Change email",
         "newEmail": "New email",
-        "invalid": "Enter a valid email",
+        "invalid": "Please enter a valid email.",
         "continue": "Continue",
         "cancel": "Cancel",
         "sent": "We sent a confirmation link to the new email."
@@ -1077,19 +1109,19 @@
         "on": "On",
         "notLinked": "Not linked",
         "unlink": "Unlink",
-        "unlinkFailed": "We could not unlink it. Try again."
+        "unlinkFailed": "It could not be unlinked. Please try again."
       },
       "alerts": {
         "label": "Email me when someone signs in from a new device",
-        "failed": "Not changed. Try again."
+        "failed": "The setting could not be changed. Please try again."
       },
       "sessions": {
         "title": "Devices signed in",
         "current": "This device",
         "lastActive": "Last active:",
-        "signOut": "Sign out",
+        "signOut": "Sign out of this device",
         "signOutOthers": "Sign out of all other devices",
-        "failed": "That did not work. Try again."
+        "failed": "The action could not be completed. Please try again."
       }
     }
   },
@@ -1125,8 +1157,8 @@
   "warranty": {
     "title": "Your parts warranty",
     "subtitle": "Check the warranty status of any part you bought from RIGX.",
-    "label": "Item code (on the RIGX sticker) or serial number",
-    "placeholder": "e.g. RX-0154",
+    "label": "Item code or serial number",
+    "placeholder": "For example: RX-0154 or SN-...",
     "submit": "Search",
     "accountNote": "To see all your warranties, sign in and open “<link>My warranties</link>” in your account.",
     "resultsFor": "Results for {query}",
@@ -1136,9 +1168,10 @@
     "failed": "Something went wrong while searching. Please try again shortly.",
     "stickerNote": "The warranty needs an intact RIGX sticker on the part.",
     "helpTitle": "Need help with a warranty?",
-    "helpLink": "Message us on WhatsApp",
+    "helpLink": "Contact us on WhatsApp",
     "helpMessage": "Hi RIGX, I have a question about the warranty.",
-    "policy": "Full warranty policy"
+    "policy": "Full warranty policy",
+    "hint": "Enter the code printed on the RIGX sticker (for example RX-0154) or the serial number to see the warranty status."
   },
   "invoice": {
     "title": "Invoice",
@@ -1176,10 +1209,10 @@
     "remaining": "Remaining",
     "refunded": "Refunded",
     "void": "VOID",
-    "qrNote": "Scan the code to check your parts' warranty.",
-    "warrantyNote": "The warranty starts on the invoice date and needs the RIGX sticker to stay on the part.",
+    "qrNote": "Scan the code to see the item warranty.",
+    "warrantyNote": "The warranty starts on the invoice date and requires the RIGX sticker to stay on the item.",
     "electronic": "Electronic invoice",
-    "print": "Print / save as PDF"
+    "print": "Print / save PDF"
   },
   "policies": {
     "title": "Policies",
@@ -4694,14 +4727,14 @@
   },
   "coupon": {
     "problems": {
-      "NotFound": "This code does not exist",
-      "Inactive": "This code is switched off",
-      "NotStarted": "This code has not started yet",
-      "Expired": "This code has ended",
-      "BelowMinimum": "The order is below the minimum for this code",
-      "UsedUp": "This code has reached its number of uses",
-      "AlreadyUsed": "You have already used this code",
-      "Other": "This code does not work"
+      "NotFound": "This coupon code does not exist.",
+      "Inactive": "This coupon code is not active.",
+      "NotStarted": "This coupon code has not started yet.",
+      "Expired": "This coupon code has expired.",
+      "BelowMinimum": "The order is below the minimum for this coupon.",
+      "UsedUp": "This coupon code has reached its usage limit.",
+      "AlreadyUsed": "You have already used this coupon code.",
+      "Other": "This coupon code is not valid."
     }
   }
 }

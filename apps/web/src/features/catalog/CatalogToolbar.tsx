@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { categoryBySlug, effectiveSpecs, type CategoryNode } from "@/lib/categories";
 import type { Brand } from "@/lib/storefront";
 import { activeFilters, catalogHref, type CatalogState, type SortKey } from "./catalog-query";
+import { CatalogClickTracker } from "./CatalogClickTracker";
 import { FiltersDrawer } from "./FiltersDrawer";
 import { SortSelect } from "./SortSelect";
 import { CloseIcon } from "@/components/ui/icons";
@@ -55,6 +56,7 @@ export async function CatalogToolbar({ state, tree, brands, total, panel, queryK
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
+      <CatalogClickTracker queryKey={JSON.stringify(state)} />
       <div className="flex flex-wrap items-center gap-2">
         <FiltersDrawer queryKey={queryKey} activeCount={filters.length}>{panel}</FiltersDrawer>
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-[13px]">
@@ -65,7 +67,7 @@ export async function CatalogToolbar({ state, tree, brands, total, panel, queryK
                 <Link
                   href={catalogHref(state, filter.clear)}
                   aria-label={t("chips.remove", { label: text })}
-                  className="flex min-h-9 items-center gap-1.5 rounded-full bg-carbon px-3 text-on-carbon"
+                  className="flex min-h-9 items-center gap-1.5 rounded-full bg-carbon px-3 text-on-carbon transition-colors duration-150 motion-reduce:transition-none"
                 >
                   <span dir="auto" className="[unicode-bidi:isolate]">{text}</span>
                   <CloseIcon size={14} />

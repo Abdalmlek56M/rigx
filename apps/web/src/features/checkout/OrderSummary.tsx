@@ -89,7 +89,7 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
       </div>
       <label className="flex items-start gap-2.5 text-[13px] leading-6">
         <input
-          type="checkbox" checked={form.termsAccepted} onChange={(event) => set("termsAccepted", event.target.checked)}
+          type="checkbox" name="termsAccepted" checked={form.termsAccepted} onChange={(event) => set("termsAccepted", event.target.checked)}
           aria-invalid={errors.includes("terms") ? true : undefined} className="mt-1 h-[18px] w-[18px] shrink-0 accent-carbon"
         />
         <span>

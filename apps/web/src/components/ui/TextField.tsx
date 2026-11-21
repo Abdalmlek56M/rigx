@@ -1,8 +1,10 @@
-import type { HTMLInputTypeAttribute } from "react";
+import type { HTMLInputTypeAttribute, ReactNode } from "react";
 import { latinNumber } from "@/lib/digits";
 
 interface TextFieldProps {
   label: string;
+  /** A small pill or note shown at the end of the label (for example "اختياري"). */
+  labelEnd?: ReactNode;
   name: string;
   value: string;
   onChange: (value: string) => void;
@@ -28,12 +30,12 @@ interface TextFieldProps {
  * A labelled text input; `error` is announced and linked to the input. A number field is a text input with a number keypad, so digits typed
  * on an Arabic keyboard are accepted (as Western digits) instead of being silently ignored.
  */
-export function TextField({ label, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, max, min, step, maxLength }: TextFieldProps) {
+export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, max, min, step, maxLength }: TextFieldProps) {
   const errorId = `${name}-error`;
   const numeric = type === "number";
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
-      {label}
+      <span className="flex min-w-0 flex-wrap items-center gap-1.5">{label}{labelEnd}</span>
       <input
         name={name}
         type={numeric ? "text" : type}
