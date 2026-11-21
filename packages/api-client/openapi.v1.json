@@ -254,6 +254,53 @@
         ]
       }
     },
+    "/api/v1/admin/badges": {
+      "get": {
+        "tags": [
+          "admin/badges"
+        ],
+        "parameters": [
+          {
+            "name": "ordersSince",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "requestsSince",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBadges"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/identity/me": {
       "get": {
         "tags": [
@@ -15232,6 +15279,34 @@
   },
   "components": {
     "schemas": {
+      "AdminBadges": {
+        "required": [
+          "orders",
+          "requests",
+          "asOf"
+        ],
+        "type": "object",
+        "properties": {
+          "orders": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "requests": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "AdminDashboardView": {
         "required": [
           "dashboard",
@@ -30466,6 +30541,9 @@
     },
     {
       "name": "RequestEndpoints"
+    },
+    {
+      "name": "AdminBadgeEndpoints"
     },
     {
       "name": "IdentityCurrentUserEndpoints"

@@ -10,6 +10,7 @@ import type { SessionUser } from "@/features/auth/session-store";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { AdminArea, AdminAreaKey, AdminGroup } from "./admin-nav";
 import { AdminUserMenu } from "./AdminUserMenu";
+import { badgeLabel, BADGE_AREAS, isBadgeArea, type BadgeCounts } from "./badges/badge-rules";
 
 const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
   dashboard: GridIcon, pos: RegisterIcon, orders: BoxIcon, customers: UsersIcon, offers: TagIcon, coupons: TicketIcon,
@@ -29,12 +30,14 @@ interface AdminSidebarProps {
   user: SessionUser;
   groups: readonly AdminGroup[];
   active: AdminArea | null;
+  /** New work per section; a section with none shows no badge. */
+  badges: BadgeCounts;
   onNavigate?: () => void;
   onSignOut: () => void;
 }
 
 /** The dark admin sidebar: logo and store link, one link per area the user may open, and the user menu at the bottom. */
-export function AdminSidebar({ user, groups, active, onNavigate, onSignOut }: AdminSidebarProps) {
+export function AdminSidebar({ user, groups, active, badges, onNavigate, onSignOut }: AdminSidebarProps) {
   const t = useTranslations("admin");
   const tLocale = useTranslations("locale");
   const pathname = usePathname();
@@ -69,13 +72,22 @@ export function AdminSidebar({ user, groups, active, onNavigate, onSignOut }: Ad
             {group.areas.map((area) => {
               const current = area === active;
               const AreaIcon = AREA_ICONS[area.key];
+              const badge = isBadgeArea(area.key) ? badgeLabel(badges[BADGE_AREAS[area.key]]) : null;
               return (
                 <Link
                   key={area.key} href={area.href} onClick={onNavigate} aria-current={current ? "page" : undefined}
                   className={`flex min-h-11 items-center gap-2.5 rounded-control px-3 text-sm ${current ? "bg-orange font-bold text-on-orange" : "hover:bg-footer-line hover:text-on-carbon"}`}
                 >
                   <AreaIcon size={18} />
-                  {t(`nav.areas.${area.key}`)}
+                  <span className="min-w-0 flex-1">{t(`nav.areas.${area.key}`)}</span>
+                  {badge ? (
+                    <span
+                      role="status" aria-label={t("nav.newCount", { count: badge })}
+                      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-orange px-1.5 text-[11px] font-bold leading-none text-on-orange"
+                    >
+                      {badge}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}

@@ -113,6 +113,29 @@ public sealed class RequestsTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
     }
 
     [Fact]
+    public async Task The_sidebar_badge_counts_new_requests_since_the_last_visit_and_hides_sections_the_caller_cannot_open()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "viewer", "Requests.View");
+        await CreateUserAsync(database, "nobody", "Catalog.View");
+        await using var factory = CreateFactory(database.ConnectionString);
+        await SeedAsync(factory, SellSubmission());
+        var second = await SeedAsync(factory, SellSubmission("01111111111", "RX 6600"));
+        using (var scope = factory.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<RequestFollowUpService>().SetStatusAsync(second.Id, CustomerRequestStatus.Following, second.RowVersion);
+        using var viewer = await SignedInAsync(factory, "viewer");
+        using var nobody = await SignedInAsync(factory, "nobody");
+
+        var all = await ReadAsync<AdminBadges>(await viewer.GetAsync("/api/v1/admin/badges"));
+        var afterVisit = await ReadAsync<AdminBadges>(await viewer.GetAsync($"/api/v1/admin/badges?requestsSince={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(5).ToString("o"))}"));
+
+        Assert.Equal((null, 1), (all.Orders, all.Requests));
+        Assert.Equal(0, afterVisit.Requests);
+        Assert.True(all.AsOf > DateTimeOffset.UtcNow.AddMinutes(-1));
+        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync("/api/v1/admin/badges")).StatusCode);
+    }
+
+    [Fact]
     public async Task The_admin_list_filters_by_type_status_and_search_and_counts_new_requests_per_type()
     {
         var database = await fixture.CreateDatabaseAsync();

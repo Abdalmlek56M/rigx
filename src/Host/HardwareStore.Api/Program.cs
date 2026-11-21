@@ -201,6 +201,7 @@ app.MapEmailCodeSignInEndpoints();
 app.MapGoogleSignInEndpoints();
 app.MapStepUpEndpoints();
 app.MapRequestEndpoints();
+app.MapAdminBadgeEndpoints();
 app.MapCustomerEndpoints();
 app.MapIdentityCurrentUserEndpoints();
 app.MapIdentitySessionEndpoints();

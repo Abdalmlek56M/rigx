@@ -1308,6 +1308,7 @@
       }
     },
     "nav": {
+      "newCount": "{count} new",
       "groups": {
         "home": "Home",
         "sales": "Sales",

@@ -681,6 +681,20 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
     }
 
     [Fact]
+    public async Task The_new_order_badge_counts_only_new_orders_that_arrived_after_the_last_visit()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.PublishedItemAsync("Badge GPU", 6, 1000m);
+        var first = await retail.CheckoutAsync(Checkout([StockLine(item.Id)]));
+        await retail.CheckoutAsync(Checkout([StockLine(item.Id)]));
+        Assert.Equal(2, await retail.Orders.CountNewSinceAsync(null));
+
+        await retail.StatusWithoutPaymentAsync(first, OrderStatus.Confirmed);
+        Assert.Equal(1, await retail.Orders.CountNewSinceAsync(null));
+        Assert.Equal(0, await retail.Orders.CountNewSinceAsync(DateTimeOffset.UtcNow.AddMinutes(5)));
+    }
+
+    [Fact]
     public async Task The_deposit_alone_can_be_waived_on_an_order_and_shipping_stays_due()
     {
         var (retail, _, _) = await StartAsync();

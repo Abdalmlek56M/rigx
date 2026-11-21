@@ -1308,6 +1308,7 @@
       }
     },
     "nav": {
+      "newCount": "{count} جديد",
       "groups": {
         "home": "الرئيسية",
         "sales": "البيع",

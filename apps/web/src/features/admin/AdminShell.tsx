@@ -11,6 +11,7 @@ import { useSession } from "@/features/auth/use-session";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { ADMIN_HOME, areaFor, canOpen, firstAreaHref, isStaff, visibleNav } from "./admin-nav";
 import { AdminSidebar } from "./AdminSidebar";
+import { useAdminBadges } from "./badges/use-admin-badges";
 import { ToastProvider } from "./kit/Toast";
 
 function Blank() {
@@ -45,6 +46,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const permissions = user?.permissions ?? [];
   const area = areaFor(pathname);
   const allowed = area === null || canOpen(area, permissions);
+  const sawBadges = permissions.includes("Sales.ViewOrders") || permissions.includes("Requests.View");
+  const badges = useAdminBadges(user && sawBadges ? user.username : null, area?.key ?? null);
   const landing = user && pathname === ADMIN_HOME && !allowed ? firstAreaHref(permissions) : null;
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <ToastProvider>
       <div className="flex min-h-dvh bg-paper">
         <div className="sticky top-0 hidden h-dvh w-60 shrink-0 md:block">
-          <AdminSidebar user={user} groups={groups} active={area} onSignOut={() => void leave()} />
+          <AdminSidebar user={user} groups={groups} active={area} badges={badges} onSignOut={() => void leave()} />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -84,7 +87,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <span className="w-11" />
           </header>
           <ModalSheet open={menuOpen} onClose={closeMenu} label={t("navLabel")} edge="start" fullHeight>
-            <AdminSidebar user={user} groups={groups} active={area} onNavigate={closeMenu} onSignOut={() => void leave()} />
+            <AdminSidebar user={user} groups={groups} active={area} badges={badges} onNavigate={closeMenu} onSignOut={() => void leave()} />
           </ModalSheet>
 
           <main className="flex min-w-0 flex-1 flex-col gap-[18px] px-4 pb-10 pt-6 md:px-7">

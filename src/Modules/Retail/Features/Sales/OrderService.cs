@@ -7,6 +7,14 @@ namespace HardwareStore.Modules.Retail;
 /// </summary>
 public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
+    /// <summary>How many orders are still <c>New</c> and arrived after <paramref name="since"/> (all of them when none): the sidebar badge.</summary>
+    public async Task<int> CountNewSinceAsync(DateTimeOffset? since, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.Orders.AsNoTracking()
+            .CountAsync(order => order.Status == OrderStatus.New && (since == null || order.CreatedAtUtc > since), cancellationToken);
+    }
+
     /// <summary>
     /// Creates a <c>New</c> order from the cart: lines are re-priced from published items/builds, the fee and upfront part
     /// come from the store settings (<paramref name="policy"/>), a coupon code takes its discount off the lines (the minimum order is

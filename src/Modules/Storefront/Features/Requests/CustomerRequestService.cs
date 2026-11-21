@@ -13,6 +13,15 @@ public sealed class CustomerRequestService(
 {
     private static readonly TimeSpan DuplicateWindow = TimeSpan.FromMinutes(10);
 
+    /// <summary>How many requests are still <c>New</c> and arrived after <paramref name="since"/> (all of them when none): the sidebar badge.</summary>
+    public async Task<int> CountNewSinceAsync(DateTimeOffset? since, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.CustomerRequests.AsNoTracking()
+            .CountAsync(item => item.Status == CustomerRequestStatus.New && (since == null || item.CreatedAtUtc > since), cancellationToken);
+    }
+
+
     /// <summary>
     /// A filled honeypot stores nothing; the same request sent again within ten minutes returns the first code. A notify-me request
     /// waits for a model: the same phone asking again for a model it already waits for gets the same code, and a model that can be
