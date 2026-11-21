@@ -3,13 +3,13 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { ChevronDownIcon, ChevronStartIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, ChevronStartIcon, EyeIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { BuildStatusBadge } from "../builds/BuildStatusBadge";
-import { IconButton } from "../kit/Button";
+import { buttonClass, buttonIconSize, IconButton } from "../kit/Button";
 import type { Column } from "../kit/DataTable";
 import { usePermissions } from "../use-permissions";
 import type { StockItem } from "./inventory-api";
@@ -19,9 +19,7 @@ interface ColumnsInput {
   tree: readonly Category[];
   partners: readonly Partner[];
   selected: ReadonlySet<string>;
-  activeId: string;
   onToggle: (id: string) => void;
-  onOpen: (id: string) => void;
   /** Opens or closes the parts of a build. */
   onToggleBuild: (id: string) => void;
 }
@@ -29,7 +27,7 @@ interface ColumnsInput {
 const asCondition = (condition: string) => (condition === "New" ? "New" : "Used");
 
 /** The inventory list columns; cost, profit and partner appear only for staff who may see them, and only when the API sent the values. */
-export function useInventoryColumns({ tree, partners, selected, activeId, onToggle, onOpen, onToggleBuild }: ColumnsInput): Column<StockRow>[] {
+export function useInventoryColumns({ tree, partners, selected, onToggle, onToggleBuild }: ColumnsInput): Column<StockRow>[] {
   const t = useTranslations("admin.inventory");
   const locale = useLocale();
   const { has } = usePermissions();
@@ -58,12 +56,7 @@ export function useInventoryColumns({ tree, partners, selected, activeId, onTogg
           {row.build.code}
         </Link>
       ) : (
-        <button
-          type="button" dir="ltr" aria-current={activeId === row.item.id ? "true" : undefined} onClick={() => onOpen(row.item.id)}
-          className={`min-h-8 whitespace-nowrap font-mono text-[13px] font-bold ${row.underBuild ? "ms-5" : ""} ${activeId === row.item.id ? "text-orange-text" : ""}`}
-        >
-          {row.item.code}
-        </button>
+        <span dir="ltr" className={`inline-block min-h-8 whitespace-nowrap font-mono text-[13px] font-bold `}>{row.item.code}</span>
       )
     },
     {
@@ -121,7 +114,19 @@ export function useInventoryColumns({ tree, partners, selected, activeId, onTogg
       header: t("columns.visibility"),
       cell: forItem((item) => <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>)
     },
-    { key: "days", header: t("columns.days"), align: "end", cell: forItem((item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span>) }
+    { key: "days", header: t("columns.days"), align: "end", cell: forItem((item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span>) },
+    {
+      key: "open",
+      header: t("columns.open"),
+      cell: forItem((item) => (
+        <Link
+          href={`/admin/inventory/${item.id}`} aria-label={t("open", { code: item.code })} data-tip={t("openTip")}
+          className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}
+        >
+          <EyeIcon size={buttonIconSize("sm")} />
+        </Link>
+      ))
+    }
   );
   return columns;
 }

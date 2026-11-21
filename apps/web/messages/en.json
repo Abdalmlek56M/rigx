@@ -2693,6 +2693,8 @@
       "search": "Search by code or model",
       "none": "—",
       "pickRow": "Select {code}",
+      "open": "View and manage {code}",
+      "openTip": "View / manage",
       "newPurchase": "Buy and receive",
       "newBuild": "New build",
       "hidden": "Hidden",
@@ -2714,7 +2716,8 @@
         "partner": "Partner",
         "status": "Status",
         "visibility": "Visibility",
-        "days": "In stock"
+        "days": "In stock",
+        "open": "Manage"
       },
       "state": {
         "available": "Available",
@@ -2766,10 +2769,34 @@
         "loading": "Loading the item",
         "failed": "Could not load the item.",
         "retry": "Try again",
-        "close": "Close",
         "published": "Shown in the store",
         "notPublished": "Not shown in the store",
-        "copy": "Copy to a new piece"
+        "pageTitle": "Item",
+        "back": "Back to inventory",
+        "facts": {
+          "available": "Available",
+          "days": "Time in stock",
+          "daysValue": "{count, plural, one {# day} other {# days}}",
+          "added": "Added on"
+        },
+        "actions": {
+          "sell": "Sell",
+          "repeat": "Repeat purchase",
+          "hide": "Hide from store",
+          "show": "Show in store",
+          "viewOnStore": "View in store",
+          "hiddenDone": "The item is hidden from the store.",
+          "shownDone": "The item is now shown in the store.",
+          "failed": "Could not change the item's visibility. Try again."
+        }
+      },
+      "history": {
+        "title": "Change history",
+        "loading": "Loading the history",
+        "failed": "Could not load the history.",
+        "retry": "Try again",
+        "empty": "No changes are recorded for this item.",
+        "separator": ", "
       },
       "form": {
         "title": "Item details",

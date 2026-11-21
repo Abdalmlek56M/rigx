@@ -18,7 +18,7 @@ export function PurchaseReceivedPanel({ result }: { result: PurchaseReceived }) 
       <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
         {items.map((item) => (
           <li key={item.id}>
-            <Link href={`/admin/inventory?item=${item.id}`} className="inline-flex min-h-11 items-center gap-2 rounded-control border border-input-line bg-paper px-3 text-sm font-bold hover:bg-line">
+            <Link href={`/admin/inventory/${item.id}`} className="inline-flex min-h-11 items-center gap-2 rounded-control border border-input-line bg-paper px-3 text-sm font-bold hover:bg-line">
               <span dir="ltr" className="font-mono">{item.code}</span>
               <span dir="auto" className="max-w-48 truncate font-normal [unicode-bidi:isolate]">{item.modelName}</span>
             </Link>

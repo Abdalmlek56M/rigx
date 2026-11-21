@@ -13,7 +13,7 @@ const PAGE_SIZE = 25;
 /** The change log groups a page by day and kind, so it reads more rows at once. */
 const ENTRIES_PAGE_SIZE = 50;
 
-export const fetchEntries = (query: { module?: string; entity?: string; action?: string; from?: string; to?: string; page: number }) =>
+export const fetchEntries = (query: { module?: string; entity?: string; entityId?: string; action?: string; from?: string; to?: string; page: number }) =>
   required(unwrap(api().GET("/api/v1/admin/audit/entries", { params: { query: { ...query, pageSize: ENTRIES_PAGE_SIZE } } })));
 
 export const fetchEntry = (id: string) =>

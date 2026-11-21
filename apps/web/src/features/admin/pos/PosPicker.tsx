@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { formatEgp } from "@/lib/format";
@@ -111,7 +112,8 @@ function Status<T>({ state, reload, isEmpty, children }: StatusProps<T>) {
 export function PosPicker({ onAdd }: { onAdd: (line: CartLine) => void }) {
   const t = useTranslations("admin.pos.picker");
   const [kind, setKind] = useState<Kind>("item");
-  const [query, setQuery] = useState("");
+  // `?q=` opens the picker already searching (the inventory page's "Sell" action passes the item code).
+  const [query, setQuery] = useState(useSearchParams().get("q") ?? "");
   return (
     <FormSection title={t("title")}>
       <div role="radiogroup" aria-label={t("title")} className="flex flex-wrap gap-2">

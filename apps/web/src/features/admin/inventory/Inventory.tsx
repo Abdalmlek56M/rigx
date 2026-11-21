@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
 import { parentOptions } from "../categories/category-rules";
 import { fetchPartners } from "../expenses/expenses-api";
@@ -14,19 +13,17 @@ import { PageHeader } from "../kit/PageHeader";
 import { Pager } from "../kit/Pager";
 import { useToast } from "../kit/Toast";
 import { pageNumber } from "../kit/url-filters";
-import { useReveal } from "../kit/use-reveal";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
-import { InventoryDetail } from "./InventoryDetail";
 import { fetchStockItems, setItemsHidden, type StockItem } from "./inventory-api";
 import { groupByBuild, pickedIds, triState, type StockRow } from "./inventory-rules";
 import { useInventoryColumns } from "./use-inventory-columns";
 import { BanIcon, CheckIcon, EyeIcon, PlusIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
-const FILTERS = { q: "", category: "", condition: "", stock: "", hidden: "", item: "", page: "1" };
+const FILTERS = { q: "", category: "", condition: "", stock: "", hidden: "", page: "1" };
 
-/** ADM-Inventory: the stock list with filters and bulk hide/show, and the picked item (edit, photos, units) below it. */
+/** ADM-Inventory: the stock list with filters and bulk hide/show, and each row opens the item page. */
 export function Inventory() {
   const t = useTranslations("admin.inventory");
   const toast = useToast();
@@ -37,19 +34,16 @@ export function Inventory() {
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
-  const detailRef = useReveal<HTMLDivElement>(values.item || null);
 
   const lookups = useLoad(useCallback(async () => {
-    const [tree, brands, partners] = await Promise.all([
+    const [tree, partners] = await Promise.all([
       fetchCategories().catch(() => []),
-      fetchBrands().catch(() => []),
       canSeePartners ? fetchPartners().catch(() => []) : Promise.resolve([])
     ]);
-    return { tree, brands, partners };
+    return { tree, partners };
   }, [canSeePartners]));
   const tree = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.tree : []), [lookups.state]);
   const partners = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.partners : []), [lookups.state]);
-  const brands = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.brands : []), [lookups.state]);
 
   const { state, reload } = useLoad(useCallback(() => fetchStockItems({
     search: values.q || undefined,
@@ -66,13 +60,12 @@ export function Inventory() {
   const tableState: Load<readonly StockRow[]> = state.status === "ready" ? { status: "ready", data: rows } : state;
 
   const columns = useInventoryColumns({
-    tree, partners, selected, activeId: values.item,
+    tree, partners, selected,
     onToggle: (id) => setSelected((current) => {
       const next = new Set(current);
       if (!next.delete(id)) next.add(id);
       return next;
     }),
-    onOpen: (id) => set({ item: id, page: String(page) }),
     onToggleBuild: (id) => setCollapsed((current) => {
       const next = new Set(current);
       if (!next.delete(id)) next.add(id);
@@ -135,9 +128,6 @@ export function Inventory() {
         <Pager info={{ page: state.data.page, pageSize: state.data.pageSize, total: state.data.total }} onPage={(next) => set({ page: String(next) })} />
       ) : null}
       <p className="m-0 text-sm text-ink-muted">{t("hiddenNote")}</p>
-      <div ref={detailRef} className="scroll-mt-20 empty:hidden">
-        {values.item ? <InventoryDetail key={values.item} id={values.item} tree={tree} brands={brands} partners={partners} onClose={() => set({ item: "", page: String(page) })} onChanged={reload} /> : null}
-      </div>
     </>
   );
 }
