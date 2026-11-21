@@ -1,14 +1,19 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
+import { ChevronDownIcon, ChevronStartIcon } from "@/components/ui/icons";
+import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
+import { BuildStatusBadge } from "../builds/BuildStatusBadge";
+import { IconButton } from "../kit/Button";
 import type { Column } from "../kit/DataTable";
 import { usePermissions } from "../use-permissions";
 import type { StockItem } from "./inventory-api";
-import { categoryPath, expectedProfit, itemCost, itemPartner, stockState } from "./inventory-rules";
+import { categoryPath, expectedProfit, itemCost, itemPartner, stockState, type StockRow } from "./inventory-rules";
 
 interface ColumnsInput {
   tree: readonly Category[];
@@ -17,80 +22,106 @@ interface ColumnsInput {
   activeId: string;
   onToggle: (id: string) => void;
   onOpen: (id: string) => void;
+  /** Opens or closes the parts of a build. */
+  onToggleBuild: (id: string) => void;
 }
 
 const asCondition = (condition: string) => (condition === "New" ? "New" : "Used");
 
 /** The inventory list columns; cost, profit and partner appear only for staff who may see them, and only when the API sent the values. */
-export function useInventoryColumns({ tree, partners, selected, activeId, onToggle, onOpen }: ColumnsInput): Column<StockItem>[] {
+export function useInventoryColumns({ tree, partners, selected, activeId, onToggle, onOpen, onToggleBuild }: ColumnsInput): Column<StockRow>[] {
   const t = useTranslations("admin.inventory");
   const locale = useLocale();
   const { has } = usePermissions();
   const none = <span className="text-ink-muted">{t("none")}</span>;
   const money = (value: number | null) => (value === null ? none : <span className="whitespace-nowrap font-bold">{formatEgp(value, locale)}</span>);
 
-  const columns: Column<StockItem>[] = [
+  // A build header row has its own cells in a few columns; every other column is empty for it, and an item row uses its item.
+  const forItem = (cell: (item: StockItem, underBuild: boolean) => ReactNode) => (row: StockRow) => (row.kind === "item" ? cell(row.item, row.underBuild) : null);
+
+  const columns: Column<StockRow>[] = [
     {
       key: "pick",
       header: t("columns.pick"),
-      cell: (item) => (
+      cell: forItem((item) => (
         <input
           type="checkbox" checked={selected.has(item.id)} onChange={() => onToggle(item.id)} aria-label={t("pickRow", { code: item.code })}
           className="h-5 w-5"
         />
-      )
+      ))
     },
     {
       key: "code",
       header: t("columns.code"),
-      cell: (item) => (
+      cell: (row) => row.kind === "build" ? (
+        <Link href={`/admin/builds/${row.build.id}`} dir="ltr" className="inline-block min-h-8 whitespace-nowrap font-mono text-[13px] font-bold text-orange-text hover:underline">
+          {row.build.code}
+        </Link>
+      ) : (
         <button
-          type="button" dir="ltr" aria-current={activeId === item.id ? "true" : undefined} onClick={() => onOpen(item.id)}
-          className={`min-h-8 whitespace-nowrap font-mono text-[13px] font-bold ${activeId === item.id ? "text-orange-text" : ""}`}
+          type="button" dir="ltr" aria-current={activeId === row.item.id ? "true" : undefined} onClick={() => onOpen(row.item.id)}
+          className={`min-h-8 whitespace-nowrap font-mono text-[13px] font-bold ${row.underBuild ? "ms-5" : ""} ${activeId === row.item.id ? "text-orange-text" : ""}`}
         >
-          {item.code}
+          {row.item.code}
         </button>
       )
     },
-    { key: "model", header: t("columns.model"), cell: (item) => <span dir="auto" className="block max-w-56 truncate [unicode-bidi:isolate]">{item.modelName}</span> },
-    { key: "category", header: t("columns.category"), cell: (item) => <span className="whitespace-nowrap text-xs text-ink-muted">{categoryPath(tree, item.categoryId) || t("none")}</span> },
-    { key: "condition", header: t("columns.condition"), cell: (item) => <ConditionBadge condition={asCondition(item.condition)} /> },
-    { key: "count", header: t("columns.count"), align: "end", cell: (item) => <span className="font-bold">{item.availableCount}</span> }
+    {
+      key: "model",
+      header: t("columns.model"),
+      cell: (row) => row.kind === "build" ? (
+        <span className="flex items-center gap-1.5">
+          <IconButton
+            icon={row.open ? ChevronDownIcon : ChevronStartIcon} size="sm" label={t(row.open ? "build.collapse" : "build.expand", { name: row.build.name })}
+            aria-expanded={row.open} onClick={() => onToggleBuild(row.build.id)}
+          />
+          <span dir="auto" className="max-w-52 truncate font-bold [unicode-bidi:isolate]">{row.build.name}</span>
+          <span className="whitespace-nowrap text-xs text-ink-muted">{t("build.parts", { count: row.count })}</span>
+        </span>
+      ) : <span dir="auto" className={`block max-w-56 truncate [unicode-bidi:isolate] ${row.underBuild ? "ms-5" : ""}`}>{row.item.modelName}</span>
+    },
+    { key: "category", header: t("columns.category"), cell: forItem((item) => <span className="whitespace-nowrap text-xs text-ink-muted">{categoryPath(tree, item.categoryId) || t("none")}</span>) },
+    { key: "condition", header: t("columns.condition"), cell: forItem((item) => <ConditionBadge condition={asCondition(item.condition)} />) },
+    { key: "count", header: t("columns.count"), align: "end", cell: forItem((item) => <span className="font-bold">{item.availableCount}</span>) }
   ];
 
   if (has("Inventory.ViewCosts")) {
-    columns.push({ key: "cost", header: t("columns.cost"), align: "end", cell: (item) => money(itemCost(item)) });
+    columns.push({ key: "cost", header: t("columns.cost"), align: "end", cell: forItem((item) => money(itemCost(item))) });
   }
-  columns.push({ key: "price", header: t("columns.price"), align: "end", cell: (item) => money(item.prices.inBuild) });
+  columns.push({ key: "price", header: t("columns.price"), align: "end", cell: forItem((item) => money(item.prices.inBuild)) });
   if (has("Inventory.ViewCosts")) {
     columns.push({
       key: "profit",
       header: t("columns.profit"),
       align: "end",
-      cell: (item) => {
+      cell: forItem((item) => {
         const profit = expectedProfit(item);
         return profit === null ? none : <span className={`whitespace-nowrap font-bold ${profit < 0 ? "text-error" : ""}`}>{formatEgp(profit, locale)}</span>;
-      }
+      })
     });
   }
   if (has("Finance.ViewReports")) {
     columns.push({
       key: "partner",
       header: t("columns.partner"),
-      cell: (item) => {
+      cell: forItem((item) => {
         const partner = itemPartner(item, partners);
         return partner ? <span className="whitespace-nowrap">{t("partnerShare", { name: partner.name, percent: partner.percent })}</span> : none;
-      }
+      })
     });
   }
   columns.push(
-    { key: "status", header: t("columns.status"), cell: (item) => <span className="whitespace-nowrap">{t(`state.${stockState(item)}`)}</span> },
+    {
+      key: "status",
+      header: t("columns.status"),
+      cell: (row) => row.kind === "build" ? <BuildStatusBadge status={row.build.status} /> : <span className="whitespace-nowrap">{t(`state.${stockState(row.item)}`)}</span>
+    },
     {
       key: "visibility",
       header: t("columns.visibility"),
-      cell: (item) => <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>
+      cell: forItem((item) => <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>)
     },
-    { key: "days", header: t("columns.days"), align: "end", cell: (item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span> }
+    { key: "days", header: t("columns.days"), align: "end", cell: forItem((item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span>) }
   );
   return columns;
 }

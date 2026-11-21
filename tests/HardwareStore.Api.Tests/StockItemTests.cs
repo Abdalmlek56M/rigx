@@ -220,6 +220,42 @@ public sealed class StockItemPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fix
     }
 
     [Fact]
+    public async Task A_unit_inside_a_build_shows_which_build_it_is_in_and_a_loose_unit_shows_none()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var receipt = await retail.Units.ReceiveAsync(Receive(UsedLine("CPU"), UsedLine("Board")), Actor);
+        var cpu = receipt.Items[0];
+        var build = await retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Gaming PC", [cpu.Units[0].Id]));
+
+        var inBuild = await retail.StockItems.GetAsync(cpu.Id, true, true);
+        var loose = await retail.StockItems.GetAsync(receipt.Items[1].Id, true, true);
+
+        var ref1 = inBuild.Units.Single().Build;
+        Assert.NotNull(ref1);
+        Assert.Equal((build.Code, "Gaming PC"), (ref1.Code, ref1.Name));
+        Assert.Null(loose.Units.Single().Build);
+        var listed = (await retail.StockItems.ListAsync(new StockItemQuery(), true, true)).Items.Single(item => item.Id == cpu.Id);
+        Assert.Equal(build.Code, listed.Units.Single().Build?.Code);
+    }
+
+    [Fact]
+    public async Task Photos_can_be_put_in_a_new_order_so_any_photo_becomes_the_main_one()
+    {
+        var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();
+        var item = (await retail.Units.ReceiveAsync(Receive(UsedLine("RTX 3060")), Actor)).Items.Single();
+        await PublishAsync(retail, item, 3);
+        var keys = (await retail.StockItems.GetAsync(item.Id, true, true)).Photos.Select(photo => photo.StorageKey).ToList();
+
+        var reordered = await retail.StockItems.ReorderPhotosAsync(item.Id, [keys[2], keys[0], keys[1]]);
+
+        Assert.Equal([keys[2], keys[0], keys[1]], reordered.Select(photo => photo.StorageKey));
+        Assert.Equal(keys[2], (await retail.StockItems.GetAsync(item.Id, true, true)).Photos[0].StorageKey);
+        Assert.Equal(400, (await Assert.ThrowsAsync<RetailException>(() => retail.StockItems.ReorderPhotosAsync(item.Id, [keys[0], keys[1]]))).StatusCode);
+        Assert.Equal(400, (await Assert.ThrowsAsync<RetailException>(() => retail.StockItems.ReorderPhotosAsync(item.Id, [keys[0], keys[0], keys[1]]))).StatusCode);
+        Assert.Equal(400, (await Assert.ThrowsAsync<RetailException>(() => retail.StockItems.ReorderPhotosAsync(item.Id, [keys[0], keys[1], "other.webp"]))).StatusCode);
+    }
+
+    [Fact]
     public async Task Model_suggestions_group_spellings_of_the_same_model()
     {
         var retail = (await fixture.CreateDatabaseAsync()).CreateRetailServices();

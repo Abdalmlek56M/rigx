@@ -2590,6 +2590,11 @@
       }
     },
     "inventory": {
+      "build": {
+        "parts": "{count, plural, one {# part} other {# parts}}",
+        "collapse": "Hide the parts of {name}",
+        "expand": "Show the parts of {name}"
+      },
       "title": "Inventory",
       "search": "Search by code or model",
       "none": "—",
@@ -2686,6 +2691,11 @@
         "save": "Save"
       },
       "photos": {
+        "makeMain": "Make this the main photo",
+        "earlier": "Move the photo earlier",
+        "later": "Move the photo later",
+        "reordered": "The photo order was saved.",
+        "orderHint": "The first photo is the main one. Use the arrows to reorder. The watermark is added automatically.",
         "title": "Photos ({count})",
         "empty": "No photos yet.",
         "alt": "Photo of {model}",

@@ -23,6 +23,7 @@ public static partial class RetailEndpoints
         admin.MapPost("/stock-items/visibility", SetStockVisibilityAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapPost("/stock-items/{id:guid}/photos", AddStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapDelete("/stock-items/{id:guid}/photos", RemoveStockItemPhotoAsync).RequirePermission("Inventory.StockAdjust");
+        admin.MapPut("/stock-items/{id:guid}/photos/order", ReorderStockItemPhotosAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapGet("/stock-import/template", GetStockImportTemplateAsync).RequirePermission(ReceiveGoods)
             .Produces<Stream>(StatusCodes.Status200OK, XlsxContentType);
         admin.MapPost("/stock-import", ImportStockAsync).RequirePermission(ReceiveGoods);
@@ -43,6 +44,7 @@ public static partial class RetailEndpoints
         admin.MapPost("/assemblies/{id:guid}/parts/{unitId:guid}/replace", ReplaceAssemblyPartAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies/{id:guid}/photos", AddAssemblyPhotoAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapDelete("/assemblies/{id:guid}/photos", RemoveAssemblyPhotoAsync).RequirePermission("Catalog.ManageProducts");
+        admin.MapPut("/assemblies/{id:guid}/photos/order", ReorderAssemblyPhotosAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapGet("/orders", ListOrdersAsync).RequirePermission("Sales.ViewOrders");
         admin.MapGet("/orders/{id:guid}", GetOrderDetailAsync).RequirePermission("Sales.ViewOrders");
         admin.MapPost("/pos/preview", PreviewPosSaleAsync).RequirePermission("Sales.CreatePOS");

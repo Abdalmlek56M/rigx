@@ -30,7 +30,8 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         var rows = await items.Include(item => item.Units).OrderByDescending(item => item.CreatedAtUtc).ThenByDescending(item => item.Id)
             .Skip((page - 1) * pageSize).Take(pageSize).AsSplitQuery().ToListAsync(cancellationToken);
         var now = timeProvider.GetUtcNow();
-        return new PagedResult<StockItemAdminView>(rows.Select(item => StockItemMapping.ToAdminView(item, now, includeCosts, includeSerials)).ToList(),
+        var builds = await StockItemMapping.BuildsOfAsync(db, rows, cancellationToken);
+        return new PagedResult<StockItemAdminView>(rows.Select(item => StockItemMapping.ToAdminView(item, now, includeCosts, includeSerials, builds)).ToList(),
             page, pageSize, total);
     }
 
@@ -39,7 +40,7 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var item = await db.StockItems.AsNoTracking().Include(row => row.Units)
             .SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
-        return StockItemMapping.ToAdminView(item, timeProvider.GetUtcNow(), includeCosts, includeSerials);
+        return StockItemMapping.ToAdminView(item, timeProvider.GetUtcNow(), includeCosts, includeSerials, await StockItemMapping.BuildsOfAsync(db, [item], cancellationToken));
     }
 
     public async Task<StockItemAdminView> UpdateAsync(Guid id, StockItemUpdate request, bool includeCosts = false,
@@ -76,7 +77,7 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         }
         Touch(item);
         await SaveAsync(db, cancellationToken);
-        return StockItemMapping.ToAdminView(item, timeProvider.GetUtcNow(), includeCosts, includeSerials);
+        return StockItemMapping.ToAdminView(item, timeProvider.GetUtcNow(), includeCosts, includeSerials, await StockItemMapping.BuildsOfAsync(db, [item], cancellationToken));
     }
 
     public async Task<int> SetVisibilityAsync(StockVisibilityRequest request, CancellationToken cancellationToken = default)
@@ -135,6 +136,17 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         Touch(item);
         await SaveAsync(db, cancellationToken);
         return true;
+    }
+
+    /// <summary>Puts the photos in the given order (the first is the main photo); the keys must be exactly the item's photos.</summary>
+    public async Task<IReadOnlyList<StockItemPhoto>> ReorderPhotosAsync(Guid id, IReadOnlyList<string>? storageKeys, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var item = await db.StockItems.SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
+        item.Photos = PhotoOrder.Apply(item.Photos, storageKeys);
+        Touch(item);
+        await SaveAsync(db, cancellationToken);
+        return item.Photos;
     }
 
     /// <summary>Removes the photo from the item and returns it, so the caller can delete the stored files.</summary>

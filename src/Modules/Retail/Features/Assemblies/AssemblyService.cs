@@ -176,6 +176,17 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
         return true;
     }
 
+    /// <summary>Puts the photos in the given order (the first is the main photo); the keys must be exactly the build's photos.</summary>
+    public async Task<IReadOnlyList<StockItemPhoto>> ReorderPhotosAsync(Guid id, IReadOnlyList<string>? storageKeys, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var assembly = await LoadForPhotosAsync(db, id, cancellationToken);
+        assembly.Photos = PhotoOrder.Apply(assembly.Photos, storageKeys);
+        AssemblyEditing.Touch(assembly, timeProvider.GetUtcNow().ToUniversalTime());
+        await AssemblyEditing.SaveAsync(db, cancellationToken);
+        return assembly.Photos;
+    }
+
     /// <summary>Removes the photo from the build and returns it, so the caller can delete the stored files.</summary>
     public async Task<StockItemPhoto> RemovePhotoAsync(Guid id, string storageKey, CancellationToken cancellationToken = default)
     {

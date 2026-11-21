@@ -108,6 +108,9 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await assemblies.AddPhotoAsync(id, new StockItemPhoto(stored.StorageKey, stored.ThumbnailStorageKey), ct));
     }
 
+    private static async Task<Ok<IReadOnlyList<StockItemPhoto>>> ReorderAssemblyPhotosAsync(Guid id, PhotoOrderRequest request, AssemblyService assemblies, CancellationToken ct) =>
+        TypedResults.Ok(await assemblies.ReorderPhotosAsync(id, request.StorageKeys, ct));
+
     private static async Task<NoContent> RemoveAssemblyPhotoAsync(Guid id, string storageKey, AssemblyService assemblies,
         ICatalogMediaStorage storage, CancellationToken ct)
     {

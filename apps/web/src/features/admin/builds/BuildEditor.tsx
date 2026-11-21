@@ -18,7 +18,7 @@ import { BuildParts } from "./BuildParts";
 import { BuildPlannedParts } from "./BuildPlannedParts";
 import { BuildStatusBadge } from "./BuildStatusBadge";
 import { BuildSummary } from "./BuildSummary";
-import { deleteBuildPhoto, fetchBuild, uploadBuildPhoto, type Build } from "./builds-api";
+import { deleteBuildPhoto, fetchBuild, reorderBuildPhotos, uploadBuildPhoto, type Build } from "./builds-api";
 import { isLocked } from "./build-rules";
 import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
@@ -94,6 +94,7 @@ export function BuildEditor({ id }: { id: string }) {
           <PhotoGallery
             photos={build.photos} name={build.name} canManage={canEdit} onChanged={refresh}
             upload={(file) => uploadBuildPhoto(build.id, file)} remove={(storageKey) => deleteBuildPhoto(build.id, storageKey)}
+            reorder={(keys) => reorderBuildPhotos(build.id, keys)}
           />
         </div>
       </div>

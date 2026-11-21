@@ -66,6 +66,10 @@ export const uploadBuildPhoto = (id: string, file: File) => {
 export const deleteBuildPhoto = (id: string, storageKey: string) =>
   unwrap(api().DELETE("/api/v1/admin/retail/assemblies/{id}/photos", { params: { path: { id }, query: { storageKey } } }));
 
+/** Saves the build's photos in this order (every storage key once); the first is the main photo. */
+export const reorderBuildPhotos = (id: string, storageKeys: string[]) =>
+  required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}/photos/order", { ...path(id), body: { storageKeys } })));
+
 /** Saves the build's whole list of typed parts (parts that are not in stock; nothing is reserved for them). */
 export const savePlannedParts = (id: string, parts: PlannedPartInput[], rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}/planned-parts", { ...path(id), body: { parts, rowVersion } })));

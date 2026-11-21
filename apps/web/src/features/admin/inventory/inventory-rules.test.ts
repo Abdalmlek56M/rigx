@@ -4,12 +4,12 @@ import type { Category } from "../categories/categories-api.ts";
 import type { Partner } from "../expenses/expenses-api.ts";
 import type { StockItem, StockUnit } from "./inventory-api.ts";
 import {
-  categoryPath, expectedProfit, itemCost, itemFormValid, itemPartner, pickedIds, stockState, toItemForm, toUpdateRequest, triState, unitPercent, unitStatusKey
+  categoryPath, expectedProfit, groupByBuild, itemCost, itemFormValid, itemPartner, pickedIds, stockState, toItemForm, toUpdateRequest, triState, unitPercent, unitStatusKey
 } from "./inventory-rules.ts";
 
 const unit = (patch: Partial<StockUnit>): StockUnit => ({
   id: "u", status: "Available", condition: "Used", serialNumber: null, acquisitionCost: 1000, partnerPercentOverride: null, partnerId: null,
-  assemblyId: null, receivedAtUtc: "2026-11-01T00:00:00Z", rowVersion: 1, ...patch
+  assemblyId: null, receivedAtUtc: "2026-11-01T00:00:00Z", rowVersion: 1, build: null, ...patch
 });
 
 const item = (units: StockUnit[], patch: Partial<StockItem> = {}): StockItem => ({
@@ -101,5 +101,24 @@ describe("inventory edit form", () => {
     assert.equal(unitPercent("", "30"), null);
     assert.equal(unitPercent("pa", ""), null);
     assert.equal(unitPercent("pa", "30"), 30);
+  });
+});
+
+describe("stock grouped by build", () => {
+  const bld = { id: "b1", code: "BLD-01", name: "Gaming PC", status: "Draft" };
+  const inBuild = unit({ status: "InAssembly", assemblyId: bld.id, build: { code: bld.code, name: bld.name, status: bld.status } });
+  const rowsOf = (items: StockItem[], collapsed: string[] = []) => groupByBuild(items, new Set(collapsed));
+
+  it("gathers the items of a build under one header placed at its first item", () => {
+    const rows = rowsOf([item([unit({})], { id: "loose" }), item([inBuild], { id: "cpu" }), item([unit({})], { id: "mid" }), item([inBuild], { id: "gpu" })]);
+    assert.deepEqual(rows.map((row) => `${row.kind}:${row.key}`), ["item:loose", "build:build-b1", "item:cpu", "item:gpu", "item:mid"]);
+    assert.equal(rows[1]?.kind === "build" ? rows[1].count : 0, 2);
+    assert.deepEqual(rows.flatMap((row) => (row.kind === "item" ? [row.underBuild] : [])), [false, true, true, false]);
+  });
+
+  it("shows only the header of a collapsed build and keeps an item with free units loose", () => {
+    const rows = rowsOf([item([inBuild], { id: "cpu" }), item([inBuild, unit({})], { id: "lot" })], ["b1"]);
+    assert.deepEqual(rows.map((row) => row.key), ["build-b1", "lot"]);
+    assert.equal(rows[0]?.kind === "build" ? rows[0].open : true, false);
   });
 });

@@ -7651,6 +7651,65 @@
         ]
       }
     },
+    "/api/v1/admin/retail/stock-items/{id}/photos/order": {
+      "put": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060Inventory.StockAdjust\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockItemPhoto"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/retail/stock-import/template": {
       "get": {
         "tags": [
@@ -8635,6 +8694,65 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/retail/assemblies/{id}/photos/order": {
+      "put": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060Catalog.ManageProducts\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockItemPhoto"
+                  }
+                }
+              }
+            }
           },
           "default": {
             "description": "Error (ProblemDetails).",
@@ -24516,6 +24634,23 @@
           }
         }
       },
+      "PhotoOrderRequest": {
+        "required": [
+          "storageKeys"
+        ],
+        "type": "object",
+        "properties": {
+          "storageKeys": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "PlannedPart": {
         "required": [
           "id",
@@ -27820,6 +27955,25 @@
           }
         }
       },
+      "StockBuildRef": {
+        "required": [
+          "code",
+          "name",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "StockImportedItem": {
         "required": [
           "code",
@@ -28322,6 +28476,16 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          },
+          "build": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/StockBuildRef"
+              }
+            ]
           }
         }
       },

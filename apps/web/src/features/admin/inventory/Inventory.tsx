@@ -19,7 +19,7 @@ import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
 import { InventoryDetail } from "./InventoryDetail";
 import { fetchStockItems, setItemsHidden, type StockItem } from "./inventory-api";
-import { pickedIds, triState } from "./inventory-rules";
+import { groupByBuild, pickedIds, triState, type StockRow } from "./inventory-rules";
 import { useInventoryColumns } from "./use-inventory-columns";
 import { BanIcon, CheckIcon, EyeIcon, PlusIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
@@ -36,6 +36,7 @@ export function Inventory() {
   const canSeePartners = has("Finance.ViewReports");
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const detailRef = useReveal<HTMLDivElement>(values.item || null);
 
   const lookups = useLoad(useCallback(async () => {
@@ -59,9 +60,10 @@ export function Inventory() {
     page
   }), [values.q, values.category, values.condition, values.stock, values.hidden, page]));
 
-  const items: readonly StockItem[] = state.status === "ready" ? state.data.items : [];
+  const items = useMemo<readonly StockItem[]>(() => (state.status === "ready" ? state.data.items : []), [state]);
   const picked = pickedIds(selected, items);
-  const tableState: Load<readonly StockItem[]> = state.status === "ready" ? { status: "ready", data: state.data.items } : state;
+  const rows = useMemo(() => groupByBuild(items, collapsed), [items, collapsed]);
+  const tableState: Load<readonly StockRow[]> = state.status === "ready" ? { status: "ready", data: rows } : state;
 
   const columns = useInventoryColumns({
     tree, partners, selected, activeId: values.item,
@@ -70,7 +72,12 @@ export function Inventory() {
       if (!next.delete(id)) next.add(id);
       return next;
     }),
-    onOpen: (id) => set({ item: id, page: String(page) })
+    onOpen: (id) => set({ item: id, page: String(page) }),
+    onToggleBuild: (id) => setCollapsed((current) => {
+      const next = new Set(current);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    })
   });
 
   async function setHidden(hidden: boolean) {
@@ -123,7 +130,7 @@ export function Inventory() {
           <Button icon={EyeIcon} loading={busy} disabled={picked.length === 0} onClick={() => void setHidden(false)}>{t("bulk.show")}</Button>
         </div>
       ) : null}
-      <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(item) => item.id} empty={t("empty")} />
+      <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(row) => row.key} empty={t("empty")} />
       {state.status === "ready" ? (
         <Pager info={{ page: state.data.page, pageSize: state.data.pageSize, total: state.data.total }} onPage={(next) => set({ page: String(next) })} />
       ) : null}

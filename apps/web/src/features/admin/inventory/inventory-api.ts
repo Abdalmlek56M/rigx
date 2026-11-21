@@ -38,6 +38,10 @@ export const uploadStockPhoto = (id: string, file: File) => {
 export const deleteStockPhoto = (id: string, storageKey: string) =>
   unwrap(api().DELETE("/api/v1/admin/retail/stock-items/{id}/photos", { params: { path: { id }, query: { storageKey } } }));
 
+/** Saves the photos in this order (every storage key once); the first is the main photo. */
+export const reorderStockPhotos = (id: string, storageKeys: string[]) =>
+  required(unwrap(api().PUT("/api/v1/admin/retail/stock-items/{id}/photos/order", { ...path(id), body: { storageKeys } })));
+
 /** `partnerId` null removes the partner from the unit; `percent` null uses the partner's default. */
 export const setUnitPartner = (unitId: string, partnerId: string | null, percent: number | null, rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/units/{id}/partner", { ...path(unitId), body: { partnerId, percent, rowVersion } })));

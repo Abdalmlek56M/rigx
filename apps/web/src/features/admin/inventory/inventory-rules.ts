@@ -50,6 +50,57 @@ export function itemPartner(item: StockItem, partners: readonly Partner[]): { na
   return unit && partner ? { name: partner.name, percent: partnerShare(partner, unit.partnerPercentOverride) } : null;
 }
 
+/** The build a unit sits in, with its id (for the link). */
+export interface BuildGroup {
+  id: string;
+  code: string;
+  name: string;
+  status: string;
+}
+
+/** One row of the grouped stock list: a build header, or an item (indented when it sits under its build). */
+export type StockRow =
+  | { kind: "build"; key: string; build: BuildGroup; count: number; open: boolean }
+  | { kind: "item"; key: string; item: StockItem; underBuild: boolean };
+
+/** The build an item belongs to in the list: its unit sits in a build and nothing of it is left available; otherwise it stays loose. */
+export function buildOf(item: StockItem): BuildGroup | null {
+  if (availableUnits(item).length > 0) return null;
+  const unit = item.units.find((entry) => entry.status === IN_ASSEMBLY && entry.assemblyId && entry.build);
+  return unit?.assemblyId && unit.build ? { id: unit.assemblyId, ...unit.build } : null;
+}
+
+/**
+ * The list rows: loose items as they come, and the items of a build gathered under one header row placed where its first item
+ * was. A collapsed build shows only its header. Only the items of the current page are grouped.
+ */
+export function groupByBuild(items: readonly StockItem[], collapsed: ReadonlySet<string>): StockRow[] {
+  const members = new Map<string, StockItem[]>();
+  const builds = new Map<string, BuildGroup>();
+  for (const item of items) {
+    const build = buildOf(item);
+    if (!build) continue;
+    builds.set(build.id, build);
+    members.set(build.id, [...(members.get(build.id) ?? []), item]);
+  }
+  const rows: StockRow[] = [];
+  const placed = new Set<string>();
+  for (const item of items) {
+    const build = buildOf(item);
+    if (!build) {
+      rows.push({ kind: "item", key: item.id, item, underBuild: false });
+      continue;
+    }
+    if (placed.has(build.id)) continue;
+    placed.add(build.id);
+    const parts = members.get(build.id) ?? [];
+    const open = !collapsed.has(build.id);
+    rows.push({ kind: "build", key: `build-${build.id}`, build: builds.get(build.id) ?? build, count: parts.length, open });
+    if (open) rows.push(...parts.map((part): StockRow => ({ kind: "item", key: part.id, item: part, underBuild: true })));
+  }
+  return rows;
+}
+
 /** "كروت › AMD › RX 6000"; empty when the category is unknown. */
 export function categoryPath(tree: readonly Category[], id: string | null): string {
   return id ? findPath(tree, id).map((node) => node.name).join(" › ") : "";

@@ -8,23 +8,25 @@ import { Dialog } from "../kit/Dialog";
 import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import type { Schemas } from "@rigx/api-client";
-import { EyeIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
+import { ArrowBackIcon, ArrowEndIcon, EyeIcon, PlusIcon, StarIcon, TrashIcon } from "@/components/ui/icons";
 import { IconButton, buttonClass, buttonIconSize } from "../kit/Button";
+import { makeMain, moveKey } from "./photo-order";
 
 type Photo = Schemas["StockItemPhoto"];
 
 /**
  * The photos of a stock item or a build: a numbered square grid, the first photo marked as the main one, a storefront
- * preview, upload and delete. Reordering needs an API call that does not exist yet, so the main photo stays the first
- * photo the server returns.
+ * preview, upload, delete and (when `reorder` is given) arrows and "make main" to put the photos in order.
  */
-export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, remove, onChanged }: {
+export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, remove, reorder, onChanged }: {
   photos: readonly Photo[];
   /** What the photos show (the model or build name), for the image description. */
   name: string;
   canManage: boolean;
   upload: (file: File) => Promise<unknown>;
   remove: (storageKey: string) => Promise<unknown>;
+  /** Saves the photos in this order (every key once); without it the order is not editable. */
+  reorder?: (storageKeys: string[]) => Promise<unknown>;
   onChanged: () => Promise<void>;
 }) {
   const t = useTranslations("admin.inventory.photos");
@@ -55,6 +57,10 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
     await change(() => uploadPhoto(file)).catch(() => undefined);
   }
 
+  const keys = photos.map((photo) => photo.storageKey);
+  const sortable = canManage && reorder !== undefined && photos.length > 1;
+  const saveOrder = (next: string[]) => reorder ? change(() => reorder(next), t("reordered")).catch(() => undefined) : Promise.resolve();
+
   return (
     <div className="flex flex-col gap-3 rounded-control border border-line bg-paper p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -73,7 +79,14 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
               <img src={mediaUrl(photo.thumbnailStorageKey)} alt={t("alt", { model: name })} className="h-full w-full object-cover" />
               <span dir="ltr" className="absolute left-1 top-1 rounded-full bg-carbon/80 px-1.5 py-0.5 font-mono text-[11px] text-on-carbon">{index + 1}</span>
               {index === 0 ? (
-                <span className="absolute bottom-1 left-1 rounded-[4px] bg-orange px-1.5 py-0.5 text-[11px] font-bold text-on-orange">{t("main")}</span>
+                <span className="absolute left-9 top-1 rounded-[4px] bg-orange px-1.5 py-0.5 text-[11px] font-bold text-on-orange">{t("main")}</span>
+              ) : null}
+              {sortable ? (
+                <span className="absolute inset-x-1 bottom-1 z-10 flex justify-center gap-1">
+                  <IconButton icon={ArrowBackIcon} label={t("earlier")} variant="secondary" size="sm" disabled={busy || index === 0} onClick={() => void saveOrder(moveKey(keys, index, index - 1))} />
+                  {index > 0 ? <IconButton icon={StarIcon} label={t("makeMain")} variant="secondary" size="sm" disabled={busy} onClick={() => void saveOrder(makeMain(keys, photo.storageKey))} /> : null}
+                  <IconButton icon={ArrowEndIcon} label={t("later")} variant="secondary" size="sm" disabled={busy || index === photos.length - 1} onClick={() => void saveOrder(moveKey(keys, index, index + 1))} />
+                </span>
               ) : null}
               {canManage ? (
                 <span className="absolute right-1 top-1 z-10">
@@ -91,7 +104,7 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
           <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => void upload(event.target.files?.[0])} className="sr-only" />
         </label>
       ) : null}
-      <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
+      <p className="m-0 text-xs text-ink-muted">{sortable ? t("orderHint") : t("hint")}</p>
       <Dialog open={previewing} onClose={() => setPreviewing(false)} title={t("previewTitle")} wide>
         {photos.length > 0 ? (
           <div className="mx-auto flex w-full min-w-0 max-w-md flex-col gap-3">

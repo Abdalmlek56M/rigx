@@ -1,8 +1,12 @@
 namespace HardwareStore.Modules.Retail;
 
 // Admin (back office). Cost, serial and partner fields are null when the caller lacks the permission.
+/// <summary>The build a unit sits in: enough to group the stock list under it and link to its page.</summary>
+public sealed record StockBuildRef(string Code, string Name, string Status);
 public sealed record StockUnitView(Guid Id, string Status, string Condition, string? SerialNumber, decimal? AcquisitionCost,
-    decimal? PartnerPercentOverride, Guid? PartnerId, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion);
+    decimal? PartnerPercentOverride, Guid? PartnerId, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion, StockBuildRef? Build = null);
+/// <summary>The new photo order: every storage key of the item, first = the main photo.</summary>
+public sealed record PhotoOrderRequest(IReadOnlyList<string>? StorageKeys);
 public sealed record StockItemAdminView(Guid Id, string Code, string Condition, Guid? CategoryId, Guid? BrandId, Guid? ProductId, string ModelName,
     decimal Price, decimal? WithBoardExtra, decimal? AloneExtra, StockItemPrices Prices, string? WarrantyLabel, int? WarrantyMonths,
     bool HasBox, bool IsHidden, bool IsPublished, string? InternalNote, IReadOnlyDictionary<string, string> Specs,

@@ -54,6 +54,9 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await items.AddPhotoAsync(id, new StockItemPhoto(stored.StorageKey, stored.ThumbnailStorageKey), ct));
     }
 
+    private static async Task<Ok<IReadOnlyList<StockItemPhoto>>> ReorderStockItemPhotosAsync(Guid id, PhotoOrderRequest request, StockItemAdminService items, CancellationToken ct) =>
+        TypedResults.Ok(await items.ReorderPhotosAsync(id, request.StorageKeys, ct));
+
     private static async Task<NoContent> RemoveStockItemPhotoAsync(Guid id, string storageKey, StockItemAdminService items,
         ICatalogMediaStorage storage, CancellationToken ct)
     {

@@ -11,7 +11,7 @@ import { usePermissions } from "../use-permissions";
 import { PhotoGallery } from "../stock/PhotoGallery";
 import { StockItemForm } from "./StockItemForm";
 import { StockUnits } from "./StockUnits";
-import { deleteStockPhoto, fetchStockItem, fetchWarrantyLabels, uploadStockPhoto, type StockItem } from "./inventory-api";
+import { deleteStockPhoto, fetchStockItem, fetchWarrantyLabels, reorderStockPhotos, uploadStockPhoto, type StockItem } from "./inventory-api";
 import { Link } from "@/i18n/navigation";
 import { CloseIcon, CopyIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize, IconButton } from "../kit/Button";
@@ -93,6 +93,7 @@ export function InventoryDetail({ id, tree, brands, partners, onClose, onChanged
           <PhotoGallery
             photos={item.photos} name={item.modelName} canManage={canEdit} onChanged={refresh}
             upload={(file) => uploadStockPhoto(item.id, file)} remove={(storageKey) => deleteStockPhoto(item.id, storageKey)}
+            reorder={(keys) => reorderStockPhotos(item.id, keys)}
           />
         </div>
         <StockUnits item={item} partners={partners} canAssign={has("Finance.ManagePartnerAgreements")} showCosts={has("Inventory.ViewCosts")} onChanged={refresh} onStale={stale} />
