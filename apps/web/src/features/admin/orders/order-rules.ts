@@ -99,6 +99,9 @@ export const holdsReservation = (order: Pick<Order, "status">) => order.status =
 export const hasShipping = (order: Pick<Order, "status" | "fulfillmentMethod">) =>
   order.fulfillmentMethod === "Delivery" && !isClosed(order);
 
+/** "The customer could not be reached" can be recorded (and the customer emailed) while the order is open. */
+export const canMarkUnreachable = (order: Pick<Order, "status">) => !isClosed(order);
+
 /** The invoice exists once the order is delivered (a later cancel keeps it, voided). */
 export const hasInvoice = (order: Pick<Order, "status">) => order.status === "Delivered" || order.status === "Completed";
 
@@ -171,7 +174,7 @@ export type OrderEventKey =
   | { key: "status"; status: OrderStatus }
   | { key: "payment"; method: string; amount: string | null }
   | { key: "paymentStatus"; status: PaymentStatus }
-  | { key: "shipping" | "reservation" | "reservationExpired" | "reservationReleased" }
+  | { key: "shipping" | "reservation" | "reservationExpired" | "reservationReleased" | "unreachable" }
   | { key: "other"; type: string };
 
 const PAYMENT_STATUS_EVENTS: readonly string[] = ["Unpaid", "PendingVerification", "Paid", "Refunded", "Waived"];
@@ -187,6 +190,7 @@ export function orderEventKey(event: { eventType: string; notes: string | null }
       : { key: "payment", method: tail, amount: event.notes };
   }
   if (head === "Shipping") return { key: "shipping" };
+  if (head === "Contact" && tail === "Unreachable") return { key: "unreachable" };
   if (head === "Reservation") return { key: "reservation" };
   if (head === "ReservationExpired") return { key: tail === "Released" ? "reservationReleased" : "reservationExpired" };
   return { key: "other", type: event.eventType };

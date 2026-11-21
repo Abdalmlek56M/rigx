@@ -17,6 +17,19 @@ public sealed class OrderFulfillmentService(IDbContextFactory<RetailDbContext> c
         return OrderMapping.ToView(order);
     }
 
+    /// <summary>
+    /// Records that the store could not reach the customer (timeline event <c>Contact:Unreachable</c>); the caller then emails the
+    /// customer and the admin page opens WhatsApp. Only an order still open can be marked.
+    /// </summary>
+    public async Task<OrderView> MarkCustomerUnreachableAsync(Guid id, OrderContactRequest request, Guid actorId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var order = await LoadAsync(db, id, request.RowVersion, cancellationToken);
+        Touch(order, "Contact:Unreachable", null, actorId);
+        await db.SaveChangesAsync(cancellationToken);
+        return OrderMapping.ToView(order);
+    }
+
     /// <summary>Restarts the hold for <c>Hours</c> from now (when given) and sets what happens when it ends.</summary>
     public async Task<OrderView> SetReservationAsync(Guid id, OrderReservationRequest request, Guid actorId, CancellationToken cancellationToken = default)
     {

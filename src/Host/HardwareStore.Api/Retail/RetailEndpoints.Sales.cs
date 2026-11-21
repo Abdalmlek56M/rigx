@@ -70,6 +70,16 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await fulfillment.SetReservationAsync(id, request, actorId, ct));
     }
 
+    /// <summary>The store could not reach the customer: the order timeline records it and the customer is emailed (order details, tracking link, ask to reply).</summary>
+    private static async Task<Ok<OrderView>> MarkCustomerUnreachableAsync(Guid id, OrderContactRequest request, HttpContext context,
+        OrderFulfillmentService fulfillment, IdentityEmailOutboxWriter outbox, OrderLinks links, CancellationToken ct)
+    {
+        var actorId = context.RequireUserId();
+        var order = await fulfillment.MarkCustomerUnreachableAsync(id, request, actorId, ct);
+        await OrderEmails.QueueAsync(outbox, links, order, OrderEmailMessage.Unreachable, ct);
+        return TypedResults.Ok(order);
+    }
+
     private static async Task<Ok<IReadOnlyList<BlacklistView>>> ListBlacklistAsync(HttpContext context, BlacklistService blacklist, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";

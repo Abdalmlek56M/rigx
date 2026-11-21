@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text;
 using HardwareStore.Modules.Identity.Authentication;
 
 namespace HardwareStore.Modules.Identity;
@@ -140,25 +141,65 @@ public static class EmailLayout
             OrderEmailMessage.Shipped => $"تم شحن طلبك {reference}",
             OrderEmailMessage.Invoiced => $"فاتورة طلبك {(invoice.Length > 0 ? invoice : reference)}",
             OrderEmailMessage.Received => $"تم استلام طلبك {reference}",
+            OrderEmailMessage.Unreachable => $"تعذّر التواصل معك بخصوص طلبك {reference}",
             _ => $"تحديث طلبك {reference}"
         };
         var (lineText, lineHtml) = OrderLine(message, reference);
+        var (summaryText, summaryHtml) = OrderSummary(message.Summary);
+        var trackingUrl = Url(message.TrackingUrl);
+        // The invoice email links the invoice first and the tracking page second; every other one links tracking only.
+        var secondLinkHtml = invoiced ? LinkBlock(trackingUrl, "تتبع الطلب") : "";
+        var secondLinkText = invoiced ? $"\nتتبع الطلب:\n{trackingUrl}\n" : "";
         var html = $"""
             <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
             <p style="{Paragraph}">{lineHtml}</p>
+            {summaryHtml}
             {LinkBlock(url, invoiced ? "عرض الفاتورة" : "تتبع الطلب")}
+            {secondLinkHtml}
             """;
         var text = $"""
             مرحبًا {message.FullName}،
 
             {lineText}
-
+            {summaryText}
             {url}
-
+            {secondLinkText}
             RIGX
             """;
         return new EmailContent(subject, text, Wrap(subject, html));
     }
+
+    /// <summary>The ordered lines and the totals as a small table (HTML) and as plain lines (text); nothing when the message carries no summary.</summary>
+    private static (string Text, string Html) OrderSummary(OrderEmailSummary? summary)
+    {
+        if (summary is null || summary.Lines.Count == 0) return ("", "");
+        const string Cell = "padding:6px 0;border-bottom:1px solid #E3E2DD;font-size:14px;line-height:1.6;";
+        var rows = new StringBuilder();
+        var text = new StringBuilder("\nتفاصيل الطلب:\n");
+        foreach (var line in summary.Lines)
+        {
+            var name = Line(line.Name);
+            rows.Append($"""<tr><td style="{Cell}">{E(name)} × {line.Quantity.ToString(CultureInfo.InvariantCulture)}</td><td style="{Cell}text-align:left;white-space:nowrap;" dir="ltr">{E(Money(line.LineTotal))}</td></tr>""");
+            text.Append($"- {name} × {line.Quantity.ToString(CultureInfo.InvariantCulture)}: {Money(line.LineTotal)}\n");
+        }
+        void Total(string label, decimal amount, bool strong = false)
+        {
+            var style = strong ? "font-weight:bold;" : "";
+            rows.Append($"""<tr><td style="{Cell}{style}">{E(label)}</td><td style="{Cell}{style}text-align:left;white-space:nowrap;" dir="ltr">{E(Money(amount))}</td></tr>""");
+            text.Append($"{label}: {Money(amount)}\n");
+        }
+        Total("المجموع", summary.Subtotal);
+        if (summary.CouponDiscount > 0) Total("خصم القسيمة", -summary.CouponDiscount);
+        if (summary.DeliveryFee > 0) Total("رسوم التوصيل", summary.DeliveryFee);
+        Total("الإجمالي", summary.Total, strong: true);
+        if (summary.Remaining > 0 && summary.Remaining != summary.Total) Total("المتبقي للدفع", summary.Remaining);
+        var html = $"""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;">{rows}</table>""";
+        return (text.ToString(), html);
+    }
+
+    /// <summary>"1,250 ج.م" (no decimals when the amount is whole).</summary>
+    private static string Money(decimal amount) =>
+        $"{amount.ToString(amount % 1 == 0 ? "#,##0" : "#,##0.00", CultureInfo.InvariantCulture)} ج.م";
 
     public static EmailContent BackInStock(BackInStockEmailMessage message)
     {
@@ -195,6 +236,9 @@ public static class EmailLayout
         if (message.Stage == OrderEmailMessage.Invoiced)
             return ($"تم تسليم طلبك {reference}. هذه فاتورتك، وتتضمن ضمان كل قطعة:",
                 $"تم تسليم طلبك {E(reference)}. هذه فاتورتك، وتتضمن ضمان كل قطعة:");
+        if (message.Stage == OrderEmailMessage.Unreachable)
+            return ($"حاولنا التواصل معك بخصوص طلبك {reference} ولم نتمكن من الوصول إليك. يرجى الرد علينا عبر واتساب أو الاتصال بنا في أقرب وقت لنؤكد الطلب ونجهّزه.",
+                $"حاولنا التواصل معك بخصوص طلبك {E(reference)} ولم نتمكن من الوصول إليك. يرجى الرد علينا عبر واتساب أو الاتصال بنا في أقرب وقت لنؤكد الطلب ونجهّزه.");
         if (message.Stage == OrderEmailMessage.Confirmed)
             return ($"تم تأكيد طلبك {reference}، ونعمل على تجهيزه الآن.",
                 $"تم تأكيد طلبك {E(reference)}، ونعمل على تجهيزه الآن.");

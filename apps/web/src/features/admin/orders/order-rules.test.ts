@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   canSetPaymentStatus,
   canTakePayment,
+  canMarkUnreachable,
   canWaiveDeposit,
   canWaivePayment,
   completeBlock,
@@ -123,6 +124,7 @@ describe("list and timeline", () => {
     assert.deepEqual(orderEventKey({ eventType: "Payment:Cash", notes: "500" }), { key: "payment", method: "Cash", amount: "500" });
     assert.deepEqual(orderEventKey({ eventType: "Payment:Waived", notes: "gift" }), { key: "paymentStatus", status: "Waived" });
     assert.deepEqual(orderEventKey({ eventType: "ReservationExpired:Released", notes: null }), { key: "reservationReleased" });
+    assert.deepEqual(orderEventKey({ eventType: "Contact:Unreachable", notes: null }), { key: "unreachable" });
     assert.deepEqual(orderEventKey({ eventType: "Mystery", notes: null }), { key: "other", type: "Mystery" });
   });
 
@@ -161,6 +163,15 @@ describe("address", () => {
     assert.equal(orderAddressText({ governorate: "alex", area: "العجمي", street: "شارع 9", building: "12", landmark: "بجوار المسجد" }, name), "الإسكندرية › العجمي › شارع 9 › 12 · بجوار المسجد");
     assert.equal(orderAddressText({ governorate: "alex", area: null, street: "شارع 9", building: null, landmark: null }, name), "الإسكندرية › شارع 9");
     assert.equal(orderAddressText(null, name), null);
+  });
+});
+
+describe("could not reach the customer", () => {
+  it("can be recorded on an open order only", () => {
+    assert.equal(canMarkUnreachable({ status: "New" }), true);
+    assert.equal(canMarkUnreachable({ status: "Shipped" }), true);
+    assert.equal(canMarkUnreachable({ status: "Cancelled" }), false);
+    assert.equal(canMarkUnreachable({ status: "Completed" }), false);
   });
 });
 

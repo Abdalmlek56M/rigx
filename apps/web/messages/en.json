@@ -1671,6 +1671,7 @@
           "reservation": "Hold updated",
           "reservationExpired": "The hold ended",
           "reservationReleased": "The hold was released and the pieces went back to stock",
+          "unreachable": "The customer could not be reached",
           "other": "{type}",
           "empty": "No events yet.",
           "eventMethods": {
@@ -1729,6 +1730,15 @@
           "whatsapp": "Send the invoice on WhatsApp"
         },
         "whatsapp": "Chat with the customer on WhatsApp",
+        "unreachable": {
+          "button": "Could not reach the customer",
+          "title": "Record that the customer could not be reached?",
+          "bodyWithEmail": "This is recorded on the order, the customer gets an email with their order details asking them to contact us, and a WhatsApp chat opens with a prepared message.",
+          "bodyNoEmail": "This is recorded on the order, then a WhatsApp chat opens with a prepared message. The customer has no email.",
+          "confirm": "Record and send",
+          "done": "Recorded that the customer could not be reached.",
+          "whatsappText": "Hello {name}, we tried to reach you about your RIGX order {reference} and could not. Please reply as soon as you can so we can confirm and prepare it."
+        },
         "blacklistAdd": {
           "button": "Add the customer to the blacklist",
           "title": "Add the customer to the blacklist?",

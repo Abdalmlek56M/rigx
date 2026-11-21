@@ -28,14 +28,25 @@ public interface IEmailProvider
 /// <summary>Tells a notify-me customer that the item they asked about is available again; the link opens its page.</summary>
 public sealed record BackInStockEmailMessage(string Email, string FullName, string ItemName, string ItemUrl);
 
-/// <summary>Order emails (business §5): <see cref="Stage"/> is Received, Confirmed, Shipped or Invoiced; the link opens the public tracking page (the invoice page for Invoiced).</summary>
+/// <summary>One ordered line shown in an order email.</summary>
+public sealed record OrderEmailLine(string Name, int Quantity, decimal LineTotal);
+
+/// <summary>What the customer ordered and what it costs, shown under the order email's message (EGP; discount and delivery fee only when not zero).</summary>
+public sealed record OrderEmailSummary(IReadOnlyList<OrderEmailLine> Lines, decimal Subtotal, decimal CouponDiscount, decimal DeliveryFee,
+    decimal Total, decimal Remaining);
+
+/// <summary>
+/// Order emails (business §5): <see cref="Stage"/> is Received, Confirmed, Shipped, Invoiced or Unreachable (the store could not reach the
+/// customer); every one carries the tracking link (the invoice page link for Invoiced) and, when known, the ordered lines and totals.
+/// </summary>
 public sealed record OrderEmailMessage(string Email, string FullName, string Reference, string Stage, string TrackingUrl,
-    string? CourierName, string? WaybillNumber, string? InvoiceNumber = null, string? InvoiceUrl = null)
+    string? CourierName, string? WaybillNumber, string? InvoiceNumber = null, string? InvoiceUrl = null, OrderEmailSummary? Summary = null)
 {
     public const string Received = "Received";
     public const string Confirmed = "Confirmed";
     public const string Shipped = "Shipped";
     public const string Invoiced = "Invoiced";
+    public const string Unreachable = "Unreachable";
 }
 
 /// <summary>Development/Testing provider. Messages stay in process memory and are never logged or sent.</summary>

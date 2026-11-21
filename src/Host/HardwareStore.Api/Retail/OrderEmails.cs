@@ -32,7 +32,7 @@ public sealed record OrderLinks(Uri TrackingBase, Uri InvoiceBase, Uri WarrantyL
     public string WarrantyLookupUrl(string invoiceNumber) => $"{WarrantyLookupBase.ToString().TrimEnd('/')}?q={Uri.EscapeDataString(invoiceNumber)}";
 }
 
-/// <summary>Queues the customer's order emails (received, confirmed, shipped, invoiced) on the email outbox when an email is known.</summary>
+/// <summary>Queues the customer's order emails (received, confirmed, shipped, invoiced, unreachable) on the email outbox when an email is known.</summary>
 public static class OrderEmails
 {
     public static Task QueueAsync(IdentityEmailOutboxWriter outbox, OrderLinks links, OrderView order, string stage,
@@ -54,6 +54,11 @@ public static class OrderEmails
         if (order.CustomerEmail is null) return;
         await outbox.EnqueueAsync(IdentityEmailOutboxWriter.OrderUpdateKind, order.UserAccountId,
             new OrderEmailMessage(order.CustomerEmail, order.CustomerName, order.Reference, stage, links.TrackingUrl(order.TrackingToken),
-                order.CourierName, order.WaybillNumber, invoiceNumber, invoiceUrl), cancellationToken);
+                order.CourierName, order.WaybillNumber, invoiceNumber, invoiceUrl, SummaryOf(order)), cancellationToken);
     }
+
+    /// <summary>The ordered lines and the totals the customer sees on the order (the same numbers as the tracking and invoice pages).</summary>
+    public static OrderEmailSummary SummaryOf(OrderView order) => new(
+        order.Items.Select(item => new OrderEmailLine(item.Name, item.Quantity, item.LineTotal)).ToList(),
+        order.Subtotal, order.CouponDiscount, order.DeliveryFee, order.Total, order.Remaining);
 }

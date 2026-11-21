@@ -48,6 +48,8 @@ public sealed record PaymentStatusRequest(string? PaymentStatus, string? Notes, 
 public sealed record WaivePaymentRequest(string? Reason, long RowVersion);
 public sealed record WaiveDepositRequest(string? Reason, long RowVersion);
 public sealed record OrderPaymentRequest(string? Method, decimal Amount, string? Note, long RowVersion, Guid? MoneyAccountId = null);
+/// <summary>"The customer could not be reached": the order's row version only; the store's reaction (email, WhatsApp) follows from the order.</summary>
+public sealed record OrderContactRequest(long RowVersion);
 public sealed record OrderShippingRequest(string? CourierName, string? WaybillNumber, long RowVersion);
 public sealed record OrderReservationRequest(int? Hours, bool AutoRelease, long RowVersion);
 public sealed record OrderRatingRequest(int Score, string? Comment);

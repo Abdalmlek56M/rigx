@@ -40,6 +40,10 @@ export const setShipping = (id: string, courierName: string | null, waybillNumbe
 export const setReservation = (id: string, hours: number | null, autoRelease: boolean, rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/orders/{id}/reservation", { ...path(id), body: { hours, autoRelease, rowVersion } })));
 
+/** Records that the store could not reach the customer; the server emails them (order details and tracking link). */
+export const markCustomerUnreachable = (id: string, rowVersion: number) =>
+  required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/unreachable", { ...path(id), body: { rowVersion } })));
+
 /** The order's invoice (issued when it is delivered); its `accessToken` opens the public page `/i/{token}`. */
 export const fetchOrderInvoice = (id: string) =>
   required(unwrap(api().GET("/api/v1/admin/retail/orders/{id}/invoice", path(id))));

@@ -436,6 +436,37 @@ public sealed class InvoicePostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixtu
             message => message.Stage == OrderEmailMessage.Invoiced);
     }
 
+    [Fact]
+    public async Task An_unreachable_customer_is_recorded_and_emailed_the_order_lines_and_totals_and_a_closed_order_cannot_be_marked()
+    {
+        await using var env = await Env.StartAsync(fixture);
+        var item = await env.SellableAsync("Unreachable GPU", price: 750m);
+        var order = await env.Retail.CheckoutAsync(Checkout([StockLine(item.Id)], OrderFulfillment.Pickup, phone: BuyerPhone, email: "away@example.test"), Policy(null));
+
+        using var marked = await TestSignIn.PostJsonAsync(env.Staff, $"{AdminRoot}/orders/{order.Id}/unreachable", new { rowVersion = order.RowVersion });
+        Assert.Equal(HttpStatusCode.OK, marked.StatusCode);
+        var view = (await marked.Content.ReadFromJsonAsync<OrderView>())!;
+        Assert.Contains(view.Events, entry => entry.EventType == "Contact:Unreachable");
+        await TestSignIn.DeliverOutboxAsync(env.Factory.Services);
+
+        var emails = env.Factory.Services.GetRequiredService<InMemoryTestEmailProvider>().OrderUpdates;
+        var email = Assert.Single(emails, message => message.Stage == OrderEmailMessage.Unreachable);
+        Assert.Equal("away@example.test", email.Email);
+        var line = Assert.Single(email.Summary!.Lines);
+        Assert.Equal(("Unreachable GPU", 1, 750m), (line.Name, line.Quantity, line.LineTotal));
+        Assert.Equal(750m, email.Summary.Total);
+        var content = EmailLayout.Order(email);
+        Assert.Contains("750 ج.م", content.Text);
+        Assert.Contains(email.TrackingUrl, content.Text);
+
+        using var cancelled = await TestSignIn.PostJsonAsync(env.Staff, $"{AdminRoot}/orders/{order.Id}/status",
+            new { status = OrderStatus.Cancelled, rowVersion = view.RowVersion });
+        Assert.Equal(HttpStatusCode.OK, cancelled.StatusCode);
+        var closed = (await cancelled.Content.ReadFromJsonAsync<OrderView>())!;
+        using var again = await TestSignIn.PostJsonAsync(env.Staff, $"{AdminRoot}/orders/{order.Id}/unreachable", new { rowVersion = closed.RowVersion });
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+    }
+
     // ---------------------------------------------------------------- quote
 
     [Fact]

@@ -18,6 +18,7 @@ import { fetchMoneyAccounts } from "../expenses/expenses-api";
 import { SectionCard } from "../kit/SectionCard";
 import { usePermissions } from "../use-permissions";
 import { fetchOrder, type Order } from "./orders-api";
+import { OrderUnreachableAction } from "./OrderUnreachableAction";
 import { canSetPaymentStatus, canTakePayment, canWaivePayment, hasShipping, holdsReservation, orderTrail, orderWhatsAppNumber } from "./order-rules";
 import { CheckIcon, CloseIcon, CopyIcon, ExternalIcon, GearIcon, RefreshIcon, TruckIcon, WalletIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
@@ -156,12 +157,15 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
             </SectionCard>
           ) : null}
           <SectionCard title={t("moreCard.title")} icon={GearIcon}>
-            {whatsApp ? (
-              <a href={whatsAppUrl(whatsApp)} target="_blank" rel="noreferrer" className={`${buttonClass({ variant: "primary" })} self-start`}>
-                <WhatsAppIcon size={buttonIconSize()} />
-                {t("actions.whatsapp")}
-              </a>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              {whatsApp ? (
+                <a href={whatsAppUrl(whatsApp)} target="_blank" rel="noreferrer" className={buttonClass({ variant: "primary" })}>
+                  <WhatsAppIcon size={buttonIconSize()} />
+                  {t("actions.whatsapp")}
+                </a>
+              ) : null}
+              <OrderUnreachableAction {...actionProps} />
+            </div>
             <OrderBlacklistAction order={order} onAdded={onBlacklistChanged} />
             <Tracking token={order.trackingToken} />
           </SectionCard>
