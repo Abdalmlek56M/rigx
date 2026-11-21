@@ -161,6 +161,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.PhoneNumber).HasColumnName("phone_number").HasMaxLength(32).IsRequired();
             e.HasIndex(x => x.PhoneNumber).HasDatabaseName("ix_store_orders_phone");
             e.Property(x => x.PhoneHasWhatsApp).HasColumnName("phone_has_whatsapp");
+            e.Property(x => x.WhatsAppNumber).HasColumnName("whatsapp_number").HasMaxLength(32);
             e.Property(x => x.CustomerEmail).HasColumnName("customer_email").HasMaxLength(256);
             e.Property(x => x.Governorate).HasColumnName("governorate").HasMaxLength(8);
             e.Property(x => x.Area).HasColumnName("area").HasMaxLength(120);

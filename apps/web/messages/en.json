@@ -2000,6 +2000,7 @@
       "none": "—",
       "fields": {
         "name": "Name",
+        "nameEn": "English name",
         "slug": "Slug",
         "parent": "Under",
         "code": "Code",

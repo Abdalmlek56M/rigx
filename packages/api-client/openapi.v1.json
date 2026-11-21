@@ -17684,6 +17684,12 @@
           "showInBuilder": {
             "type": "boolean",
             "default": false
+          },
+          "nameEn": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -17798,6 +17804,12 @@
             "items": {
               "$ref": "#/components/schemas/CategoryView"
             }
+          },
+          "nameEn": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -21346,7 +21358,8 @@
           "code",
           "name",
           "fee",
-          "deliveryTime"
+          "deliveryTime",
+          "nameEn"
         ],
         "type": "object",
         "properties": {
@@ -21365,6 +21378,9 @@
               "null",
               "string"
             ]
+          },
+          "nameEn": {
+            "type": "string"
           }
         }
       },
@@ -22708,6 +22724,12 @@
               "null",
               "string"
             ]
+          },
+          "whatsAppNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -23334,6 +23356,12 @@
             "type": "number",
             "format": "double",
             "default": 0
+          },
+          "whatsAppNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

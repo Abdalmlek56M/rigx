@@ -75,7 +75,7 @@ describe("category form", () => {
   it("starts empty with the defaults and maps the API body", () => {
     const form = { ...emptyCategoryForm(null), name: " Cards ", slug: " gpu ", sortOrder: "4", code: " GPU ", description: " " };
     assert.deepEqual(toCategoryInput(form, null), {
-      name: "Cards", slug: "gpu", parentId: null, description: null, iconStorageKey: null, sortOrder: 4,
+      name: "Cards", nameEn: null, slug: "gpu", parentId: null, description: null, iconStorageKey: null, sortOrder: 4,
       isActive: true, rowVersion: null, code: "GPU", showInMenu: true, showInBuilder: false
     });
   });
@@ -86,6 +86,13 @@ describe("category form", () => {
     assert.deepEqual([form.sortOrder, form.showInMenu, form.showInBuilder], ["3", true, false]);
     const input = toCategoryInput(form, existing);
     assert.deepEqual([input.iconStorageKey, input.rowVersion, input.sortOrder], ["categories/1/a.webp", 7, 3]);
+  });
+
+  it("sends the English name trimmed, or null when it is empty", () => {
+    const existing = { ...cat("gpu"), nameEn: "Graphics Cards" };
+    assert.equal(categoryForm(existing).nameEn, "Graphics Cards");
+    assert.equal(toCategoryInput({ ...categoryForm(existing), nameEn: "  GPUs " }, existing).nameEn, "GPUs");
+    assert.equal(toCategoryInput({ ...categoryForm(existing), nameEn: "  " }, existing).nameEn, null);
   });
 });
 

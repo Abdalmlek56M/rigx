@@ -6,6 +6,7 @@ import {
   canWaivePayment,
   completeBlock,
   customerWhatsAppNumber,
+  orderWhatsAppNumber,
   eventPaymentAmount,
   filterOrders,
   nextStatus,
@@ -136,6 +137,12 @@ describe("list and timeline", () => {
       { id: "c", createdAtUtc: "2026-11-20T09:00:00Z" }
     ];
     assert.deepEqual(orderTimeline(events).map((event) => event.id), ["b", "a", "c"]);
+  });
+
+  it("messages the phone when it is on WhatsApp, else the separate number, else nobody", () => {
+    assert.equal(orderWhatsAppNumber({ phoneNumber: "01012345772", phoneHasWhatsApp: true, whatsAppNumber: "01112223333" }), "201012345772");
+    assert.equal(orderWhatsAppNumber({ phoneNumber: "01012345772", phoneHasWhatsApp: false, whatsAppNumber: "01112223333" }), "201112223333");
+    assert.equal(orderWhatsAppNumber({ phoneNumber: "01012345772", phoneHasWhatsApp: false, whatsAppNumber: null }), null);
   });
 
   it("represents a payment amount only when the note is a number", () => {

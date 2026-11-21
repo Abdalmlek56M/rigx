@@ -1,7 +1,7 @@
 namespace HardwareStore.Modules.Catalog;
 
 /// <summary>A category the store starts with; <see cref="ParentSlug"/> is null for a main category.</summary>
-public sealed record BaseCategory(string Slug, string Name, string? ParentSlug = null);
+public sealed record BaseCategory(string Slug, string Name, string? ParentSlug = null, string? NameEn = null);
 
 /// <summary>A base category whose starting name changed: the old name becomes the new one only where the owner kept the old name.</summary>
 public sealed record BaseCategoryRename(string Slug, string OldName, string NewName);
@@ -19,18 +19,18 @@ public static class BaseCatalog
 {
     public static readonly IReadOnlyList<BaseCategory> Categories =
     [
-        new("processors", "معالجات"),
-        new("intel", "Intel", "processors"),
-        new("amd", "AMD", "processors"),
-        new("graphics-cards", "كروت شاشة"),
-        new("monitors", "شاشات"),
-        new("accessories", "إكسسوارات"),
-        new("motherboards", "بوردات"),
-        new("memory", "رامات"),
-        new("cases", "كيس"),
-        new("power-supplies", "باورات"),
-        new("storage", "وحدات تخزين"),
-        new("cooling", "تبريد")
+        new("processors", "معالجات", null, "Processors"),
+        new("intel", "Intel", "processors", "Intel"),
+        new("amd", "AMD", "processors", "AMD"),
+        new("graphics-cards", "كروت شاشة", null, "Graphics Cards"),
+        new("monitors", "شاشات", null, "Monitors"),
+        new("accessories", "إكسسوارات", null, "Accessories"),
+        new("motherboards", "بوردات", null, "Motherboards"),
+        new("memory", "رامات", null, "Memory (RAM)"),
+        new("cases", "كيس", null, "Cases"),
+        new("power-supplies", "باورات", null, "Power Supplies"),
+        new("storage", "وحدات تخزين", null, "Storage"),
+        new("cooling", "تبريد", null, "Cooling")
     ];
 
     /// <summary>Starting names the owner asked to change (round 3, 19 Nov 2026).</summary>

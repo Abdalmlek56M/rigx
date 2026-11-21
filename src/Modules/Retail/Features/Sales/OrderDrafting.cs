@@ -147,6 +147,7 @@ internal static class OrderDrafting
             CustomerName = OrderRules.Required(customer?.Name, 200, "Customer name"),
             PhoneNumber = OrderRules.Phone(customer?.Phone),
             PhoneHasWhatsApp = customer?.PhoneHasWhatsApp == true,
+            WhatsAppNumber = OrderRules.WhatsAppNumber(customer),
             CustomerEmail = OrderRules.Email(customer?.Email),
             Governorate = address?.Governorate, Area = address?.Area, Street = address?.Street,
             Building = address?.Building, Landmark = address?.Landmark,

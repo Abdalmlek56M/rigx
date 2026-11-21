@@ -200,6 +200,12 @@ export function reservationHoursValid(text: string): boolean {
 /** A waiver needs a reason of at least 5 characters. */
 export const waiverReasonValid = (reason: string) => reason.trim().length >= 5;
 
+/** The number to message the customer on WhatsApp: the phone when it is on WhatsApp, else the separate WhatsApp number, else none. */
+export function orderWhatsAppNumber(order: Pick<Order, "phoneNumber" | "phoneHasWhatsApp" | "whatsAppNumber">): string | null {
+  const number = order.phoneHasWhatsApp ? order.phoneNumber : order.whatsAppNumber;
+  return number ? customerWhatsAppNumber(number) : null;
+}
+
 /** The customer's number for `whatsAppUrl`: an Egyptian mobile stored locally (01…) in international form; others unchanged. */
 export function customerWhatsAppNumber(phone: string): string {
   const local = digits(phone);

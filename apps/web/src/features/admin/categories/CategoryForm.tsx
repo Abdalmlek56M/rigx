@@ -35,6 +35,7 @@ function ReadOnly({ form, parent }: { form: Form; parent: string | null }) {
   return (
     <dl className="m-0 grid gap-2 text-sm sm:grid-cols-2">
       <div><dt className="text-xs text-ink-muted">{t("fields.name")}</dt><dd className="m-0 font-bold">{form.name}</dd></div>
+      <div><dt className="text-xs text-ink-muted">{t("fields.nameEn")}</dt><dd dir="ltr" className="m-0 text-start">{form.nameEn || t("none")}</dd></div>
       <div><dt className="text-xs text-ink-muted">{t("fields.slug")}</dt><dd dir="ltr" className="m-0 text-start font-mono text-[13px]">{form.slug}</dd></div>
       <div><dt className="text-xs text-ink-muted">{t("fields.parent")}</dt><dd className="m-0">{parent ?? t("root")}</dd></div>
       <div><dt className="text-xs text-ink-muted">{t("fields.code")}</dt><dd dir="ltr" className="m-0 text-start font-mono text-[13px]">{form.code || t("none")}</dd></div>
@@ -89,6 +90,7 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <TextField label={t("fields.name")} name="name" value={form.name} onChange={(name) => set({ name })} required error={submit.errors.fields.name} />
+        <TextField label={t("fields.nameEn")} name="nameEn" ltr value={form.nameEn} onChange={(nameEn) => set({ nameEn })} error={submit.errors.fields.nameEn} />
         <TextField label={t("fields.slug")} name="slug" value={form.slug} onChange={(slug) => set({ slug })} ltr required error={submit.errors.fields.slug} />
         <SelectField
           label={t("fields.parent")} name="parentId" value={form.parentId} onChange={(next) => set({ parentId: next })}

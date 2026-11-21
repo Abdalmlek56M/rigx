@@ -21,7 +21,7 @@ public sealed class TaxonomyService(
                 category.Id, category.ParentId, category.Name, category.Slug,
                 category.Description, category.IconStorageKey, category.SortOrder,
                 category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
-                category.SpecDefinitions, Array.Empty<CategoryView>()))
+                category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             allCategories.Select(category => new CatalogCategoryNode(
@@ -81,7 +81,7 @@ public sealed class TaxonomyService(
                 category.Id, category.ParentId, category.Name, category.Slug,
                 category.Description, category.IconStorageKey, category.SortOrder,
                 category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
-                category.SpecDefinitions, Array.Empty<CategoryView>()))
+                category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             categories.Select(category => new CatalogCategoryNode(
@@ -106,6 +106,7 @@ public sealed class TaxonomyService(
         CancellationToken cancellationToken = default)
     {
         var name = CatalogValidation.Required(input.Name, "name", 160);
+        var nameEn = CatalogValidation.Optional(input.NameEn, "nameEn", 160);
         var slug = CatalogValidation.Slug(input.Slug);
         var description = CatalogValidation.Optional(input.Description, "description", 2000);
         var iconKey = CatalogValidation.Optional(input.IconStorageKey, "iconStorageKey", 512);
@@ -138,6 +139,7 @@ public sealed class TaxonomyService(
             throw new CatalogConflictException("Category code is already in use.");
 
         category.Name = name;
+        category.NameEn = nameEn;
         category.Slug = slug;
         category.ParentId = input.ParentId;
         category.Description = description;

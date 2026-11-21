@@ -32,7 +32,7 @@ public sealed record ShippingSettings : IStoreSettingsSection<ShippingSettings>
     public IReadOnlyList<GovernorateShippingRate> Rates() => EgyptGovernorates.NamesByCode.Select(entry =>
     {
         var quote = QuoteFor(entry.Key);
-        return new GovernorateShippingRate(entry.Key, entry.Value, quote.Fee, quote.DeliveryTime);
+        return new GovernorateShippingRate(entry.Key, entry.Value, quote.Fee, quote.DeliveryTime, EgyptGovernorates.EnglishNamesByCode[entry.Key]);
     }).ToList();
 
     public ShippingSettings Normalize()
@@ -75,4 +75,4 @@ public sealed record ShippingGroup
 
 public sealed record ShippingQuote(decimal Fee, string? DeliveryTime);
 
-public sealed record GovernorateShippingRate(string Code, string Name, decimal Fee, string? DeliveryTime);
+public sealed record GovernorateShippingRate(string Code, string Name, decimal Fee, string? DeliveryTime, string NameEn);

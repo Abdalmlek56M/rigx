@@ -34,6 +34,16 @@ public static class EgyptGovernorates
         ["WAD"] = "الوادي الجديد"
     };
 
+    /// <summary>The English names, for the English site (same codes as <see cref="NamesByCode"/>).</summary>
+    public static readonly IReadOnlyDictionary<string, string> EnglishNamesByCode = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["C"] = "Cairo", ["GZ"] = "Giza", ["ALX"] = "Alexandria", ["KB"] = "Qalyubia", ["BH"] = "Beheira", ["MT"] = "Matrouh",
+        ["DK"] = "Dakahlia", ["GH"] = "Gharbia", ["MNF"] = "Monufia", ["SHR"] = "Sharqia", ["KFS"] = "Kafr El Sheikh",
+        ["DT"] = "Damietta", ["PTS"] = "Port Said", ["IS"] = "Ismailia", ["SUZ"] = "Suez", ["SIN"] = "North Sinai",
+        ["JS"] = "South Sinai", ["FYM"] = "Faiyum", ["BNS"] = "Beni Suef", ["MN"] = "Minya", ["AST"] = "Asyut", ["SHG"] = "Sohag",
+        ["KN"] = "Qena", ["LX"] = "Luxor", ["ASN"] = "Aswan", ["BA"] = "Red Sea", ["WAD"] = "New Valley"
+    };
+
     public static bool IsKnown(string? code) => code is not null && NamesByCode.ContainsKey(code);
 
     /// <summary>The Arabic name for a governorate given by its Arabic name or its code; <c>null</c> when it is not one of the 27.</summary>

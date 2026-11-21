@@ -1,6 +1,7 @@
 namespace HardwareStore.Modules.Retail;
 
-public sealed record OrderCustomer(string? Name, string? Phone, bool PhoneHasWhatsApp = false, string? Email = null);
+/// <summary>The customer of an order; <paramref name="WhatsAppNumber"/> is used only when the phone is not a WhatsApp number.</summary>
+public sealed record OrderCustomer(string? Name, string? Phone, bool PhoneHasWhatsApp = false, string? Email = null, string? WhatsAppNumber = null);
 
 /// <summary>Which of a stock item's prices an order line uses.</summary>
 public static class OrderPriceOption
@@ -67,7 +68,7 @@ public sealed record OrderView(Guid Id, string Reference, string TrackingToken, 
     bool IsBlacklisted, DateTimeOffset? ReservedUntilUtc, bool ReservationAutoRelease, DateTimeOffset? ReservationExpiredAtUtc,
     string? CourierName, string? WaybillNumber, int? SatisfactionScore, string? SatisfactionComment, string? Notes,
     DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long RowVersion, IReadOnlyList<OrderItemView> Items,
-    IReadOnlyList<OrderPaymentView> Payments, IReadOnlyList<OrderEventView> Events, string? CouponCode = null, decimal CouponDiscount = 0m);
+    IReadOnlyList<OrderPaymentView> Payments, IReadOnlyList<OrderEventView> Events, string? CouponCode = null, decimal CouponDiscount = 0m, string? WhatsAppNumber = null);
 /// <summary>
 /// The customer's own order (checkout result, "my orders", "view as customer"): no cost, profit, staff, payment-waiver or blacklist
 /// data. Status and timeline are the customer-facing ones ("Completed" shows as "Delivered").

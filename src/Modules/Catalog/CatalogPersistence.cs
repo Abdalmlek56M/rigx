@@ -24,6 +24,8 @@ public sealed class CatalogCategory
     public Guid Id { get; set; }
     public Guid? ParentId { get; set; }
     public required string Name { get; set; }
+    /// <summary>The English name shown on the English site; the Arabic <see cref="Name"/> is used when it is empty.</summary>
+    public string? NameEn { get; set; }
     public required string Slug { get; set; }
     public string? Description { get; set; }
     public string? IconStorageKey { get; set; }
@@ -138,6 +140,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.Property(category => category.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(category => category.ParentId).HasColumnName("parent_id");
             entity.Property(category => category.Name).HasColumnName("name").HasMaxLength(160).IsRequired();
+            entity.Property(category => category.NameEn).HasColumnName("name_en").HasMaxLength(160);
             entity.Property(category => category.Slug).HasColumnName("slug").HasMaxLength(160).IsRequired();
             entity.HasIndex(category => category.Slug).IsUnique().HasDatabaseName("ux_categories_slug");
             entity.Property(category => category.Description).HasColumnName("description").HasMaxLength(2000);

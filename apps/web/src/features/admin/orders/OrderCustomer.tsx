@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { whatsAppUrl } from "@/lib/contact";
-import { customerWhatsAppNumber, orderAddressText } from "./order-rules";
+import { orderAddressText, orderWhatsAppNumber } from "./order-rules";
 import { governorateName } from "../customers/customer-rules";
 import { fulfillmentKey, methodKey, usageKey } from "./order-labels";
 import type { Order } from "./orders-api";
@@ -37,6 +37,7 @@ export function OrderCustomer({ order, governorates }: { order: Order; governora
   const usageName = order.usage ? usageKey(order.usage) : null;
   const usage = usageName ? usages(usageName) : order.usage;
   const address = orderAddressText(order.address, (code) => governorateName(governorates, code) ?? code);
+  const whatsApp = orderWhatsAppNumber(order);
   const rating = order.satisfactionScore !== null ? `${order.satisfactionScore}/5${order.satisfactionComment ? ` · ${order.satisfactionComment}` : ""}` : null;
 
   return (
@@ -48,8 +49,8 @@ export function OrderCustomer({ order, governorates }: { order: Order; governora
           <a href={`tel:${order.phoneNumber}`} aria-label={t("detail.customer.call")} data-tip={t("detail.customer.call")} className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}>
             <PhoneIcon size={buttonIconSize("sm")} />
           </a>
-          {order.phoneHasWhatsApp ? (
-            <a href={whatsAppUrl(customerWhatsAppNumber(order.phoneNumber))} target="_blank" rel="noreferrer" aria-label={t("detail.customer.whatsapp")} data-tip={t("detail.customer.whatsapp")} className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}>
+          {whatsApp ? (
+            <a href={whatsAppUrl(whatsApp)} target="_blank" rel="noreferrer" aria-label={t("detail.customer.whatsapp")} data-tip={t("detail.customer.whatsapp")} className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}>
               <WhatsAppIcon size={buttonIconSize("sm")} />
             </a>
           ) : null}

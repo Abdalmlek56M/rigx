@@ -245,6 +245,10 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         var child = await taxonomy.SaveCategoryAsync(null,
             new CategoryInput("Child", $"child-{suffix}", parent.Id, null, null, 1, true, null));
         Assert.True(child.IsEffectivelyActive);
+        var named = await taxonomy.SaveCategoryAsync(child.Id,
+            new CategoryInput("Child", $"child-{suffix}", parent.Id, null, null, 1, true, child.RowVersion, NameEn: " Child EN "));
+        Assert.Equal("Child EN", named.NameEn);
+        child = named;
 
         var cycle = await Assert.ThrowsAsync<CatalogValidationException>(() => taxonomy.SaveCategoryAsync(parent.Id,
             new CategoryInput("Parent", parent.Slug, child.Id, null, null, 0, true, parent.RowVersion)));

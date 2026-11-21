@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Storefront;
 using Xunit;
 
@@ -18,6 +19,14 @@ public sealed class StoreSettingsRulesTests
     private static PaymentSettings Payment(Func<PaymentSettings, PaymentSettings> change) => change(new PaymentSettings());
 
     [Fact]
+    public void Every_governorate_has_an_english_name_for_the_english_site()
+    {
+        Assert.Equal(EgyptGovernorates.NamesByCode.Keys.Order(), EgyptGovernorates.EnglishNamesByCode.Keys.Order());
+        Assert.All(EgyptGovernorates.EnglishNamesByCode.Values, name => Assert.False(string.IsNullOrWhiteSpace(name)));
+        Assert.Equal("Cairo", new ShippingSettings().Rates().Single(rate => rate.Code == "C").NameEn);
+    }
+
+    [Fact]
     public void Rates_cover_all_27_governorates_with_the_group_fee_or_the_default()
     {
         var shipping = new ShippingSettings
@@ -31,9 +40,9 @@ public sealed class StoreSettingsRulesTests
 
         Assert.Equal(27, rates.Count);
         Assert.Equal(rates.Count, rates.Select(rate => rate.Code).Distinct().Count());
-        Assert.Equal(new GovernorateShippingRate("C", "القاهرة", 50m, "fast"), rates.Single(rate => rate.Code == "C"));
-        Assert.Equal(new GovernorateShippingRate("GZ", "الجيزة", 70m, "default"), rates.Single(rate => rate.Code == "GZ"));
-        Assert.Equal(new GovernorateShippingRate("ASN", "أسوان", 120m, "default"), rates.Single(rate => rate.Code == "ASN"));
+        Assert.Equal(new GovernorateShippingRate("C", "القاهرة", 50m, "fast", "Cairo"), rates.Single(rate => rate.Code == "C"));
+        Assert.Equal(new GovernorateShippingRate("GZ", "الجيزة", 70m, "default", "Giza"), rates.Single(rate => rate.Code == "GZ"));
+        Assert.Equal(new GovernorateShippingRate("ASN", "أسوان", 120m, "default", "Aswan"), rates.Single(rate => rate.Code == "ASN"));
     }
 
     [Fact]

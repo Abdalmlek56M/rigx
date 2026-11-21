@@ -74,6 +74,16 @@ public static class OrderRules
         return digits.Length is < 8 or > 15 ? null : digits;
     }
 
+    /// <summary>
+    /// The separate WhatsApp number of a customer whose phone is not on WhatsApp: null when the phone is (nothing else is needed)
+    /// or none was given; 400 when one was given and is not a valid number.
+    /// </summary>
+    public static string? WhatsAppNumber(OrderCustomer? customer)
+    {
+        if (customer?.PhoneHasWhatsApp == true || string.IsNullOrWhiteSpace(customer?.WhatsAppNumber)) return null;
+        return TryPhone(customer.WhatsAppNumber) ?? throw new RetailException(400, "Enter a valid WhatsApp number.");
+    }
+
     public static string? Email(string? value)
     {
         var email = Optional(value, 256, "Email")?.ToLowerInvariant();

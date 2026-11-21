@@ -18,7 +18,8 @@ public static class BaseCatalogSeeder
         var categoriesAdded = await SeedCategoriesAsync(db, now, cancellationToken);
         var brandsAdded = await SeedBrandsAsync(db, now, cancellationToken);
         var specsAdded = await SeedSpecsAsync(db, now, cancellationToken);
-        if (categoriesRenamed + categoriesAdded + brandsAdded + specsAdded > 0) await db.SaveChangesAsync(cancellationToken);
+        var englishFilled = await FillEnglishNamesAsync(db, now, cancellationToken);
+        if (categoriesRenamed + categoriesAdded + brandsAdded + specsAdded + englishFilled > 0) await db.SaveChangesAsync(cancellationToken);
         return new BaseCatalogSeedResult(categoriesAdded, brandsAdded, categoriesRenamed);
     }
 
@@ -35,6 +36,22 @@ public static class BaseCatalogSeeder
             renamed++;
         }
         return renamed;
+    }
+
+    /// <summary>Gives a base category its English name where it has none (a name the owner typed is never replaced).</summary>
+    private static async Task<int> FillEnglishNamesAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        await db.SaveChangesAsync(cancellationToken);
+        var filled = 0;
+        foreach (var entry in BaseCatalog.Categories.Where(entry => entry.NameEn is not null))
+        {
+            var category = await db.Categories.FirstOrDefaultAsync(item => item.Slug == entry.Slug && item.NameEn == null, cancellationToken);
+            if (category is null) continue;
+            category.NameEn = entry.NameEn;
+            category.UpdatedAtUtc = now;
+            filled++;
+        }
+        return filled;
     }
 
     private static async Task<int> SeedCategoriesAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken)
@@ -60,6 +77,7 @@ public static class BaseCatalogSeeder
                 Id = Guid.CreateVersion7(),
                 ParentId = parentId,
                 Name = entry.Name,
+                NameEn = entry.NameEn,
                 Slug = entry.Slug,
                 SortOrder = index,
                 CreatedAtUtc = now,

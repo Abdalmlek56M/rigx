@@ -2041,6 +2041,11 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(80)")
                         .HasColumnName("waybill_number");
 
+                    b.Property<string>("WhatsAppNumber")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("whatsapp_number");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CouponId")

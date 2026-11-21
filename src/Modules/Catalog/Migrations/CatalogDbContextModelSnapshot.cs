@@ -127,6 +127,11 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("character varying(160)")
                         .HasColumnName("name");
 
+                    b.Property<string>("NameEn")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("name_en");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parent_id");
@@ -658,6 +663,8 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasDatabaseName("ux_content_media_asset_usages_reference_asset");
 
                     b.ToTable("content_media_asset_usages", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Catalog.ProductReview", b =>

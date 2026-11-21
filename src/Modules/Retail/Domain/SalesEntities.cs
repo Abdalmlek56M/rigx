@@ -15,6 +15,8 @@ public sealed class StoreOrder
     /// <summary>Digits only.</summary>
     public required string PhoneNumber { get; set; }
     public bool PhoneHasWhatsApp { get; set; }
+    /// <summary>Another number to reach the customer on WhatsApp, set only when <see cref="PhoneHasWhatsApp"/> is false (digits only).</summary>
+    public string? WhatsAppNumber { get; set; }
     public string? CustomerEmail { get; set; }
     public string? Governorate { get; set; }
     public string? Area { get; set; }

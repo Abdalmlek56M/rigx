@@ -18,7 +18,7 @@ import { fetchMoneyAccounts } from "../expenses/expenses-api";
 import { SectionCard } from "../kit/SectionCard";
 import { usePermissions } from "../use-permissions";
 import { fetchOrder, type Order } from "./orders-api";
-import { canSetPaymentStatus, canTakePayment, canWaivePayment, customerWhatsAppNumber, hasShipping, holdsReservation, orderTrail } from "./order-rules";
+import { canSetPaymentStatus, canTakePayment, canWaivePayment, hasShipping, holdsReservation, orderTrail, orderWhatsAppNumber } from "./order-rules";
 import { CheckIcon, CloseIcon, CopyIcon, ExternalIcon, GearIcon, RefreshIcon, TruckIcon, WalletIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
 
@@ -111,6 +111,7 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
   // Forms start from the order's values, so a new version of the order gives them a fresh start.
   const formKey = order.rowVersion;
   const payment = has("Finance.VerifyPayment") && (canTakePayment(order) || canSetPaymentStatus(order) || canWaivePayment(order));
+  const whatsApp = orderWhatsAppNumber(order);
   const fulfillment = has("Sales.ApproveOrder") && (holdsReservation(order) || hasShipping(order));
 
   return (
@@ -155,8 +156,8 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
             </SectionCard>
           ) : null}
           <SectionCard title={t("moreCard.title")} icon={GearIcon}>
-            {order.phoneHasWhatsApp ? (
-              <a href={whatsAppUrl(customerWhatsAppNumber(order.phoneNumber))} target="_blank" rel="noreferrer" className={`${buttonClass({ variant: "primary" })} self-start`}>
+            {whatsApp ? (
+              <a href={whatsAppUrl(whatsApp)} target="_blank" rel="noreferrer" className={`${buttonClass({ variant: "primary" })} self-start`}>
                 <WhatsAppIcon size={buttonIconSize()} />
                 {t("actions.whatsapp")}
               </a>

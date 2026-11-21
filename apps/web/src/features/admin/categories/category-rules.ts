@@ -77,6 +77,7 @@ export function effectiveSpecs(nodes: readonly Category[], id: string): Effectiv
 
 export interface CategoryForm {
   name: string;
+  nameEn: string;
   slug: string;
   parentId: string;
   code: string;
@@ -89,7 +90,7 @@ export interface CategoryForm {
 
 export function emptyCategoryForm(parentId: string | null): CategoryForm {
   return {
-    name: "", slug: "", parentId: parentId ?? "", code: "", description: "", sortOrder: "0",
+    name: "", nameEn: "", slug: "", parentId: parentId ?? "", code: "", description: "", sortOrder: "0",
     isActive: true, showInMenu: true, showInBuilder: false
   };
 }
@@ -97,6 +98,7 @@ export function emptyCategoryForm(parentId: string | null): CategoryForm {
 export function categoryForm(category: Category): CategoryForm {
   return {
     name: category.name,
+    nameEn: category.nameEn ?? "",
     slug: category.slug,
     parentId: category.parentId ?? "",
     code: category.code ?? "",
@@ -117,6 +119,7 @@ export function toCategoryInput(form: CategoryForm, category: Category | null): 
   const sortOrder = Number.parseInt(form.sortOrder, 10);
   return {
     name: form.name.trim(),
+    nameEn: form.nameEn.trim() === "" ? null : form.nameEn.trim(),
     slug: form.slug.trim(),
     parentId: form.parentId === "" ? null : form.parentId,
     description: form.description.trim() === "" ? null : form.description.trim(),

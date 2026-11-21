@@ -111,8 +111,8 @@ public sealed class StoreSettingsPostgreSqlTests(StoreAdminPostgreSqlFixture fix
         Assert.True(rates.PickupEnabled);
         Assert.Equal("شارع التحرير", rates.PickupAddress);
         Assert.Equal(27, rates.Governorates.Count);
-        Assert.Equal(new GovernorateShippingRate("GZ", "الجيزة", 80m, "خلال 2-3 أيام"), rates.Governorates.Single(rate => rate.Code == "GZ"));
-        Assert.Equal(new GovernorateShippingRate("LX", "الأقصر", 120m, "خلال 4-5 أيام"), rates.Governorates.Single(rate => rate.Code == "LX"));
+        Assert.Equal(new GovernorateShippingRate("GZ", "الجيزة", 80m, "خلال 2-3 أيام", "Giza"), rates.Governorates.Single(rate => rate.Code == "GZ"));
+        Assert.Equal(new GovernorateShippingRate("LX", "الأقصر", 120m, "خلال 4-5 أيام", "Luxor"), rates.Governorates.Single(rate => rate.Code == "LX"));
     }
 
     [Fact]
