@@ -36,6 +36,10 @@ export const updatePurchase = (id: string, body: PurchaseRequest) =>
 /** Creates the RX stock items; the server receives the saved draft as it is (no body). */
 export const receivePurchase = (id: string) => required(unwrap(api().POST("/api/v1/admin/purchasing/purchases/{id}/receive", path(id))));
 
+/** Pays the seller of a received purchase part of what is still owed; the money leaves the default account of the method. */
+export const paySeller = (id: string, amount: number, method: string, rowVersion: number) =>
+  required(unwrap(api().POST("/api/v1/admin/purchasing/purchases/{id}/payments", { ...path(id), body: { amount, method, rowVersion } })));
+
 export const cancelPurchase = (id: string, rowVersion: number) =>
   required(unwrap(api().POST("/api/v1/admin/purchasing/purchases/{id}/cancel", { ...path(id), body: { rowVersion } })));
 

@@ -13925,6 +13925,62 @@
         ]
       }
     },
+    "/api/v1/admin/purchasing/purchases/{id}/payments": {
+      "post": {
+        "tags": [
+          "admin/purchasing"
+        ],
+        "description": "Permission: \u0060Purchasing.ReceiveGoods\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchasePaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/storefront/settings": {
       "get": {
         "tags": [
@@ -26095,6 +26151,30 @@
           "createdAtUtc": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "PurchasePaymentRequest": {
+        "required": [
+          "amount",
+          "method",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "method": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rowVersion": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },

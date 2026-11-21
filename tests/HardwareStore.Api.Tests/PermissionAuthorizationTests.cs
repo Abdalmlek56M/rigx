@@ -120,7 +120,7 @@ public sealed class PermissionAuthorizationTests
             .Where(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/v1/admin/purchasing", StringComparison.Ordinal) == true)
             .ToArray();
 
-        Assert.Equal(10, endpoints.Length);
+        Assert.Equal(11, endpoints.Length);
         Assert.All(endpoints, endpoint =>
             Assert.NotNull(endpoint.Metadata.GetMetadata<IAuthorizeData>()));
     }

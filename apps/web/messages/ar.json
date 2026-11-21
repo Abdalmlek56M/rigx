@@ -2707,6 +2707,22 @@
       }
     },
     "purchases": {
+      "sellerPayment": {
+        "title": "المستحق للمورد",
+        "paid": "المدفوع",
+        "remaining": "المتبقي",
+        "settled": "مسدّد بالكامل",
+        "button": "تسجيل دفعة للمورد",
+        "dialogTitle": "دفعة للمورد",
+        "method": "طريقة الدفع",
+        "amount": "المبلغ",
+        "hint": "المتبقي للمورد {amount}.",
+        "confirmLine": "سيتم دفع {amount} إلى {seller} {method}.",
+        "methods": { "Cash": "نقدًا", "InstaPay": "عبر إنستاباي", "Wallet": "عبر المحفظة الإلكترونية" },
+        "cancel": "إلغاء",
+        "confirm": "تأكيد الدفع",
+        "done": "تم تسجيل الدفعة للمورد."
+      },
       "title": "شراء واستلام",
       "new": "شراء جديد",
       "newTitle": "شراء جديد",

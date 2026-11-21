@@ -107,6 +107,22 @@ public sealed class MoneyAccountService(IDbContextFactory<RetailDbContext> conte
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
 
+    /// <summary>Pays the seller a further amount of a received purchase (each payment is its own movement).</summary>
+    public async Task PaySellerAsync(string code, string? method, decimal amount, DateOnly date, Guid actorId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var entry = new MoneyEntry(MoneySource.Purchase, Guid.CreateVersion7(), MoneyRules.Amount(amount), code, null, date, actorId,
+                timeProvider.GetUtcNow().ToUniversalTime());
+            await MoneyLedger.PostOutAsync(db, null, MoneyRules.KindForMethod(method), entry, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch { await transaction.RollbackQuietlyAsync(); throw; }
+    }
+
     private DateOnly Today() => BusinessDay.Today(timeProvider, businessZone);
 
     private static MoneyAccountView View(MoneyAccount item, decimal balance) => new(item.Id, item.Name, item.Kind, item.OpeningBalance,

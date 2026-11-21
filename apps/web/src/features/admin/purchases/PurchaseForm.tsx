@@ -17,6 +17,7 @@ import type { Brand } from "../brands/brands-api";
 import type { StockItem } from "../inventory/inventory-api";
 import { PurchaseLines, newLineKey } from "./PurchaseLines";
 import { PurchasePayment } from "./PurchasePayment";
+import { SellerPaymentCard } from "./SellerPaymentCard";
 import { SellerPicker } from "./SellerPicker";
 import type { Governorate } from "./SellerFormCard";
 import type { Purchase, PurchaseReceived, SellerSummary } from "./purchases-api";
@@ -191,6 +192,7 @@ export function PurchaseForm({ purchase, today, lookups, onUpdated, onReceived, 
           submitted={submitted} onChange={changeForm}
         />
       </fieldset>
+      {purchase ? <SellerPaymentCard purchase={purchase} onUpdated={onUpdated} onStale={onStale} /> : null}
       <FormMessage message={submit.errors.general ?? error("lines") ?? error("sellerId") ?? null} />
       {submitted && missing.length > 0 ? (
         <p role="alert" className="m-0 rounded-control bg-paper px-3 py-2 text-sm font-bold text-error">

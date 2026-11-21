@@ -2707,6 +2707,22 @@
       }
     },
     "purchases": {
+      "sellerPayment": {
+        "title": "Owed to the seller",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "settled": "Fully paid",
+        "button": "Pay the seller",
+        "dialogTitle": "Seller payment",
+        "method": "Payment method",
+        "amount": "Amount",
+        "hint": "{amount} is still owed to the seller.",
+        "confirmLine": "{amount} will be paid to {seller} ({method}).",
+        "methods": { "Cash": "cash", "InstaPay": "InstaPay", "Wallet": "e-wallet" },
+        "cancel": "Cancel",
+        "confirm": "Confirm payment",
+        "done": "The seller payment was recorded."
+      },
       "title": "Buy and receive",
       "new": "New purchase",
       "newTitle": "New purchase",

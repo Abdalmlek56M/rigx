@@ -26,6 +26,7 @@ public static class PurchasingEndpoints
         admin.MapPut("/purchases/{id:guid}", UpdatePurchaseAsync).RequirePermission("Purchasing.CreateOrder");
         admin.MapPost("/purchases/{id:guid}/cancel", CancelPurchaseAsync).RequirePermission("Purchasing.CreateOrder");
         admin.MapPost("/purchases/{id:guid}/receive", ReceivePurchaseAsync).RequirePermission("Purchasing.ReceiveGoods");
+        admin.MapPost("/purchases/{id:guid}/payments", PayPurchaseAsync).RequirePermission("Purchasing.ReceiveGoods");
         return endpoints;
     }
 
@@ -88,6 +89,9 @@ public static class PurchasingEndpoints
 
     private static async Task<Ok<PurchaseReceived>> ReceivePurchaseAsync(Guid id, HttpContext context, PurchaseReceiptService receipts, CancellationToken ct) =>
         TypedResults.Ok(await receipts.ReceiveAsync(id, context.RequireUserId(), ct));
+
+    private static async Task<Ok<PurchaseView>> PayPurchaseAsync(Guid id, PurchasePaymentRequest request, HttpContext context, PurchasePaymentService payments, CancellationToken ct) =>
+        TypedResults.Ok(await payments.PayAsync(id, request, context.RequireUserId(), ct));
 }
 
 public sealed record PurchaseVersionRequest(long RowVersion);

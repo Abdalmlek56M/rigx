@@ -123,6 +123,18 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
         return ToView(purchase);
     }
 
+    /// <summary>Adds a later payment to a received purchase (the money itself is posted by the Host).</summary>
+    public async Task<PurchaseView> RecordPaymentAsync(Guid id, decimal amount, long rowVersion, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var purchase = await LoadAsync(db, id, track: true, cancellationToken);
+        EnsureVersion(purchase, rowVersion);
+        purchase.AddPayment(amount, timeProvider.GetUtcNow().ToUniversalTime());
+        purchase.RowVersion++;
+        await db.SaveChangesAsync(cancellationToken);
+        return ToView(purchase);
+    }
+
     /// <summary>Closes a draft as received. The status check is part of the update, so two receipts cannot both win.</summary>
     public async Task<PurchaseView> MarkReceivedAsync(Guid id, Guid? assemblyId, CancellationToken cancellationToken = default)
     {

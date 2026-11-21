@@ -14,6 +14,9 @@ const known = <T extends string>(list: readonly T[], value: string): T | "other"
 export const PURCHASE_STATUSES = ["Draft", "Received", "Cancelled"] as const;
 export const PURCHASE_KINDS = ["Parts", "FullPc"] as const;
 export const PAYMENT_METHODS = ["Cash", "InstaPay", "Wallet", "TradeIn", "CashAndTradeIn"] as const;
+/** The methods a seller can be paid with later, after receiving (a trade-in only exists at the purchase). */
+export const SELLER_PAYMENT_METHODS = ["Cash", "InstaPay", "Wallet"] as const;
+export type SellerPaymentMethod = (typeof SELLER_PAYMENT_METHODS)[number];
 export const SELLER_KINDS = ["Person", "Trader", "Company"] as const;
 /** Where a seller found us (the board's list); stored as these words. */
 export const SELLER_SOURCES = ["Website", "Facebook", "Marketplace", "Referral", "RegularTrader"] as const;

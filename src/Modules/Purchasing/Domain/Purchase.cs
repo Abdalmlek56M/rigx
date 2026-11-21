@@ -53,6 +53,19 @@ public sealed class Purchase
         }
     }
 
+    /// <summary>A later payment to the seller of a received purchase, never more than what is still owed.</summary>
+    public void AddPayment(decimal amount, DateTimeOffset now)
+    {
+        if (Status != PurchaseStatus.Received)
+            throw new PurchasingException(409, $"Purchase {Code} is {Status}; only a received purchase takes payments.");
+        amount = decimal.Round(amount, 2);
+        if (amount <= 0) throw new PurchasingException(400, "The payment must be more than zero.");
+        if (amount > Remaining) throw new PurchasingException(400, "The payment is more than what is still owed to the seller.");
+        PaidAmount += amount;
+        Remaining -= amount;
+        UpdatedAtUtc = now;
+    }
+
     /// <summary>Only a draft can be edited, cancelled or received; everything else is history.</summary>
     public void EnsureDraft()
     {

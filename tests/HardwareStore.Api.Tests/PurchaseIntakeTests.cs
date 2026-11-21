@@ -23,6 +23,7 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         private PurchaseReceiptTesting Receipting => receipts ??= new(database, Purchases, Retail);
         public LocalCatalogMediaStorage Media => Receipting.Media;
         public PurchaseReceiptService Receipts => Receipting.Create();
+        public PurchasePaymentService Payments => new(Purchases, Retail.Money, TimeProvider.System, RetailSales.BusinessZone);
 
         public async Task<SellerView> NewSellerAsync(string phone = "01012345678") =>
             await Sellers.CreateAsync(new SellerRequest("Person", "Ahmed", phone, null, null, null, null, null));
@@ -280,6 +281,29 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         Assert.Equal(100m, await harness.Retail.BalanceAsync());
         Assert.DoesNotContain(await harness.Retail.Money.ListMovementsAsync((await harness.Retail.AccountAsync()).Id, null, null),
             item => item.Source == MoneySource.Purchase);
+    }
+
+    [Fact]
+    public async Task What_is_still_owed_to_the_seller_can_be_paid_later_from_cash_but_never_beyond_it()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        await harness.Retail.FundAsync(5000m);
+        var seller = await harness.NewSellerAsync();
+        var purchase = await harness.Purchases.CreateAsync(Parts(seller.Id, 500m, Used("RTX 3060")), Actor);
+
+        var early = await Assert.ThrowsAsync<PurchasingException>(() => harness.Payments.PayAsync(purchase.Id, new PurchasePaymentRequest(100m, null, purchase.RowVersion), Actor, default));
+        Assert.Equal(409, early.StatusCode);
+
+        var received = (await harness.Receipts.ReceiveAsync(purchase.Id, Actor, default)).Purchase;
+        Assert.Equal((500m, 1500m), (received.PaidAmount, received.Remaining));
+
+        var paid = await harness.Payments.PayAsync(purchase.Id, new PurchasePaymentRequest(1000m, "Cash", received.RowVersion), Actor, default);
+        Assert.Equal((1500m, 500m), (paid.PaidAmount, paid.Remaining));
+        Assert.Equal(3500m, await harness.Retail.BalanceAsync());
+
+        var tooMuch = await Assert.ThrowsAsync<PurchasingException>(() => harness.Payments.PayAsync(purchase.Id, new PurchasePaymentRequest(600m, null, paid.RowVersion), Actor, default));
+        Assert.Equal(400, tooMuch.StatusCode);
+        Assert.Equal(3500m, await harness.Retail.BalanceAsync());
     }
 
     [Fact]
