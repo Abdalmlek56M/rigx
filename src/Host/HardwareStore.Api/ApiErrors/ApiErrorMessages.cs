@@ -46,7 +46,7 @@ public static class ApiErrorMessages
         ["A sold unit's partner can no longer be changed."] = "لا يمكن تغيير شريك وحدة تم بيعها.",
         ["A spec name or value is too long."] = "اسم المواصفة أو قيمتها طويل جدًا.",
         ["A statement covers at most one year."] = "يغطي كشف الحساب سنة واحدة كحد أقصى.",
-        ["A stock item code (RX-...) is required."] = "رمز قطعة المخزون (RX-...) مطلوب.",
+        ["A stock item or build code (RX-... or BLD-...) is required."] = "رمز قطعة المخزون (RX-...) أو رمز التجميعة (BLD-...) مطلوب.",
         ["A stock line is missing its item reference."] = "بند المخزون ينقصه مرجع القطعة.",
         ["A supported moderation action is required."] = "يجب اختيار إجراء إشراف مدعوم.",
         ["A supported restriction type is required."] = "يجب اختيار نوع تقييد مدعوم.",

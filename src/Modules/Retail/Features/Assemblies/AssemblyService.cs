@@ -225,6 +225,19 @@ public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFa
         return AssemblyMapping.ToPublicView(build);
     }
 
+    /// <summary>The published builds with these codes, in the order of the codes (draft, sold or unknown codes are simply missing).</summary>
+    public async Task<IReadOnlyList<AssemblyPublicView>> GetPublishedAssembliesAsync(IReadOnlyCollection<string> codes,
+        CancellationToken cancellationToken = default)
+    {
+        if (codes.Count == 0) return [];
+        var wanted = codes.ToArray();
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.Assemblies.AsNoTracking().WithUnits()
+            .Where(a => a.Status == AssemblyStatus.Published && wanted.Contains(a.Code)).AsSplitQuery().ToListAsync(cancellationToken);
+        var byCode = rows.ToDictionary(a => a.Code);
+        return [.. wanted.Where(byCode.ContainsKey).Select(code => AssemblyMapping.ToPublicView(byCode[code]))];
+    }
+
     private static RetailException BuildNotFound() => new(404, "The build was not found.");
 
     private static async Task<Assembly> LoadForPhotosAsync(RetailDbContext db, Guid id, CancellationToken cancellationToken)

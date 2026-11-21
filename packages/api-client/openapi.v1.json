@@ -21577,7 +21577,8 @@
       "FavouriteList": {
         "required": [
           "codes",
-          "items"
+          "items",
+          "builds"
         ],
         "type": "object",
         "properties": {
@@ -21591,6 +21592,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StoreItemCard"
+            }
+          },
+          "builds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssemblyPublicView"
             }
           }
         }

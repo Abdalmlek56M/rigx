@@ -19,7 +19,7 @@ public sealed class FavouritesAndNotificationsTests(OwnerBootstrapPostgreSqlFixt
     private const string Favourites = "/api/v1/account/favourites";
     private const string Bell = "/api/v1/account/notifications";
 
-    private sealed record FavouriteListJson(List<string> Codes, List<CardJson> Items);
+    private sealed record FavouriteListJson(List<string> Codes, List<CardJson> Items, List<CardJson> Builds);
 
     private sealed record CardJson(string Code);
 
@@ -59,6 +59,15 @@ public sealed class FavouritesAndNotificationsTests(OwnerBootstrapPostgreSqlFixt
             return item;
         }
 
+        /// <summary>A build of one new part; published (visible on the website) or left as a draft.</summary>
+        public async Task<AssemblyView> BuildAsync(string name, bool published)
+        {
+            var part = await Retail.ReceiveItemAsync(new ReceiptLine($"{name} part", "New", 1, 100m, 500m));
+            var build = await Retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest(name, [part.Units[0].Id]));
+            var card = await Retail.Assemblies.UpdateAssemblyAsync(build.Id, new AssemblyUpdateRequest(name, "عنوان", "Title", 3000m, build.RowVersion, Usage: "Gaming"));
+            return published ? await Retail.Assemblies.SetAssemblyPublishedAsync(card.Id, true, card.RowVersion) : card;
+        }
+
         public async Task<CustomerNotificationFeed> BellAsync(HttpClient client)
         {
             using var response = await client.GetAsync(Bell);
@@ -92,7 +101,9 @@ public sealed class FavouritesAndNotificationsTests(OwnerBootstrapPostgreSqlFixt
         Assert.Equal(["RX-0008"], await service.ListCodesAsync(bob));
         await service.RemoveAsync(ann, "RX-0007");
         Assert.Empty(await service.ListCodesAsync(ann));
-        Assert.Equal(400, (await Assert.ThrowsAsync<StorefrontException>(() => service.AddAsync(ann, "BLD-01"))).StatusCode);
+        Assert.Equal(400, (await Assert.ThrowsAsync<StorefrontException>(() => service.AddAsync(ann, "PO-0001"))).StatusCode);
+        await service.AddAsync(ann, "bld 3");
+        Assert.Equal(["BLD-03"], await service.ListCodesAsync(ann));
     }
 
     [Fact]
@@ -102,7 +113,7 @@ public sealed class FavouritesAndNotificationsTests(OwnerBootstrapPostgreSqlFixt
         var account = Guid.NewGuid();
         await service.AddAsync(account, "RX-0001");
 
-        await service.MergeAsync(account, ["rx-2", "RX0001", "BLD-01", null, "", "RX-2"]);
+        await service.MergeAsync(account, ["rx-2", "RX0001", "PO-0001", null, "", "RX-2"]);
         Assert.Equal(["RX-0001", "RX-0002"], (await service.ListCodesAsync(account)).Order());
 
         await service.MergeAsync(account, Enumerable.Range(3, 400).Select(Code));
@@ -175,17 +186,45 @@ public sealed class FavouritesAndNotificationsTests(OwnerBootstrapPostgreSqlFixt
 
         using var saved = await TestSignIn.SendJsonAsync(customer, HttpMethod.Put, $"{Favourites}/{item.Code}", null);
         using var unknown = await TestSignIn.SendJsonAsync(customer, HttpMethod.Put, $"{Favourites}/RX-9999", null);
-        using var invalid = await TestSignIn.SendJsonAsync(customer, HttpMethod.Put, $"{Favourites}/BLD-01", null);
+        using var invalid = await TestSignIn.SendJsonAsync(customer, HttpMethod.Put, $"{Favourites}/PO-0001", null);
         using var listResponse = await customer.GetAsync(Favourites);
         var list = (await listResponse.Content.ReadFromJsonAsync<FavouriteListJson>())!;
 
         Assert.Equal((HttpStatusCode.NoContent, HttpStatusCode.NoContent, HttpStatusCode.BadRequest), (saved.StatusCode, unknown.StatusCode, invalid.StatusCode));
         Assert.Equal([item.Code, "RX-9999"], list.Codes.Order());
         Assert.Equal([item.Code], list.Items.Select(card => card.Code));
-        using var merged = await TestSignIn.PostJsonAsync(customer, $"{Favourites}/merge", new { codes = new[] { "rx-9999", "BLD-01", "RX-0500" } });
+        Assert.Empty(list.Builds);
+        using var merged = await TestSignIn.PostJsonAsync(customer, $"{Favourites}/merge", new { codes = new[] { "rx-9999", "PO-0001", "RX-0500" } });
         var afterMerge = (await merged.Content.ReadFromJsonAsync<FavouriteListJson>())!;
         Assert.Equal(3, afterMerge.Codes.Count);
         Assert.Equal([item.Code], afterMerge.Items.Select(card => card.Code));
+    }
+
+    [Fact]
+    public async Task A_build_can_be_hearted_and_its_card_comes_back_only_while_it_is_published()
+    {
+        await using var env = await Env.StartAsync(fixture);
+        var (customer, _) = await env.SignedInAsync("customer");
+        var item = await env.PublishedAsync("RX 6700");
+        var live = await env.BuildAsync("Live build", published: true);
+        var draft = await env.BuildAsync("Draft build", published: false);
+
+        foreach (var code in new[] { item.Code, live.Code, draft.Code, "BLD-99" })
+        {
+            using var response = await TestSignIn.SendJsonAsync(customer, HttpMethod.Put, $"{Favourites}/{code}", null);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+        using var listResponse = await customer.GetAsync(Favourites);
+        var list = (await listResponse.Content.ReadFromJsonAsync<FavouriteListJson>())!;
+
+        Assert.Equal(4, list.Codes.Count);
+        Assert.Equal([item.Code], list.Items.Select(card => card.Code));
+        Assert.Equal([live.Code], list.Builds.Select(card => card.Code));
+
+        using var removed = await TestSignIn.SendJsonAsync(customer, HttpMethod.Delete, $"{Favourites}/{live.Code}", null);
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        using var after = await customer.GetAsync(Favourites);
+        Assert.Empty((await after.Content.ReadFromJsonAsync<FavouriteListJson>())!.Builds);
     }
 
     [Fact]
