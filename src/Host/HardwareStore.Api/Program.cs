@@ -36,7 +36,8 @@ builder.Host.UseSerilog((_, _, configuration) => configuration
     .Enrich.FromLogContext()
     .WriteTo.Console());
 
-builder.Services.AddProblemDetails();
+// Every problem response (business errors, validation, unhandled faults, empty 401/403/404 bodies) passes through here: an Arabic caller gets Arabic text.
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context => ApiErrorCatalog.Localize(context.HttpContext, context.ProblemDetails));
 builder.Services.AddApiContract();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IAuditActor, HttpAuditActor>();

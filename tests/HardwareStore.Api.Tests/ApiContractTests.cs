@@ -68,6 +68,30 @@ public sealed class ApiContractTests(WebApplicationFactory<Program> factory) : I
         Assert.Equal(400, problem.GetProperty("status").GetInt32());
     }
 
+    [Fact]
+    public async Task Problem_responses_are_in_Arabic_for_an_Arabic_caller_only()
+    {
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        async Task<string?> TitleAsync(string? language)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/identity/email-code/request")
+            { Content = JsonContent.Create(new { email = "a@b.c" }) };
+            if (language is not null) request.Headers.AcceptLanguage.ParseAdd(language);
+            using var response = await client.SendAsync(request);
+            return (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString();
+        }
+
+        Assert.Equal("Invalid anti-forgery token.", await TitleAsync(null));
+        var arabic = await TitleAsync("ar");
+        Assert.NotEqual("Invalid anti-forgery token.", arabic);
+        Assert.Matches("[؀-ۿ]", arabic);
+
+        using var unauthorized = new HttpRequestMessage(HttpMethod.Get, "/api/v1/admin/audit/filters");
+        unauthorized.Headers.AcceptLanguage.ParseAdd("ar");
+        using var response = await client.SendAsync(unauthorized);
+        Assert.Matches("[؀-ۿ]", (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString());
+    }
+
     private async Task<string> GenerateAsync()
     {
         using var client = factory.CreateClient();
