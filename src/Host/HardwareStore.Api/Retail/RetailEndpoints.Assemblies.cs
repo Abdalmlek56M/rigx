@@ -1,4 +1,5 @@
 using HardwareStore.Modules.Catalog;
+using HardwareStore.Modules.Purchasing;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
@@ -66,10 +67,25 @@ public static partial class RetailEndpoints
         AssemblyPartService parts, CancellationToken ct) =>
         TypedResults.Ok(await parts.AddPartAsync(id, request, context.HasPermission(ViewCosts), ct));
 
-    /// <summary>A part that is not in stock: warranty from the settings list and specs checked against the category schema (Catalog).</summary>
+    /// <summary>
+    /// A part that is not in stock: warranty from the settings list and specs checked against the category schema (Catalog).
+    /// With a seller it is bought through a received purchase (the seller is owed what is not paid now); without one it is just added.
+    /// </summary>
     private static async Task<Ok<AssemblyView>> AddNewAssemblyPartAsync(Guid id, AssemblyNewPartBody request, HttpContext context,
-        AssemblyPartService parts, StoreSettingsService settings, CategorySpecService categorySpecs, CancellationToken ct)
+        AssemblyPartService parts, BuildPartPurchaseService boughtParts, StoreSettingsService settings, CategorySpecService categorySpecs, CancellationToken ct)
     {
+        if (request.SellerId is Guid sellerId)
+        {
+            if (!context.HasPermission("Purchasing.CreateOrder") || !context.HasPermission("Purchasing.ReceiveGoods"))
+                throw new ApiProblemException(StatusCodes.Status403Forbidden, "Buying a build part from a seller needs the purchase and receiving permissions.");
+            var line = new PurchaseLineRequest(request.ModelName, request.Condition, 1, request.AcquisitionCost, request.Price, request.CategoryId,
+                request.ProductId, request.WithBoardExtra, request.AloneExtra, request.SerialNumber, request.PartnerPercentOverride, request.IsHidden,
+                request.WarrantyLabel, request.HasBox, request.InternalNote, request.Specs, request.PartnerId, request.BrandId);
+            return TypedResults.Ok(await boughtParts.AddAsync(id, request.RowVersion, line,
+                new BuildPartSource(sellerId, request.PaymentMethod, request.PaidAmount, request.PayFromCash), context.HasPermission(ViewCosts),
+                context.RequireUserId(), ct));
+        }
+
         var (label, months) = WarrantyChoice.Resolve(await WarrantyChoice.LoadOptionsAsync(settings, ct), request.WarrantyLabel);
         var specs = await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct);
         var part = new ReceiptLine(request.ModelName ?? string.Empty, request.Condition ?? string.Empty, 1, request.AcquisitionCost,
@@ -129,4 +145,5 @@ public sealed record AssemblyPartBody(decimal PartPrice, string? WarrantyLabel, 
 public sealed record AssemblyNewPartBody(string? ModelName, string? Condition, decimal AcquisitionCost, decimal Price, long RowVersion,
     Guid? CategoryId = null, Guid? ProductId = null, decimal? WithBoardExtra = null, decimal? AloneExtra = null, string? SerialNumber = null,
     decimal? PartnerPercentOverride = null, string? WarrantyLabel = null, bool HasBox = false, bool IsHidden = false,
-    string? InternalNote = null, Dictionary<string, string>? Specs = null, Guid? PartnerId = null, Guid? BrandId = null);
+    string? InternalNote = null, Dictionary<string, string>? Specs = null, Guid? PartnerId = null, Guid? BrandId = null,
+    Guid? SellerId = null, string? PaymentMethod = null, decimal PaidAmount = 0m, bool PayFromCash = true);

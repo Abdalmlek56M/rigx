@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import type { Build, BuildPart } from "./builds-api.ts";
 import {
   allocationDifference, allocationForm, allocationSum, allocationValid, canDisassemble, canPublish, canUnpublish, cardValid, copiesCount, defaultAllocation,
-  buildOption, emptyNewPart, otherBuilds, filterBuilds, isLocked, newPartValid, pickBuild, sellModeKey, statusKey, toAllocationInputs, toCardForm, toEditRequest, toNewPartBody,
+  buildOption, emptyNewPart, otherBuilds, filterBuilds, isLocked, newPartOwed, newPartValid, pickBuild, sellModeKey, statusKey, toAllocationInputs, toCardForm, toEditRequest, toNewPartBody,
   toPartBody, toPartForm, emptyPlannedRow, pickPlannedModel, plannedRows, plannedRowsValid, plannedTotal, toPlannedInputs, typePlannedName
 } from "./build-rules.ts";
 
@@ -111,6 +111,24 @@ describe("build parts", () => {
     assert.equal(used.serialNumber, "SN1");
     assert.equal(used.rowVersion, 7);
     assert.equal(toNewPartBody({ ...form, condition: "New" }, 7).serialNumber, null);
+  });
+
+  it("sends the seller and the payment only when a seller is picked, and a payment needs one and cannot pass the cost", () => {
+    const form = { ...emptyNewPart(), modelName: "RX 6600", acquisitionCost: "1000", price: "1500" };
+    const bare = toNewPartBody(form, 7);
+    assert.deepEqual([bare.sellerId, bare.paymentMethod, bare.paidAmount], [null, null, 0]);
+    assert.equal(toNewPartBody({ ...form, paidAmount: "50" }, 7).paidAmount, 0);
+
+    const bought = { ...form, sellerId: "s1", paymentMethod: "InstaPay" as const, paidAmount: "400" };
+    const body = toNewPartBody(bought, 7);
+    assert.deepEqual([body.sellerId, body.paymentMethod, body.paidAmount, body.payFromCash], ["s1", "InstaPay", 400, true]);
+    assert.equal(newPartOwed(bought), 600);
+
+    assert.ok(newPartValid({ ...bought, paidAmount: "" }));
+    assert.ok(newPartValid({ ...bought, paidAmount: "1000" }));
+    assert.ok(!newPartValid({ ...bought, paidAmount: "1001" }));
+    assert.ok(!newPartValid({ ...form, paidAmount: "100" }));
+    assert.equal(newPartOwed({ acquisitionCost: "100", paidAmount: "300" }), 0);
   });
 });
 

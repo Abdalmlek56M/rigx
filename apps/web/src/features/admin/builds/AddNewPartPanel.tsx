@@ -1,8 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
+import { formatEgp } from "@/lib/format";
+import { SellerPicker } from "../purchases/SellerPicker";
+import type { SellerSummary } from "../purchases/purchases-api";
+import { SELLER_PAYMENT_METHODS, type SellerPaymentMethod } from "../purchases/purchase-rules";
+import { usePermissions } from "../use-permissions";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { formMessage } from "../form-message";
@@ -16,7 +21,7 @@ import { applySuggestion, editModel, financingPartners } from "../stock/stock-fi
 import { WarrantyField } from "../stock/WarrantyField";
 import type { BuildLookups } from "./BuildParts";
 import { addNewPart } from "./builds-api";
-import { emptyNewPart, newPartValid, toNewPartBody, type NewPartForm } from "./build-rules";
+import { emptyNewPart, newPartOwed, newPartValid, toNewPartBody, type NewPartForm } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { CloseIcon, PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
@@ -25,7 +30,7 @@ const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
 const SHOWN_FIELDS = [
   "categoryId", "brandId", "specs", "modelName", "condition", "serialNumber", "acquisitionCost", "price", "withBoardExtra", "aloneExtra", "partnerId", "partnerPercentOverride",
-  "warrantyLabel", "internalNote"
+  "warrantyLabel", "internalNote", "sellerId", "paidAmount"
 ];
 
 /**
@@ -35,9 +40,14 @@ const SHOWN_FIELDS = [
 export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProps & { lookups: BuildLookups; onClose: () => void }) {
   const t = useTranslations("admin.builds.addNew");
   const lines = useTranslations("admin.purchases.lines");
+  const pay = useTranslations("admin.purchases.sellerPayment");
+  const locale = useLocale();
+  const { has } = usePermissions();
+  const canBuy = has("Purchasing.CreateOrder") && has("Purchasing.ReceiveGoods");
   const { build } = action;
   const { submit, run } = useBuildAction(action);
   const [form, setForm] = useState<NewPartForm>(emptyNewPart);
+  const [seller, setSeller] = useState<SellerSummary | null>(null);
   const set = (patch: Partial<NewPartForm>) => setForm((current) => ({ ...current, ...patch }));
   const error = (field: string) => submit.errors.fields[field];
   const setSpecs = useCallback((specs: NewPartForm["specs"]) => setForm((current) => ({ ...current, specs })), []);
@@ -99,6 +109,28 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
         </label>
       </div>
       <TextAreaField label={lines("internalNote")} name="newPartNote" value={form.internalNote} onChange={(internalNote) => set({ internalNote })} rows={2} maxLength={1000} error={error("internalNote")} />
+      {canBuy ? (
+        <div className="flex flex-col gap-3">
+          <p className="m-0 text-xs text-ink-muted">{t("sellerHint")}</p>
+          <SellerPicker
+            seller={seller} readOnly={false} governorates={[]}
+            onPick={(picked) => {
+              setSeller(picked);
+              set({ sellerId: picked?.id ?? "", ...(picked ? {} : { paidAmount: "" }) });
+            }}
+          />
+          {seller ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <SelectField
+                label={t("method")} name="newPartPayMethod" value={form.paymentMethod} onChange={(value) => set({ paymentMethod: value as SellerPaymentMethod })}
+                options={SELLER_PAYMENT_METHODS.map((value) => ({ value, label: pay(`methods.${value}`) }))}
+              />
+              <TextField label={t("paid")} name="newPartPaid" type="number" ltr value={form.paidAmount} onChange={(paidAmount) => set({ paidAmount })} error={error("paidAmount")} />
+              <p className="m-0 text-sm font-bold sm:col-span-2">{t("owed", { amount: formatEgp(newPartOwed(form), locale) })}</p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <FormMessage message={formMessage(submit.errors, SHOWN_FIELDS)} />
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant="primary" icon={PlusIcon} loading={submit.busy} disabled={!newPartValid(form)}>{t("add")}</Button>

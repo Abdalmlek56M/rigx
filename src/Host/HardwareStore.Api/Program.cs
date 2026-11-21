@@ -117,6 +117,7 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
 builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<PurchaseReceiptService>();
 builder.Services.AddScoped<PurchasePaymentService>();
+builder.Services.AddScoped<BuildPartPurchaseService>();
 builder.Services.AddScoped<DashboardComposer>();
 builder.Services.AddScoped<RequestPurchaseConversion>();
 builder.Services.AddScoped<IStockModelDirectory, RetailStockModelDirectory>();

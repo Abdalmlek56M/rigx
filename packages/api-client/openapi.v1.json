@@ -16377,6 +16377,28 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "sellerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "paymentMethod": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "paidAmount": {
+            "type": "number",
+            "format": "double",
+            "default": 0
+          },
+          "payFromCash": {
+            "type": "boolean",
+            "default": true
           }
         }
       },

@@ -127,6 +127,7 @@ public static class ApiErrorMessages
         ["Country code must contain two letters."] = "يجب أن يتكون رمز الدولة من حرفين.",
         ["Coupon was not found."] = "القسيمة غير موجودة.",
         ["Creating a purchase needs the purchase permission."] = "إنشاء فاتورة شراء يتطلب صلاحية المشتريات.",
+        ["Buying a build part from a seller needs the purchase and receiving permissions."] = "شراء قطعة للتجميعة من بائع يتطلب صلاحيتي المشتريات والاستلام.",
         ["Customer was not found."] = "العميل غير موجود.",
 
         // --- Messages thrown by the modules (D–P)

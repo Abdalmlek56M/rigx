@@ -24,6 +24,13 @@ public sealed class AssemblyPartService(IDbContextFactory<RetailDbContext> conte
         catch { await transaction.RollbackQuietlyAsync(); throw; }
     }
 
+    /// <summary>Throws (404, 409) when a part cannot be added now: the build is gone, closed, changed by someone else or full. Checked before money moves.</summary>
+    public async Task EnsureCanAddPartAsync(Guid assemblyId, long rowVersion, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        EnsureRoom(await AssemblyEditing.LoadEditableAsync(db, assemblyId, rowVersion, cancellationToken));
+    }
+
     /// <summary>The new part becomes its own single-piece stock item (RX code) placed straight into the build.</summary>
     public async Task<AssemblyView> AddNewPartAsync(Guid assemblyId, AssemblyNewPartRequest request, bool includeCosts = true, CancellationToken cancellationToken = default)
     {

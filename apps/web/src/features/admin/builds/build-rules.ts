@@ -4,6 +4,7 @@
  */
 import { amountOk, amountText, optionalAmountOk, parseAmount } from "../stock/stock-fields.ts";
 import type { ModelSuggestion } from "../purchases/purchases-api";
+import type { SellerPaymentMethod } from "../purchases/purchase-rules.ts";
 import type { Build, BuildAllocationInput, BuildEditRequest, BuildNewPartBody, BuildPart, BuildPartBody, PlannedPart, PlannedPartInput } from "./builds-api";
 
 const known = <T extends string>(list: readonly T[], value: string | null | undefined): T | "other" => list.find((entry) => entry === value) ?? "other";
@@ -133,16 +134,31 @@ export interface NewPartForm {
   warrantyLabel: string;
   hasBox: boolean;
   internalNote: string;
+  /** Who the part was bought from ("" = nobody: it is only added, nothing is recorded as bought or paid). */
+  sellerId: string;
+  paymentMethod: SellerPaymentMethod;
+  /** Paid to the seller now; the rest of the cost stays owed to them. */
+  paidAmount: string;
 }
 
 export const emptyNewPart = (): NewPartForm => ({
   categoryId: "", brandId: "", specs: {}, modelName: "", productId: "", condition: "Used", serialNumber: "", acquisitionCost: "", price: "", withBoardExtra: "", aloneExtra: "",
-  partnerId: "", partnerPercent: "", isHidden: false, warrantyLabel: "", hasBox: false, internalNote: ""
+  partnerId: "", partnerPercent: "", isHidden: false, warrantyLabel: "", hasBox: false, internalNote: "", sellerId: "", paymentMethod: "Cash", paidAmount: ""
 });
+
+/** What is still owed to the seller after the payment typed now (never below 0). */
+export const newPartOwed = (form: Pick<NewPartForm, "acquisitionCost" | "paidAmount">): number =>
+  Math.max(0, Math.round(((parseAmount(form.acquisitionCost) ?? 0) - (parseAmount(form.paidAmount) ?? 0)) * 100) / 100);
+
+/** A payment needs a seller and cannot be more than the part cost. */
+const paymentValid = (form: NewPartForm): boolean => {
+  const paid = parseAmount(form.paidAmount) ?? 0;
+  return optionalAmountOk(form.paidAmount) && (paid === 0 || (form.sellerId !== "" && paid <= (parseAmount(form.acquisitionCost) ?? 0)));
+};
 
 export const newPartValid = (form: NewPartForm): boolean =>
   form.modelName.trim() !== "" && amountOk(form.acquisitionCost) && amountOk(form.price)
-  && optionalAmountOk(form.withBoardExtra) && optionalAmountOk(form.aloneExtra) && optionalAmountOk(form.partnerPercent);
+  && optionalAmountOk(form.withBoardExtra) && optionalAmountOk(form.aloneExtra) && optionalAmountOk(form.partnerPercent) && paymentValid(form);
 
 /** The request for a part that is not in stock yet; a new part is one piece, and a serial number belongs to a used one only. */
 export function toNewPartBody(form: NewPartForm, rowVersion: number): BuildNewPartBody {
@@ -164,6 +180,10 @@ export function toNewPartBody(form: NewPartForm, rowVersion: number): BuildNewPa
     internalNote: form.internalNote.trim() || null,
     brandId: form.brandId || null,
     specs: form.specs,
+    sellerId: form.sellerId || null,
+    paymentMethod: form.sellerId ? form.paymentMethod : null,
+    paidAmount: form.sellerId ? parseAmount(form.paidAmount) ?? 0 : 0,
+    payFromCash: true,
     rowVersion
   };
 }

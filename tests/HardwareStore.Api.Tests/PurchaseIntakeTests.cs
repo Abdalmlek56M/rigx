@@ -24,6 +24,7 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
         public LocalCatalogMediaStorage Media => Receipting.Media;
         public PurchaseReceiptService Receipts => Receipting.Create();
         public PurchasePaymentService Payments => new(Purchases, Retail.Money, TimeProvider.System, RetailSales.BusinessZone);
+        public BuildPartPurchaseService BuildParts => new(Purchases, Receipts, Retail.Parts);
 
         public async Task<SellerView> NewSellerAsync(string phone = "01012345678") =>
             await Sellers.CreateAsync(new SellerRequest("Person", "Ahmed", phone, null, null, null, null, null));
@@ -317,6 +318,30 @@ public sealed class PurchaseIntakePostgreSqlTests(OwnerBootstrapPostgreSqlFixtur
 
         var build = await harness.Retail.Assemblies.GetAsync(received.Purchase.AssemblyId!.Value, includeCosts: true);
         Assert.Equal(6000m, build.SalePrice);
+    }
+
+    [Fact]
+    public async Task A_part_bought_for_a_build_is_a_received_purchase_with_the_payment_recorded_and_the_rest_owed()
+    {
+        var harness = new Harness(await fixture.CreateDatabaseAsync());
+        var seller = await harness.NewSellerAsync();
+        await harness.Retail.FundAsync(3000m);
+        var build = await harness.Retail.Assemblies.CreateAssemblyAsync(new AssemblyCreateRequest("Build", []));
+        var source = new BuildPartSource(seller.Id, SellerPaymentMethod.Cash, 500m, true);
+
+        var saved = await harness.BuildParts.AddAsync(build.Id, build.RowVersion, Used("RTX 3060"), source, true, Actor, default);
+
+        var part = Assert.Single(saved.Units);
+        Assert.Equal("RTX 3060", part.Name);
+        Assert.Equal(2000m, part.AcquisitionCost);
+        Assert.Equal(2500m, await harness.Retail.BalanceAsync());
+        var purchase = Assert.Single((await harness.Purchases.ListAsync(new PurchaseQuery())).Items);
+        Assert.Equal((PurchaseStatus.Received, 1500m, seller.Id), (purchase.Status, purchase.Remaining, purchase.Seller.Id));
+
+        var stale = await Assert.ThrowsAsync<RetailException>(() => harness.BuildParts.AddAsync(build.Id, build.RowVersion, Used("RX 6600"), source, true, Actor, default));
+        Assert.Equal(409, stale.StatusCode);
+        Assert.Equal(2500m, await harness.Retail.BalanceAsync());
+        Assert.Single((await harness.Purchases.ListAsync(new PurchaseQuery())).Items);
     }
 
     [Fact]

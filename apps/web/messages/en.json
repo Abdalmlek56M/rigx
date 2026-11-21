@@ -3185,7 +3185,11 @@
         "cost": "Purchase cost",
         "add": "Add part",
         "close": "Cancel",
-        "added": "Part added"
+        "added": "Part added",
+        "sellerHint": "Optional: pick the seller the part was bought from. It is then recorded as a received purchase, the amount paid leaves the account, and the rest stays owed to the seller.",
+        "method": "Payment method",
+        "paid": "Paid now",
+        "owed": "Still owed to the seller: {amount}"
       },
       "removeDialog": {
         "title": "Remove {name}",
