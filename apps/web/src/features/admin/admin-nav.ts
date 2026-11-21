@@ -2,7 +2,7 @@
 export type AdminAreaKey =
   | "dashboard" | "pos" | "orders" | "customers" | "offers" | "coupons"
   | "inventory" | "builds" | "purchases" | "stockImport" | "categories" | "brands"
-  | "partners" | "expenses"
+  | "partners" | "expenses" | "accounts"
   | "requests"
   | "articles" | "faq" | "policies"
   | "users" | "audit" | "system" | "settings";
@@ -50,7 +50,8 @@ export const ADMIN_NAV: readonly AdminGroup[] = [
     key: "money",
     areas: [
       { key: "partners", href: "/admin/partners", anyOf: ["Finance.ViewReports"] },
-      { key: "expenses", href: "/admin/expenses", anyOf: ["Finance.ViewReports"] }
+      { key: "expenses", href: "/admin/expenses", anyOf: ["Finance.ViewReports"] },
+      { key: "accounts", href: "/admin/accounts", anyOf: ["Finance.ViewVaults"] }
     ]
   },
   {

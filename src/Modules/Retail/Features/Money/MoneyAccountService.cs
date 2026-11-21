@@ -46,6 +46,30 @@ public sealed class MoneyAccountService(IDbContextFactory<RetailDbContext> conte
         return View(account, await MoneyLedger.BalanceAsync(db, account, cancellationToken));
     }
 
+    /// <summary>
+    /// Deletes an account that was never used (no movement, no expense) and is not the last active account of its kind, since payments
+    /// of that kind would have nowhere to go; any other account is deactivated instead (409).
+    /// </summary>
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var account = await db.MoneyAccounts.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
+            ?? throw new RetailException(404, "The money account was not found.");
+        if (await db.MoneyMovements.AnyAsync(item => item.AccountId == id, cancellationToken))
+            throw new RetailException(409, "This account has movements, so it cannot be deleted. Deactivate it instead.");
+        if (account.IsActive && !await db.MoneyAccounts.AnyAsync(item => item.Id != id && item.Kind == account.Kind && item.IsActive, cancellationToken))
+            throw new RetailException(409, "This is the only active account of its kind, so it cannot be deleted.");
+        db.MoneyAccounts.Remove(account);
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            throw new RetailException(409, "This account is in use, so it cannot be deleted. Deactivate it instead.");
+        }
+    }
+
     public async Task<IReadOnlyList<MoneyMovementView>> ListMovementsAsync(Guid accountId, DateOnly? from, DateOnly? to,
         CancellationToken cancellationToken = default)
     {

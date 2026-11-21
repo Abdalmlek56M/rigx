@@ -9,10 +9,11 @@ interface SelectFieldProps<T extends string> {
   onChange: (value: T) => void;
   options: readonly { value: T; label: string }[];
   error?: string | null;
+  disabled?: boolean;
 }
 
 /** A labelled dropdown that matches `TextField`. */
-export function SelectField<T extends string>({ label, labelEnd, name, value, onChange, options, error }: SelectFieldProps<T>) {
+export function SelectField<T extends string>({ label, labelEnd, name, value, onChange, options, error, disabled }: SelectFieldProps<T>) {
   const errorId = `${name}-error`;
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
@@ -20,6 +21,7 @@ export function SelectField<T extends string>({ label, labelEnd, name, value, on
       <select
         name={name}
         value={value}
+        disabled={disabled}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => {

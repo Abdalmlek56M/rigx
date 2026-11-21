@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import {
-  BoxIcon, CartIcon, CaseIcon, ClockIcon, DatabaseIcon, DocumentIcon, FolderIcon, GearIcon, GridIcon, HandshakeIcon, HelpIcon,
+  BankIcon, BoxIcon, CartIcon, CaseIcon, ClockIcon, DatabaseIcon, DocumentIcon, FolderIcon, GearIcon, GridIcon, HandshakeIcon, HelpIcon,
   InboxIcon, KeyIcon, RegisterIcon, ShieldIcon, StorageIcon, TagIcon, TicketIcon, TruckIcon, UsersIcon, WalletIcon
 } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
@@ -14,7 +14,7 @@ import { AdminUserMenu } from "./AdminUserMenu";
 const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
   dashboard: GridIcon, pos: RegisterIcon, orders: BoxIcon, customers: UsersIcon, offers: TagIcon, coupons: TicketIcon,
   inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, stockImport: DocumentIcon, categories: FolderIcon, brands: ShieldIcon,
-  partners: HandshakeIcon, expenses: WalletIcon,
+  partners: HandshakeIcon, expenses: WalletIcon, accounts: BankIcon,
   requests: InboxIcon,
   articles: DocumentIcon, faq: HelpIcon, policies: DocumentIcon,
   users: KeyIcon, audit: ClockIcon, system: DatabaseIcon, settings: GearIcon

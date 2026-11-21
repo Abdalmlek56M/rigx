@@ -24,6 +24,12 @@ public static partial class RetailEndpoints
     private static async Task<Ok<MoneyAccountView>> UpdateMoneyAccountAsync(Guid id, MoneyAccountRequest request, MoneyAccountService accounts, CancellationToken ct) =>
         TypedResults.Ok(await accounts.UpdateAsync(id, request, ct));
 
+    private static async Task<NoContent> DeleteMoneyAccountAsync(Guid id, MoneyAccountService accounts, CancellationToken ct)
+    {
+        await accounts.DeleteAsync(id, ct);
+        return TypedResults.NoContent();
+    }
+
     private static async Task<NoContent> TransferMoneyAsync(MoneyTransferRequest request, HttpContext context, MoneyAccountService accounts,
         CancellationToken ct)
     {

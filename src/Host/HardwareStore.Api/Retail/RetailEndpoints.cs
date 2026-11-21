@@ -91,6 +91,7 @@ public static partial class RetailEndpoints
         admin.MapGet("/money/accounts/{id:guid}/movements", ListMoneyMovementsAsync).RequirePermission("Finance.ViewVaults");
         admin.MapPost("/money/accounts", CreateMoneyAccountAsync).RequirePermission("Finance.Disburse");
         admin.MapPut("/money/accounts/{id:guid}", UpdateMoneyAccountAsync).RequirePermission("Finance.Disburse");
+        admin.MapDelete("/money/accounts/{id:guid}", DeleteMoneyAccountAsync).RequirePermission("Finance.Disburse");
         admin.MapPost("/money/transfers", TransferMoneyAsync).RequirePermission("Finance.Disburse");
         admin.MapGet("/reports/business", BusinessReportAsync).RequirePermission("Finance.ViewReports");
         admin.MapGet("/partner/adjustments", ListAdjustmentsAsync).RequirePermission("Finance.ViewReports");

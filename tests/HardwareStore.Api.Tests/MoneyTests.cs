@@ -19,6 +19,24 @@ public sealed class MoneyPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         (await retail.Money.ListAsync()).Single(account => account.Id == id);
 
     [Fact]
+    public async Task An_unused_account_can_be_deleted_but_one_with_movements_or_the_last_of_its_kind_cannot()
+    {
+        var retail = await StartAsync();
+        var spare = await retail.Money.CreateAsync(new MoneyAccountRequest("حساب احتياطي", MoneyAccountKind.Cash, 0m, SortOrder: 8));
+        await retail.Money.DeleteAsync(spare.Id);
+        Assert.DoesNotContain(await retail.Money.ListAsync(), account => account.Id == spare.Id);
+        Assert.Equal(404, await RetailSales.StatusCodeAsync(() => retail.Money.DeleteAsync(spare.Id)));
+
+        var cash = (await retail.Money.ListAsync()).First(account => account.Kind == MoneyAccountKind.Cash);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.Money.DeleteAsync(cash.Id)));
+
+        var drawer = await retail.Money.CreateAsync(new MoneyAccountRequest("درج الفرع", MoneyAccountKind.Cash, 0m, SortOrder: 9));
+        var second = await retail.Money.CreateAsync(new MoneyAccountRequest("درج ثان", MoneyAccountKind.Cash, 100m, SortOrder: 10));
+        await retail.Money.TransferAsync(new MoneyTransferRequest(second.Id, drawer.Id, 40m), Actor);
+        Assert.Equal(409, await RetailSales.StatusCodeAsync(() => retail.Money.DeleteAsync(drawer.Id)));
+    }
+
+    [Fact]
     public async Task The_four_default_accounts_are_seeded_empty_and_in_order()
     {
         var retail = await StartAsync();
