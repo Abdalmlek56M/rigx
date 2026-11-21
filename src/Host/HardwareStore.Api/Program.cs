@@ -118,6 +118,7 @@ builder.Services.AddDbContext<HardwareStoreDbContext>(options => options.UseNpgs
 builder.Services.AddScoped<PurchaseReceiptService>();
 builder.Services.AddScoped<PurchasePaymentService>();
 builder.Services.AddScoped<BuildPartPurchaseService>();
+builder.Services.AddScoped<IPriceOptionSource, CatalogPriceOptionSource>();
 builder.Services.AddScoped<DashboardComposer>();
 builder.Services.AddScoped<RequestPurchaseConversion>();
 builder.Services.AddScoped<IStockModelDirectory, RetailStockModelDirectory>();

@@ -37,7 +37,7 @@ public sealed record BuildPriceRule(IReadOnlySet<Guid> CpuCategoryIds, IReadOnly
 /// <summary>What the store settings decide for a checkout (read in Host): shipping, upfront rule, enabled methods, terms version.</summary>
 public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, ShippingRate Shipping,
     Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder, BuildPriceRule? BuildPrice = null,
-    Func<decimal, decimal>? DepositFor = null);
+    Func<decimal, decimal>? DepositFor = null, PriceOptionRule? PriceOptions = null);
 
 /// <summary>Reservation defaults from the store settings, applied when an order is confirmed.</summary>
 public sealed record ReservationPolicy(int Hours, bool AutoRelease);

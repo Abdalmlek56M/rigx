@@ -12,7 +12,8 @@ public sealed record CategoryInput(
     string? Code = null,
     bool ShowInMenu = true,
     bool ShowInBuilder = false,
-    string? NameEn = null);
+    string? NameEn = null,
+    CategoryPriceOptions? PriceOptions = null);
 
 /// <summary>Replaces a category's own spec definitions; children inherit them.</summary>
 public sealed record CategorySpecsInput(IReadOnlyList<SpecDefinition>? Specs, int? RowVersion);
@@ -64,7 +65,8 @@ public sealed record CategoryView(
     bool ShowInBuilder,
     IReadOnlyList<SpecDefinition> Specs,
     IReadOnlyList<CategoryView> Children,
-    string? NameEn = null);
+    string? NameEn = null,
+    CategoryPriceOptions? PriceOptions = null);
 
 public sealed record BrandView(
     Guid Id,
@@ -158,4 +160,13 @@ public enum CatalogProductSort
     PriceDescending,
     NameAscending,
     NameDescending
+}
+
+/// <summary>
+/// Which sale prices a category offers: alone, with a board (bundle), and inside a build. A price that is off is not shown on the website
+/// or at the POS and cannot be chosen online; at least one stays on.
+/// </summary>
+public sealed record CategoryPriceOptions(bool Alone = true, bool WithBoard = true, bool InBuild = true)
+{
+    public bool Any => Alone || WithBoard || InBuild;
 }

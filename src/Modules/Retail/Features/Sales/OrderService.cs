@@ -30,7 +30,7 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         var (usage, usageNote) = OrderUsage.Parse(request.Usage, request.UsageNote);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Online, policy.BuildPrice, cancellationToken);
+        var items = await OrderDrafting.PriceLinesAsync(db, request.Items, OrderChannel.Online, policy.BuildPrice, cancellationToken, policy.PriceOptions);
         var itemsTotal = items.Sum(item => item.LineTotal - item.DiscountAmount);
         if (itemsTotal < policy.MinimumOrder) throw new RetailException(400, $"The minimum order is {policy.MinimumOrder:0.##} EGP.");
         var now = timeProvider.GetUtcNow().ToUniversalTime();

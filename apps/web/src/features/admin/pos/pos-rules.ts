@@ -20,6 +20,8 @@ export interface ItemPick {
   warrantyLabel: string | null;
   prices: { alone: number; withBoard: number; inBuild: number };
   available: number;
+  /** The sale prices the item's category offers, in the order shown (the others are hidden and cannot be picked). */
+  priceOptions: readonly PriceOption[];
 }
 
 export interface BuildPart {
@@ -41,7 +43,17 @@ export interface BuildPick {
   parts: BuildPart[] | null;
 }
 
-export function toItemPick(row: Schemas["StockItemAdminView"] | Schemas["StoreItemCard"]): ItemPick {
+/** The known price options named in `names`, in the usual order; none named (an old answer) means all three. */
+export function offeredOptions(names: readonly string[] | null | undefined): readonly PriceOption[] {
+  const offered = PRICE_OPTIONS.filter((option) => names?.includes(option));
+  return offered.length > 0 ? offered : PRICE_OPTIONS;
+}
+
+/** Store rows carry their offered prices; inventory rows get them from their category (`optionsOf`). */
+export function toItemPick(
+  row: Schemas["StockItemAdminView"] | Schemas["StoreItemCard"],
+  optionsOf: (categoryId: string | null) => readonly PriceOption[] = () => PRICE_OPTIONS
+): ItemPick {
   const admin = "id" in row;
   return {
     stockItemId: admin ? row.id : null,
@@ -50,7 +62,8 @@ export function toItemPick(row: Schemas["StockItemAdminView"] | Schemas["StoreIt
     condition: row.condition,
     warrantyLabel: row.warrantyLabel,
     prices: row.prices,
-    available: admin ? row.availableCount : row.available
+    available: admin ? row.availableCount : row.available,
+    priceOptions: admin ? optionsOf(row.categoryId) : offeredOptions(row.priceOptions)
   };
 }
 
@@ -98,7 +111,8 @@ export function shownPrice(pick: ItemPick, option: PriceOption): number {
 const money = (value: number) => String(value);
 
 export function itemLine(pick: ItemPick): ItemLine {
-  return { kind: "item", key: `item:${pick.code}`, pick, priceOption: "Alone", quantity: 1, salePrice: money(pick.prices.alone) };
+  const priceOption = pick.priceOptions[0] ?? "Alone";
+  return { kind: "item", key: `item:${pick.code}`, pick, priceOption, quantity: 1, salePrice: money(shownPrice(pick, priceOption)) };
 }
 
 export function buildLine(pick: BuildPick): BuildLine {

@@ -21,7 +21,8 @@ public sealed class TaxonomyService(
                 category.Id, category.ParentId, category.Name, category.Slug,
                 category.Description, category.IconStorageKey, category.SortOrder,
                 category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
-                category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn))
+                category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn,
+                new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild)))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             allCategories.Select(category => new CatalogCategoryNode(
@@ -81,7 +82,8 @@ public sealed class TaxonomyService(
                 category.Id, category.ParentId, category.Name, category.Slug,
                 category.Description, category.IconStorageKey, category.SortOrder,
                 category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
-                category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn))
+                category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn,
+                new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild)))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             categories.Select(category => new CatalogCategoryNode(
@@ -113,6 +115,9 @@ public sealed class TaxonomyService(
         var code = CategorySpecSchema.NormalizeCategoryCode(input.Code);
         if (input.SortOrder < 0)
             throw new CatalogValidationException("sortOrder", "Sort order must not be negative.");
+        var prices = input.PriceOptions ?? new CategoryPriceOptions();
+        if (!prices.Any)
+            throw new CatalogValidationException("priceOptions", "At least one sale price must stay on for a category.");
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(
@@ -149,6 +154,9 @@ public sealed class TaxonomyService(
         category.Code = code;
         category.ShowInMenu = input.ShowInMenu;
         category.ShowInBuilder = input.ShowInBuilder;
+        category.PriceAlone = prices.Alone;
+        category.PriceWithBoard = prices.WithBoard;
+        category.PriceInBuild = prices.InBuild;
         category.UpdatedAtUtc = UtcNow();
         if (id is not null)
             category.RowVersion++;

@@ -22,10 +22,12 @@ public sealed record StockVisibilityRequest(IReadOnlyList<Guid> Ids, bool Hidden
 
 // Storefront (public). Never cost, serial, partner, internal note, or hidden items.
 public sealed record StoreItemCard(string Code, string Slug, string ModelName, string Condition, Guid? CategoryId, string? WarrantyLabel,
-    StockItemPrices Prices, int Available, string? ThumbnailStorageKey, DateTimeOffset ListedAtUtc);
+    StockItemPrices Prices, int Available, string? ThumbnailStorageKey, DateTimeOffset ListedAtUtc,
+    IReadOnlyList<string> PriceOptions);
 public sealed record StoreItemDetail(string Code, string Slug, string ModelName, string Condition, Guid? CategoryId, Guid? BrandId, string? WarrantyLabel,
     int? WarrantyMonths, bool HasBox, StockItemPrices Prices, int Available, IReadOnlyList<StockItemPhoto> Photos,
-    IReadOnlyDictionary<string, string> Specs);
+    IReadOnlyDictionary<string, string> Specs,
+    IReadOnlyList<string> PriceOptions);
 /// <summary>
 /// <paramref name="CategoryIds"/> is the chosen category plus its descendants (resolved from Catalog by the caller).
 /// <paramref name="Specs"/> are exact spec values an item must all have (spelled as stored); <paramref name="BrandId"/> is a Catalog brand.

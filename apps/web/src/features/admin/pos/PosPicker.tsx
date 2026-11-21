@@ -9,7 +9,7 @@ import { ChipRadio, FormSection } from "@/features/checkout/form-parts";
 import { usePermissions } from "../use-permissions";
 import { SearchBox } from "../kit/FilterBar";
 import { listBuilds, searchItems } from "./pos-api";
-import { buildLine, itemLine, PRICE_OPTIONS, shownPrice, type BuildPick, type CartLine, type ItemPick } from "./pos-rules";
+import { buildLine, itemLine, shownPrice, type BuildPick, type CartLine, type ItemPick } from "./pos-rules";
 import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
@@ -46,7 +46,7 @@ function ItemResults({ query, onAdd }: { query: string; onAdd: (line: CartLine) 
             <span className="text-xs text-ink-muted">{t("available", { count: pick.available })}</span>
           </span>
           <span className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-ink-muted">
-            {PRICE_OPTIONS.map((option) => (
+            {pick.priceOptions.map((option) => (
               <span key={option}>{t(`prices.${option}`)} <b dir="ltr" className="text-ink">{formatEgp(shownPrice(pick, option), locale)}</b></span>
             ))}
           </span>

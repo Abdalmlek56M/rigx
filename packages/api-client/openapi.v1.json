@@ -18054,6 +18054,36 @@
               "null",
               "string"
             ]
+          },
+          "priceOptions": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CategoryPriceOptions"
+              }
+            ]
+          }
+        }
+      },
+      "CategoryPriceOptions": {
+        "type": "object",
+        "properties": {
+          "alone": {
+            "type": "boolean",
+            "default": true
+          },
+          "withBoard": {
+            "type": "boolean",
+            "default": true
+          },
+          "inBuild": {
+            "type": "boolean",
+            "default": true
+          },
+          "any": {
+            "type": "boolean"
           }
         }
       },
@@ -18173,6 +18203,16 @@
             "type": [
               "null",
               "string"
+            ]
+          },
+          "priceOptions": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CategoryPriceOptions"
+              }
             ]
           }
         }
@@ -28916,7 +28956,8 @@
           "prices",
           "available",
           "thumbnailStorageKey",
-          "listedAtUtc"
+          "listedAtUtc",
+          "priceOptions"
         ],
         "type": "object",
         "properties": {
@@ -28961,6 +29002,12 @@
           "listedAtUtc": {
             "type": "string",
             "format": "date-time"
+          },
+          "priceOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -28978,7 +29025,8 @@
           "prices",
           "available",
           "photos",
-          "specs"
+          "specs",
+          "priceOptions"
         ],
         "type": "object",
         "properties": {
@@ -29040,6 +29088,12 @@
           "specs": {
             "type": "object",
             "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "priceOptions": {
+            "type": "array",
+            "items": {
               "type": "string"
             }
           }

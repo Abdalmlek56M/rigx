@@ -34,6 +34,10 @@ public sealed class CatalogCategory
     public string? Code { get; set; }
     public bool ShowInMenu { get; set; } = true;
     public bool ShowInBuilder { get; set; }
+    /// <summary>The sale prices this category offers (see <see cref="CategoryPriceOptions"/>); all on by default.</summary>
+    public bool PriceAlone { get; set; } = true;
+    public bool PriceWithBoard { get; set; } = true;
+    public bool PriceInBuild { get; set; } = true;
     public List<SpecDefinition> SpecDefinitions { get; set; } = [];
     public int RowVersion { get; set; } = 1;
     public DateTimeOffset CreatedAtUtc { get; set; }
@@ -135,6 +139,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
                 table.HasCheckConstraint("ck_categories_sort_order", "sort_order >= 0");
                 table.HasCheckConstraint("ck_categories_name_not_blank", "length(btrim(name)) > 0");
                 table.HasCheckConstraint("ck_categories_slug_format", "slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'");
+                table.HasCheckConstraint("ck_categories_price_option", "price_alone OR price_with_board OR price_in_build");
             });
             entity.HasKey(category => category.Id);
             entity.Property(category => category.Id).HasColumnName("id").ValueGeneratedNever();
@@ -151,6 +156,9 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.HasIndex(category => category.Code).IsUnique().HasDatabaseName("ux_categories_code").HasFilter("code IS NOT NULL");
             entity.Property(category => category.ShowInMenu).HasColumnName("show_in_menu").HasDefaultValue(true);
             entity.Property(category => category.ShowInBuilder).HasColumnName("show_in_builder").HasDefaultValue(false);
+            entity.Property(category => category.PriceAlone).HasColumnName("price_alone").HasDefaultValue(true);
+            entity.Property(category => category.PriceWithBoard).HasColumnName("price_with_board").HasDefaultValue(true);
+            entity.Property(category => category.PriceInBuild).HasColumnName("price_in_build").HasDefaultValue(true);
             CategorySpecDefinitionsMapping.Configure(entity.Property(category => category.SpecDefinitions));
             entity.Property(category => category.RowVersion).HasColumnName("row_version").IsConcurrencyToken().HasDefaultValue(1);
             entity.Property(category => category.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");

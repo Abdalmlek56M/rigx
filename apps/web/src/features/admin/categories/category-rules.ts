@@ -86,12 +86,16 @@ export interface CategoryForm {
   isActive: boolean;
   showInMenu: boolean;
   showInBuilder: boolean;
+  /** The sale prices the category offers (at least one stays on). */
+  priceAlone: boolean;
+  priceWithBoard: boolean;
+  priceInBuild: boolean;
 }
 
 export function emptyCategoryForm(parentId: string | null): CategoryForm {
   return {
     name: "", nameEn: "", slug: "", parentId: parentId ?? "", code: "", description: "", sortOrder: "0",
-    isActive: true, showInMenu: true, showInBuilder: false
+    isActive: true, showInMenu: true, showInBuilder: false, priceAlone: true, priceWithBoard: true, priceInBuild: true
   };
 }
 
@@ -106,12 +110,15 @@ export function categoryForm(category: Category): CategoryForm {
     sortOrder: String(category.sortOrder),
     isActive: category.isActive,
     showInMenu: category.showInMenu,
-    showInBuilder: category.showInBuilder
+    showInBuilder: category.showInBuilder,
+    priceAlone: category.priceOptions?.alone ?? true,
+    priceWithBoard: category.priceOptions?.withBoard ?? true,
+    priceInBuild: category.priceOptions?.inBuild ?? true
   };
 }
 
 export function categoryFormValid(form: CategoryForm): boolean {
-  return form.name.trim() !== "" && form.slug.trim() !== "";
+  return form.name.trim() !== "" && form.slug.trim() !== "" && (form.priceAlone || form.priceWithBoard || form.priceInBuild);
 }
 
 /** The API body; the image key is carried over so saving the text never removes the picture. */
@@ -129,7 +136,8 @@ export function toCategoryInput(form: CategoryForm, category: Category | null): 
     rowVersion: category?.rowVersion ?? null,
     code: form.code.trim() === "" ? null : form.code.trim(),
     showInMenu: form.showInMenu,
-    showInBuilder: form.showInBuilder
+    showInBuilder: form.showInBuilder,
+    priceOptions: { alone: form.priceAlone, withBoard: form.priceWithBoard, inBuild: form.priceInBuild }
   };
 }
 

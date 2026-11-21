@@ -9,7 +9,8 @@ internal static class CatalogAuditRestore
     public static IServiceCollection AddCatalogAuditRestore(this IServiceCollection services) => services
         .AddAuditRestoreTarget<CatalogDbContext, CatalogCategory>(
             nameof(CatalogCategory.Name), nameof(CatalogCategory.NameEn), nameof(CatalogCategory.Description), nameof(CatalogCategory.SortOrder), nameof(CatalogCategory.IsActive),
-            nameof(CatalogCategory.ShowInMenu), nameof(CatalogCategory.ShowInBuilder), nameof(CatalogCategory.SpecDefinitions))
+            nameof(CatalogCategory.ShowInMenu), nameof(CatalogCategory.ShowInBuilder), nameof(CatalogCategory.SpecDefinitions),
+            nameof(CatalogCategory.PriceAlone), nameof(CatalogCategory.PriceWithBoard), nameof(CatalogCategory.PriceInBuild))
         .AddAuditRestoreTarget<CatalogDbContext, CatalogBrand>(
             nameof(CatalogBrand.Name), nameof(CatalogBrand.Description), nameof(CatalogBrand.SupportUrl), nameof(CatalogBrand.IsActive))
         .AddAuditRestoreTarget<CatalogDbContext, CatalogProduct>(

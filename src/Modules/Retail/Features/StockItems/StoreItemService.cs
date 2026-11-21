@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HardwareStore.Modules.Retail;
 
 /// <summary>Public storefront view of stock items: only published items, never cost, serial or internal notes.</summary>
-public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextFactory)
+public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextFactory, IPriceOptionSource? priceOptions = null)
 {
     private const string SortPriceAscending = "price_asc";
     private const string SortPriceDescending = "price_desc";
@@ -56,19 +56,28 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var items = db.StockItems.AsNoTracking().Where(StockItemRules.PublishedFilter);
         var slug = key.Trim().ToLowerInvariant();
-        items = PublicCode.TryNormalize(key, PublicCode.StockItem, out var code)
-            ? items.Where(item => item.Code == code)
-            : items.Where(item => item.Slug == slug || db.OldSlugs.Any(old => old.Slug == slug && old.StockItemId == item.Id));
+        // A model written like a code ("RX 6600") has the slug rx-6600, so a key that reads as a code is also tried as a slug; the code wins.
+        var isCode = PublicCode.TryNormalize(key, PublicCode.StockItem, out var code);
+        items = items.Where(item => (isCode && item.Code == code) || item.Slug == slug
+            || db.OldSlugs.Any(old => old.Slug == slug && old.StockItemId == item.Id));
         var row = await items
+            .OrderByDescending(item => isCode && item.Code == code)
             .Select(item => new { Item = item, Available = item.Units.Count(unit => unit.Status == UnitStatus.Available) })
-            .SingleOrDefaultAsync(cancellationToken) ?? throw ItemNotFound();
+            .FirstOrDefaultAsync(cancellationToken) ?? throw ItemNotFound();
         var item = row.Item;
+        var rule = await RuleAsync(cancellationToken);
         return new StoreItemDetail(item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.BrandId, item.WarrantyLabel, item.WarrantyMonths,
-            item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs);
+            item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs,
+            rule.ForCategory(item.CategoryId).Names);
     }
 
-    private static async Task<List<StoreItemCard>> ToCardsAsync(IQueryable<StockItem> items, CancellationToken cancellationToken)
+    /// <summary>The per-category price switches (all on when no source is wired, as in unit tests).</summary>
+    private async Task<PriceOptionRule> RuleAsync(CancellationToken cancellationToken) =>
+        priceOptions is null ? PriceOptionRule.Open : await priceOptions.LoadAsync(cancellationToken);
+
+    private async Task<List<StoreItemCard>> ToCardsAsync(IQueryable<StockItem> items, CancellationToken cancellationToken)
     {
+        var rule = await RuleAsync(cancellationToken);
         var rows = await items.Select(item => new
         {
             item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
@@ -77,7 +86,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         }).ToListAsync(cancellationToken);
         return rows.Select(row => new StoreItemCard(row.Code, row.Slug, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
             StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
-            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc)).ToList();
+            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc, rule.ForCategory(row.CategoryId).Names)).ToList();
     }
 
     /// <summary>Sold-out items stay listed (marked "خلص") but always come after the available ones.</summary>

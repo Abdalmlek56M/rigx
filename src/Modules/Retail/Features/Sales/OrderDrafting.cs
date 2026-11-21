@@ -12,7 +12,7 @@ internal static class OrderDrafting
     /// (below the shown price it is recorded as the line discount) and split build sales.
     /// </summary>
     public static async Task<List<OrderItem>> PriceLinesAsync(RetailDbContext db, IReadOnlyList<OrderLineRequest>? lines, string channel,
-        BuildPriceRule? buildPrice, CancellationToken cancellationToken)
+        BuildPriceRule? buildPrice, CancellationToken cancellationToken, PriceOptionRule? priceOptions = null)
     {
         if (lines is null || lines.Count is < 1 or > OrderRules.MaxLines)
             throw new RetailException(400, $"An order needs between 1 and {OrderRules.MaxLines} lines.");
@@ -25,7 +25,7 @@ internal static class OrderDrafting
             if ((line.StockItemId is null) == (line.AssemblyId is null))
                 throw new RetailException(400, "Each order line needs either a stock item or a build.");
             if (line.AssemblyId is Guid assemblyId) items.AddRange(await PriceBuildAsync(db, assemblyId, line, store, cancellationToken));
-            else items.Add(await PriceStockItemAsync(db, line.StockItemId!.Value, line, store, inBuildCategories, cancellationToken));
+            else items.Add(await PriceStockItemAsync(db, line.StockItemId!.Value, line, store, inBuildCategories, priceOptions, cancellationToken));
         }
         if (!store && inBuildCategories.Count > 0) OrderRules.EnsureBuildPrice(inBuildCategories, buildPrice);
         if (items.Where(item => item.UnitId is not null).GroupBy(item => item.UnitId).Any(group => group.Count() > 1))
@@ -55,7 +55,7 @@ internal static class OrderDrafting
     private static RetailException Unavailable() => new(409, "An item in the order is no longer available.");
 
     private static async Task<OrderItem> PriceStockItemAsync(RetailDbContext db, Guid stockItemId, OrderLineRequest line, bool store,
-        List<Guid?> inBuildCategories, CancellationToken cancellationToken)
+        List<Guid?> inBuildCategories, PriceOptionRule? priceOptions, CancellationToken cancellationToken)
     {
         if (line.Quantity is < 1 or > OrderRules.MaxLines) throw new RetailException(400, "Line quantity must be between 1 and 50.");
         var query = db.StockItems.AsNoTracking().Where(item => item.Id == stockItemId);
@@ -68,14 +68,20 @@ internal static class OrderDrafting
             ?? throw new RetailException(409, "An item in the order is no longer available.");
         if (row.Available < line.Quantity) throw new RetailException(409, $"Only {row.Available} of {row.Item.Code} are available.");
         var prices = StockItemRules.Prices(row.Item.Price, row.Item.WithBoardExtra, row.Item.AloneExtra);
-        var shown = line.PriceOption?.Trim() switch
+        // Online, the category decides which prices exist; with none named the customer gets its first one. The store (POS) is free.
+        var offered = store ? PriceOptionSet.All : (priceOptions ?? PriceOptionRule.Open).ForCategory(row.Item.CategoryId);
+        var option = string.IsNullOrWhiteSpace(line.PriceOption) ? offered.Default : line.PriceOption.Trim();
+        var shown = option switch
         {
-            null or "" or OrderPriceOption.Alone => prices.Alone,
+            OrderPriceOption.Alone => prices.Alone,
             OrderPriceOption.WithBoard => prices.WithBoard,
             OrderPriceOption.InBuild => prices.InBuild,
             _ => throw new RetailException(400, "Price option must be Alone, WithBoard or InBuild.")
         };
-        if (line.PriceOption?.Trim() == OrderPriceOption.InBuild) inBuildCategories.Add(row.Item.CategoryId);
+        // An in-build price is only ever accepted with a processor and a board in the order (EnsureBuildPrice), so it is not blocked here.
+        if (option != OrderPriceOption.InBuild && !offered.Allows(option))
+            throw new RetailException(400, "This price option is not offered for the item.");
+        if (option == OrderPriceOption.InBuild) inBuildCategories.Add(row.Item.CategoryId);
         return Line(row.Item.ModelName, row.Item.Code, row.Item.Photos.FirstOrDefault()?.ThumbnailStorageKey, line.Quantity, shown,
             store ? line.SalePrice : null, stockItemId, null, null);
     }

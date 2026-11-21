@@ -7,6 +7,7 @@ import {
   EMPTY_POS_FORM,
   fillRemaining,
   itemLine,
+  offeredOptions,
   paidTotal,
   paymentState,
   posPhone,
@@ -23,7 +24,7 @@ import {
 
 const item: ItemPick = {
   stockItemId: "s1", code: "RX-0153", name: "Ryzen 5 5600", condition: "Used", warrantyLabel: null,
-  prices: { alone: 4000, withBoard: 3800, inBuild: 3600 }, available: 2
+  prices: { alone: 4000, withBoard: 3800, inBuild: 3600 }, available: 2, priceOptions: ["Alone", "WithBoard", "InBuild"]
 };
 const build: BuildPick = {
   assemblyId: "a1", code: "BLD-07", name: "Gaming build", salePrice: 30000, splittable: true,
@@ -38,10 +39,25 @@ describe("search results", () => {
   it("keeps the stock item id from the inventory and sends public items by code", () => {
     const fromStore = toItemPick({
       code: "RX-1", slug: "gpu", modelName: "GPU", condition: "New", categoryId: null, warrantyLabel: "سنة",
-      prices: { alone: 1, withBoard: 1, inBuild: 1 }, available: 3, thumbnailStorageKey: null, listedAtUtc: ""
+      prices: { alone: 1, withBoard: 1, inBuild: 1 }, available: 3, thumbnailStorageKey: null, listedAtUtc: "", priceOptions: ["Alone", "WithBoard", "InBuild"]
     });
     assert.equal(fromStore.stockItemId, null);
     assert.equal(fromStore.available, 3);
+  });
+
+  it("offers only the prices the category offers and starts the line at the first one", () => {
+    const card = {
+      code: "RX-1", slug: "gpu", modelName: "GPU", condition: "New", categoryId: null, warrantyLabel: null,
+      prices: { alone: 1000, withBoard: 900, inBuild: 800 }, available: 3, thumbnailStorageKey: null, listedAtUtc: "",
+      priceOptions: ["WithBoard", "InBuild"]
+    };
+    const pick = toItemPick(card);
+    assert.deepEqual(pick.priceOptions, ["WithBoard", "InBuild"]);
+    const line = itemLine(pick);
+    assert.deepEqual([line.priceOption, line.salePrice], ["WithBoard", "900"]);
+    assert.deepEqual(offeredOptions(["InBuild", "Alone"]), ["Alone", "InBuild"]);
+    assert.deepEqual(offeredOptions([]), ["Alone", "WithBoard", "InBuild"]);
+    assert.deepEqual(toItemPick({ ...card, priceOptions: [] }).priceOptions, ["Alone", "WithBoard", "InBuild"]);
   });
 
   it("sells a public build whole only (its parts are not known)", () => {

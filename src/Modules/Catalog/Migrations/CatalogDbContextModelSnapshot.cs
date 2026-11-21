@@ -136,6 +136,24 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("parent_id");
 
+                    b.Property<bool>("PriceAlone")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("price_alone");
+
+                    b.Property<bool>("PriceInBuild")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("price_in_build");
+
+                    b.Property<bool>("PriceWithBoard")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("price_with_board");
+
                     b.Property<int>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
@@ -195,6 +213,8 @@ namespace HardwareStore.Modules.Catalog.Migrations
                     b.ToTable("categories", null, t =>
                         {
                             t.HasCheckConstraint("ck_categories_name_not_blank", "length(btrim(name)) > 0");
+
+                            t.HasCheckConstraint("ck_categories_price_option", "price_alone OR price_with_board OR price_in_build");
 
                             t.HasCheckConstraint("ck_categories_self_parent", "parent_id IS NULL OR parent_id <> id");
 

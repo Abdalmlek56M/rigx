@@ -8,7 +8,7 @@ import { formatEgp } from "@/lib/format";
 import { FormSection } from "@/features/checkout/form-parts";
 import { MoneyInput, usePosError } from "./pos-parts";
 import {
-  moneyValid, PRICE_OPTIONS, shownPrice, type BuildLine, type CartLine, type ItemLine, type PosField, type PriceOption
+  moneyValid, shownPrice, type BuildLine, type CartLine, type ItemLine, type PosField, type PriceOption
 } from "./pos-rules";
 import { CloseIcon } from "@/components/ui/icons";
 import { IconButton } from "../kit/Button";
@@ -66,7 +66,7 @@ function ItemRow({ line, below, onChange, onRemove }: LineProps<ItemLine>) {
           aria-label={t("cart.columns.option")} value={line.priceOption} onChange={(event) => setOption(event.target.value as PriceOption)}
           className="h-11 rounded-control border border-input-line bg-surface px-2 text-sm"
         >
-          {PRICE_OPTIONS.map((option) => <option key={option} value={option}>{t(`picker.prices.${option}`)}</option>)}
+          {pick.priceOptions.map((option) => <option key={option} value={option}>{t(`picker.prices.${option}`)}</option>)}
         </select>
       </td>
       <td className={CELL}>

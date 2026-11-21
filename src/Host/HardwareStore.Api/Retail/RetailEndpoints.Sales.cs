@@ -189,7 +189,7 @@ public static partial class RetailEndpoints
     /// </summary>
     private static async Task<Ok<CustomerOrderView>> CreateCustomerOrderAsync(CheckoutRequest request, HttpContext context, OrderService orders,
         StoreSettingsService settings, ContentPolicyService policies, IdentityEmailOutboxWriter outbox, OrderLinks links,
-        BuilderCatalogLoader builderCatalogs, CancellationToken ct)
+        BuilderCatalogLoader builderCatalogs, IPriceOptionSource priceOptions, CancellationToken ct)
     {
         var signedIn = context.TryGetUserId(out var accountId);
         var store = await settings.GetAdminAsync(ct);
@@ -216,7 +216,7 @@ public static partial class RetailEndpoints
         if (store.Payment.WalletEnabled) methods.Add(OrderPaymentMethod.Wallet);
         var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, shipping,
             subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount,
-            await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct), store.Payment.DepositFor);
+            await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct), store.Payment.DepositFor, await priceOptions.LoadAsync(ct));
         var placed = await orders.CreateOnlineAsync(request, policy, ct);
         await OrderEmails.QueueAsync(outbox, links, placed.Order, OrderEmailMessage.Received, ct);
         return TypedResults.Ok(placed.Customer);

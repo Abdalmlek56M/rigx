@@ -235,6 +235,23 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
     }
 
     [Fact]
+    public async Task A_category_keeps_its_sale_price_switches_and_at_least_one_stays_on()
+    {
+        var taxonomy = new TaxonomyService(new TestCatalogContextFactory(fixture.Options), TimeProvider.System);
+        var slug = $"gpu-{Guid.NewGuid():N}"[..12];
+        var created = await taxonomy.SaveCategoryAsync(null, new CategoryInput("GPU", slug, null, null, null, 0, true, null));
+        Assert.Equal(new CategoryPriceOptions(), created.PriceOptions);
+
+        var switched = await taxonomy.SaveCategoryAsync(created.Id,
+            new CategoryInput("GPU", slug, null, null, null, 0, true, created.RowVersion, PriceOptions: new CategoryPriceOptions(WithBoard: false)));
+
+        Assert.Equal(new CategoryPriceOptions(true, false, true), switched.PriceOptions);
+        Assert.Equal(switched.PriceOptions, (await taxonomy.GetCategoriesAsync()).Single(category => category.Id == created.Id).PriceOptions);
+        await Assert.ThrowsAsync<CatalogValidationException>(() => taxonomy.SaveCategoryAsync(created.Id,
+            new CategoryInput("GPU", slug, null, null, null, 0, true, switched.RowVersion, PriceOptions: new CategoryPriceOptions(false, false, false))));
+    }
+
+    [Fact]
     public async Task Taxonomy_rules_enforce_hierarchy_slugs_versions_and_publish_guard()
     {
         var taxonomy = new TaxonomyService(new TestCatalogContextFactory(fixture.Options), TimeProvider.System);

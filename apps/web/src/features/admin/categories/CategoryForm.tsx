@@ -109,6 +109,16 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
         <Check label={t("fields.showInMenu")} checked={form.showInMenu} onChange={(showInMenu) => set({ showInMenu })} />
         <Check label={t("fields.showInBuilder")} checked={form.showInBuilder} onChange={(showInBuilder) => set({ showInBuilder })} />
       </div>
+      <fieldset className="m-0 flex flex-col gap-1 rounded-control border border-line bg-paper p-3">
+        <legend className="px-1 text-[13px] font-bold">{t("fields.priceTitle")}</legend>
+        <p className="m-0 text-xs text-ink-muted">{t("fields.priceHint")}</p>
+        <div className="flex flex-wrap gap-x-5">
+          <Check label={t("fields.priceAlone")} checked={form.priceAlone} onChange={(priceAlone) => set({ priceAlone })} />
+          <Check label={t("fields.priceWithBoard")} checked={form.priceWithBoard} onChange={(priceWithBoard) => set({ priceWithBoard })} />
+          <Check label={t("fields.priceInBuild")} checked={form.priceInBuild} onChange={(priceInBuild) => set({ priceInBuild })} />
+        </div>
+        <FormMessage message={submit.errors.fields.priceOptions ?? null} />
+      </fieldset>
       <FormMessage message={submit.errors.general} />
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!valid}>{t("save")}</Button>

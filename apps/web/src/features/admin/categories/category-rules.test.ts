@@ -4,6 +4,7 @@ import type { Category, SpecDefinition } from "./categories-api.ts";
 import {
   buildTree,
   categoryForm,
+  categoryFormValid,
   effectiveSpecs,
   emptyCategoryForm,
   flattenTree,
@@ -76,7 +77,8 @@ describe("category form", () => {
     const form = { ...emptyCategoryForm(null), name: " Cards ", slug: " gpu ", sortOrder: "4", code: " GPU ", description: " " };
     assert.deepEqual(toCategoryInput(form, null), {
       name: "Cards", nameEn: null, slug: "gpu", parentId: null, description: null, iconStorageKey: null, sortOrder: 4,
-      isActive: true, rowVersion: null, code: "GPU", showInMenu: true, showInBuilder: false
+      isActive: true, rowVersion: null, code: "GPU", showInMenu: true, showInBuilder: false,
+      priceOptions: { alone: true, withBoard: true, inBuild: true }
     });
   });
 
@@ -86,6 +88,15 @@ describe("category form", () => {
     assert.deepEqual([form.sortOrder, form.showInMenu, form.showInBuilder], ["3", true, false]);
     const input = toCategoryInput(form, existing);
     assert.deepEqual([input.iconStorageKey, input.rowVersion, input.sortOrder], ["categories/1/a.webp", 7, 3]);
+  });
+
+  it("carries the sale price switches and refuses a form with all three off", () => {
+    const existing = { ...cat("gpu"), priceOptions: { alone: true, withBoard: false, inBuild: true } };
+    const form = categoryForm(existing);
+    assert.deepEqual([form.priceAlone, form.priceWithBoard, form.priceInBuild], [true, false, true]);
+    assert.deepEqual(toCategoryInput(form, existing).priceOptions, { alone: true, withBoard: false, inBuild: true });
+    assert.ok(categoryFormValid(form));
+    assert.ok(!categoryFormValid({ ...form, priceAlone: false, priceInBuild: false }));
   });
 
   it("sends the English name trimmed, or null when it is empty", () => {
