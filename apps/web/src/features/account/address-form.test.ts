@@ -34,8 +34,20 @@ describe("toAddressRequest", () => {
 
 describe("governorateOptions", () => {
   it("keeps a saved governorate that left the list", () => {
-    assert.deepEqual(governorateOptions(["القاهرة"], "الجيزة").map((o) => o.value), ["الجيزة", "القاهرة"]);
-    assert.deepEqual(governorateOptions(["القاهرة"], "القاهرة").map((o) => o.value), ["القاهرة"]);
+    const rates = [{ name: "القاهرة", nameEn: "Cairo" }];
+    assert.deepEqual(governorateOptions(rates, "الجيزة", "ar").map((o) => o.value), ["الجيزة", "القاهرة"]);
+    assert.deepEqual(governorateOptions(rates, "القاهرة", "ar").map((o) => o.value), ["القاهرة"]);
+  });
+  it("labels the options in the site language but keeps the stored Arabic value", () => {
+    const rates = [{ name: "القاهرة", nameEn: "Cairo" }, { name: "الجيزة", nameEn: "" }];
+    assert.deepEqual(governorateOptions(rates, "", "en"), [
+      { value: "القاهرة", label: "Cairo" },
+      { value: "الجيزة", label: "الجيزة" }
+    ]);
+    assert.deepEqual(governorateOptions(rates, "", "ar"), [
+      { value: "القاهرة", label: "القاهرة" },
+      { value: "الجيزة", label: "الجيزة" }
+    ]);
   });
 });
 

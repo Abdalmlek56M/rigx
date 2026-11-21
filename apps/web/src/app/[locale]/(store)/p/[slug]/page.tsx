@@ -19,6 +19,7 @@ import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { permanentRedirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs } from "@/lib/categories";
+import { localizedName } from "@/lib/localized-name";
 import { parseCondition } from "@/lib/condition";
 import { siteUrl, whatsAppNumber } from "@/lib/contact";
 import { mediaUrl } from "@/lib/media";
@@ -69,22 +70,22 @@ export default async function ProductPage({ params }: Props) {
   const structuredData = [
     productJsonLd({
       name: item.modelName, url, images: item.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: item.prices.alone,
-      available: !soldOut, condition, sku: item.code, category: trail.at(-1)?.name, brand: brand?.name,
+      available: !soldOut, condition, sku: item.code, category: trail.at(-1) ? localizedName(trail.at(-1)!, locale) : undefined, brand: brand?.name,
       organizationId: organizationId()
     }),
     breadcrumbJsonLd([
       { name: t("home"), url: absoluteUrl(localizedPath(locale, "/")) },
-      ...trail.map((node) => ({ name: node.name, url: absoluteUrl(localizedPath(locale, `/products?category=${encodeURIComponent(node.slug)}`)) })),
+      ...trail.map((node) => ({ name: localizedName(node, locale), url: absoluteUrl(localizedPath(locale, `/products?category=${encodeURIComponent(node.slug)}`)) })),
       { name: item.modelName }
     ])
   ];
   const availability = soldOut ? t("soldOut") : condition === "Used" ? t("availableUsed") : t("availableNew", { count: item.available });
 
   return (
-    <div className="pb-28 md:pb-0">
+    <div className="pb-44 md:pb-0">
       <JsonLd data={structuredData} />
       <PageHeader
-        breadcrumb={[{ label: t("home"), href: "/" }, ...trail.map((node) => ({ label: node.name, href: `/products?category=${encodeURIComponent(node.slug)}` })), { label: item.modelName }]}
+        breadcrumb={[{ label: t("home"), href: "/" }, ...trail.map((node) => ({ label: localizedName(node, locale), href: `/products?category=${encodeURIComponent(node.slug)}` })), { label: item.modelName }]}
         breadcrumbLabel={t("breadcrumb")}
         title={item.modelName}
         titleDir="ltr"

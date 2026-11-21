@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
+import { localizedName } from "@/lib/localized-name";
 import type { FulfillmentMethod } from "./checkout-request";
 import { FormSection, OptionalPill, useFieldError, type SectionProps } from "./form-parts";
 
@@ -37,6 +38,7 @@ function Option({ method, form, set, title, body }: OptionProps) {
 /** Pickup (when the owner enabled it) or delivery to any governorate with the address fields. */
 export function FulfillmentSection({ form, set, errors, pickupEnabled, pickupAddress, governorates }: FulfillmentSectionProps) {
   const t = useTranslations("checkout.fulfillment");
+  const locale = useLocale();
   const error = useFieldError(errors);
 
   return (
@@ -54,7 +56,7 @@ export function FulfillmentSection({ form, set, errors, pickupEnabled, pickupAdd
         <div className="grid gap-3.5 sm:grid-cols-2">
           <SelectField
             label={t("governorate")} name="governorate" value={form.governorate} onChange={(v) => set("governorate", v)} error={error("governorate")}
-            options={[{ value: "", label: t("governoratePlaceholder") }, ...governorates.map((g) => ({ value: g.code, label: g.name }))]}
+            options={[{ value: "", label: t("governoratePlaceholder") }, ...governorates.map((g) => ({ value: g.code, label: localizedName(g, locale) }))]}
           />
           <TextField label={t("area")} name="area" value={form.area} onChange={(v) => set("area", v)} autoComplete="address-level2" required error={error("area")} />
           <TextField label={t("street")} name="street" value={form.street} onChange={(v) => set("street", v)} autoComplete="street-address" required error={error("street")} />

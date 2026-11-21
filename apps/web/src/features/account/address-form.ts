@@ -1,4 +1,5 @@
 import type { Schemas } from "@rigx/api-client";
+import { localizedName } from "../../lib/localized-name.ts";
 import { isEgyptMobile, normalizePhone } from "../requests/request-fields.ts";
 
 export interface AddressForm {
@@ -75,10 +76,18 @@ export function toUpdateRequest(form: AddressForm, rowVersion: number): UpdateRe
   return { ...toAddressRequest(form), rowVersion };
 }
 
+export interface GovernorateOption {
+  /** The Arabic name the API stores on the address. */
+  name: string;
+  nameEn?: string | null;
+}
+
 /** Dropdown options: the 27 governorates (from the shipping rates), plus a saved legacy value so the form shows it until it is re-picked. */
-export function governorateOptions(names: readonly string[], current: string): { value: string; label: string }[] {
-  const all = current && !names.includes(current) ? [current, ...names] : [...names];
-  return all.map((name) => ({ value: name, label: name }));
+export function governorateOptions(governorates: readonly GovernorateOption[], current: string, locale: string): { value: string; label: string }[] {
+  const all = current && !governorates.some((governorate) => governorate.name === current)
+    ? [{ name: current, nameEn: null }, ...governorates]
+    : [...governorates];
+  return all.map((governorate) => ({ value: governorate.name, label: localizedName(governorate, locale) }));
 }
 
 type AddressParts = Pick<Schemas["CustomerAddressView"], "city" | "street" | "building" | "floor" | "apartment" | "landmark">;

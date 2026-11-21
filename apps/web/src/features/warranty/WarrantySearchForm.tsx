@@ -10,7 +10,7 @@ import { useRouter } from "@/i18n/navigation";
 import { lookupHref } from "./warranty-query";
 
 /** The single search box in a compact card; submitting puts the text in `?q=` so results are a shareable page. */
-export function WarrantySearchForm({ initial }: { initial: string }) {
+export function WarrantySearchForm({ initial, resultFor }: { initial: string; resultFor?: string }) {
   const t = useTranslations("warranty");
   const router = useRouter();
   const [text, setText] = useState(initial);
@@ -43,6 +43,7 @@ export function WarrantySearchForm({ initial }: { initial: string }) {
           <Button type="submit" variant="accent" icon={SearchIcon}>{t("submit")}</Button>
         </div>
       </form>
+      {resultFor ? <p className="m-0 border-t border-line pt-3 text-sm font-bold">{t("resultsFor", { query: resultFor })}</p> : null}
     </Card>
   );
 }

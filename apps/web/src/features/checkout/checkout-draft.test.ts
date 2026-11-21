@@ -4,7 +4,7 @@ import { EMPTY_FORM, type CheckoutFormState } from "./checkout-request.ts";
 import { CHECKOUT_DRAFT_VERSION, draftJson, mergeDraft, parseDraft, toDraft } from "./checkout-draft.ts";
 
 const form = (patch: Partial<CheckoutFormState> = {}): CheckoutFormState => ({
-  ...EMPTY_FORM, name: "عمر", phone: "01289186840", email: "omar@example.com", emailConfirm: "omar@example.com",
+  ...EMPTY_FORM, name: "عمر", phone: "01289186840", whatsAppNumber: "01000000005", email: "omar@example.com", emailConfirm: "omar@example.com",
   fulfillment: "Delivery", governorate: "ALX", area: "العجمي", street: "شارع 9", building: "12", landmark: "بجوار المسجد",
   notes: "اتصل قبل التسليم", usage: "Gaming", usageNote: "", leadSource: "Google", paymentMethod: "CashOnDelivery",
   termsAccepted: true, couponCode: "AHMED10", ...patch
@@ -15,6 +15,7 @@ describe("checkout draft", () => {
     const restored = mergeDraft(parseDraft(draftJson(form())));
     assert.equal(restored.name, "عمر");
     assert.equal(restored.phone, "01289186840");
+    assert.equal(restored.whatsAppNumber, "01000000005");
     assert.equal(restored.emailConfirm, "omar@example.com");
     assert.equal(restored.fulfillment, "Delivery");
     assert.equal(restored.governorate, "ALX");
@@ -28,6 +29,7 @@ describe("checkout draft", () => {
     assert.equal("couponCode" in draft, false);
     assert.equal("paymentMethod" in draft, false);
     assert.equal("termsAccepted" in draft, false);
+    assert.equal(draft.whatsAppNumber, "01000000005");
   });
 
   it("ignores bad JSON, another version and a missing form", () => {

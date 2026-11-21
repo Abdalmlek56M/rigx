@@ -7,6 +7,7 @@ import { ChevronDownIcon, ChevronStartIcon, ImagePlaceholderIcon } from "@/compo
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useDismiss } from "@/lib/hooks/use-dismiss";
+import { localizedName } from "@/lib/localized-name";
 import { mediaUrl } from "@/lib/media";
 import { productPath } from "@/lib/seo/urls";
 import type { MenuCategory } from "@/lib/storefront";
@@ -58,6 +59,7 @@ const CLOSE_DELAY = 220;
  */
 export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
   const t = useTranslations("header");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -124,7 +126,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>
                         <CategoryIcon slug={category.slug} size={16} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate">{category.name}</span>
+                      <span className="min-w-0 flex-1 truncate">{localizedName(category, locale)}</span>
                       {category.children.length > 0 ? (
                         <span aria-hidden="true" className={`flex transition-opacity ltr:-scale-x-100 ${current ? "opacity-100 text-orange-text" : "opacity-0"}`}>
                           <ChevronStartIcon size={16} />
@@ -137,9 +139,9 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
             </ul>
             <div key={active.slug} className="mega-pane flex min-w-0 flex-col gap-3 py-1">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="m-0 text-lg font-bold">{active.name}</h2>
+                <h2 className="m-0 text-lg font-bold">{localizedName(active, locale)}</h2>
                 <Link href={categoryHref(active.slug)} onClick={close} className="press inline-flex min-h-9 items-center gap-1.5 rounded-full border border-input-line px-3.5 text-[13px] font-bold transition-colors hover:border-orange hover:text-orange-text">
-                  {t("seeAll", { name: active.name })}
+                  {t("seeAll", { name: localizedName(active, locale) })}
                   <span aria-hidden="true" className="flex ltr:-scale-x-100"><ChevronStartIcon size={16} /></span>
                 </Link>
               </div>
@@ -152,7 +154,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                       onClick={close}
                       className="press flex min-h-10 flex-1 basis-[150px] items-center justify-between gap-2 rounded-control bg-orange-soft px-3 text-sm font-bold text-orange-text transition-[filter] hover:brightness-[0.97]"
                     >
-                      {t(condition === "New" ? "conditionNew" : "conditionUsed", { name: active.name })}
+                      {t(condition === "New" ? "conditionNew" : "conditionUsed", { name: localizedName(active, locale) })}
                       <span aria-hidden="true" className="flex ltr:-scale-x-100"><ChevronStartIcon size={16} /></span>
                     </Link>
                   ))}
@@ -167,9 +169,9 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                         onClick={close}
                         className="press flex min-h-11 flex-col justify-center gap-0.5 rounded-control border border-line px-3 py-2 transition-colors hover:border-orange/60 hover:bg-paper"
                       >
-                        <b className="text-sm">{child.name}</b>
+                        <b className="text-sm">{localizedName(child, locale)}</b>
                         {child.children.length > 0 ? (
-                          <span className="truncate text-xs text-ink-muted">{child.children.map((grandchild) => grandchild.name).join(" · ")}</span>
+                          <span className="truncate text-xs text-ink-muted">{child.children.map((grandchild) => localizedName(grandchild, locale)).join(" · ")}</span>
                         ) : null}
                       </Link>
                     </li>

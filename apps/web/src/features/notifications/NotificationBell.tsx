@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { HEADER_ICON_BUTTON } from "@/components/layout/nav-links";
+import { IconButton } from "@/components/ui/Button";
 import { CountBadge } from "@/components/ui/CountBadge";
 import { cardClass } from "@/components/ui/Card";
-import { BellIcon } from "@/components/ui/icons";
+import { BellIcon, CheckIcon } from "@/components/ui/icons";
 import { useSession } from "@/features/auth/use-session";
 import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
@@ -85,9 +86,7 @@ function Bell() {
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 className="m-0 text-[15px] font-bold">{t("title")}</h2>
             {unread > 0 ? (
-              <button type="button" onClick={() => void markAllRead()} className="min-h-9 text-[13px] font-bold text-orange-text hover:underline">
-                {t("markAll")}
-              </button>
+              <IconButton icon={CheckIcon} label={t("markAll")} variant="ghost" size="sm" onClick={() => void markAllRead()} />
             ) : null}
           </div>
           <Entries feed={feed} failed={failed} onOpen={opened} onRetry={() => void refresh()} />

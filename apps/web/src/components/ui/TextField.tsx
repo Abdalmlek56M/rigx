@@ -18,6 +18,8 @@ interface TextFieldProps {
   error?: string | null;
   /** The text's own direction when it is in a fixed language (an Arabic or English copy), whatever the page language. */
   dir?: "ltr" | "rtl";
+  /** The keypad a phone/email field asks for on touch screens. */
+  inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
   /** Bounds for date/number inputs (e.g. no future date). */
   max?: string;
   min?: string;
@@ -31,7 +33,7 @@ interface TextFieldProps {
  * A labelled text input; `error` is announced and linked to the input. A number field is a text input with a number keypad, so digits typed
  * on an Arabic keyboard are accepted (as Western digits) instead of being silently ignored.
  */
-export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, max, min, step, maxLength }: TextFieldProps) {
+export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength }: TextFieldProps) {
   const errorId = `${name}-error`;
   const numeric = type === "number";
   return (
@@ -40,7 +42,7 @@ export function TextField({ label, labelEnd, name, value, onChange, type = "text
       <input
         name={name}
         type={numeric ? "text" : type}
-        inputMode={numeric ? (step === "1" ? "numeric" : "decimal") : undefined}
+        inputMode={numeric ? (step === "1" ? "numeric" : "decimal") : inputMode}
         value={value}
         required={required}
         max={numeric ? undefined : max}

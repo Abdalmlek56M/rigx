@@ -18,8 +18,8 @@ import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
 import { useCatalogPending } from "./use-catalog-pending";
 
 /**
- * One catalog card (catalog grid, home "just arrived"). The photo sits in a square frame and is never cropped; the title
- * is at most two lines and the badge and price share the bottom row so cards in a row line up.
+ * One catalog card (catalog grid, home "just arrived"). The photo fills a square frame; the title starts directly under
+ * it, at most two lines, and the badge and price share the bottom row so cards in a row line up.
  */
 export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const t = useTranslations("item");
@@ -40,7 +40,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
       >
         {item.thumbnailStorageKey ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={320} loading="lazy" className="h-full w-full object-contain p-4" />
+          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={320} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <ImagePlaceholderIcon />
         )}

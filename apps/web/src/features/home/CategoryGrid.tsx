@@ -1,8 +1,9 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { categoryHref } from "@/components/layout/nav-links";
 import { cardClass } from "@/components/ui/Card";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Link } from "@/i18n/navigation";
+import { localizedName } from "@/lib/localized-name";
 import { mediaUrl } from "@/lib/media";
 import type { MenuCategory } from "@/lib/storefront";
 import { Rail } from "./Rail";
@@ -13,6 +14,7 @@ import { Rail } from "./Rail";
  */
 export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
   const t = useTranslations("home.categories");
+  const locale = useLocale();
   if (categories.length === 0) return null;
 
   return (
@@ -37,7 +39,7 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
                 className="pointer-events-none absolute end-3 top-3 h-[72px] w-[88px] rounded-[8px] object-contain transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:scale-[1.04] md:h-[84px] md:w-[108px]"
               />
             ) : null}
-            <span className="relative line-clamp-2">{category.name}</span>
+            <span className="relative line-clamp-2">{localizedName(category, locale)}</span>
           </Link>
         </li>
       ))}

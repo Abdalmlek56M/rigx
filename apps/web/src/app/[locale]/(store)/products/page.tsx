@@ -49,7 +49,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { state, category, brand } = await resolve(searchParams);
   const seo = await pageSeo(locale, catalogCanonicalPath(state));
   // Search results and filtered views point at their category page; search results stay out of the index.
-  return { title: await catalogTitle(state, category, brand), ...seo, ...(state.search ? { robots: { index: false, follow: true } } : {}) };
+  return { title: await catalogTitle(state, category, brand, locale), ...seo, ...(state.search ? { robots: { index: false, follow: true } } : {}) };
 }
 
 async function loadItems(query: ReturnType<typeof toApiQuery>): Promise<Schemas["StoreItemPage"] | null> {
@@ -82,7 +82,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         state={state}
         tree={storefront.categoryTree}
         category={category}
-        title={await catalogTitle(state, category, brand)}
+        title={await catalogTitle(state, category, brand, locale)}
         counts={result?.counts ?? { new: 0, used: 0 }}
       />
       <section className="flex shell items-start gap-7 pb-16">

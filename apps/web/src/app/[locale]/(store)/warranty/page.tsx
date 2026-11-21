@@ -46,13 +46,12 @@ export default async function WarrantyPage({ params, searchParams }: Props) {
   return (
     <section className="mx-auto flex w-full max-w-[860px] flex-col gap-5 px-4 pb-16 md:px-6">
       <PageHeader contained={false} title={t("title")} lead={t("subtitle")} icon={ShieldIcon} />
-      <WarrantySearchForm key={query} initial={query} />
       <p className="m-0 text-xs text-ink-muted">
         {t.rich("accountNote", { link: (chunks) => <Link href="/account/warranties" className="font-bold text-orange-text underline hover:text-orange-text-hover">{chunks}</Link> })}
       </p>
+      <WarrantySearchForm key={query} initial={query} resultFor={query || undefined} />
       {lookup === null ? null : lookup.status === "ok" ? (
         <div className="flex flex-col gap-3" aria-live="polite">
-          <h2 className="m-0 text-lg font-bold">{t("resultsFor", { query })}</h2>
           {lookup.items.length === 0 ? (
             <EmptyState icon={ShieldIcon} title={t("empty")} />
           ) : (

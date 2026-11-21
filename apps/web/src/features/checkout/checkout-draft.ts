@@ -8,10 +8,10 @@ export const CHECKOUT_DRAFT_VERSION = 1;
 
 /** Only what the customer typed in the order form; no coupon result, payment status or anything sensitive. */
 export type CheckoutDraft = Partial<Pick<CheckoutFormState,
-  "name" | "phone" | "phoneHasWhatsApp" | "email" | "emailConfirm" | "fulfillment" | "governorate" | "area" | "street" |
+  "name" | "phone" | "phoneHasWhatsApp" | "whatsAppNumber" | "email" | "emailConfirm" | "fulfillment" | "governorate" | "area" | "street" |
   "building" | "landmark" | "notes" | "usage" | "usageNote" | "leadSource">>;
 
-const TEXT_FIELDS = ["name", "phone", "email", "emailConfirm", "governorate", "area", "street", "building", "landmark", "notes", "usageNote"] as const;
+const TEXT_FIELDS = ["name", "phone", "whatsAppNumber", "email", "emailConfirm", "governorate", "area", "street", "building", "landmark", "notes", "usageNote"] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isText = (value: unknown): value is string => typeof value === "string";
@@ -21,7 +21,8 @@ const isUsage = (value: unknown): value is CheckoutUsage => CHECKOUT_USAGES.some
 /** The saved part of a form (fresh object, so the live form is never stored by reference). */
 export function toDraft(form: CheckoutFormState): CheckoutDraft {
   return {
-    name: form.name, phone: form.phone, phoneHasWhatsApp: form.phoneHasWhatsApp, email: form.email, emailConfirm: form.emailConfirm,
+    name: form.name, phone: form.phone, phoneHasWhatsApp: form.phoneHasWhatsApp, whatsAppNumber: form.whatsAppNumber,
+    email: form.email, emailConfirm: form.emailConfirm,
     fulfillment: form.fulfillment, governorate: form.governorate, area: form.area, street: form.street, building: form.building,
     landmark: form.landmark, notes: form.notes, usage: form.usage, usageNote: form.usageNote, leadSource: form.leadSource
   };

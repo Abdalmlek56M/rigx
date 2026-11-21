@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
 import { Button } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
-import { addressErrors, governorateOptions, type AddressField, type AddressForm } from "./address-form";
+import { addressErrors, governorateOptions, type AddressField, type AddressForm, type GovernorateOption } from "./address-form";
 
 interface AddressFormViewProps {
   initial: AddressForm;
-  governorates: readonly string[];
+  governorates: readonly GovernorateOption[];
   busy: boolean;
   failed: boolean;
   onSubmit: (form: AddressForm) => void;
@@ -20,11 +20,12 @@ interface AddressFormViewProps {
 /** The add / edit address form; invalid required fields are flagged on submit. */
 export function AddressFormView({ initial, governorates, busy, failed, onSubmit, onCancel }: AddressFormViewProps) {
   const t = useTranslations("account.addresses");
+  const locale = useLocale();
   const [form, setForm] = useState(initial);
   const [errors, setErrors] = useState<AddressField[]>([]);
   const set = <K extends keyof AddressForm>(key: K, value: AddressForm[K]) => setForm((current) => ({ ...current, [key]: value }));
   const error = (field: AddressField) => (errors.includes(field) ? t(`errors.${field}`) : null);
-  const options = [{ value: "", label: t("governoratePlaceholder") }, ...governorateOptions(governorates, form.governorate)];
+  const options = [{ value: "", label: t("governoratePlaceholder") }, ...governorateOptions(governorates, form.governorate, locale)];
 
   function submit(event: React.FormEvent) {
     event.preventDefault();

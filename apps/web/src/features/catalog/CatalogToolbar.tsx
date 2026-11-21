@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { categoryBySlug, effectiveSpecs, type CategoryNode } from "@/lib/categories";
+import { localizedName } from "@/lib/localized-name";
 import type { Brand } from "@/lib/storefront";
 import { activeFilters, catalogHref, type CatalogState, type SortKey } from "./catalog-query";
 import { CatalogClickTracker } from "./CatalogClickTracker";
@@ -25,14 +26,17 @@ interface CatalogToolbarProps {
 export async function CatalogToolbar({ state, tree, brands, total, panel, queryKey }: CatalogToolbarProps) {
   const t = await getTranslations("catalog");
   const tc = await getTranslations("common.condition");
+  const locale = await getLocale();
   const filters = activeFilters(state);
 
   function label(filter: ReturnType<typeof activeFilters>[number]): string {
     switch (filter.kind) {
       case "search":
         return t("chips.search", { query: filter.value });
-      case "category":
-        return categoryBySlug(tree, filter.value)?.name ?? filter.value;
+      case "category": {
+        const category = categoryBySlug(tree, filter.value);
+        return category ? localizedName(category, locale) : filter.value;
+      }
       case "brand":
         return brands.find((brand) => brand.slug === filter.value)?.name ?? filter.value;
       case "condition":

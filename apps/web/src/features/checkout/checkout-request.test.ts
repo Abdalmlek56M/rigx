@@ -33,10 +33,20 @@ describe("toOrderLines", () => {
 describe("toCheckoutRequest", () => {
   it("trims, normalises the phone and nulls empty optionals", () => {
     const request = toCheckoutRequest(valid(), [item()]);
-    assert.deepEqual(request.customer, { name: "Omar", phone: "01289186840", phoneHasWhatsApp: true, email: null });
+    assert.deepEqual(request.customer, { name: "Omar", phone: "01289186840", phoneHasWhatsApp: true, email: null, whatsAppNumber: null });
     assert.deepEqual(request.address, { governorate: "ALX", area: "Agami", street: "Main st", building: null, landmark: null });
     assert.equal(request.notes, null);
     assert.equal(request.termsAccepted, true);
+  });
+  it("sends a separate WhatsApp number only when the main phone is not on WhatsApp", () => {
+    const separate = toCheckoutRequest(valid({ phoneHasWhatsApp: false, whatsAppNumber: " 0100 000 0005 " }), [item()]);
+    assert.equal(separate.customer?.whatsAppNumber, "01000000005");
+    assert.equal(toCheckoutRequest(valid({ phoneHasWhatsApp: true, whatsAppNumber: "01000000005" }), [item()]).customer?.whatsAppNumber, null);
+    assert.equal(toCheckoutRequest(valid({ phoneHasWhatsApp: false, whatsAppNumber: "" }), [item()]).customer?.whatsAppNumber, null);
+  });
+  it("rejects a malformed separate WhatsApp number", () => {
+    assert.deepEqual(validateCheckout(valid({ phoneHasWhatsApp: false, whatsAppNumber: "12345" })), ["whatsAppNumber"]);
+    assert.deepEqual(validateCheckout(valid({ phoneHasWhatsApp: false, whatsAppNumber: "011 1111 1111" })), []);
   });
   it("sends the applied coupon code, or null", () => {
     assert.equal(toCheckoutRequest(valid(), [item()]).couponCode, null);
@@ -79,7 +89,7 @@ describe("validateCheckout", () => {
 
 describe("missing field names", () => {
   const names: Record<FieldKey, string> = {
-    name: "الاسم", phone: "رقم الهاتف", emailConfirm: "تأكيد البريد الإلكتروني", governorate: "المحافظة", area: "المنطقة",
+    name: "الاسم", phone: "رقم الهاتف", whatsAppNumber: "رقم واتساب للتواصل", emailConfirm: "تأكيد البريد الإلكتروني", governorate: "المحافظة", area: "المنطقة",
     street: "اسم الشارع", usageNote: "تفاصيل الاستخدام", paymentMethod: "طريقة الدفع", terms: "الموافقة على الشروط"
   };
 

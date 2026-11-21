@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { IconButton } from "@/components/ui/Button";
 import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 import { AccountLink } from "@/features/auth/AccountLink";
 import { Link } from "@/i18n/navigation";
+import { localizedName } from "@/lib/localized-name";
 import type { MenuCategory } from "@/lib/storefront";
 import { LocaleSwitch } from "./LocaleSwitch";
 import { NAV_LINKS, categoryHref } from "./nav-links";
@@ -18,6 +19,7 @@ const itemClass = "flex min-h-11 items-center rounded-card px-3 text-sm hover:bg
 export function MobileMenu({ categories, englishEnabled }: { categories: MenuCategory[]; englishEnabled: boolean }) {
   const t = useTranslations("header");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
@@ -44,13 +46,13 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
                 {categories.map((category) => (
                   <li key={category.slug}>
                     <Link href={categoryHref(category.slug)} className={`${itemClass} font-bold`}>
-                      {category.name}
+                      {localizedName(category, locale)}
                     </Link>
                     <ul className="ps-3">
                       {category.children.map((child) => (
                         <li key={child.slug}>
                           <Link href={categoryHref(child.slug)} className={itemClass}>
-                            {child.name}
+                            {localizedName(child, locale)}
                           </Link>
                         </li>
                       ))}

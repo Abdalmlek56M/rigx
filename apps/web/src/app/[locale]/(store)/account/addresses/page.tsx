@@ -10,5 +10,5 @@ export function generateMetadata(props: AccountPageProps): Promise<Metadata> {
 export default async function AddressesPage(props: AccountPageProps) {
   await enterAccountPage(props);
   const rates = await loadShippingRates();
-  return <AddressesPanel governorates={rates?.governorates.map((governorate) => governorate.name) ?? []} />;
+  return <AddressesPanel governorates={rates?.governorates ?? []} />;
 }

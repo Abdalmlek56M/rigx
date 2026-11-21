@@ -12,6 +12,8 @@ export interface CheckoutFormState {
   name: string;
   phone: string;
   phoneHasWhatsApp: boolean;
+  /** A second number for WhatsApp when the main phone is not on WhatsApp; sent only then. */
+  whatsAppNumber: string;
   email: string;
   /** Typed again to catch a wrong address before the order is sent. */
   emailConfirm: string;
@@ -32,21 +34,22 @@ export interface CheckoutFormState {
 }
 
 export const EMPTY_FORM: CheckoutFormState = {
-  name: "", phone: "", phoneHasWhatsApp: true, email: "", emailConfirm: "", fulfillment: "Delivery", governorate: "", area: "",
+  name: "", phone: "", phoneHasWhatsApp: true, whatsAppNumber: "", email: "", emailConfirm: "", fulfillment: "Delivery", governorate: "", area: "",
   street: "", building: "", landmark: "", notes: "", usage: null, usageNote: "", leadSource: null, paymentMethod: null,
   termsAccepted: false, couponCode: ""
 };
 
 /** Fields the form can flag; the message for each lives under `checkout.errors.<key>`. */
-export type FieldKey = "name" | "phone" | "emailConfirm" | "governorate" | "area" | "street" | "usageNote" | "paymentMethod" | "terms";
+export type FieldKey = "name" | "phone" | "whatsAppNumber" | "emailConfirm" | "governorate" | "area" | "street" | "usageNote" | "paymentMethod" | "terms";
 
 /** The order the form checks, top to bottom; the alert names them and focuses the first. */
-export const FIELD_ORDER: readonly FieldKey[] = ["name", "phone", "emailConfirm", "governorate", "area", "street", "usageNote", "paymentMethod", "terms"];
+export const FIELD_ORDER: readonly FieldKey[] = ["name", "phone", "whatsAppNumber", "emailConfirm", "governorate", "area", "street", "usageNote", "paymentMethod", "terms"];
 
 /** The input a field lives on, for focusing the first missing one. */
 export const FIELD_INPUT: Record<FieldKey, string> = {
   name: "name",
   phone: "phone",
+  whatsAppNumber: "whatsAppNumber",
   emailConfirm: "emailConfirm",
   governorate: "governorate",
   area: "area",
@@ -74,8 +77,15 @@ const orNull = (value: string): string | null => value.trim() || null;
 
 export function toCheckoutRequest(form: CheckoutFormState, lines: CartLine[]): Schemas["CheckoutRequest"] {
   const delivery = form.fulfillment === "Delivery";
+  const whatsAppNumber = !form.phoneHasWhatsApp && form.whatsAppNumber.trim() ? normalizePhone(form.whatsAppNumber) : null;
   return {
-    customer: { name: form.name.trim(), phone: normalizePhone(form.phone), phoneHasWhatsApp: form.phoneHasWhatsApp, email: orNull(form.email) },
+    customer: {
+      name: form.name.trim(),
+      phone: normalizePhone(form.phone),
+      phoneHasWhatsApp: form.phoneHasWhatsApp,
+      email: orNull(form.email),
+      whatsAppNumber
+    },
     fulfillmentMethod: form.fulfillment,
     address: delivery
       ? {
@@ -99,6 +109,7 @@ export function validateCheckout(form: CheckoutFormState): FieldKey[] {
   const found: FieldKey[] = [];
   if (!form.name.trim()) found.push("name");
   if (!isEgyptMobile(form.phone)) found.push("phone");
+  if (!form.phoneHasWhatsApp && form.whatsAppNumber.trim() && !isEgyptMobile(form.whatsAppNumber)) found.push("whatsAppNumber");
   const email = form.email.trim();
   if (email && email.toLowerCase() !== form.emailConfirm.trim().toLowerCase()) found.push("emailConfirm");
   if (form.fulfillment === "Delivery") {

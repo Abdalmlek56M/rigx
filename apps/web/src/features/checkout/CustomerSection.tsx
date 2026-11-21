@@ -32,11 +32,25 @@ export function CustomerSection({ form, set, errors, showLogin, onLogin }: Secti
       </div>
       <label className="flex min-h-11 items-center gap-2.5 text-sm">
         <input
-          type="checkbox" checked={form.phoneHasWhatsApp} onChange={(event) => set("phoneHasWhatsApp", event.target.checked)}
+          type="checkbox" checked={form.phoneHasWhatsApp}
+          onChange={(event) => {
+            const checked = event.target.checked;
+            set("phoneHasWhatsApp", checked);
+            if (checked) set("whatsAppNumber", "");
+          }}
           className="h-[18px] w-[18px] accent-orange"
         />
         {t("whatsApp")}
       </label>
+      {form.phoneHasWhatsApp ? null : (
+        <div className="grid gap-3.5 sm:grid-cols-2">
+          <TextField
+            label={t("whatsAppNumber")} labelEnd={<OptionalPill />} name="whatsAppNumber" type="tel" inputMode="tel"
+            ltr autoComplete="tel" placeholder="01xxxxxxxxx" value={form.whatsAppNumber}
+            onChange={(v) => set("whatsAppNumber", v)} error={error("whatsAppNumber")}
+          />
+        </div>
+      )}
       <div className="grid gap-3.5 sm:grid-cols-2">
         <TextField
           label={t("email")} labelEnd={<OptionalPill />} name="email" type="email" ltr autoComplete="email"

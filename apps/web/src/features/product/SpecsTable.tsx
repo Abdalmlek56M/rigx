@@ -11,7 +11,7 @@ export function SpecsTable({ rows }: { rows: SpecRow[] }) {
 
   return (
     <Card title={t("specs")} icon={CpuIcon} padding="md">
-      <InfoGrid columns={2} className="gap-y-4">
+      <InfoGrid columns={1} className="gap-y-4 md:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => (
           <InfoField key={row.key} label={row.name} value={row.value} />
         ))}

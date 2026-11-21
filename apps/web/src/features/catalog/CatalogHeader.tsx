@@ -1,8 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { cardClass } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Link } from "@/i18n/navigation";
 import { categoryPath, type CategoryNode } from "@/lib/categories";
+import { localizedName } from "@/lib/localized-name";
 import { catalogHref, type CatalogState } from "./catalog-query";
 
 interface CatalogHeaderProps {
@@ -17,6 +18,7 @@ interface CatalogHeaderProps {
 export async function CatalogHeader({ state, tree, category, title, counts }: CatalogHeaderProps) {
   const t = await getTranslations("catalog");
   const tc = await getTranslations("common.condition");
+  const locale = await getLocale();
   const trail = category ? categoryPath(tree, category.id) : [];
   const tabs = [
     { condition: null, label: t("all"), count: counts.new + counts.used },
@@ -24,10 +26,12 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
     { condition: "Used", label: tc("Used"), count: counts.used }
   ] as const;
   const selected = tabs.findIndex((tab) => tab.condition === state.condition);
+  const trailItems = trail.map((node) => ({ label: localizedName(node, locale), href: catalogHref(state, { category: node.slug }) }));
   const breadcrumb = [
     { label: t("home"), href: "/" },
-    ...trail.map((node) => ({ label: node.name, href: catalogHref(state, { category: node.slug }) })),
-    { label: title }
+    ...trailItems,
+    // The category page's title is the category itself; do not repeat it in the trail.
+    ...(trailItems.at(-1)?.label === title ? [] : [{ label: title }])
   ];
 
   return (

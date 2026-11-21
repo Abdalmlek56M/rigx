@@ -65,7 +65,7 @@ export default async function BuildPage({ params }: Props) {
   ];
 
   return (
-    <div className="pb-28 md:pb-0">
+    <div className="pb-44 md:pb-0">
       <JsonLd data={structuredData} />
       <PageHeader
         breadcrumb={[{ label: t("home"), href: "/" }, { label: t("builds"), href: "/builds" }, { label: title }]}

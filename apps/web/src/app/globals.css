@@ -288,7 +288,7 @@ body {
 /* Floating buttons sit above a page's sticky buy bar (product, build) instead of covering it. */
 @media (max-width: 767px) {
   body:has([data-sticky-bar="md"]) .floating-lift {
-    bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    bottom: calc(7rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -339,6 +339,19 @@ body {
 /* Hover tip for icon-only buttons (`.tip` + `data-tip`): appears above the button after a short rest, pointer devices only. */
 .tip {
   position: relative;
+}
+
+/* An icon button that is placed over a picture keeps its own offset; the tip still hangs from the button. */
+.tip.absolute {
+  position: absolute;
+}
+
+.tip.fixed {
+  position: fixed;
+}
+
+.tip.sticky {
+  position: sticky;
 }
 
 @media (hover: hover) and (pointer: fine) {

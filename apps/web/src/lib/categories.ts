@@ -10,6 +10,8 @@ export interface CategoryNode {
   id: string;
   parentId: string | null;
   name: string;
+  /** English display name from the API; absent until the owner fills it. */
+  nameEn?: string | null;
   slug: string;
   specs: SpecDef[];
   children: CategoryNode[];

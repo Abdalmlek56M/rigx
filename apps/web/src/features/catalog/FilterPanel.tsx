@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link, getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs, type CategoryNode } from "@/lib/categories";
+import { localizedName } from "@/lib/localized-name";
 import { CONDITIONS } from "@/lib/condition";
 import type { Brand } from "@/lib/storefront";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
@@ -25,7 +26,7 @@ interface FilterPanelProps {
   idPrefix: string;
 }
 
-function CategoryList({ nodes, state, openIds }: { nodes: CategoryNode[]; state: CatalogState; openIds: ReadonlySet<string> }) {
+function CategoryList({ nodes, state, openIds, locale }: { nodes: CategoryNode[]; state: CatalogState; openIds: ReadonlySet<string>; locale: string }) {
   return (
     <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-sm">
       {nodes.map((node) => {
@@ -37,11 +38,11 @@ function CategoryList({ nodes, state, openIds }: { nodes: CategoryNode[]; state:
               aria-current={selected ? "true" : undefined}
               className={`flex min-h-10 items-center rounded-control px-2 hover:bg-paper ${openIds.has(node.id) ? "font-bold" : ""} ${selected ? "bg-paper" : ""}`}
             >
-              {node.name}
+              {localizedName(node, locale)}
             </Link>
             {openIds.has(node.id) && node.children.length > 0 ? (
               <div className="ms-2 border-s border-line ps-3">
-                <CategoryList nodes={node.children} state={state} openIds={openIds} />
+                <CategoryList nodes={node.children} state={state} openIds={openIds} locale={locale} />
               </div>
             ) : null}
           </li>
@@ -103,7 +104,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
       {tree.length > 0 ? (
         <fieldset className={fieldset}>
           <legend className={legend}>{t("category")}</legend>
-          <CategoryList nodes={tree} state={state} openIds={openIds} />
+          <CategoryList nodes={tree} state={state} openIds={openIds} locale={locale} />
         </fieldset>
       ) : null}
 

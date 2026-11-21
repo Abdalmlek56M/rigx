@@ -52,8 +52,7 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
   const address = invoice.address
     ? [invoice.address.governorate, invoice.address.area, invoice.address.street, invoice.address.building, invoice.address.landmark].filter(Boolean).join(" › ")
     : "";
-  const contactLine = [storefront.domain, ...new Set(phones)].filter(Boolean).join(" · ");
-  const placeLine = [storefront.email, branding.pickupAddress].filter(Boolean).join(" · ");
+  const phoneLine = [...new Set(phones)].join(" · ");
 
   return (
     <article data-print-invoice className={cardClass({ padding: "none", className: "relative isolate overflow-hidden p-6 md:p-10 print:rounded-none print:border-0 print:p-0" })}>
@@ -66,24 +65,27 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
         <span className="pointer-events-none absolute end-10 top-24 -rotate-12 select-none rounded-lg border-[5px] border-error px-6 py-1 text-5xl font-bold text-error opacity-80 [print-color-adjust:exact]">{t("void")}</span>
       ) : null}
 
-      <header className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-ink pb-5">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <header className="grid gap-6 border-b-2 border-ink pb-5 md:grid-cols-2 md:items-start">
+        <div className="flex min-w-0 flex-col gap-3">
           <Logo width={140} />
           <span className="sr-only">{branding.storeName}</span>
-          {contactLine ? <span dir="ltr" className="text-xs text-ink-muted [overflow-wrap:anywhere]">{contactLine}</span> : null}
-          {placeLine ? <span className="text-xs text-ink-muted [overflow-wrap:anywhere]">{placeLine}</span> : null}
+          <InfoGrid columns={1} className="gap-y-2">
+            <InfoField label={t("address")} value={branding.pickupAddress} />
+            <InfoField label={t("phone")} ltr value={phoneLine} />
+            <InfoField label={t("email")} ltr value={storefront.email} />
+          </InfoGrid>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-end">
           <span className="text-2xl font-bold">{t("title")}</span>
           {kind ? <span className="text-sm text-ink-muted">{t(`kind.${kind}`)}</span> : null}
           <span dir="ltr" className="font-mono text-lg font-semibold tabular-nums">{invoice.number}</span>
+          <span className="text-sm text-ink-muted">{formatDateTimeFull(invoice.issuedAtUtc, locale)}</span>
         </div>
       </header>
 
       <InfoGrid columns={3} className="break-inside-avoid gap-x-6 gap-y-4 py-5">
         <InfoField label={t("customer")} value={invoice.customerName} />
         <InfoField label={t("phone")} ltr value={invoice.phoneNumber} />
-        <InfoField label={t("date")} value={formatDateTimeFull(invoice.issuedAtUtc, locale)} />
         <InfoField label={t("order")} ltr value={invoice.orderReference} />
         <InfoField label={t("fulfillment.label")} value={invoice.fulfillmentMethod === "Pickup" ? t("fulfillment.Pickup") : t("fulfillment.Delivery")} />
         {method ? <InfoField label={t("payment")} value={methods(method)} /> : null}
