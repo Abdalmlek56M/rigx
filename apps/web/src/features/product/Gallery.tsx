@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { IconButton } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
 import { ArrowBackIcon, ArrowEndIcon, ExpandIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { mediaUrl } from "@/lib/media";
 import { GalleryViewer } from "./GalleryViewer";
 
@@ -16,7 +17,7 @@ export interface Photo {
 const SWIPE_MIN = 40;
 
 /** Main photo in a square frame, a row of square thumbnails, arrows and swipe, and a full-screen viewer with zoom. */
-export function Gallery({ photos, alt }: { photos: readonly Photo[]; alt: string }) {
+export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; alt: string; favourite?: { code: string; modelName: string } }) {
   const t = useTranslations("product.gallery");
   const [selected, setSelected] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -63,13 +64,14 @@ export function Gallery({ photos, alt }: { photos: readonly Photo[]; alt: string
           <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} className="group block h-full w-full cursor-zoom-in">
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
             <img src={mediaUrl(current.storageKey)} alt={alt} width={720} height={720} fetchPriority={selected === 0 ? "high" : "auto"} className="h-full w-full object-contain p-4" />
-            <span aria-hidden="true" className="absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-soft transition-colors group-hover:text-orange-text">
+            <span aria-hidden="true" className="absolute start-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-soft transition-colors group-hover:text-orange-text">
               <ExpandIcon size={18} />
             </span>
           </button>
         ) : (
           <div className="flex h-full items-center justify-center text-muted"><ImagePlaceholderIcon size={220} /></div>
         )}
+        {favourite ? <FavouriteButton code={favourite.code} modelName={favourite.modelName} className="absolute end-3 top-3" /> : null}
         {count > 1 ? (
           <>
             <IconButton

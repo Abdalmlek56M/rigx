@@ -8,14 +8,16 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { HelpIcon } from "@/components/ui/icons";
+import { categoryHref } from "@/components/layout/nav-links";
 import { Gallery } from "@/features/product/Gallery";
 import { ProductInfoBoxes } from "@/features/product/ProductInfoBoxes";
 import { PurchasePanel } from "@/features/product/PurchasePanel";
+import { RelatedItems } from "@/features/product/RelatedItems";
+import { loadRelatedItems } from "@/features/product/load-related-items";
 import { SpecsTable } from "@/features/product/SpecsTable";
 import { loadItem } from "@/features/product/load-item";
 import { specRows } from "@/features/product/spec-rows";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { permanentRedirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs } from "@/lib/categories";
@@ -61,8 +63,13 @@ export default async function ProductPage({ params }: Props) {
   if (slug !== item.slug) permanentRedirect({ href: productPath(item.slug), locale });
 
   const t = await getTranslations("product");
-  const [storefront, faqs] = await Promise.all([loadStorefront(), loadItemFaqs(item.code)]);
+  const storefront = await loadStorefront();
   const trail = item.categoryId ? categoryPath(storefront.categoryTree, item.categoryId) : [];
+  const [faqs, related] = await Promise.all([
+    loadItemFaqs(item.code),
+    loadRelatedItems({ code: item.code, categoryId: item.categoryId }, trail, storefront.showSoldOut)
+  ]);
+  const moreHref = trail.at(-1) ? categoryHref(trail.at(-1)!.slug) : "/products";
   const defs = item.categoryId ? effectiveSpecs(storefront.categoryTree, item.categoryId) : [];
   const brand = item.brandId ? storefront.brands.find((entry) => entry.id === item.brandId) : undefined;
   const soldOut = item.available <= 0;
@@ -94,13 +101,12 @@ export default async function ProductPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-2">
             <ConditionBadge condition={condition} />
             <StatusBadge tone={soldOut ? "neutral" : "success"}>{availability}</StatusBadge>
-            <FavouriteButton code={item.code} modelName={item.modelName} />
           </div>
         }
       />
 
       <section className="grid shell items-start gap-6 pb-8 md:grid-cols-2 md:gap-10">
-        <Gallery photos={item.photos} alt={item.modelName} />
+        <Gallery photos={item.photos} alt={item.modelName} favourite={{ code: item.code, modelName: item.modelName }} />
         <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
           <PurchasePanel
             item={{
@@ -119,7 +125,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </section>
 
-      <div className="flex shell flex-col gap-6 pb-14">
+      <div className="flex shell flex-col gap-6">
         <SpecsTable rows={specRows(item.specs, defs)} />
         {faqs.length > 0 ? (
           <Card title={t("faqs")} icon={HelpIcon} padding="md">
@@ -127,6 +133,8 @@ export default async function ProductPage({ params }: Props) {
           </Card>
         ) : null}
       </div>
+
+      <RelatedItems items={related} moreHref={moreHref} />
     </div>
   );
 }

@@ -5,8 +5,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Gallery } from "@/features/product/Gallery";
 import { BuildPartsTable } from "@/features/builds/BuildPartsTable";
 import { BuildPurchasePanel } from "@/features/builds/BuildPurchasePanel";
+import { RelatedBuilds } from "@/features/builds/RelatedBuilds";
+import { loadBuild, loadBuilds } from "@/features/builds/load-builds";
+import { pickRelatedBuilds } from "@/features/builds/related-builds";
 import { buildSuitableFor, buildTitle } from "@/features/builds/build-view";
-import { loadBuild } from "@/features/builds/load-builds";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -47,10 +49,11 @@ export default async function BuildPage({ params }: Props) {
   if (!build) notFound();
   const t = await getTranslations("build");
   const tu = await getTranslations("usage");
-  const storefront = await loadStorefront();
+  const [storefront, allBuilds] = await Promise.all([loadStorefront(), loadBuilds({ usage: null, budget: null })]);
   const usage = parseUsage(build.usage);
   const title = buildTitle(build, locale);
   const suitableFor = buildSuitableFor(build, locale);
+  const related = pickRelatedBuilds(build.code, build.usage, allBuilds ?? []);
   const url = absoluteUrl(localizedPath(locale, `/builds/${build.code}`));
   const structuredData = [
     productJsonLd({
@@ -76,7 +79,7 @@ export default async function BuildPage({ params }: Props) {
         actions={usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : undefined}
       />
       <section className="grid shell items-start gap-6 pb-8 md:grid-cols-2 md:gap-10">
-        <Gallery photos={build.photos} alt={title} />
+        <Gallery photos={build.photos} alt={title} favourite={{ code: build.code, modelName: title }} />
         <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
           {build.warrantyLabel ? <StatusBadge tone="success">{build.warrantyLabel}</StatusBadge> : null}
           <BuildPurchasePanel
@@ -86,9 +89,11 @@ export default async function BuildPage({ params }: Props) {
           />
         </div>
       </section>
-      <div className="flex shell flex-col gap-6 pb-14">
+      <div className="flex shell flex-col gap-6">
         <BuildPartsTable build={build} />
       </div>
+
+      <RelatedBuilds builds={related} />
     </div>
   );
 }

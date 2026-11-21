@@ -133,8 +133,6 @@
   },
   "locale": {
     "switchAria": "Choose language",
-    "arabic": "العربية",
-    "english": "EN",
     "arabicAria": "Arabic",
     "englishAria": "English",
     "switchLabel": "العربية"
@@ -316,7 +314,12 @@
       "inBuild": "With a full build from us",
       "withBoard": "With a motherboard from us",
       "alone": "Alone",
+      "inBuildHelp": "When bought inside a full build from RIGX",
+      "withBoardHelp": "When bought with a motherboard from RIGX",
+      "aloneHelp": "Buying the part on its own",
+      "save": "Save {amount}",
       "hint": "The price is lower when you buy other parts with it.",
+      "price": "Price",
       "total": "Total"
     },
     "quantity": {
@@ -332,22 +335,24 @@
     "faqs": "Questions about this product",
     "info": {
       "warranty": "Warranty",
-      "warrantyLink": "What it covers",
+      "warrantyLink": "What the warranty covers",
       "returns": "Returns",
-      "returnsLink": "Terms",
-      "paymentTitle": "Payment",
+      "returnsLink": "Returns and exchanges terms",
+      "paymentTitle": "Payment methods",
       "payment": {
-        "cash": "Cash",
+        "cash": "Cash on delivery",
         "instaPay": "InstaPay",
-        "wallet": "Wallet"
+        "wallet": "E-wallet"
       },
-      "pickupTitle": "Pickup",
-      "pickupAndShipping": "From {address}, or shipping to all governorates",
-      "shippingOnly": "Shipping to all governorates",
+      "pickupTitle": "Pickup and shipping",
+      "pickupFrom": "Pickup from the store:",
+      "shippingAll": "Shipping to all governorates",
       "title": "Purchase information"
     },
     "orderWhatsApp": "Order it on WhatsApp",
-    "brandLink": "All {brand} products"
+    "brandLink": "All {brand} products",
+    "relatedTitle": "Related products",
+    "relatedMore": "View more"
   },
   "builds": {
     "title": "Ready-made builds",
@@ -401,7 +406,9 @@
       "price": "Price",
       "splitNote": "To order a single part from the build, contact us on WhatsApp."
     },
-    "orderWhatsApp": "Order it on WhatsApp"
+    "orderWhatsApp": "Order it on WhatsApp",
+    "relatedTitle": "Other builds",
+    "relatedMore": "View more"
   },
   "builder": {
     "title": "Build your own PC",
@@ -1159,6 +1166,7 @@
   },
   "favourites": {
     "title": "Favourites",
+    "buildsTitle": "Saved builds",
     "add": "Add {item} to favourites",
     "remove": "Remove {item} from favourites",
     "failed": "Not saved. Try again.",

@@ -3,11 +3,11 @@ import { describe, it } from "node:test";
 import { FAVOURITES_MAX, parseStoredCodes, toggleCode } from "./favourite-rules.ts";
 
 describe("parseStoredCodes", () => {
-  it("keeps RX codes once, in order", () => {
-    assert.deepEqual(parseStoredCodes(JSON.stringify(["RX-0002", "RX-0001", "RX-0002"])), ["RX-0002", "RX-0001"]);
+  it("keeps item and build codes once, in order", () => {
+    assert.deepEqual(parseStoredCodes(JSON.stringify(["RX-0002", "BLD-01", "RX-0002", "BLD-01"])), ["RX-0002", "BLD-01"]);
   });
-  it("drops anything that is not an RX code", () => {
-    assert.deepEqual(parseStoredCodes(JSON.stringify(["RX-1", "BLD-01", 5, null, "rx-2"])), ["RX-1"]);
+  it("keeps only strings shaped like an item or build code", () => {
+    assert.deepEqual(parseStoredCodes(JSON.stringify(["RX-1", "BLD-7", "BLD", "BLD-01x", 5, null, "rx-2", "bld-1"])), ["RX-1", "BLD-7"]);
   });
   it("reads broken or missing storage as empty", () => {
     assert.deepEqual(parseStoredCodes(null), []);

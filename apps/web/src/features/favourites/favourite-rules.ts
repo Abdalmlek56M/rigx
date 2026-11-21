@@ -1,15 +1,15 @@
 /** Same limit as the API (`FavouriteRules.Max`): an account or a guest keeps at most this many hearts. */
 export const FAVOURITES_MAX = 200;
 
-const RX_CODE = /^RX-\d+$/;
+const SAVED_CODE = /^(?:RX|BLD)-\d+$/;
 
-/** A guest's saved list from localStorage: only RX codes, no duplicates, never more than the limit; anything else reads as empty. */
+/** A guest's saved list from localStorage: only item and build codes, no duplicates, never more than the limit; anything else reads as empty. */
 export function parseStoredCodes(raw: string | null): string[] {
   if (!raw) return [];
   try {
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    const codes = parsed.filter((value): value is string => typeof value === "string" && RX_CODE.test(value));
+    const codes = parsed.filter((value): value is string => typeof value === "string" && SAVED_CODE.test(value));
     return [...new Set(codes)].slice(0, FAVOURITES_MAX);
   } catch {
     return [];

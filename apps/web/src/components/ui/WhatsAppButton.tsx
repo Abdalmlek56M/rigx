@@ -21,7 +21,9 @@ export function WhatsAppButton({ href, children, label, size = "md", variant = "
   const iconOnly = children === undefined;
   const tone = variant === "solid"
     ? "bg-whatsapp text-white hover:brightness-105"
-    : "border border-input-line bg-surface text-ink hover:border-whatsapp hover:text-whatsapp";
+    : "bg-surface text-ink hover:text-whatsapp";
+  // The outline option is a secondary button: the ghost base would mute its text on the dark surface.
+  const base = buttonClass({ variant: variant === "solid" ? "ghost" : "secondary", size, iconOnly });
   return (
     <a
       href={href}
@@ -30,7 +32,7 @@ export function WhatsAppButton({ href, children, label, size = "md", variant = "
       aria-label={iconOnly ? label : undefined}
       data-tip={iconOnly ? label : undefined}
       onClick={onClick}
-      className={`${iconOnly ? "tip " : ""}${buttonClass({ variant: "ghost", size, iconOnly })} ${tone}${className ? ` ${className}` : ""}`}
+      className={`${iconOnly ? "tip " : ""}${base} ${tone}${className ? ` ${className}` : ""}`}
     >
       <WhatsAppIcon size={size === "sm" ? 16 : 18} />
       {iconOnly ? null : children}

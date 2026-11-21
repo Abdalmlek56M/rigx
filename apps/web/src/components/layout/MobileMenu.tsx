@@ -77,9 +77,11 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
               </li>
             </ul>
           </nav>
-          <div className="flex items-center gap-2 border-t border-line p-3">
-            <ThemeToggle />
-            {englishEnabled ? <LocaleSwitch /> : null}
+          <div className="flex flex-col gap-2 border-t border-line p-3">
+            {englishEnabled ? <LocaleSwitch fullWidth /> : null}
+            <div className="flex items-center justify-end">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </ModalSheet>

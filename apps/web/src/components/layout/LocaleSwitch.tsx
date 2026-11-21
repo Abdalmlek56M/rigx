@@ -1,42 +1,36 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { GlobeIcon } from "@/components/ui/icons";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { HEADER_ICON_BUTTON } from "./nav-links";
 
-const LINK = "flex h-11 min-w-11 items-center justify-center rounded-full px-2 text-[13px] transition-colors";
-const ACTIVE = "bg-surface font-bold text-ink shadow-soft";
-const IDLE = "font-semibold text-ink-muted hover:bg-surface hover:text-ink";
+const ROW = "flex min-h-11 w-full items-center gap-2.5 rounded-card px-3 text-sm font-bold text-ink transition-colors hover:bg-paper";
 
-/** Switches between Arabic and English keeping the current path; each label keeps its own font and language. */
-export function LocaleSwitch({ className = "" }: { className?: string }) {
+/** One button that switches to the other language, keeping the current path; it shows the target language. */
+export function LocaleSwitch({ className = "", fullWidth = false }: { className?: string; fullWidth?: boolean }) {
   const t = useTranslations("locale");
   const locale = useLocale();
   const pathname = usePathname();
-  const options = [
-    { locale: "ar" as Locale, label: t("arabic"), aria: t("arabicAria"), font: "font-sans", lang: "ar" },
-    { locale: "en" as Locale, label: t("english"), aria: t("englishAria"), font: "font-mono tracking-wide", lang: "en" }
-  ];
+  const target: Locale = locale === "en" ? "ar" : "en";
+  const label = t("switchLabel");
+  const aria = target === "ar" ? t("arabicAria") : t("englishAria");
+  const font = target === "en" ? "font-mono tracking-wide" : "font-sans";
+  const classes = fullWidth ? ROW : `${HEADER_ICON_BUTTON} gap-1.5 px-2.5 text-[13px] font-semibold`;
 
   return (
-    <div role="group" aria-label={t("switchAria")} className={`flex items-center gap-0.5 ${className}`}>
-      {options.map((option) => {
-        const selected = locale === option.locale;
-        return (
-          <Link
-            key={option.locale}
-            href={pathname}
-            locale={option.locale}
-            hrefLang={option.locale}
-            lang={option.lang}
-            aria-label={option.aria}
-            aria-current={selected ? "true" : undefined}
-            className={`${LINK} ${selected ? ACTIVE : IDLE} ${option.font}`}
-          >
-            {option.label}
-          </Link>
-        );
-      })}
-    </div>
+    <Link
+      href={pathname}
+      locale={target}
+      hrefLang={target}
+      lang={target}
+      aria-label={aria}
+      data-tip={aria}
+      className={`tip ${classes}${className ? ` ${className}` : ""}`}
+    >
+      <GlobeIcon size={fullWidth ? 18 : 16} />
+      <span className={font}>{label}</span>
+    </Link>
   );
 }

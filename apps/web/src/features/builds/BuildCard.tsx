@@ -15,6 +15,7 @@ import { mediaUrl } from "@/lib/media";
 import { parseUsage } from "@/lib/usage";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { useCatalogPending } from "@/features/catalog/use-catalog-pending";
+import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { buildCartLine, buildSuitableFor, buildTitle } from "./build-view";
 
 /** One ready-made build: usage code on a square photo, the all-in price, order and edit, with the parts behind "المواصفات". */
@@ -33,7 +34,7 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
   const soldOut = build.copies <= 0;
 
   return (
-    <article className={`${cardClass({ padding: "none", interactive: true })} h-full overflow-hidden rounded-panel transition-opacity duration-200 starting:opacity-0 motion-reduce:transition-none ${pending ? "opacity-60" : "opacity-100"}`}>
+    <article className={`${cardClass({ padding: "none", interactive: true })} relative h-full overflow-hidden rounded-panel transition-opacity duration-200 starting:opacity-0 motion-reduce:transition-none ${pending ? "opacity-60" : "opacity-100"}`}>
       <Link href={href} aria-label={title} className="relative flex aspect-square items-center justify-center overflow-hidden bg-surface text-muted">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
@@ -41,11 +42,12 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
         ) : (
           <ImagePlaceholderIcon size={96} />
         )}
-        <span className="absolute end-3.5 top-3.5 flex flex-wrap justify-end gap-1.5">
+        <span className="absolute start-3.5 top-3.5 flex flex-wrap justify-start gap-1.5">
           {usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : null}
           {soldOut ? <StatusBadge tone="neutral" icon={BanIcon}>{t("soldOutBadge")}</StatusBadge> : null}
         </span>
       </Link>
+      <FavouriteButton code={build.code} modelName={title} className="absolute end-3 top-3" />
       <div className="flex flex-1 flex-col gap-3 p-5 md:p-[22px]">
         <h2 className="m-0 line-clamp-2 min-h-10 text-lg leading-6 font-bold">
           <Link href={href}>{title}</Link>
@@ -89,7 +91,7 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
         </div>
         <div className="mt-auto flex items-baseline justify-between gap-3">
           <span className="text-[13px] text-ink-muted">{t("priceNote")}</span>
-          <span className="text-2xl font-bold">{formatEgp(build.salePrice, locale)}</span>
+          <span className="whitespace-nowrap text-2xl font-bold">{formatEgp(build.salePrice, locale)}</span>
         </div>
         <div className="flex gap-2">
           <AddToCartButton line={buildCartLine(build, locale)} thenOpenCart variant="accent" className="flex-1" />

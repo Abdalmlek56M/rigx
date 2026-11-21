@@ -15,6 +15,8 @@ interface RailProps {
   action?: ReactNode;
   /** Step forward on its own (off under reduced motion). */
   autoAdvance?: boolean;
+  /** Keep the arrow buttons on phones too (the related rails); home rails stay swipe-only there. */
+  arrowsOnMobile?: boolean;
   children: ReactNode;
 }
 
@@ -22,7 +24,7 @@ interface RailProps {
  * A horizontal home rail of `<li>` cards: swipe on touch, drag with the mouse, arrows and keyboard. Scroll-snap settles
  * the cards after a drag; a drag never opens the card it started on. Auto-advance pauses on hover, touch, focus or a hidden tab.
  */
-export function Rail({ title, action, autoAdvance = false, children }: RailProps) {
+export function Rail({ title, action, autoAdvance = false, arrowsOnMobile = false, children }: RailProps) {
   const t = useTranslations("home.rail");
   const track = useRef<HTMLUListElement>(null);
   const paused = useRef(false);
@@ -126,11 +128,11 @@ export function Rail({ title, action, autoAdvance = false, children }: RailProps
       onBlur={release}
       onTouchStart={hold}
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <h2 className="m-0 text-[22px] font-bold md:text-[30px]">{title}</h2>
-        <div className="flex items-center gap-3">
+        <div className="ms-auto flex items-center gap-3">
           {action}
-          <div className="flex gap-2 max-sm:hidden" dir="ltr">
+          <div className={`flex gap-2 ${arrowsOnMobile ? "" : "max-sm:hidden"}`} dir="ltr">
             <button type="button" aria-label={t("scrollLeft")} disabled={!edges.left} onClick={() => step("left")} className={arrow}>
               <ChevronStartIcon size={18} />
             </button>

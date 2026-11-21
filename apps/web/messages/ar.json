@@ -133,8 +133,6 @@
   },
   "locale": {
     "switchAria": "اختيار اللغة",
-    "arabic": "العربية",
-    "english": "EN",
     "arabicAria": "العربية",
     "englishAria": "English",
     "switchLabel": "EN"
@@ -316,7 +314,12 @@
       "inBuild": "مع تجميعة كاملة من عندنا",
       "withBoard": "مع بوردة من عندنا",
       "alone": "منفردة",
+      "inBuildHelp": "عند شرائها ضمن تجميعة كاملة من RIGX",
+      "withBoardHelp": "عند شرائها مع لوحة أم من RIGX",
+      "aloneHelp": "شراء القطعة وحدها",
+      "save": "وفّر {amount}",
       "hint": "ينخفض السعر عند شراء قطع أخرى معها.",
+      "price": "السعر",
       "total": "الإجمالي"
     },
     "quantity": {
@@ -332,22 +335,24 @@
     "faqs": "أسئلة عن هذا المنتج",
     "info": {
       "warranty": "الضمان",
-      "warrantyLink": "ما الذي يغطيه",
+      "warrantyLink": "ما الذي يغطيه الضمان؟",
       "returns": "الاسترجاع",
-      "returnsLink": "الشروط",
-      "paymentTitle": "الدفع",
+      "returnsLink": "شروط الاسترجاع والاستبدال",
+      "paymentTitle": "طرق الدفع",
       "payment": {
-        "cash": "كاش",
+        "cash": "كاش عند الاستلام",
         "instaPay": "InstaPay",
-        "wallet": "محفظة"
+        "wallet": "محفظة إلكترونية"
       },
-      "pickupTitle": "الاستلام",
-      "pickupAndShipping": "من {address}، أو الشحن لكل المحافظات",
-      "shippingOnly": "الشحن لكل المحافظات",
+      "pickupTitle": "الاستلام والشحن",
+      "pickupFrom": "الاستلام من المحل:",
+      "shippingAll": "الشحن لجميع المحافظات",
       "title": "معلومات الشراء"
     },
     "orderWhatsApp": "اطلبها على واتساب",
-    "brandLink": "كل منتجات {brand}"
+    "brandLink": "كل منتجات {brand}",
+    "relatedTitle": "قد يعجبك أيضًا",
+    "relatedMore": "عرض المزيد"
   },
   "builds": {
     "title": "تجميعات جاهزة",
@@ -401,7 +406,9 @@
       "price": "السعر",
       "splitNote": "لطلب قطعة واحدة من التجميعة، تواصل معنا عبر واتساب."
     },
-    "orderWhatsApp": "اطلبها عبر واتساب"
+    "orderWhatsApp": "اطلبها عبر واتساب",
+    "relatedTitle": "تجميعات أخرى",
+    "relatedMore": "عرض المزيد"
   },
   "builder": {
     "title": "جمّع جهازك بنفسك",
@@ -1159,6 +1166,7 @@
   },
   "favourites": {
     "title": "المفضلة",
+    "buildsTitle": "التجميعات المحفوظة",
     "add": "ضيف {item} للمفضلة",
     "remove": "شيل {item} من المفضلة",
     "failed": "ماتحفظتش. جرّب تاني.",

@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { CpuIcon } from "@/components/ui/icons";
 import type { Condition } from "@/lib/condition";
@@ -34,6 +35,11 @@ interface PurchasePanelProps {
 }
 
 const optionLabel: Record<PriceOption, "inBuild" | "withBoard" | "alone"> = { InBuild: "inBuild", WithBoard: "withBoard", Alone: "alone" };
+const optionHelp: Record<PriceOption, "inBuildHelp" | "withBoardHelp" | "aloneHelp"> = {
+  InBuild: "inBuildHelp",
+  WithBoard: "withBoardHelp",
+  Alone: "aloneHelp"
+};
 
 /** Price options, quantity, buy / add-to-cart / notify-me and the WhatsApp question; on mobile the actions sit in a sticky bottom bar. */
 export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
@@ -57,41 +63,52 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
     <Card padding="md" className="gap-4">
       {choices.length > 0 ? (
         <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-          <legend className="mb-2 text-xs font-bold">{t("price.legend")}</legend>
-          {choices.map((choice) => (
-            <label
-              key={choice.option}
-              className="flex min-h-14 cursor-pointer items-center gap-3 rounded-card border border-input-line px-3.5 py-3 has-checked:border-ink has-checked:ring-2 has-checked:ring-ink"
-            >
-              <input
-                type="radio"
-                name="price-option"
-                checked={option === choice.option}
-                onChange={() => setOption(choice.option)}
-                className="h-[18px] w-[18px] accent-ink"
-              />
-              <span className="flex-1 text-[15px] font-bold">{t(`price.${optionLabel[choice.option]}`)}</span>
-              <b className="text-[17px] tabular-nums">{formatEgp(choice.price, locale)}</b>
-            </label>
-          ))}
-          <span className="text-xs text-ink-muted">{t("price.hint")}</span>
+          <legend className="text-xs font-bold">{t("price.legend")}</legend>
+          <p className="m-0 text-xs leading-5 text-ink-muted">{t("price.hint")}</p>
+          {choices.map((choice) => {
+            const saving = item.prices.alone - choice.price;
+            return (
+              <label
+                key={choice.option}
+                className="flex cursor-pointer flex-col gap-1.5 rounded-card border border-line bg-surface px-2.5 py-3 transition-colors hover:border-ink-muted has-checked:border-orange has-checked:bg-orange-soft motion-reduce:transition-none"
+              >
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="price-option"
+                    checked={option === choice.option}
+                    onChange={() => setOption(choice.option)}
+                    className="h-[18px] w-[18px] shrink-0 accent-orange"
+                  />
+                  <b className="min-w-0 flex-1 text-[13px] md:text-sm">{t(`price.${optionLabel[choice.option]}`)}</b>
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <b className="whitespace-nowrap text-[17px] font-bold tabular-nums">{formatEgp(choice.price, locale)}</b>
+                    {saving > 0 ? <StatusBadge tone="success">{t("price.save", { amount: formatEgp(saving, locale) })}</StatusBadge> : null}
+                  </span>
+                </span>
+                <span className="type-label ps-8">{t(`price.${optionHelp[choice.option]}`)}</span>
+              </label>
+            );
+          })}
         </fieldset>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-0.5">
-          <span className="type-label">{count > 1 ? t("price.total") : t("price.alone")}</span>
+          <span className="type-label">{count > 1 ? t("price.total") : t("price.price")}</span>
           <span className="text-[30px] font-bold tabular-nums md:text-[34px]">{formatEgp(unitPrice * count, locale)}</span>
         </div>
         {!soldOut && item.condition === "New" && item.available > 1 ? (
-          <QuantityStepper
-            value={count}
-            max={maxQuantity}
-            onChange={setQuantity}
-            label={t("quantity.label")}
-            decreaseLabel={t("quantity.decrease")}
-            increaseLabel={t("quantity.increase")}
-          />
+          <div className="shrink-0 pb-1">
+            <QuantityStepper
+              value={count}
+              max={maxQuantity}
+              onChange={setQuantity}
+              label={t("quantity.label")}
+              decreaseLabel={t("quantity.decrease")}
+              increaseLabel={t("quantity.increase")}
+            />
+          </div>
         ) : null}
       </div>
 
@@ -106,7 +123,7 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
 
       {whatsAppHref ? <WhatsAppButton href={whatsAppHref} variant="outline" className="hidden md:flex">{whatsAppLabel}</WhatsAppButton> : null}
 
-      <ButtonLink href={`/builder?parts=${encodeURIComponent(item.code)}`} variant="ghost" size="sm" icon={CpuIcon} className="self-start">
+      <ButtonLink href={`/builder?parts=${encodeURIComponent(item.code)}`} variant="secondary" size="sm" icon={CpuIcon} className="w-full justify-start">
         {t("fitsMyPc")}
       </ButtonLink>
 

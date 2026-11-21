@@ -55,10 +55,12 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
           <span className="flex items-center gap-1.5 text-xs text-ink-muted"><ShieldIcon size={13} />{item.warrantyLabel}</span>
         ) : null}
         <div className="mt-auto flex flex-col gap-2 border-t border-line pt-2.5">
-          <div className="flex min-h-7 items-center justify-between gap-2">
-            {condition ? <ConditionBadge condition={condition} /> : <span aria-hidden="true" />}
-            <span className="text-[18px] font-bold tracking-tight">{formatEgp(item.prices.alone, locale)}</span>
+          <div className="flex min-h-6 items-center">
+            {condition ? <ConditionBadge condition={condition} /> : null}
           </div>
+          <span className="whitespace-nowrap text-[17px] font-bold tracking-tight sm:text-[18px]">
+            {formatEgp(item.prices.alone, locale)}
+          </span>
           {soldOut ? (
             <NotifyMeButton target={{ itemCode: item.code, modelName: item.modelName }} size="sm" className="w-full" />
           ) : condition ? (
