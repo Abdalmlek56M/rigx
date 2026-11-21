@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { fieldClass } from "@/components/ui/field-class";
 import { CONDITIONS, type Condition } from "@/lib/condition";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { OptionRow } from "./OptionRow";
@@ -36,31 +39,29 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
   const tabs: { value: Condition | null; label: string }[] = [{ value: null, label: t("all") }, ...CONDITIONS.map((value) => ({ value, label: tc(value) }))];
 
   return (
-    <section aria-labelledby="builder-options-title" className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-4 md:p-[22px]">
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <h2 id="builder-options-title" className="m-0 text-[22px] font-bold">{t("title", { slot: slotName })}</h2>
-        <div role="group" aria-label={t("conditionTabs")} className="flex gap-1 rounded-card bg-paper p-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.label}
-              type="button"
-              aria-pressed={condition === tab.value}
-              onClick={() => setCondition(tab.value)}
-              className={`h-10 rounded-control px-3.5 text-[13px] ${condition === tab.value ? "bg-carbon text-on-carbon" : ""}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+    <Card as="section" title={t("title", { slot: slotName })} titleId="builder-options-title" padding="md" className="gap-4">
+      <div role="group" aria-label={t("conditionTabs")} className="flex flex-wrap gap-1">
+        {tabs.map((tab) => (
+          <Button
+            key={tab.label}
+            type="button"
+            size="sm"
+            variant={condition === tab.value ? "primary" : "ghost"}
+            aria-pressed={condition === tab.value}
+            onClick={() => setCondition(tab.value)}
+          >
+            {tab.label}
+          </Button>
+        ))}
       </div>
-      <span className="rounded-control bg-success/10 px-3 py-2 text-[13px] text-success">{t("hint")}</span>
+      <span className="rounded-control bg-success/10 px-3 py-2 text-xs text-success">{t("hint")}</span>
       <input
         type="search"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         aria-label={t("search")}
         placeholder={t("search")}
-        className="h-11 w-full rounded-control border border-input-line bg-surface px-3 text-sm"
+        className={fieldClass}
       />
       {failed ? (
         <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p>
@@ -80,15 +81,8 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
         </ul>
       )}
       {hasMore ? (
-        <button
-          type="button"
-          onClick={more}
-          disabled={loading}
-          className="h-11 self-center rounded-control border-[1.5px] border-ink px-6 text-sm font-bold disabled:opacity-60"
-        >
-          {t("more")}
-        </button>
+        <Button type="button" variant="secondary" loading={loading} onClick={more} className="self-center">{t("more")}</Button>
       ) : null}
-    </section>
+    </Card>
   );
 }

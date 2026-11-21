@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { WrenchIcon } from "@/components/ui/icons";
 import { SellTradeForm } from "@/features/services/SellTradeForm";
 import { ServiceCard } from "@/features/services/ServiceCard";
 import { SERVICES } from "@/features/services/services-data";
@@ -31,31 +34,31 @@ export default async function ServicesPage({ params }: Props) {
 
   return (
     <>
-      <section className="flex shell flex-col gap-4 pb-10 pt-12 md:pt-16">
-        <h1 className="m-0 text-[34px] leading-[1.2] font-bold md:text-[54px]">
-          {t("hero.line1")}
-          <br />
-          {t("hero.line2")}
-        </h1>
-        <p className="m-0 max-w-[680px] text-base leading-[1.75] text-ink-muted md:text-lg">{t("hero.body")}</p>
-      </section>
+      <PageHeader
+        title={<>{t("hero.line1")}<br />{t("hero.line2")}</>}
+        lead={t("hero.body")}
+        icon={WrenchIcon}
+      />
       <section className="grid shell gap-4 pb-14 md:grid-cols-[repeat(auto-fit,minmax(340px,1fr))]">
         {SERVICES.map((service) => (
           <ServiceCard key={service.id} service={service} whatsApp={whatsApp} />
         ))}
       </section>
       <section id="sell" className="hero-glow scroll-mt-24 border-y border-line">
-        <div className="flex shell flex-wrap gap-12 py-14 md:py-16">
-          <div className="flex flex-1 basis-[340px] flex-col gap-3.5">
-            <span className="text-[13px] font-bold text-orange-text">{t("sell.eyebrow")}</span>
+        <div className="shell grid gap-8 py-14 md:py-16 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12">
+          <Card padding="lg" className="accent-panel self-start gap-3.5">
+            <span className="type-label font-bold text-orange-text">{t("sell.eyebrow")}</span>
             <h2 className="m-0 text-[28px] leading-[1.35] font-bold md:text-4xl">{t("sell.title")}</h2>
             <p className="m-0 text-base leading-[1.8] text-ink-muted">{t("sell.body")}</p>
             <ol className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-ink-muted">
               {([1, 2, 3, 4] as const).map((step) => (
-                <li key={step}>{t(`sell.steps.${step}`)}</li>
+                <li key={step} className="flex items-start gap-2.5">
+                  <span aria-hidden="true" className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-paper font-mono text-[11px] font-bold text-ink">{step}</span>
+                  {t(`sell.steps.${step}`)}
+                </li>
               ))}
             </ol>
-          </div>
+          </Card>
           <SellTradeForm />
         </div>
       </section>

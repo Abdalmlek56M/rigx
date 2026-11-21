@@ -10,9 +10,11 @@ import { ItemCard } from "@/features/catalog/ItemCard";
 import { Pagination } from "@/features/catalog/Pagination";
 import { RequestPartBanner } from "@/features/catalog/RequestPartBanner";
 import { catalogTitle } from "@/features/catalog/catalog-title";
-import { EmptyIcon } from "@/components/ui/EmptyIcon";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorBlock } from "@/components/ui/ErrorBlock";
 import { SearchIcon } from "@/components/ui/icons";
-import { Link } from "@/i18n/navigation";
 import { catalogCanonicalPath, catalogHref, pageCount, parseCatalogParams, toApiQuery, toSearchParams, type RawParams } from "@/features/catalog/catalog-query";
 import { required } from "@/lib/api/required";
 import { createServerApi } from "@/lib/api/server";
@@ -83,23 +85,23 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         title={await catalogTitle(state, category, brand)}
         counts={result?.counts ?? { new: 0, used: 0 }}
       />
-      <section className="flex shell items-start gap-7 pb-16 pt-2">
-        <aside aria-label={t("filters.panelLabel")} className="sticky top-24 hidden max-h-[calc(100dvh-7rem)] w-[272px] shrink-0 overflow-y-auto overscroll-contain rounded-card border border-line bg-surface p-5 md:block">
-          {panel("side")}
+      <section className="flex shell items-start gap-7 pb-16">
+        <aside aria-label={t("filters.panelLabel")} className="hidden w-[272px] shrink-0 self-start md:block">
+          <Card padding="sm">{panel("side")}</Card>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <CatalogToolbar state={state} tree={storefront.categoryTree} brands={storefront.brands} total={result?.total ?? 0} panel={panel("sheet")} queryKey={queryKey} />
           {result === null ? (
-            <p role="alert" className="rounded-card border border-line bg-surface p-6 text-center">{t("loadFailed")}</p>
+            <ErrorBlock message={t("loadFailed")} />
           ) : result.items.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-10 text-center">
-              <EmptyIcon icon={SearchIcon} />
-              <b className="text-lg">{t("empty.title")}</b>
-              <p className="m-0 text-ink-muted">{t("empty.body")}</p>
-              <Link href="/products" className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("empty.clear")}</Link>
-            </div>
+            <EmptyState
+              icon={SearchIcon}
+              title={t("empty.title")}
+              help={t("empty.body")}
+              action={<ButtonLink href="/products" variant="secondary">{t("empty.clear")}</ButtonLink>}
+            />
           ) : (
-            <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3 p-0 md:grid-cols-[repeat(auto-fill,minmax(230px,1fr))] md:gap-4 2xl:gap-5">
+            <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-[repeat(auto-fill,minmax(230px,1fr))] md:gap-4 2xl:gap-5">
               {result.items.map((item) => (
                 <li key={item.code} className="flex">
                   <ItemCard item={item} />

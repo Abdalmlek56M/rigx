@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
+import { Button } from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
 import { addressErrors, governorateOptions, type AddressField, type AddressForm } from "./address-form";
 
 interface AddressFormViewProps {
@@ -32,7 +34,7 @@ export function AddressFormView({ initial, governorates, busy, failed, onSubmit,
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-3.5 rounded-panel border border-line bg-surface p-5 shadow-soft md:p-6">
+    <form onSubmit={submit} noValidate className={`${cardClass({ padding: "md" })} gap-3.5 shadow-soft`}>
       <div className="grid gap-3.5 sm:grid-cols-2">
         <TextField label={t("label")} name="label" value={form.label} onChange={(v) => set("label", v)} placeholder={t("labelPlaceholder")} required error={error("label")} />
         <TextField label={t("recipientName")} name="recipientName" value={form.recipientName} onChange={(v) => set("recipientName", v)} autoComplete="name" required error={error("recipientName")} />
@@ -51,8 +53,8 @@ export function AddressFormView({ initial, governorates, busy, failed, onSubmit,
       </label>
       {failed ? <p role="alert" className="m-0 text-sm text-error">{t("saveFailed")}</p> : null}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={busy} className="h-11 rounded-control bg-orange px-6 font-bold text-on-orange disabled:opacity-60">{t("save")}</button>
-        <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
+        <Button type="submit" variant="accent" loading={busy}>{t("save")}</Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>{t("cancel")}</Button>
       </div>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { FIELD_BASE } from "@/components/ui/field-class";
 
 export interface SortOption {
   value: string;
@@ -23,7 +24,7 @@ export function SortSelect({ options, current }: { options: SortOption[]; curren
           const option = options.find((o) => o.value === event.target.value);
           if (option) router.push(option.href);
         }}
-        className="h-11 rounded-control border border-input-line bg-surface px-2.5 text-ink"
+        className={`${FIELD_BASE} h-11`}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

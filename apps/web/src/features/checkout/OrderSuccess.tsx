@@ -2,15 +2,16 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { displayPhone } from "@/lib/contact";
-import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { useSession } from "@/features/auth/use-session";
 import { OrderWhatsAppLink, type OrderWhatsApp } from "@/features/tracking/OrderWhatsAppLink";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { BoxIcon, HelpIcon, TruckIcon } from "@/components/ui/icons";
 import { readLastOrder, type PlacedOrder } from "./last-order";
 import { depositOf } from "./order-rules";
-
-const linkClass = "text-orange-text underline hover:text-orange-text-hover";
 
 function NextSteps({ order }: { order: PlacedOrder }) {
   const t = useTranslations("orderSuccess.steps");
@@ -29,17 +30,16 @@ function NextSteps({ order }: { order: PlacedOrder }) {
   ];
 
   return (
-    <section className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 md:p-6">
-      <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
+    <Card title={t("title")} icon={HelpIcon} padding="md" className="gap-3.5">
       <ol className="m-0 flex list-none flex-col gap-3.5 p-0">
         {steps.map((step, index) => (
           <li key={step.title} className="flex items-start gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-carbon font-mono text-sm font-bold text-on-carbon">{index + 1}</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full surface-strong font-mono text-sm font-bold">{index + 1}</span>
             <span className="text-sm leading-7"><b>{step.title}</b> {step.body}</span>
           </li>
         ))}
       </ol>
-    </section>
+    </Card>
   );
 }
 
@@ -48,8 +48,7 @@ function Summary({ order }: { order: PlacedOrder }) {
   const locale = useLocale();
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 md:p-6">
-      <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
+    <Card title={t("title")} icon={BoxIcon} padding="md" className="gap-3">
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {order.items.map((item) => (
           <li key={`${item.code}-${item.name}`} className="flex justify-between gap-3 text-sm">
@@ -57,23 +56,23 @@ function Summary({ order }: { order: PlacedOrder }) {
               {item.quantity > 1 ? `${item.quantity} × ` : ""}{item.name}
               {item.code ? <span dir="ltr" className="ms-1.5 font-mono text-xs text-ink-muted">{item.code}</span> : null}
             </span>
-            <b className="shrink-0">{formatEgp(item.lineTotal, locale)}</b>
+            <b className="shrink-0 tabular-nums">{formatEgp(item.lineTotal, locale)}</b>
           </li>
         ))}
       </ul>
-      <div className="flex flex-col gap-2 border-t border-line pt-3">
+      <dl className="m-0 flex flex-col gap-2 border-t border-line pt-3">
         {order.couponDiscount > 0 ? (
-          <div className="flex justify-between text-sm"><span className="text-ink-muted">{t("couponDiscount", { code: order.couponCode ?? "" })}</span><span>− {formatEgp(order.couponDiscount, locale)}</span></div>
+          <div className="flex justify-between text-sm"><dt className="text-ink-muted">{t("couponDiscount", { code: order.couponCode ?? "" })}</dt><dd className="m-0">− {formatEgp(order.couponDiscount, locale)}</dd></div>
         ) : null}
         {order.deliveryFee > 0 ? (
-          <div className="flex justify-between text-sm"><span className="text-ink-muted">{t("shipping")}</span><span>{formatEgp(order.deliveryFee, locale)}</span></div>
+          <div className="flex justify-between text-sm"><dt className="text-ink-muted">{t("shipping")}</dt><dd className="m-0">{formatEgp(order.deliveryFee, locale)}</dd></div>
         ) : null}
-        <div className="flex items-baseline justify-between"><b>{t("total")}</b><b className="text-[22px]">{formatEgp(order.total, locale)}</b></div>
+        <div className="flex items-baseline justify-between"><dt className="font-bold">{t("total")}</dt><dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(order.total, locale)}</dd></div>
         {order.upfrontDue > 0 ? (
-          <div className="flex justify-between text-sm"><span className="text-ink-muted">{t("upfront")}</span><b>{formatEgp(order.upfrontDue, locale)}</b></div>
+          <div className="flex justify-between text-sm"><dt className="text-ink-muted">{t("upfront")}</dt><dd className="m-0 font-bold">{formatEgp(order.upfrontDue, locale)}</dd></div>
         ) : null}
-      </div>
-    </section>
+      </dl>
+    </Card>
   );
 }
 
@@ -82,18 +81,13 @@ function TrackCard({ order }: { order: PlacedOrder }) {
   const session = useSession();
 
   return (
-    <section className="flex flex-col gap-3 accent-panel rounded-card border p-5 md:p-6">
-      <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
+    <Card title={t("title")} icon={TruckIcon} padding="md" className="accent-panel gap-3">
       {session.status === "signedOut" ? <p className="m-0 text-sm leading-7 text-ink-muted">{t("accountHint")}</p> : null}
-      <Link href={`/t/${order.trackingToken}`} className="flex h-12 items-center justify-center rounded-control bg-orange font-bold text-on-orange">
-        {t("track")}
-      </Link>
+      <ButtonLink href={`/t/${order.trackingToken}`} variant="accent" className="w-full">{t("track")}</ButtonLink>
       {session.status === "signedOut" ? (
-        <Link href="/login?next=/account" className="flex h-12 items-center justify-center rounded-control border border-input-line bg-surface font-bold">
-          {t("createAccount")}
-        </Link>
+        <ButtonLink href="/login?next=/account" variant="secondary" className="w-full">{t("createAccount")}</ButtonLink>
       ) : null}
-    </section>
+    </Card>
   );
 }
 
@@ -106,26 +100,24 @@ export function OrderSuccess({ whatsApp }: { whatsApp: OrderWhatsApp }) {
 
   if (!order) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-10 text-center">
-        <p className="m-0 text-lg font-bold">{t("missing")}</p>
-        <Link href="/" className={linkClass}>{t("home")}</Link>
-        <Link href="/warranty" className={linkClass}>{t("trackingHelp")}</Link>
-      </div>
+      <Card padding="lg" className="items-center gap-3 text-center">
+        <p className="m-0 type-section-title">{t("missing")}</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <ButtonLink href="/" variant="secondary" size="sm">{t("home")}</ButtonLink>
+          <ButtonLink href="/warranty" variant="ghost" size="sm">{t("trackingHelp")}</ButtonLink>
+        </div>
+      </Card>
     );
   }
 
   return (
     <div className="mx-auto flex max-w-[760px] flex-col gap-4">
-      <header className="flex flex-col gap-2">
-        <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{order.reference}</span>
-        <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
-        <p className="m-0 text-base leading-7 text-ink-muted">
-          {t.rich("lead", { phone: () => <bdi dir="ltr" className="font-mono">{displayPhone(order.phoneNumber)}</bdi> })}
-        </p>
-      </header>
-      <OrderWhatsAppLink
-        whatsApp={whatsApp} reference={order.reference} label={t("whatsApp")}
-        className="press flex h-[54px] items-center justify-center gap-2 rounded-control bg-orange font-bold text-on-orange"
+      <PageHeader
+        contained={false}
+        eyebrow={order.reference}
+        title={t("title")}
+        lead={t.rich("lead", { phone: () => <bdi dir="ltr" className="font-mono">{displayPhone(order.phoneNumber)}</bdi> })}
+        actions={<OrderWhatsAppLink whatsApp={whatsApp} reference={order.reference} label={t("whatsApp")} />}
       />
       <NextSteps order={order} />
       <Summary order={order} />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Card } from "@/components/ui/Card";
 import { DocumentIcon, ShieldIcon, TruckIcon } from "@/components/ui/icons";
 import { LoginFlow } from "@/features/auth/LoginFlow";
 import { routing } from "@/i18n/routing";
@@ -34,11 +35,11 @@ export default async function LoginPage({ params, searchParams }: Props) {
   return (
     <div className="shell grid items-stretch gap-6 py-8 md:py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
       <div className="flex items-center justify-center">
-        <div className="w-full max-w-[440px] rounded-panel border border-line bg-surface p-6 shadow-soft sm:p-9">
+        <Card padding="lg" className="w-full max-w-[440px] shadow-soft">
           <LoginFlow next={Array.isArray(next) ? next[0] : next} />
-        </div>
+        </Card>
       </div>
-      <aside className="relative hidden min-h-[520px] flex-col justify-end gap-6 overflow-hidden accent-panel rounded-panel border p-10 lg:flex">
+      <Card as="aside" padding="lg" className="accent-panel relative hidden min-h-[520px] justify-end gap-6 overflow-hidden lg:flex">
         <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute -end-16 -top-16 h-[420px] w-[420px] text-orange opacity-90">
           <polygon points="70,0 100,0 30,100 0,100" fill="currentColor" />
           <polygon points="0,0 30,0 100,100 70,100" fill="currentColor" opacity="0.18" />
@@ -56,7 +57,7 @@ export default async function LoginPage({ params, searchParams }: Props) {
             </li>
           ))}
         </ul>
-      </aside>
+      </Card>
     </div>
   );
 }

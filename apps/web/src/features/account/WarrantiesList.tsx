@@ -3,12 +3,16 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
+import { Card } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { warrantyTone } from "@/components/ui/status-badge-rules";
 import { DocumentIcon, ShieldIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { parseCondition } from "@/lib/condition";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { fetchInvoices, fetchWarranties } from "./account-api";
-import { invoiceTokenFor, warrantyStatusKey, WARRANTY_BADGE } from "./account-labels";
+import { invoiceTokenFor, warrantyStatusKey } from "./account-labels";
 import type { AccountContact } from "./account-page";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
 import { RowLink } from "./RowAction";
@@ -32,29 +36,32 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
     || t("whatsAppMessage", { name: warranty.name, code: warranty.code });
 
   return (
-    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-col gap-1">
-          <span dir="auto" className="font-bold [unicode-bidi:isolate]">{warranty.name}</span>
-          <span className="flex flex-wrap items-center gap-2">
-            <span dir="ltr" className="font-mono text-xs text-ink-muted">{warranty.code}</span>
-            {condition ? <ConditionBadge condition={condition} /> : null}
-            {warranty.buildCode ? <span dir="ltr" className="font-mono text-xs text-ink-muted">{warranty.buildCode}</span> : null}
-          </span>
+    <Card
+      as="li"
+      title={<span dir="auto" className="[unicode-bidi:isolate]">{warranty.name}</span>}
+      icon={ShieldIcon}
+      padding="md"
+      className="gap-3"
+      actions={
+        <div className="flex flex-wrap items-center gap-1.5">
+          {status ? <StatusBadge tone={warrantyTone(status)}>{t(`status.${status}`)}</StatusBadge> : null}
+          {invoiceToken ? <RowLink href={`/i/${invoiceToken}`} label={t("invoice")} icon={DocumentIcon} /> : null}
+          {whatsApp.number ? <RowLink href={whatsAppUrl(whatsApp.number, text)} label={t("problem")} icon={WhatsAppIcon} external /> : null}
         </div>
-        {status ? <span className={`rounded-full px-3 py-1 text-xs font-bold ${WARRANTY_BADGE[status]}`}>{t(`status.${status}`)}</span> : null}
-      </div>
-      <dl className="m-0 flex flex-col gap-1.5 text-sm">
-        <div className="flex justify-between gap-4"><dt className="text-ink-muted">{t("plan")}</dt><dd className="m-0">{warranty.label}</dd></div>
-        <div className="flex justify-between gap-4"><dt className="text-ink-muted">{t("from")}</dt><dd className="m-0">{formatDate(warranty.startsAtUtc, locale)}</dd></div>
-        {warranty.endsAtUtc ? <div className="flex justify-between gap-4"><dt className="text-ink-muted">{t("until")}</dt><dd className="m-0">{formatDate(warranty.endsAtUtc, locale)}</dd></div> : null}
-      </dl>
-      {status === "Active" && warranty.daysLeft !== null ? <p className="m-0 text-sm font-bold">{t("daysLeft", { days: warranty.daysLeft })}</p> : null}
-      <div className="flex flex-wrap items-center justify-end gap-1.5 border-t border-line pt-3">
-        {invoiceToken ? <RowLink href={`/i/${invoiceToken}`} label={t("invoice")} icon={DocumentIcon} /> : null}
-        {whatsApp.number ? <RowLink href={whatsAppUrl(whatsApp.number, text)} label={t("problem")} icon={WhatsAppIcon} external /> : null}
-      </div>
-    </li>
+      }
+    >
+      <InfoGrid columns={2} className="gap-y-3">
+        <InfoField label={t("code")} value={warranty.code} ltr />
+        <InfoField label={t("plan")} value={warranty.label} />
+        {condition ? <InfoField label={t("condition")} value={<ConditionBadge condition={condition} />} /> : null}
+        {warranty.buildCode ? <InfoField label={t("build")} value={warranty.buildCode} ltr /> : null}
+        <InfoField label={t("from")} value={formatDate(warranty.startsAtUtc, locale)} />
+        {warranty.endsAtUtc ? <InfoField label={t("until")} value={formatDate(warranty.endsAtUtc, locale)} /> : null}
+        {status === "Active" && warranty.daysLeft !== null ? (
+          <InfoField label={t("daysLeftLabel")} value={t("daysLeft", { days: warranty.daysLeft })} className="text-success" />
+        ) : null}
+      </InfoGrid>
+    </Card>
   );
 }
 

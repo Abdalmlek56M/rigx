@@ -2,7 +2,10 @@
 
 import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
+import { WalletIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
@@ -33,8 +36,8 @@ interface OrderSummaryProps extends Pick<SectionProps, "form" | "set" | "errors"
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className={`flex items-baseline justify-between gap-3 text-sm ${strong ? "font-bold" : ""}`}>
-      <span className={strong ? "" : "text-ink-muted"}>{label}</span>
-      <span>{value}</span>
+      <dt className={strong ? "" : "text-ink-muted"}>{label}</dt>
+      <dd className="m-0">{value}</dd>
     </div>
   );
 }
@@ -47,15 +50,14 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
   const shipping = quote ? (quote.shippingFee > 0 ? formatEgp(quote.shippingFee, locale) : t("freeShipping")) : t("shippingPending");
 
   return (
-    <aside className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 md:sticky md:top-24 md:self-start md:p-6">
-      <h2 className="m-0 text-lg font-bold">{t("title")}</h2>
+    <Card as="aside" title={t("title")} icon={WalletIcon} padding="md" className="gap-3.5 lg:sticky lg:top-24 lg:self-start">
       <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {lines.map((line) => (
           <li key={`${line.code}:${line.priceOption}`} className="flex items-center gap-3">
-            <span className="h-11 w-14 shrink-0 overflow-hidden rounded bg-sand">
+            <span className="flex aspect-square h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper">
               {line.thumbnailStorageKey ? (
                 // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                <img src={mediaUrl(line.thumbnailStorageKey)} alt="" className="h-full w-full object-contain" />
+                <img src={mediaUrl(line.thumbnailStorageKey)} alt="" className="h-full w-full object-contain p-1" />
               ) : null}
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -67,7 +69,7 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
                 <span dir="ltr" className="font-mono">{line.code}</span>
               </span>
             </span>
-            <b className="text-sm">{formatEgp(line.unitPrice * line.quantity, locale)}</b>
+            <b className="text-sm tabular-nums">{formatEgp(line.unitPrice * line.quantity, locale)}</b>
           </li>
         ))}
       </ul>
@@ -77,20 +79,20 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
           onApplied={coupon.onApplied} onRemoved={coupon.onRemoved} onProblem={coupon.onProblem}
         />
       </div>
-      <div className="flex flex-col gap-2 border-t border-line pt-3.5">
+      <dl className="m-0 flex flex-col gap-2 border-t border-line pt-3.5">
         <Row label={t("subtotal")} value={formatEgp(subtotal, locale)} />
         {coupon.applied ? <Row label={t("couponDiscount")} value={`− ${formatEgp(coupon.applied.discount, locale)}`} /> : null}
         <Row label={t("shipping")} value={shipping} />
         {quote && quote.upfrontTotal > 0 ? <Row label={t("upfront")} value={formatEgp(quote.upfrontTotal, locale)} /> : null}
         <div className="flex items-baseline justify-between border-t border-line pt-2.5">
-          <b>{t("total")}</b>
-          <b className="text-[22px]">{formatEgp(subtotal - (coupon.applied?.discount ?? 0) + (quote?.shippingFee ?? 0), locale)}</b>
+          <dt className="font-bold">{t("total")}</dt>
+          <dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(subtotal - (coupon.applied?.discount ?? 0) + (quote?.shippingFee ?? 0), locale)}</dd>
         </div>
-      </div>
-      <label className="flex items-start gap-2.5 text-[13px] leading-6">
+      </dl>
+      <label className="flex items-start gap-2.5 text-xs leading-6">
         <input
           type="checkbox" name="termsAccepted" checked={form.termsAccepted} onChange={(event) => set("termsAccepted", event.target.checked)}
-          aria-invalid={errors.includes("terms") ? true : undefined} className="mt-1 h-[18px] w-[18px] shrink-0 accent-carbon"
+          aria-invalid={errors.includes("terms") ? true : undefined} className="mt-1 h-[18px] w-[18px] shrink-0 accent-ink"
         />
         <span>
           {t.rich("terms", {
@@ -103,13 +105,10 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
       <FieldAlert>{error("terms")}</FieldAlert>
       {minimum !== null ? <p role="alert" className="m-0 text-sm text-error">{t("minimum", { amount: formatEgp(minimum, locale) })}</p> : null}
       {problem}
-      <button
-        type="submit" disabled={busy || minimum !== null}
-        className="flex h-[52px] items-center justify-center rounded-control bg-orange font-bold text-on-orange disabled:cursor-not-allowed disabled:bg-disabled disabled:text-ink-muted"
-      >
+      <Button type="submit" variant="accent" loading={busy} disabled={minimum !== null} className="w-full">
         {busy ? t("sending") : t("confirm")}
-      </button>
-      <p className="m-0 text-center text-[13px] text-ink-muted">{t("callNote")}</p>
-    </aside>
+      </Button>
+      <p className="m-0 text-center text-xs text-ink-muted">{t("callNote")}</p>
+    </Card>
   );
 }

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CartPage } from "@/features/cart/CartPage";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { CartIcon } from "@/components/ui/icons";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
@@ -26,9 +28,11 @@ export default async function CartRoute({ params }: Props) {
   const storefront = await loadStorefront();
 
   return (
-    <section className="flex shell flex-col gap-5 pb-16 pt-8 md:pt-10">
-      <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
-      <CartPage whatsAppNumber={whatsAppNumber(storefront.contactLinks)} />
-    </section>
+    <div className="pb-16">
+      <PageHeader title={t("title")} icon={CartIcon} />
+      <section className="shell">
+        <CartPage whatsAppNumber={whatsAppNumber(storefront.contactLinks)} />
+      </section>
+    </div>
   );
 }

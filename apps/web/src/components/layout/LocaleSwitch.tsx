@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
-const LINK = "flex h-10 min-w-10 items-center justify-center rounded-full px-2 text-[13px] transition-colors";
+const LINK = "flex h-11 min-w-11 items-center justify-center rounded-full px-2 text-[13px] transition-colors";
 const ACTIVE = "bg-surface font-bold text-ink shadow-soft";
 const IDLE = "font-semibold text-ink-muted hover:bg-surface hover:text-ink";
 

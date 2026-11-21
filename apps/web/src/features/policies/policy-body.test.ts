@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { parsePolicyBody, policyApiKind } from "./policy-body.ts";
+import { headingId, parsePolicyBody, policyApiKind, policyHeadings } from "./policy-body.ts";
 
 describe("policyApiKind", () => {
   it("maps the URL slugs to API kinds", () => {
@@ -32,5 +32,17 @@ describe("parsePolicyBody", () => {
   });
   it("ignores empty bodies", () => {
     assert.deepEqual(parsePolicyBody(" \n\n "), []);
+  });
+});
+
+describe("policyHeadings", () => {
+  it("lists the headings with stable ids in reading order", () => {
+    assert.deepEqual(policyHeadings("## الشحن\n\nنص\n\n## الاسترجاع\n\n- بند"), [
+      { id: headingId(0), text: "الشحن" },
+      { id: headingId(1), text: "الاسترجاع" }
+    ]);
+  });
+  it("has no headings for a plain paragraph", () => {
+    assert.deepEqual(policyHeadings("نص فقط"), []);
   });
 });

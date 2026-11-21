@@ -3,6 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
+import { Button } from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
+import { textAreaClass } from "@/components/ui/field-class";
 import { browserApi } from "@/lib/api/browser";
 
 const SCORES = [1, 2, 3, 4, 5] as const;
@@ -34,7 +37,7 @@ export function RatingForm({ token, canRate, score }: { token: string; canRate: 
 
   if (sent !== null) {
     return (
-      <p role="status" className="m-0 rounded-card border border-line bg-surface p-5 text-sm">
+      <p role="status" className={`${cardClass({ padding: "md" })} text-sm`}>
         {score === null ? t("thanks") : t("already")} <b dir="ltr" className="font-mono">{sent}/5</b>
       </p>
     );
@@ -42,14 +45,14 @@ export function RatingForm({ token, canRate, score }: { token: string; canRate: 
   if (!canRate) return null;
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <form onSubmit={submit} className={`${cardClass({ padding: "md" })} gap-3`}>
       <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-        <legend className="mb-2 p-0 font-bold">{t("title")}</legend>
+        <legend className="mb-2 p-0 type-section-title">{t("title")}</legend>
         <div className="flex gap-2">
           {SCORES.map((value) => (
             <label key={value} className="relative">
               <input type="radio" name="score" value={value} checked={chosen === value} onChange={() => setChosen(value)} className="peer sr-only" />
-              <span className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-control border border-input-line bg-surface font-mono font-bold peer-checked:border-orange peer-checked:bg-orange peer-checked:text-on-orange peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange">
+              <span className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-control border border-input-line bg-surface font-mono font-bold text-ink transition-colors peer-checked:border-transparent peer-checked:accent-strong peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange motion-reduce:transition-none">
                 {value}
               </span>
             </label>
@@ -58,12 +61,10 @@ export function RatingForm({ token, canRate, score }: { token: string; canRate: 
       </fieldset>
       <textarea
         name="comment" aria-label={t("comment")} placeholder={t("comment")} rows={3} value={comment} onChange={(event) => setComment(event.target.value)}
-        className="w-full rounded-control border border-input-line bg-surface p-3 text-sm text-ink"
+        className={textAreaClass}
       />
       {failed ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
-      <button type="submit" disabled={busy || chosen === null} className="h-11 rounded-control bg-carbon font-bold text-on-carbon disabled:opacity-50">
-        {t("submit")}
-      </button>
+      <Button type="submit" variant="primary" loading={busy} disabled={chosen === null} className="self-start">{t("submit")}</Button>
     </form>
   );
 }

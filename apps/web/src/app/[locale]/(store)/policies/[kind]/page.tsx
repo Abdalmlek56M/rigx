@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { WhatsAppIcon } from "@/components/ui/icons";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { BookIcon, DocumentIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { loadPolicy } from "@/features/policies/load-policy";
-import { POLICY_KINDS, policyApiKind } from "@/features/policies/policy-body";
+import { POLICY_KINDS, policyApiKind, policyHeadings } from "@/features/policies/policy-body";
 import { PolicyBody } from "@/features/policies/PolicyBody";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { fillTemplate, whatsAppNumber, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { loadStorefront } from "@/lib/storefront";
 import { pageSeo } from "@/lib/seo/page-seo";
@@ -37,48 +40,66 @@ export default async function PolicyPage({ params }: Props) {
   const [policy, storefront, t] = await Promise.all([loadPolicy(apiKind), loadStorefront(), getTranslations("policies")]);
   if (!policy) notFound();
   const title = localized(locale, policy.titleAr, policy.titleEn);
+  const body = localized(locale, policy.bodyAr, policy.bodyEn);
+  const headings = policyHeadings(body);
   const number = whatsAppNumber(storefront.contactLinks);
   const helpText = fillTemplate(storefront.whatsAppTemplates.general, {}) || t("helpMessage", { policy: title });
 
   return (
-    <section className="grid shell gap-8 pb-16 pt-8 md:pt-10 lg:grid-cols-[240px_minmax(0,1fr)]">
-      <nav aria-label={t("navLabel")} className="lg:sticky lg:top-24 lg:self-start">
-        <ul className="m-0 flex list-none flex-row flex-wrap gap-2 p-0 lg:flex-col lg:gap-1">
-          {POLICY_KINDS.map((item) => (
-            <li key={item.slug}>
-              <Link
-                href={`/policies/${item.slug}`}
-                aria-current={item.slug === kind ? "page" : undefined}
-                className={`flex min-h-11 items-center rounded-control px-4 text-sm font-bold ${item.slug === kind ? "bg-carbon text-on-carbon" : "border border-line bg-surface hover:border-orange"}`}
-              >
-                {t(`kinds.${item.slug}`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <article className="flex min-w-0 flex-col gap-6">
-        <header className="flex flex-col gap-2">
-          <h1 className="m-0 text-3xl font-bold md:text-[40px]">{title}</h1>
-          <span className="text-sm text-ink-muted">
-            {policy.publishedAtUtc ? t("updated", { date: formatDate(policy.publishedAtUtc, locale) }) : null}
-            {policy.publishedAtUtc ? " · " : ""}
-            {t("version", { version: policy.versionNumber })}
+    <div className="shell pb-16">
+      <PageHeader
+        title={title}
+        icon={DocumentIcon}
+        lead={
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {policy.publishedAtUtc ? <span>{t("updated", { date: formatDate(policy.publishedAtUtc, locale) })}</span> : null}
+            {policy.publishedAtUtc ? <span aria-hidden="true">·</span> : null}
+            <span>{t("version", { version: policy.versionNumber })}</span>
           </span>
-        </header>
-        <div className="rounded-card border border-line bg-surface p-5 md:p-8">
-          <PolicyBody body={localized(locale, policy.bodyAr, policy.bodyEn)} />
+        }
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <nav aria-label={t("navLabel")} className="lg:sticky lg:top-24 lg:self-start">
+          {headings.length > 0 ? (
+            <Card title={t("toc")} icon={BookIcon} padding="sm" className="hidden gap-2 lg:flex">
+              <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
+                {headings.map((heading) => (
+                  <li key={heading.id}>
+                    <a href={`#${heading.id}`} className="flex min-h-9 items-center rounded-control px-2 text-ink-muted transition-colors hover:bg-paper hover:text-ink">
+                      {heading.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
+          <ul className="m-0 flex list-none flex-row flex-wrap gap-2 p-0 lg:mt-4 lg:flex-col lg:gap-1">
+            {POLICY_KINDS.map((item) => (
+              <li key={item.slug}>
+                <Link
+                  href={`/policies/${item.slug}`}
+                  aria-current={item.slug === kind ? "page" : undefined}
+                  className={`flex min-h-11 items-center rounded-control px-4 text-sm font-bold ${item.slug === kind ? "surface-strong" : "border border-line bg-surface hover:border-orange"}`}
+                >
+                  {t(`kinds.${item.slug}`)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="flex min-w-0 flex-col gap-4">
+          <Card padding="lg">
+            <article className="min-w-0 text-[15px] leading-8">
+              <PolicyBody body={body} />
+            </article>
+          </Card>
+          {number ? (
+            <Card title={t("helpTitle")} icon={WhatsAppIcon} padding="md" className="gap-3">
+              <WhatsAppButton href={whatsAppUrl(number, helpText)} variant="outline" className="self-start">{t("helpLink")}</WhatsAppButton>
+            </Card>
+          ) : null}
         </div>
-        {number ? (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="font-bold">{t("helpTitle")}</span>
-            <a {...NEW_TAB} href={whatsAppUrl(number, helpText)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
-              <WhatsAppIcon size={16} />
-              {t("helpLink")}
-            </a>
-          </div>
-        ) : null}
-      </article>
-    </section>
+      </div>
+    </div>
   );
 }

@@ -67,7 +67,7 @@ export async function CatalogToolbar({ state, tree, brands, total, panel, queryK
                 <Link
                   href={catalogHref(state, filter.clear)}
                   aria-label={t("chips.remove", { label: text })}
-                  className="flex min-h-9 items-center gap-1.5 rounded-full bg-carbon px-3 text-on-carbon transition-colors duration-150 motion-reduce:transition-none"
+                  className="flex min-h-9 items-center gap-1.5 rounded-full surface-strong px-3 transition-colors duration-150 motion-reduce:transition-none"
                 >
                   <span dir="auto" className="[unicode-bidi:isolate]">{text}</span>
                   <CloseIcon size={14} />

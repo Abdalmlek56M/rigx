@@ -3,17 +3,32 @@ import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { Card } from "@/components/ui/Card";
 import { FaqList } from "@/components/ui/FaqList";
-import { WhatsAppIcon } from "@/components/ui/icons";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { GpuIcon, HelpIcon, MonitorIcon, ShieldIcon, TruckIcon, WalletIcon, WhatsAppIcon, WrenchIcon } from "@/components/ui/icons";
 import { loadFaqPage } from "@/features/faq/load-faq-page";
 import { routing } from "@/i18n/routing";
-import { fillTemplate, whatsAppNumber, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { fillTemplate, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
 import { pageSeo } from "@/lib/seo/page-seo";
 import { faqJsonLd } from "@/lib/seo/structured-data";
 
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+/** The group's mark: a loose keyword match on the owner's topic, falling back to the help icon. */
+function topicIcon(topic: string | null) {
+  const text = (topic ?? "").toLowerCase();
+  if (/شحن|توصيل|delivery|shipping/.test(text)) return TruckIcon;
+  if (/ضمان|warranty|إرجاع|استرجاع|return/.test(text)) return ShieldIcon;
+  if (/دفع|سعر|payment|price|تقسيط/.test(text)) return WalletIcon;
+  if (/كارت|شاشة|gpu|graphics|monitor/.test(text)) return GpuIcon;
+  if (/معالج|بورد|رام|تجميع|pc|cpu|build/.test(text)) return WrenchIcon;
+  if (/قطع|parts|accessor/.test(text)) return MonitorIcon;
+  return HelpIcon;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -33,31 +48,23 @@ export default async function FaqPage({ params }: Props) {
   const text = fillTemplate(storefront.whatsAppTemplates.general, {}) || t("moreMessage");
 
   return (
-    <section className="mx-auto flex max-w-[860px] flex-col gap-8 px-4 pb-16 pt-8 md:px-6 md:pt-10">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
-        <span className="text-[15px] text-ink-muted">{t("subtitle")}</span>
-      </div>
+    <div className="shell mx-auto flex max-w-[860px] flex-col gap-5 pb-16">
+      <PageHeader contained={false} title={t("title")} lead={t("subtitle")} icon={HelpIcon} />
       {groups.length > 0 ? <JsonLd data={faqJsonLd(groups.flatMap((group) => group.entries))} /> : null}
       {groups.length === 0 ? (
-        <p role="status" className="m-0 rounded-card border border-line bg-surface p-10 text-center text-ink-muted">{t("empty")}</p>
+        <Card padding="lg"><p role="status" className="m-0 text-center text-ink-muted">{t("empty")}</p></Card>
       ) : (
         groups.map((group) => (
-          <div key={group.topic ?? ""} className="flex flex-col gap-3">
-            <h2 className="m-0 text-xl font-bold">{group.topic ?? t("other")}</h2>
-            <FaqList entries={group.entries} videoTitle={(question) => t("video", { question })} />
-          </div>
+          <Card key={group.topic ?? ""} title={group.topic ?? t("other")} icon={topicIcon(group.topic)} padding="md" className="gap-1">
+            <FaqList entries={group.entries} plain videoTitle={(question) => t("video", { question })} />
+          </Card>
         ))
       )}
       {number ? (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-card border border-line bg-surface p-5">
-          <span className="font-bold">{t("moreTitle")}</span>
-          <a {...NEW_TAB} href={whatsAppUrl(number, text)} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
-            <WhatsAppIcon size={16} />
-            {t("moreLink")}
-          </a>
-        </div>
+        <Card title={t("moreTitle")} icon={WhatsAppIcon} padding="md" className="gap-3">
+          <WhatsAppButton href={whatsAppUrl(number, text)} variant="outline" className="self-start">{t("moreLink")}</WhatsAppButton>
+        </Card>
       ) : null}
-    </section>
+    </div>
   );
 }

@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CheckoutForm } from "@/features/checkout/CheckoutForm";
 import { CheckoutSteps } from "@/features/checkout/CheckoutSteps";
 import { loadShippingRates } from "@/features/checkout/load-shipping-rates";
+import { ErrorBlock } from "@/components/ui/ErrorBlock";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { routing } from "@/i18n/routing";
 import { loadStorefront } from "@/lib/storefront";
 
@@ -30,22 +32,21 @@ export default async function CheckoutPage({ params }: Props) {
   const [storefront, rates] = await Promise.all([loadStorefront(), loadShippingRates()]);
 
   return (
-    <section className="flex shell flex-col gap-5 pb-16 pt-8 md:pt-10">
-      <div className="flex flex-col gap-2.5">
-        <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
-        <CheckoutSteps current={2} />
-      </div>
-      {rates ? (
-        <CheckoutForm
-          settings={storefront.checkout}
-          payment={storefront.payment}
-          pickupEnabled={rates.pickupEnabled}
-          pickupAddress={rates.pickupAddress}
-          governorates={rates.governorates}
-        />
-      ) : (
-        <p role="alert" className="rounded-card border border-line bg-surface p-6 text-center">{t("loadFailed")}</p>
-      )}
-    </section>
+    <div className="pb-16">
+      <PageHeader title={t("title")} below={<CheckoutSteps current={2} />} />
+      <section className="shell">
+        {rates ? (
+          <CheckoutForm
+            settings={storefront.checkout}
+            payment={storefront.payment}
+            pickupEnabled={rates.pickupEnabled}
+            pickupAddress={rates.pickupAddress}
+            governorates={rates.governorates}
+          />
+        ) : (
+          <ErrorBlock message={t("loadFailed")} />
+        )}
+      </section>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { fieldClass } from "./field-class";
 
 interface SelectFieldProps<T extends string> {
   label: string;
@@ -16,7 +17,7 @@ interface SelectFieldProps<T extends string> {
 export function SelectField<T extends string>({ label, labelEnd, name, value, onChange, options, error, disabled }: SelectFieldProps<T>) {
   const errorId = `${name}-error`;
   return (
-    <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
+    <label className="flex min-w-0 flex-col gap-1.5 text-xs font-bold">
       <span className="flex min-w-0 flex-wrap items-center gap-1.5">{label}{labelEnd}</span>
       <select
         name={name}
@@ -28,7 +29,7 @@ export function SelectField<T extends string>({ label, labelEnd, name, value, on
           const chosen = options.find((option) => option.value === event.target.value);
           if (chosen) onChange(chosen.value);
         }}
-        className="h-12 w-full rounded-control border border-input-line bg-surface px-2.5 text-sm font-normal text-ink"
+        className={fieldClass}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>{option.label}</option>

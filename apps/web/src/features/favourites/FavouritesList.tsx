@@ -3,10 +3,10 @@
 import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
+import { ButtonLink } from "@/components/ui/Button";
 import { HeartIcon } from "@/components/ui/icons";
 import { EmptyState, LoadBoundary } from "@/features/account/LoadBoundary";
 import { ItemCard } from "@/features/catalog/ItemCard";
-import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { useLoad } from "@/lib/hooks/use-load";
@@ -29,7 +29,7 @@ export function FavouritesList() {
           return items.length === 0 ? (
             <EmptyState
               icon={HeartIcon} message={t("empty")}
-              action={<Link href="/products" className="text-orange-text underline hover:text-orange-text-hover">{t("browse")}</Link>}
+              action={<ButtonLink href="/products" variant="secondary" size="sm">{t("browse")}</ButtonLink>}
             />
           ) : (
             <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 xl:grid-cols-3">

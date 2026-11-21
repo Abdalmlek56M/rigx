@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { HEADER_ICON_BUTTON } from "@/components/layout/nav-links";
+import { CountBadge } from "@/components/ui/CountBadge";
+import { cardClass } from "@/components/ui/Card";
 import { BellIcon } from "@/components/ui/icons";
 import { useSession } from "@/features/auth/use-session";
 import { Link } from "@/i18n/navigation";
@@ -75,16 +77,11 @@ function Bell() {
       >
         <BellIcon />
         {badge ? (
-          <span
-            aria-hidden="true"
-            className="absolute -top-0.5 end-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange px-1.5 font-mono text-[11px] font-semibold leading-none text-on-orange ring-2 ring-paper"
-          >
-            {badge}
-          </span>
+          <CountBadge>{badge}</CountBadge>
         ) : null}
       </button>
       {open ? (
-        <div className="absolute end-0 top-full z-50 mt-2 flex w-[min(360px,calc(100vw-32px))] flex-col rounded-card border border-line bg-surface text-ink shadow-soft">
+        <div className={`absolute end-0 top-full z-50 mt-2 flex w-[min(360px,calc(100vw-32px))] flex-col ${cardClass({ padding: "none" })} text-ink shadow-soft`}>
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 className="m-0 text-[15px] font-bold">{t("title")}</h2>
             {unread > 0 ? (

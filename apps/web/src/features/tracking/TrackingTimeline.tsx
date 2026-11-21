@@ -5,7 +5,7 @@ import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 
 const DOT: Record<TrackingStep["state"], string> = {
   done: "border-success bg-success text-surface",
-  current: "border-orange bg-orange text-on-orange",
+  current: "border-orange accent-strong",
   upcoming: "border-input-line bg-surface text-transparent"
 };
 
@@ -21,7 +21,7 @@ export function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
           <span className="flex flex-col items-center">
             <span
               aria-hidden="true"
-              className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${step.status === "Cancelled" ? "border-error bg-error text-surface" : DOT[step.state]}`}
+              className={`flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${step.status === "Cancelled" ? "border-error bg-error text-white" : DOT[step.state]}`}
             >
               {step.state === "done" ? <CheckIcon size={14} /> : step.status === "Cancelled" ? <CloseIcon size={14} /> : <span className="h-2 w-2 rounded-full bg-current" />}
             </span>

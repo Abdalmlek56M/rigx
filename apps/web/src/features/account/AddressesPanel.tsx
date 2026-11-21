@@ -1,11 +1,15 @@
 "use client";
 
-import { CheckIcon, MapPinIcon, PencilIcon, TrashIcon } from "@/components/ui/icons";
+import { CheckIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, TrashIcon, UserIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { useSession } from "@/features/auth/use-session";
 import { browserApi } from "@/lib/api/browser";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { fetchAddresses } from "./account-api";
 import { AddressFormView } from "./AddressFormView";
 import { addressLine, emptyAddressForm, formFromAddress, toAddressRequest, toUpdateRequest, type AddressForm } from "./address-form";
@@ -19,24 +23,28 @@ type Editing = { kind: "new" } | { kind: "edit"; address: Address } | null;
 
 function AddressCard({ address, onEdit, onDefault, onDelete }: { address: Address; onEdit: () => void; onDefault: () => void; onDelete: () => void }) {
   const t = useTranslations("account.addresses");
+  const line = addressLine(address, { floor: t("floorShort"), apartment: t("apartmentShort") });
   return (
-    <li className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <b dir="auto" className="[unicode-bidi:isolate]">{address.label}</b>
-        {address.isDefault ? <span className="rounded-full bg-carbon px-3 py-1 text-xs font-bold text-on-carbon">{t("default")}</span> : null}
-      </div>
-      <p className="m-0 text-sm">
-        <span dir="auto" className="[unicode-bidi:isolate]">{address.recipientName}</span> · <span dir="ltr" className="font-mono">{address.phoneNumber}</span>
-      </p>
-      <p dir="auto" className="m-0 text-sm text-ink-muted [unicode-bidi:isolate]">
-        {address.governorate}، {addressLine(address, { floor: t("floorShort"), apartment: t("apartmentShort") })}
-      </p>
-      <div className="flex items-center justify-end gap-1.5 border-t border-line pt-2">
-        <RowButton label={t("edit")} icon={PencilIcon} onClick={onEdit} />
-        {address.isDefault ? null : <RowButton label={t("setDefault")} icon={CheckIcon} onClick={onDefault} />}
-        <ConfirmButton iconOnly label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={onDelete} />
-      </div>
-    </li>
+    <Card
+      as="li"
+      title={<span dir="auto" className="[unicode-bidi:isolate]">{address.label}</span>}
+      icon={MapPinIcon}
+      padding="md"
+      className="gap-3"
+      actions={
+        <div className="flex items-center gap-1.5">
+          {address.isDefault ? <StatusBadge tone="success" icon={CheckIcon}>{t("default")}</StatusBadge> : <RowButton label={t("setDefault")} icon={CheckIcon} onClick={onDefault} />}
+          <RowButton label={t("edit")} icon={PencilIcon} onClick={onEdit} />
+          <ConfirmButton iconOnly label={t("delete")} icon={TrashIcon} onConfirm={onDelete} />
+        </div>
+      }
+    >
+      <InfoGrid columns={2} className="gap-y-3">
+        <InfoField label={t("recipientName")} icon={UserIcon} value={address.recipientName} />
+        <InfoField label={t("phone")} icon={PhoneIcon} ltr value={address.phoneNumber} />
+        <InfoField label={t("address")} icon={MapPinIcon} value={[address.governorate, line].filter(Boolean).join("، ")} wide />
+      </InfoGrid>
+    </Card>
   );
 }
 
@@ -88,7 +96,7 @@ export function AddressesPanel({ governorates }: { governorates: readonly string
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="sr-only">{t("title")}</h2>
-        {editing ? null : <button type="button" onClick={() => setEditing({ kind: "new" })} className="h-11 rounded-control bg-orange px-5 font-bold text-on-orange">{t("add")}</button>}
+        {editing ? null : <Button type="button" variant="accent" icon={PlusIcon} onClick={() => setEditing({ kind: "new" })}>{t("add")}</Button>}
       </div>
       {failed && !editing ? <p role="alert" className="m-0 text-sm text-error">{t("actionFailed")}</p> : null}
       {editing ? (

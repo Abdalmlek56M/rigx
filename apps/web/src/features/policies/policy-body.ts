@@ -20,8 +20,14 @@ export type PolicyBlock =
   | { type: "paragraph"; lines: string[] }
   | { type: "list"; items: string[] };
 
+export interface PolicyHeading {
+  /** The anchor id the body gives this heading. */
+  id: string;
+  text: string;
+}
+
 const HEADING = /^#{1,6}\s+(.*)$/;
-const BULLET = /^[-*•]\s+(.*)$/;
+const BULLET = /^[-*]\s+(.*)$/;
 
 /** Plain text with light markdown (`#` headings, `-` lists, blank-line paragraphs) as blocks; rendered as text, never as HTML. */
 export function parsePolicyBody(body: string): PolicyBlock[] {
@@ -40,4 +46,16 @@ export function parsePolicyBody(body: string): PolicyBlock[] {
     else blocks.push({ type: "paragraph", lines });
   }
   return blocks;
+}
+
+/** The id a heading gets in the body, by its order among the headings (stable, and safe for Arabic text). */
+export function headingId(index: number): string {
+  return `section-${index + 1}`;
+}
+
+/** The headings of a policy in reading order, for the desktop table of contents. */
+export function policyHeadings(body: string): PolicyHeading[] {
+  return parsePolicyBody(body)
+    .filter((block): block is Extract<PolicyBlock, { type: "heading" }> => block.type === "heading")
+    .map((block, index) => ({ id: headingId(index), text: block.text }));
 }

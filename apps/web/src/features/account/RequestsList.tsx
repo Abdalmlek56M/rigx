@@ -2,6 +2,10 @@
 
 import { InboxIcon } from "@/components/ui/icons";
 import { useLocale, useTranslations } from "next-intl";
+import { Card } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { requestTone } from "@/components/ui/status-badge-rules";
 import { formatDate, formatEgp } from "@/lib/format";
 import { fetchRequests } from "./account-api";
 import { requestStatusKey, requestTypeKey } from "./account-labels";
@@ -23,20 +27,27 @@ export function RequestsList() {
             <EmptyState icon={InboxIcon} message={t("empty")} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
-              {requests.map((request) => (
-                <li key={request.code} className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                    <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{request.code}</span>
-                    <span className="text-sm text-ink-muted">{formatDate(request.createdAtUtc, locale)}</span>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <b>{t(`type.${requestTypeKey(request.type)}`)}</b>
-                    <span className="rounded-full bg-line px-3 py-1 text-xs font-bold">{t(`status.${requestStatusKey(request.status)}`)}</span>
-                  </div>
-                  {request.item ? <p dir="auto" className="m-0 text-sm text-ink-muted [unicode-bidi:isolate]">{request.item}</p> : null}
-                  {request.offerAmount !== null ? <p className="m-0 text-sm">{t("offer")} <b>{formatEgp(request.offerAmount, locale)}</b></p> : null}
-                </li>
-              ))}
+              {requests.map((request) => {
+                const status = requestStatusKey(request.status);
+                return (
+                  <Card
+                    key={request.code}
+                    as="li"
+                    title={<span dir="ltr" className="font-mono text-orange-text">{request.code}</span>}
+                    icon={InboxIcon}
+                    padding="md"
+                    className="gap-3"
+                    actions={<StatusBadge tone={requestTone(status)}>{t(`status.${status}`)}</StatusBadge>}
+                  >
+                    <InfoGrid columns={2} className="gap-y-3">
+                      <InfoField label={t("typeLabel")} value={t(`type.${requestTypeKey(request.type)}`)} />
+                      <InfoField label={t("date")} value={formatDate(request.createdAtUtc, locale)} />
+                      {request.item ? <InfoField label={t("item")} value={request.item} wide /> : null}
+                      {request.offerAmount !== null ? <InfoField label={t("offerLabel")} value={formatEgp(request.offerAmount, locale)} /> : null}
+                    </InfoGrid>
+                  </Card>
+                );
+              })}
             </ul>
           )
         }

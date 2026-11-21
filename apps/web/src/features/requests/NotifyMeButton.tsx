@@ -2,27 +2,28 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Button, type ButtonSize } from "@/components/ui/Button";
 import { MailIcon } from "@/components/ui/icons";
 import { NotifyMeSheet, type NotifyTarget } from "./NotifyMeSheet";
 
 interface NotifyMeButtonProps {
   target: NotifyTarget;
-  className: string;
+  size?: ButtonSize;
+  className?: string;
   /** The button text; defaults to "بلغني لما يتوفر". */
   label?: string;
 }
 
-/** The "بلغني لما يتوفر" button with its sheet; `className` sets the size and colours. */
-export function NotifyMeButton({ target, className, label }: NotifyMeButtonProps) {
+/** The "بلغني لما يتوفر" button with its sheet. */
+export function NotifyMeButton({ target, size = "md", className, label }: NotifyMeButtonProps) {
   const t = useTranslations("notify");
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <button type="button" aria-haspopup="dialog" onClick={() => setOpen(true)} className={className}>
-        <MailIcon size={16} />
+      <Button type="button" variant="secondary" size={size} icon={MailIcon} aria-haspopup="dialog" onClick={() => setOpen(true)} className={className}>
         {label ?? t("cta")}
-      </button>
+      </Button>
       <NotifyMeSheet open={open} onClose={() => setOpen(false)} target={target} />
     </>
   );

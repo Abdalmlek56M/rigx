@@ -1,7 +1,8 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
-import type { ReactNode } from "react";
 import type { Schemas } from "@rigx/api-client";
+import { cardClass } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { Logo } from "@/components/ui/Logo";
 import { invoiceKindKey, paymentMethodKey } from "@/features/account/account-labels";
 import { displayPhone, Platform } from "@/lib/contact";
@@ -11,15 +12,6 @@ import { InvoiceLines } from "./InvoiceLines";
 import { isVoid, totalsRows } from "./invoice-lines";
 
 type Invoice = Schemas["InvoiceView"];
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs text-ink-muted">{label}</dt>
-      <dd dir="auto" className="m-0 font-semibold [unicode-bidi:isolate]">{children}</dd>
-    </div>
-  );
-}
 
 async function TotalRow({ label, amount, strong = false }: { label: string; amount: number; strong?: boolean }) {
   const locale = await getLocale();
@@ -58,13 +50,13 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
   const qr = branding.showWarrantyQr && document.warrantyLookupUrl ? await QRCode.toString(document.warrantyLookupUrl, { type: "svg", margin: 0 }) : null;
   const phones = branding.contacts.flatMap((link) => ((link.platform === Platform.Phone || link.platform === Platform.WhatsApp) && link.value ? [displayPhone(link.value)] : []));
   const address = invoice.address
-    ? [invoice.address.governorate, invoice.address.area, invoice.address.street, invoice.address.building, invoice.address.landmark].filter(Boolean).join("، ")
+    ? [invoice.address.governorate, invoice.address.area, invoice.address.street, invoice.address.building, invoice.address.landmark].filter(Boolean).join(" › ")
     : "";
   const contactLine = [storefront.domain, ...new Set(phones)].filter(Boolean).join(" · ");
   const placeLine = [storefront.email, branding.pickupAddress].filter(Boolean).join(" · ");
 
   return (
-    <article data-print-invoice className="relative isolate overflow-hidden rounded-card border border-line bg-surface p-6 md:p-10 print:rounded-none print:border-0 print:p-0">
+    <article data-print-invoice className={cardClass({ padding: "none", className: "relative isolate overflow-hidden p-6 md:p-10 print:rounded-none print:border-0 print:p-0" })}>
       {branding.showBackgroundLogo ? (
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 flex select-none items-center justify-center overflow-hidden">
           <span dir="ltr" className="-rotate-[28deg] whitespace-nowrap text-[96px] font-bold uppercase tracking-widest text-ink opacity-[0.045] [print-color-adjust:exact]">{branding.storeName}</span>
@@ -88,16 +80,16 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
         </div>
       </header>
 
-      <dl className="m-0 grid break-inside-avoid grid-cols-2 gap-x-6 gap-y-4 py-5 md:grid-cols-3">
-        <Field label={t("customer")}>{invoice.customerName}</Field>
-        <Field label={t("phone")}><span dir="ltr">{invoice.phoneNumber}</span></Field>
-        {address ? <Field label={t("address")}>{address}</Field> : null}
-        <Field label={t("date")}><span dir="ltr">{formatDateTimeFull(invoice.issuedAtUtc, locale)}</span></Field>
-        <Field label={t("order")}><span dir="ltr">{invoice.orderReference}</span></Field>
-        <Field label={t("fulfillment.label")}>{invoice.fulfillmentMethod === "Pickup" ? t("fulfillment.Pickup") : t("fulfillment.Delivery")}</Field>
-        {method ? <Field label={t("payment")}>{methods(method)}</Field> : null}
-        {invoice.sellerName ? <Field label={t("seller")}>{invoice.sellerName}</Field> : null}
-      </dl>
+      <InfoGrid columns={3} className="break-inside-avoid gap-x-6 gap-y-4 py-5">
+        <InfoField label={t("customer")} value={invoice.customerName} />
+        <InfoField label={t("phone")} ltr value={invoice.phoneNumber} />
+        <InfoField label={t("date")} value={formatDateTimeFull(invoice.issuedAtUtc, locale)} />
+        <InfoField label={t("order")} ltr value={invoice.orderReference} />
+        <InfoField label={t("fulfillment.label")} value={invoice.fulfillmentMethod === "Pickup" ? t("fulfillment.Pickup") : t("fulfillment.Delivery")} />
+        {method ? <InfoField label={t("payment")} value={methods(method)} /> : null}
+        {invoice.sellerName ? <InfoField label={t("seller")} value={invoice.sellerName} /> : null}
+        {address ? <InfoField label={t("address")} value={address} wide /> : null}
+      </InfoGrid>
 
       <InvoiceLines lines={invoice.lines} />
       <div className="mt-5 flex flex-col-reverse gap-6 break-inside-avoid md:flex-row md:items-start md:justify-between">

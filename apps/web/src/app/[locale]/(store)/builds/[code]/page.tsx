@@ -8,7 +8,8 @@ import { BuildPurchasePanel } from "@/features/builds/BuildPurchasePanel";
 import { buildSuitableFor, buildTitle } from "@/features/builds/build-view";
 import { loadBuild } from "@/features/builds/load-builds";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { Link } from "@/i18n/navigation";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { routing } from "@/i18n/routing";
 import { siteUrl, whatsAppNumber } from "@/lib/contact";
 import { mediaUrl } from "@/lib/media";
@@ -66,32 +67,18 @@ export default async function BuildPage({ params }: Props) {
   return (
     <div className="pb-28 md:pb-0">
       <JsonLd data={structuredData} />
-      <nav aria-label={t("breadcrumb")} className="shell pt-6 text-sm text-ink-muted">
-        <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
-          <li><Link href="/" className="hover:underline">{t("home")}</Link></li>
-          <li className="flex gap-2">
-            <span aria-hidden="true">/</span>
-            <Link href="/builds" className="hover:underline">{t("builds")}</Link>
-          </li>
-          <li className="flex gap-2">
-            <span aria-hidden="true">/</span>
-            <span aria-current="page">{title}</span>
-          </li>
-        </ol>
-      </nav>
-      <section className="grid shell items-start gap-6 py-6 md:grid-cols-2 md:gap-10 md:py-9">
+      <PageHeader
+        breadcrumb={[{ label: t("home"), href: "/" }, { label: t("builds"), href: "/builds" }, { label: title }]}
+        breadcrumbLabel={t("breadcrumb")}
+        title={title}
+        titleDir="auto"
+        lead={suitableFor ? <><b>{t("suitableFor")}</b> {suitableFor}</> : undefined}
+        actions={usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : undefined}
+      />
+      <section className="grid shell items-start gap-6 pb-8 md:grid-cols-2 md:gap-10">
         <Gallery photos={build.photos} alt={title} />
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            {usage ? <span className="rounded-full bg-carbon px-2.5 py-1 text-xs font-bold text-on-carbon">{tu(usage)}</span> : null}
-            {build.warrantyLabel ? <span className="text-[13px] text-ink-muted">{build.warrantyLabel}</span> : null}
-          </div>
-          <h1 className="m-0 text-2xl leading-[1.3] font-bold md:text-[32px]">{title}</h1>
-          {suitableFor ? (
-            <p className="m-0 rounded-card bg-paper px-3.5 py-3 text-sm leading-7">
-              <b>{t("suitableFor")}</b> {suitableFor}
-            </p>
-          ) : null}
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
+          {build.warrantyLabel ? <StatusBadge tone="success">{build.warrantyLabel}</StatusBadge> : null}
           <BuildPurchasePanel
             build={build}
             whatsApp={{ number: whatsAppNumber(storefront.contactLinks), template: storefront.whatsAppTemplates.build }}
@@ -99,7 +86,7 @@ export default async function BuildPage({ params }: Props) {
           />
         </div>
       </section>
-      <div className="flex shell flex-col gap-10 pb-14">
+      <div className="flex shell flex-col gap-6 pb-14">
         <BuildPartsTable build={build} />
       </div>
     </div>

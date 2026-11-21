@@ -9,7 +9,7 @@ export function SearchForm() {
   const locale = useLocale() as Locale;
 
   return (
-    <form action={getPathname({ href: "/products", locale })} method="get" role="search" className="relative w-full">
+    <form action={getPathname({ href: "/products", locale })} method="get" role="search" className="relative w-full min-w-0">
       <label htmlFor="header-search" className="sr-only">
         {t("searchLabel")}
       </label>

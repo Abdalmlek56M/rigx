@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { STEP_UP_HEADER, unwrap } from "@rigx/api-client";
+import { Button, IconButton } from "@/components/ui/Button";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { PencilIcon } from "@/components/ui/icons";
 import { TextField } from "@/components/ui/TextField";
 import { browserApi } from "@/lib/api/browser";
@@ -31,21 +33,18 @@ export function EmailChange({ email }: { email: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[13px] font-bold">{t("label")}</span>
-          <span dir="ltr" className="text-start text-sm">{email}</span>
-        </div>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <InfoGrid columns={1}>
+          <InfoField label={t("label")} ltr value={email} />
+        </InfoGrid>
         {step === "closed" || step === "done" ? (
-          <button
-            type="button"
-            aria-label={t("change")}
-            data-tip={t("change")}
+          <IconButton
+            icon={PencilIcon}
+            label={t("change")}
+            variant="secondary"
+            size="sm"
             onClick={() => { setNext(""); setStep("email"); }}
-            className="tip press flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-orange hover:text-orange-text"
-          >
-            <PencilIcon size={16} />
-          </button>
+          />
         ) : null}
       </div>
       {step === "done" ? <p role="status" className="m-0 text-sm text-success">{t("sent")}</p> : null}
@@ -53,8 +52,8 @@ export function EmailChange({ email }: { email: string }) {
         <div className="flex flex-col gap-3">
           <TextField label={t("newEmail")} name="newEmail" type="email" ltr autoComplete="email" value={next} onChange={setNext} error={invalid ? t("invalid") : null} />
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={proceed} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("continue")}</button>
-            <button type="button" onClick={() => setStep("closed")} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
+            <Button type="button" variant="primary" onClick={proceed}>{t("continue")}</Button>
+            <Button type="button" variant="secondary" onClick={() => setStep("closed")}>{t("cancel")}</Button>
           </div>
         </div>
       ) : null}

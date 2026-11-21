@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { WhatsAppIcon } from "@/components/ui/icons";
-import { Link } from "@/i18n/navigation";
-import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { BanIcon } from "@/components/ui/icons";
+import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { clampQuantity } from "@/features/cart/cart-rules";
@@ -17,10 +21,6 @@ interface BuildPurchasePanelProps {
   /** Public URL of this page for the message ("" when the store has no domain set). */
   pageUrl: string;
 }
-
-const primary = "flex h-[54px] flex-1 items-center justify-center rounded-control bg-orange text-[17px] font-bold text-on-orange";
-const secondary = "flex h-[54px] flex-1 items-center justify-center rounded-control bg-carbon text-base font-bold text-on-carbon";
-const stepper = "h-11 w-11 rounded-control border border-input-line bg-surface text-lg disabled:opacity-40";
 
 /** Price, copies stepper, buy / add-to-cart, the WhatsApp question and "edit it"; on mobile the actions sit in a sticky bottom bar. */
 export function BuildPurchasePanel({ build, whatsApp, pageUrl }: BuildPurchasePanelProps) {
@@ -37,62 +37,42 @@ export function BuildPurchasePanel({ build, whatsApp, pageUrl }: BuildPurchasePa
   const whatsAppLabel = soldOut ? t("askWhatsApp") : t("orderWhatsApp");
 
   return (
-    <div className="flex flex-col gap-4">
+    <Card padding="md" className="gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-[13px] text-ink-muted">{count > 1 ? t("total") : t("priceNote")}</span>
-          <span className="text-[30px] font-bold md:text-[34px]">{formatEgp(build.salePrice * count, locale)}</span>
+        <div className="flex flex-col gap-0.5">
+          <span className="type-label">{count > 1 ? t("total") : t("priceNote")}</span>
+          <span className="text-[30px] font-bold tabular-nums md:text-[34px]">{formatEgp(build.salePrice * count, locale)}</span>
         </div>
         {!soldOut && build.copies > 1 ? (
-          <div role="group" aria-label={t("quantity.label")} className="flex items-center gap-2">
-            <button type="button" aria-label={t("quantity.decrease")} disabled={count <= 1} onClick={() => setQuantity(count - 1)} className={stepper}>−</button>
-            <span className="min-w-8 text-center font-mono font-semibold">{count}</span>
-            <button type="button" aria-label={t("quantity.increase")} disabled={count >= build.copies} onClick={() => setQuantity(count + 1)} className={stepper}>+</button>
-          </div>
+          <QuantityStepper
+            value={count}
+            max={build.copies}
+            onChange={setQuantity}
+            label={t("quantity.label")}
+            decreaseLabel={t("quantity.decrease")}
+            increaseLabel={t("quantity.increase")}
+          />
         ) : null}
       </div>
       {soldOut ? (
-        <p role="status" className="m-0 rounded-card bg-paper p-3 text-[15px] font-bold text-ink-muted">{t("soldOut")}</p>
+        <StatusBadge tone="neutral" icon={BanIcon}>{t("soldOut")}</StatusBadge>
       ) : (
         <div className="hidden gap-2.5 md:flex">
-          <AddToCartButton line={line} thenOpenCart className={primary}>{t("buyNow")}</AddToCartButton>
-          <AddToCartButton line={line} className={secondary} />
+          <AddToCartButton line={line} thenOpenCart variant="accent" className="flex-1">{t("buyNow")}</AddToCartButton>
+          <AddToCartButton line={line} variant="primary" className="flex-1" />
         </div>
       )}
-      {whatsAppHref ? (
-        <a
-          {...NEW_TAB} href={whatsAppHref}
-          className="press hidden h-[54px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold md:flex"
-        >
-          <WhatsAppIcon size={20} />
-          {whatsAppLabel}
-        </a>
-      ) : null}
-      <Link
-        href={`/builder?from=${build.code}`}
-        className="flex h-[50px] items-center justify-center rounded-control border-[1.5px] border-ink font-bold"
-      >
-        {t("edit")}
-      </Link>
+      {whatsAppHref ? <WhatsAppButton href={whatsAppHref} variant="outline" className="hidden md:flex">{whatsAppLabel}</WhatsAppButton> : null}
+      <ButtonLink href={`/builder?from=${build.code}`} variant="secondary" className="hidden md:flex">{t("edit")}</ButtonLink>
       <div data-sticky-bar="md" className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
-        {whatsAppHref ? (
-          <a
-            {...NEW_TAB} href={whatsAppHref}
-            aria-label={whatsAppLabel}
-            className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-card border-[1.5px] border-ink"
-          >
-            <WhatsAppIcon size={22} />
-          </a>
-        ) : null}
+        {whatsAppHref ? <WhatsAppButton href={whatsAppHref} label={whatsAppLabel} className="shrink-0" /> : null}
         {soldOut ? null : (
           <>
-            <AddToCartButton line={line} className="flex h-[52px] flex-1 items-center justify-center rounded-card bg-carbon font-bold text-on-carbon" />
-            <AddToCartButton line={line} thenOpenCart className="flex h-[52px] flex-1 items-center justify-center rounded-card bg-orange font-bold text-on-orange">
-              {t("buyNow")}
-            </AddToCartButton>
+            <AddToCartButton line={line} variant="primary" className="flex-1" />
+            <AddToCartButton line={line} thenOpenCart variant="accent" className="flex-1">{t("buyNow")}</AddToCartButton>
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

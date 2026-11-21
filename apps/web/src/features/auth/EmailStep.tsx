@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { GOOGLE_SIGN_IN_ENABLED, GoogleButton } from "./GoogleButton";
 
@@ -29,7 +30,7 @@ export function EmailStep({ initialEmail, busy, error, onSubmit, onGoogle }: Ema
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <h1 className="m-0 text-[28px] font-bold">{t("title")}</h1>
+        <h1 className="m-0 type-page-title">{t("title")}</h1>
         <p className="m-0 text-[15px] text-ink-muted">{t("subtitle")}</p>
       </div>
       {GOOGLE_SIGN_IN_ENABLED ? (
@@ -54,13 +55,9 @@ export function EmailStep({ initialEmail, busy, error, onSubmit, onGoogle }: Ema
         error={invalid ? t("invalid") : null}
       />
       {error ? <p role="alert" className="m-0 text-sm font-bold text-error">{error}</p> : null}
-      <button
-        type="submit"
-        disabled={busy}
-        className="h-[52px] w-full rounded-full bg-orange px-4 text-base font-bold text-on-orange shadow-[0_10px_24px_-12px_rgba(255,106,43,.8)] transition-[filter,opacity] hover:brightness-105 disabled:opacity-60"
-      >
+      <Button type="submit" variant="accent" loading={busy} className="w-full">
         {busy ? t("sending") : t("send")}
-      </button>
+      </Button>
       <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
     </form>
   );

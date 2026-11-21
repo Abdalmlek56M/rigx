@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { IconButton } from "@/components/ui/Button";
 import { CloseIcon } from "@/components/ui/icons";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { LoginFlow } from "@/features/auth/LoginFlow";
@@ -14,12 +15,7 @@ export function SignInSheet({ open, onClose }: { open: boolean; onClose: () => v
     <ModalSheet open={open} onClose={onClose} label={t("loginTitle")} edge="end">
       <div className="flex h-full flex-col gap-5 overflow-y-auto p-5 sm:p-6">
         <div className="flex justify-end">
-          <button
-            type="button" aria-label={tc("close")} onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:text-ink"
-          >
-            <CloseIcon size={18} />
-          </button>
+          <IconButton icon={CloseIcon} label={tc("close")} variant="secondary" onClick={onClose} />
         </div>
         <LoginFlow next={undefined} onSignedIn={onClose} />
       </div>

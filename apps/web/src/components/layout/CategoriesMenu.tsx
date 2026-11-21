@@ -121,7 +121,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                       aria-current={current ? "true" : undefined}
                       className={`group flex min-h-10 items-center gap-2.5 rounded-control px-2 text-sm font-bold transition-colors ${current ? "bg-paper text-ink" : "text-ink-muted hover:text-ink"}`}
                     >
-                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "bg-orange text-on-orange" : "bg-orange-soft text-orange-text"}`}>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>
                         <CategoryIcon slug={category.slug} size={16} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">{category.name}</span>

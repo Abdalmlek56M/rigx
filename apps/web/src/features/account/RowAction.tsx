@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Link } from "@/i18n/navigation";
+import { ButtonLink, IconButton } from "@/components/ui/Button";
 
 interface RowActionProps {
   /** Accessible name and hover tip. */
@@ -10,31 +10,33 @@ interface RowActionProps {
   danger?: boolean;
 }
 
-const BASE = "tip press flex h-10 w-10 items-center justify-center rounded-full border border-line transition-colors";
-const NEUTRAL = "text-ink-muted hover:border-ink hover:text-ink";
-const DANGER = "text-ink-muted hover:border-error hover:bg-error/5 hover:text-error";
+const DANGER = "border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error";
 
 /** An icon-only action on a row (view, invoice, edit, set default); the label is its name and tip. */
-export function RowLink({ href, label, icon: Icon, danger = false, external = false }: RowActionProps & { href: string; external?: boolean }) {
-  const className = `${BASE} ${danger ? DANGER : NEUTRAL}`;
-  if (external) {
-    return (
-      <a href={href} target="_blank" rel="noreferrer" aria-label={label} data-tip={label} className={className}>
-        <Icon size={16} />
-      </a>
-    );
-  }
+export function RowLink({ href, label, icon, danger = false, external = false }: RowActionProps & { href: string; external?: boolean }) {
   return (
-    <Link href={href} aria-label={label} data-tip={label} className={className}>
-      <Icon size={16} />
-    </Link>
+    <ButtonLink
+      href={href}
+      icon={icon}
+      iconOnly
+      label={label}
+      variant="secondary"
+      size="sm"
+      external={external}
+      className={danger ? DANGER : undefined}
+    />
   );
 }
 
-export function RowButton({ label, icon: Icon, onClick, danger = false }: RowActionProps & { onClick: () => void }) {
+export function RowButton({ label, icon, onClick, danger = false }: RowActionProps & { onClick: () => void }) {
   return (
-    <button type="button" aria-label={label} data-tip={label} onClick={onClick} className={`${BASE} ${danger ? DANGER : NEUTRAL}`}>
-      <Icon size={16} />
-    </button>
+    <IconButton
+      icon={icon}
+      label={label}
+      variant="secondary"
+      size="sm"
+      onClick={onClick}
+      className={danger ? DANGER : undefined}
+    />
   );
 }

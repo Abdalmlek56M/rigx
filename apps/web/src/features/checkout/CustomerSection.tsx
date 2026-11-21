@@ -33,7 +33,7 @@ export function CustomerSection({ form, set, errors, showLogin, onLogin }: Secti
       <label className="flex min-h-11 items-center gap-2.5 text-sm">
         <input
           type="checkbox" checked={form.phoneHasWhatsApp} onChange={(event) => set("phoneHasWhatsApp", event.target.checked)}
-          className="h-[18px] w-[18px] accent-carbon"
+          className="h-[18px] w-[18px] accent-orange"
         />
         {t("whatsApp")}
       </label>

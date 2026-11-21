@@ -1,3 +1,5 @@
+import { cardClass } from "./Card";
+
 export interface FaqEntry {
   id: string;
   question: string;
@@ -6,14 +8,37 @@ export interface FaqEntry {
   embedUrl?: string;
 }
 
-/** FAQ entries as native `<details>` disclosures. */
-export function FaqList({ entries, videoTitle }: { entries: FaqEntry[]; videoTitle?: (question: string) => string }) {
+interface FaqListProps {
+  entries: FaqEntry[];
+  videoTitle?: (question: string) => string;
+  /** Plain rows for a list already inside a card; the default is one card per question. */
+  plain?: boolean;
+}
+
+/**
+ * FAQ entries as native `<details>` disclosures: a chevron that turns when opened, and no JavaScript. `plain` keeps the
+ * rows inside a group card; the default gives each question its own card.
+ */
+export function FaqList({ entries, videoTitle, plain = false }: FaqListProps) {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className={plain ? "flex flex-col" : "flex flex-col gap-2.5"}>
       {entries.map((entry) => (
-        <details key={entry.id} className="rounded-card border border-line bg-surface px-5 py-4">
-          <summary className="cursor-pointer font-bold">{entry.question}</summary>
-          <p className="mb-0 mt-2.5 whitespace-pre-line leading-7 text-ink-muted">{entry.answer}</p>
+        <details
+          key={entry.id}
+          className={`group ${plain ? "border-b border-line py-3 last:border-b-0" : cardClass({ padding: "sm" })}`}
+        >
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold [&::-webkit-details-marker]:hidden">
+            <span>{entry.question}</span>
+            <span
+              aria-hidden="true"
+              className="flex shrink-0 text-ink-muted transition-transform duration-150 group-open:rotate-180 motion-reduce:transition-none"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+          </summary>
+          <p className="mb-0 mt-3 whitespace-pre-line text-sm leading-7 text-ink-muted">{entry.answer}</p>
           {entry.embedUrl ? (
             <iframe
               src={entry.embedUrl}

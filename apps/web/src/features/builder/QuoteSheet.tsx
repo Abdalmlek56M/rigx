@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ApiError, unwrap, type Schemas } from "@rigx/api-client";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { Logo } from "@/components/ui/Logo";
-import { Link } from "@/i18n/navigation";
+import { ArrowBackIcon, PrinterIcon } from "@/components/ui/icons";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { parseCondition } from "@/lib/condition";
@@ -67,7 +69,6 @@ interface QuoteSheetProps {
 /** The quote as a dark share card (1080×1350, scaled to fit): no invoice number and no customer data; print or save as PDF from the browser. */
 export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps) {
   const t = useTranslations("builder.quote");
-  const tc = useTranslations("common.condition");
   const tu = useTranslations("usage");
   const locale = useLocale();
   const { frame, scale } = useFitScale();
@@ -88,7 +89,7 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
     return (
       <div role="alert" className="mx-auto flex max-w-[640px] flex-col items-center gap-3 px-4 py-16 text-center">
         <b className="text-lg">{t(outcome.status === "unavailable" ? "unavailable" : "failed")}</b>
-        <Link href="/builder" className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("backToBuilder")}</Link>
+        <ButtonLink href="/builder" variant="secondary" icon={ArrowBackIcon}>{t("backToBuilder")}</ButtonLink>
       </div>
     );
   }
@@ -102,8 +103,8 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
   return (
     <div data-print-document className="mx-auto flex max-w-[1080px] flex-col gap-4 px-4 py-8 md:py-12 print:max-w-none print:p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <Link href={builderPath(outcome.parts)} className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("backToBuilder")}</Link>
-        <button type="button" onClick={() => window.print()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon">{t("print")}</button>
+        <ButtonLink href={builderPath(outcome.parts)} variant="secondary" icon={ArrowBackIcon}>{t("backToBuilder")}</ButtonLink>
+        <Button type="button" variant="primary" icon={PrinterIcon} onClick={() => window.print()}>{t("print")}</Button>
       </div>
       <div ref={frame} data-quote-frame className="relative w-full" style={{ height: DESIGN_HEIGHT * scale }}>
         <article
@@ -141,11 +142,7 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
                   <span dir="ltr" className={`text-2xl font-bold [unicode-bidi:isolate] ${modelAlign}`}>
                     {line.name}{line.quantity > 1 ? ` ×${line.quantity}` : ""}
                   </span>
-                  {condition ? (
-                    <span className={`rounded px-3 py-1 text-base font-bold ${condition === "New" ? "bg-orange text-on-orange" : "bg-[#F4F2ED] text-[#15171B]"}`}>{tc(condition)}</span>
-                  ) : (
-                    <span />
-                  )}
+                  {condition ? <ConditionBadge condition={condition} /> : <span />}
                   <span dir="ltr" className={`text-[22px] ${locale === "ar" ? "text-left" : "text-right"}`}>{formatEgp(line.lineTotal, locale)}</span>
                 </li>
               );

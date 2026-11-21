@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { IconButton } from "@/components/ui/Button";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { CloseIcon } from "@/components/ui/icons";
 
@@ -19,15 +20,8 @@ export function RequestSheet({ open, onClose, title, children }: RequestSheetPro
     <ModalSheet open={open} onClose={onClose} label={title} edge="end">
       <div className="flex max-h-[88dvh] flex-col md:h-full md:max-h-none">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <b className="text-lg">{title}</b>
-          <button
-            type="button"
-            aria-label={tc("close")}
-            onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-control border border-input-line bg-surface"
-          >
-            <CloseIcon size={18} />
-          </button>
+          <b className="type-section-title">{title}</b>
+          <IconButton icon={CloseIcon} label={tc("close")} variant="secondary" onClick={onClose} />
         </div>
         <div className="flex flex-col gap-3 overflow-y-auto p-5">{children}</div>
       </div>

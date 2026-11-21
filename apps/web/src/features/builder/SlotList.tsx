@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
+import { IconButton } from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
 import { CloseIcon } from "@/components/ui/icons";
 
 export interface SlotInfo {
@@ -17,7 +19,7 @@ interface SlotListProps {
   onClear: (slot: string) => void;
 }
 
-/** The builder's slots with what is chosen in each; the active one is dark, an empty one dashed. */
+/** The builder's slots with what is chosen in each; the active one is graphite, an empty one dashed. */
 export function SlotList({ slots, parts, active, onSelect, onClear }: SlotListProps) {
   const t = useTranslations("builder.slots");
 
@@ -27,12 +29,12 @@ export function SlotList({ slots, parts, active, onSelect, onClear }: SlotListPr
         const part = parts.find((candidate) => candidate.slot === entry.slot);
         const isActive = entry.slot === active;
         const tone = isActive
-          ? "border-carbon bg-carbon text-on-carbon"
+          ? "surface-strong border-transparent"
           : part
-            ? "border-line bg-surface"
-            : "border-dashed border-input-line text-ink-muted";
+            ? ""
+            : "border-dashed text-ink-muted";
         return (
-          <li key={entry.slot} className={`flex items-stretch rounded-card border ${tone}`}>
+          <li key={entry.slot} className={`${cardClass({ padding: "none", layout: "grid", className: "grid-cols-[minmax(0,1fr)_auto] items-stretch" })} ${tone}`}>
             <button
               type="button"
               aria-pressed={isActive}
@@ -41,21 +43,21 @@ export function SlotList({ slots, parts, active, onSelect, onClear }: SlotListPr
             >
               <span dir="ltr" className="w-11 shrink-0 font-mono text-xs font-semibold">{entry.slot}</span>
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-[13px] opacity-75">{entry.name}</span>
+                <span className="text-xs opacity-75">{entry.name}</span>
                 <span dir="ltr" className="truncate text-start text-sm font-bold [unicode-bidi:isolate]">
                   {part ? `${part.item.modelName}${part.quantity > 1 ? ` ×${part.quantity}` : ""}` : isActive ? t("choosing") : t("empty")}
                 </span>
               </span>
             </button>
             {part ? (
-              <button
-                type="button"
-                aria-label={t("remove", { slot: entry.name })}
+              <IconButton
+                icon={CloseIcon}
+                label={t("remove", { slot: entry.name })}
+                variant="ghost"
+                size="md"
+                className="m-1"
                 onClick={() => onClear(entry.slot)}
-                className="flex w-11 shrink-0 items-center justify-center"
-              >
-                <CloseIcon size={16} />
-              </button>
+              />
             ) : null}
           </li>
         );

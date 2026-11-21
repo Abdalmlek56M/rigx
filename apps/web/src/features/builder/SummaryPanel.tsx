@@ -2,6 +2,7 @@
 
 import { useState, type ComponentProps } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Button } from "@/components/ui/Button";
 import { formatEgp } from "@/lib/format";
 import { IssueList } from "./IssueList";
 import { SummaryActions } from "./SummaryActions";
@@ -36,20 +37,22 @@ export function SummaryPanel({ evaluation, checking, checkFailed, slotCount, slo
     <aside
       aria-label={t("label")}
       aria-busy={checking}
-      className="fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col gap-4 overflow-y-auto rounded-t-[14px] bg-carbon p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-on-carbon lg:static lg:z-auto lg:max-h-none lg:rounded-card lg:p-[22px]"
+      className="fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col gap-4 overflow-y-auto rounded-t-[14px] surface-strong p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:static lg:z-auto lg:max-h-none lg:rounded-card lg:p-[22px]"
     >
       <div className="flex items-center justify-between gap-3">
         <span className="text-lg font-bold">{t("title")}</span>
         <span dir="ltr" className={`font-mono text-[13px] ${label}`}>{evaluation.parts.length} / {slotCount}</span>
         <span className="ms-auto text-xl font-bold lg:hidden">{total}</span>
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           aria-expanded={expanded}
           onClick={() => setExpanded(!expanded)}
-          className="h-11 rounded-control border border-header-line px-3 text-[13px] lg:hidden"
+          className="lg:hidden"
         >
           {expanded ? t("hide") : t("show")}
-        </button>
+        </Button>
       </div>
       <div className={`${expanded ? "flex" : "hidden"} flex-col gap-4 lg:flex`}>
         {checkFailed ? <p role="alert" className="m-0 text-sm text-[#FF8A7A]">{t("checkFailed")}</p> : null}

@@ -6,9 +6,12 @@ import { loginHref } from "@/features/auth/auth-rules";
 import { signOut } from "@/features/auth/session-store";
 import { useSession } from "@/features/auth/use-session";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { BoxIcon, CaseIcon, DocumentIcon, HeartIcon, InboxIcon, MapPinIcon, ShieldIcon, UserIcon } from "@/components/ui/icons";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { SkeletonRows } from "@/components/ui/Skeleton";
+import { BoxIcon, CaseIcon, DocumentIcon, HeartIcon, InboxIcon, LogoutIcon, MapPinIcon, ShieldIcon, UserIcon } from "@/components/ui/icons";
 import { ACCOUNT_NAV, isActiveNav } from "./account-labels";
-import { SkeletonRows } from "./LoadBoundary";
 
 const NAV_ICONS = {
   orders: BoxIcon, favourites: HeartIcon, warranties: ShieldIcon, invoices: DocumentIcon, requests: InboxIcon, builds: CaseIcon, addresses: MapPinIcon, profile: UserIcon
@@ -33,35 +36,29 @@ export function AccountShell({ children }: { children: ReactNode }) {
   const user = session.status === "signedIn" ? session.user : null;
 
   return (
-    <section className="shell pb-16 pt-8 md:pt-10">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="m-0 text-2xl font-bold md:text-[32px]">
-          {user ? t("greeting", { name: user.fullName || user.email }) : <span aria-hidden="true" className="inline-block h-8 w-56 animate-pulse rounded-control bg-line" />}
-        </h1>
-        {user ? (
-          <button type="button" onClick={leave} className="h-11 rounded-control border border-input-line bg-surface px-4 text-sm font-bold hover:bg-line">
-            {t("signOut")}
-          </button>
-        ) : null}
-      </header>
-
-      <div className="grid items-start gap-5 md:grid-cols-[220px_1fr]">
-        <nav aria-label={t("navLabel")} className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:flex-col md:overflow-visible md:px-0">
+    <section className="shell pb-16">
+      <PageHeader
+        contained={false}
+        title={user ? t("greeting", { name: user.fullName || user.email }) : <span aria-hidden="true" className="inline-block h-8 w-56 animate-pulse rounded-control bg-line" />}
+        actions={user ? <Button variant="secondary" icon={LogoutIcon} onClick={() => void leave()}>{t("signOut")}</Button> : undefined}
+      />
+      <div className="grid items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
+        <Card as="nav" padding="sm" className="-mx-4 flex-row gap-1 overflow-x-auto px-4 md:mx-0 md:flex-col md:overflow-visible md:px-4" aria-label={t("navLabel")}>
           {ACCOUNT_NAV.map((item) => {
             const active = isActiveNav(item.href, pathname);
             const NavIcon = NAV_ICONS[item.key];
             return (
               <Link
                 key={item.href} href={item.href} aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-4 text-sm font-bold ${active ? "bg-carbon text-on-carbon" : "text-ink hover:bg-line"}`}
+                className={`flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-3 text-sm font-bold transition-colors ${active ? "surface-strong" : "text-ink hover:bg-paper"}`}
               >
                 <NavIcon size={18} />
                 {t(`nav.${item.key}`)}
               </Link>
             );
           })}
-        </nav>
-        <div className="min-w-0">{user ? children : <SkeletonRows />}</div>
+        </Card>
+        <div className="min-w-0">{user ? children : <SkeletonRows rows={3} />}</div>
       </div>
     </section>
   );

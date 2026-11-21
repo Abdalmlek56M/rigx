@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { categoryHref } from "@/components/layout/nav-links";
+import { cardClass } from "@/components/ui/Card";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Link } from "@/i18n/navigation";
 import { mediaUrl } from "@/lib/media";
@@ -21,7 +22,7 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
           <Link
             href={categoryHref(category.slug)}
             draggable={false}
-            className="lift press group relative flex min-h-[132px] w-full flex-col items-start justify-between gap-4 overflow-hidden rounded-card border border-line bg-surface p-4 text-base font-bold transition-colors hover:border-orange/50 md:min-h-[148px]"
+            className={`${cardClass({ padding: "sm", interactive: true })} group relative min-h-[132px] justify-between overflow-hidden text-base font-bold hover:border-orange/50 md:min-h-[148px]`}
           >
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-soft text-orange-text"><CategoryIcon slug={category.slug} size={22} /></span>
             {category.image ? (

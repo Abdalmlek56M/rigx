@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BUDGETS, type Budget } from "@/features/builds/build-query";
-import { BookIcon, BroadcastIcon, CheckIcon, FilmIcon, GamepadIcon, WhatsAppIcon } from "@/components/ui/icons";
-import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { BookIcon, BroadcastIcon, CheckIcon, FilmIcon, GamepadIcon, HelpIcon } from "@/components/ui/icons";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { USAGES, type Usage } from "@/lib/usage";
-
-const chip = "chip inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-input-line bg-surface px-4 text-sm font-medium";
 
 const USAGE_ICONS: Record<Usage, (p: { size?: number }) => React.JSX.Element> = {
   Gaming: GamepadIcon,
@@ -34,43 +35,48 @@ export function RecommendWidget({ whatsApp }: { whatsApp: { number: string; temp
     .join("\n");
 
   return (
-    <div id="recommend" className="flex scroll-mt-4 flex-1 basis-[420px] flex-col gap-4 rounded-panel border border-line bg-surface p-6 shadow-soft md:p-8">
-      <div className="flex flex-col gap-1">
-        <h2 className="m-0 text-[28px] font-bold">{t("title")}</h2>
-        <p className="m-0 text-[15px] text-ink-muted">{t("eyebrow")}</p>
-      </div>
+    <Card id="recommend" icon={HelpIcon} title={t("title")} padding="lg" className="flex-1 basis-[420px] scroll-mt-4 gap-4">
+      <p className="m-0 text-[15px] text-ink-muted">{t("eyebrow")}</p>
       <fieldset className="m-0 border-0 p-0">
-        <legend className="mb-2.5 text-[15px] font-bold">{t("usageLegend")}</legend>
+        <legend className="mb-2.5 text-xs font-bold">{t("usageLegend")}</legend>
         <div className="flex flex-wrap gap-2">
           {USAGES.map((entry) => {
             const UsageIcon = USAGE_ICONS[entry];
             return (
-              <button key={entry} type="button" aria-pressed={usage === entry} onClick={() => setUsage(usage === entry ? null : entry)} className={chip}>
-                <UsageIcon size={18} />
+              <Button
+                key={entry}
+                type="button"
+                size="sm"
+                variant={usage === entry ? "primary" : "secondary"}
+                icon={UsageIcon}
+                aria-pressed={usage === entry}
+                onClick={() => setUsage(usage === entry ? null : entry)}
+              >
                 {tu(entry)}
-              </button>
+              </Button>
             );
           })}
         </div>
       </fieldset>
       <fieldset className="m-0 border-0 p-0">
-        <legend className="mb-2.5 text-[15px] font-bold">{t("budgetLegend")}</legend>
+        <legend className="mb-2.5 text-xs font-bold">{t("budgetLegend")}</legend>
         <div className="flex flex-wrap gap-2">
           {BUDGETS.map((entry) => (
-            <button key={entry} type="button" aria-pressed={budget === entry} onClick={() => setBudget(budget === entry ? null : entry)} className={chip}>
-              {budget === entry ? <CheckIcon size={16} /> : null}
+            <Button
+              key={entry}
+              type="button"
+              size="sm"
+              variant={budget === entry ? "primary" : "secondary"}
+              icon={budget === entry ? CheckIcon : undefined}
+              aria-pressed={budget === entry}
+              onClick={() => setBudget(budget === entry ? null : entry)}
+            >
               {tb(entry)}
-            </button>
+            </Button>
           ))}
         </div>
       </fieldset>
-      <a
-        {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)}
-        className="press mt-1 flex h-[50px] items-center gap-2 self-start rounded-full bg-whatsapp px-6 font-bold text-white shadow-[0_10px_24px_-10px_rgba(31,168,85,.6)] transition-[filter] hover:brightness-105"
-      >
-        <WhatsAppIcon size={20} />
-        {t("send")}
-      </a>
-    </div>
+      <WhatsAppButton href={whatsAppUrl(whatsApp.number, text)} className="mt-1 self-start">{t("send")}</WhatsAppButton>
+    </Card>
   );
 }

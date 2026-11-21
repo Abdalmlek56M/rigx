@@ -4,7 +4,10 @@ import { useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { ChevronDownIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
+import { BanIcon, ChevronDownIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
@@ -27,9 +30,10 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
   const suitableFor = buildSuitableFor(build, locale);
   const photo = build.photos[0];
   const href = `/builds/${build.code}`;
+  const soldOut = build.copies <= 0;
 
   return (
-    <article className={`lift flex h-full w-full flex-col overflow-hidden rounded-panel border border-line bg-surface transition-opacity duration-200 starting:opacity-0 motion-reduce:transition-none ${pending ? "opacity-60" : "opacity-100"}`}>
+    <article className={`${cardClass({ padding: "none", interactive: true })} h-full overflow-hidden rounded-panel transition-opacity duration-200 starting:opacity-0 motion-reduce:transition-none ${pending ? "opacity-60" : "opacity-100"}`}>
       <Link href={href} aria-label={title} className="relative flex aspect-square items-center justify-center overflow-hidden bg-surface text-muted">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
@@ -37,26 +41,32 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
         ) : (
           <ImagePlaceholderIcon size={96} />
         )}
-        {usage ? (
-          <span className="absolute end-3.5 top-3.5 rounded-full bg-carbon px-2.5 py-1 text-xs font-bold text-on-carbon">{tu(usage)}</span>
-        ) : null}
+        <span className="absolute end-3.5 top-3.5 flex flex-wrap justify-end gap-1.5">
+          {usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : null}
+          {soldOut ? <StatusBadge tone="neutral" icon={BanIcon}>{t("soldOutBadge")}</StatusBadge> : null}
+        </span>
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-5 md:p-[22px]">
         <h2 className="m-0 line-clamp-2 min-h-10 text-lg leading-6 font-bold">
           <Link href={href}>{title}</Link>
         </h2>
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           aria-expanded={open}
           aria-controls={detailsId}
           onClick={() => setOpen((value) => !value)}
-          className="flex min-h-10 items-center justify-between gap-2 rounded-control border border-input-line px-3 text-sm font-bold transition-colors duration-150 hover:bg-paper motion-reduce:transition-none"
+          className="w-full justify-between"
         >
-          <span className="text-sm">{t("specs")} <span className="font-mono text-ink-muted">{build.units.length}</span></span>
-          <span className={`flex transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}>
+          <span className="flex items-center gap-1.5">
+            {t("specs")}
+            <span className="font-mono text-ink-muted">{build.units.length}</span>
+          </span>
+          <span aria-hidden="true" className={`flex transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}>
             <ChevronDownIcon size={16} />
           </span>
-        </button>
+        </Button>
         <div id={detailsId} className={`grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
           <div className="overflow-hidden">
             <ul className="m-0 flex list-none flex-col gap-1.5 p-0 pb-2 text-sm">
@@ -82,19 +92,8 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
           <span className="text-2xl font-bold">{formatEgp(build.salePrice, locale)}</span>
         </div>
         <div className="flex gap-2">
-          <AddToCartButton
-            line={buildCartLine(build, locale)}
-            thenOpenCart
-            className="flex h-12 flex-1 items-center justify-center rounded-control bg-orange font-bold text-on-orange"
-          >
-            {t("order")}
-          </AddToCartButton>
-          <Link
-            href={`/builder?from=${build.code}`}
-            className="flex h-12 flex-1 items-center justify-center rounded-control border-[1.5px] border-ink font-bold"
-          >
-            {t("edit")}
-          </Link>
+          <AddToCartButton line={buildCartLine(build, locale)} thenOpenCart variant="accent" className="flex-1" />
+          <ButtonLink href={`/builder?from=${build.code}`} variant="secondary" className="flex-1">{t("edit")}</ButtonLink>
         </div>
       </div>
     </article>

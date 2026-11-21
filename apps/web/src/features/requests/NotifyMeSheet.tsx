@@ -2,8 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { ButtonLink } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
-import { Link } from "@/i18n/navigation";
 import { RequestSheet } from "./RequestSheet";
 import { isEgyptMobile, isEmail } from "./request-fields";
 import { submitRequest, type SubmitOutcome } from "./submit-request";
@@ -67,13 +68,15 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
       ) : outcome?.status === "conflict" ? (
         <div role="status" className="flex flex-col gap-3 text-sm leading-7">
           <p>{t("availableNow")}</p>
-          <Link
+          <ButtonLink
             href={`/products?search=${encodeURIComponent(target.modelName)}`}
+            variant="secondary"
+            size="sm"
+            className="self-start"
             onClick={onClose}
-            className="font-bold text-orange-text underline hover:text-orange-text-hover"
           >
             {t("seeAvailable")}
-          </Link>
+          </ButtonLink>
         </div>
       ) : (
         <form onSubmit={submit} noValidate className="flex flex-col gap-3">
@@ -91,7 +94,7 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
                     onChange={() => setCondition(value)}
                     className="peer sr-only"
                   />
-                  <span className="flex flex-1 items-center justify-center rounded-[7px] text-sm font-bold text-ink-muted transition-colors peer-checked:bg-carbon peer-checked:text-on-carbon">
+                  <span className="flex flex-1 items-center justify-center rounded-[7px] text-sm font-bold text-ink-muted transition-colors peer-checked:surface-strong">
                     {t(`conditions.${value}`)}
                   </span>
                 </label>
@@ -108,13 +111,14 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
             value={email} onChange={setEmail} error={errors.email ?? null}
           />
           {outcome ? <p role="alert" className="text-sm text-error">{t(outcome.status === "invalid" ? "errors.invalid" : "errors.failed")}</p> : null}
-          <button
+          <Button
             type="submit"
-            disabled={busy}
-            className="h-12 w-full rounded-control bg-carbon text-sm font-bold text-on-carbon disabled:opacity-60"
+            variant="primary"
+            loading={busy}
+            className="w-full"
           >
             {t("submit")}
-          </button>
+          </Button>
           <p className="text-xs text-ink-muted">{t("note")}</p>
         </form>
       )}

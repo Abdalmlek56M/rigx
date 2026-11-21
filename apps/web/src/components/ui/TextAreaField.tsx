@@ -1,3 +1,5 @@
+import { textAreaClass } from "./field-class";
+
 interface TextAreaFieldProps {
   label: string;
   name: string;
@@ -20,7 +22,7 @@ export function TextAreaField({ label, name, value, onChange, rows = 3, placehol
   const hintId = `${name}-hint`;
   const describedBy = error ? errorId : hint ? hintId : undefined;
   return (
-    <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
+    <label className="flex min-w-0 flex-col gap-1.5 text-xs font-bold">
       {label}
       <textarea
         name={name}
@@ -33,7 +35,7 @@ export function TextAreaField({ label, name, value, onChange, rows = 3, placehol
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full resize-y rounded-control border border-input-line bg-surface px-3 py-2.5 text-sm font-normal text-ink"
+        className={textAreaClass}
       />
       {hint && !error ? <span id={hintId} className="text-xs font-normal text-ink-muted">{hint}</span> : null}
       {error ? <span id={errorId} role="alert" className="text-xs font-normal text-error">{error}</span> : null}

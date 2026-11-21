@@ -2,10 +2,13 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { CpuIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
-import { EmptyIcon } from "@/components/ui/EmptyIcon";
-import { CpuIcon, WhatsAppIcon } from "@/components/ui/icons";
-import { NEW_TAB, fillTemplate, siteUrl, whatsAppUrl } from "@/lib/contact";
+import { fillTemplate, siteUrl, whatsAppUrl } from "@/lib/contact";
 import { OptionPanel } from "./OptionPanel";
 import { SlotList, type SlotInfo } from "./SlotList";
 import { SummaryPanel } from "./SummaryPanel";
@@ -42,45 +45,48 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
   if (!b.ready) return <p role="status" className="shell py-16 text-center text-ink-muted">{t("opening")}</p>;
   if (active === null) {
     return (
-      <div role="status" className="shell rise-in flex flex-col items-center gap-3 py-20 text-center">
-        <EmptyIcon icon={CpuIcon} />
-        <h2 className="m-0 text-2xl font-bold">{t("noSlots")}</h2>
-        <p className="m-0 max-w-[44ch] text-[15px] leading-[1.8] text-ink-muted">{t("noSlotsBody")}</p>
-        <div className="mt-2 flex flex-wrap justify-center gap-2.5">
-          {whatsApp.number ? (
-            <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, fillTemplate(whatsApp.template, {}))} className="press inline-flex h-12 items-center gap-2 rounded-full bg-whatsapp px-6 font-bold text-white">
-              <WhatsAppIcon size={18} />
-              {t("noSlotsWhatsApp")}
-            </a>
-          ) : null}
-          <Link href="/builds" className="press inline-flex h-12 items-center rounded-full border border-input-line px-6 font-bold">{t("noSlotsBuilds")}</Link>
-        </div>
+      <div className="shell py-16">
+        <EmptyState
+          icon={CpuIcon}
+          title={t("noSlots")}
+          help={t("noSlotsBody")}
+          action={
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {whatsApp.number ? (
+                <WhatsAppButton href={whatsAppUrl(whatsApp.number, fillTemplate(whatsApp.template, {}))}>{t("noSlotsWhatsApp")}</WhatsAppButton>
+              ) : null}
+              <ButtonLink href="/builds" variant="secondary">{t("noSlotsBuilds")}</ButtonLink>
+            </div>
+          }
+        />
       </div>
     );
   }
 
   return (
     <div className="flex shell flex-col gap-4 pb-32 pt-2 lg:pb-16">
-      {b.openFailed ? <p role="alert" className="m-0 rounded-card border border-line bg-surface p-4 text-sm">{t("openFailed")}</p> : null}
+      {b.openFailed ? <Card padding="sm"><p className="m-0 text-sm">{t("openFailed")}</p></Card> : null}
       {b.unmatched.length > 0 ? (
-        <div role="status" className="rounded-card border border-line bg-surface p-4 text-sm">
-          <b>{t("unmatched")}</b>
-          <ul className="m-0 mt-2 flex list-none flex-col gap-1 p-0 text-ink-muted">
+        <Card padding="sm" className="gap-2">
+          <b className="text-sm">{t("unmatched")}</b>
+          <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm text-ink-muted">
             {b.unmatched.map((part) => (
               <li key={`${part.modelName}-${part.condition}`} dir="auto" className="[unicode-bidi:isolate]">{part.modelName}</li>
             ))}
           </ul>
-        </div>
+        </Card>
       ) : null}
       {b.evaluation.missingCodes.length > 0 ? (
-        <div role="status" className="flex flex-wrap items-center gap-3 rounded-card border border-line bg-surface p-4 text-sm">
-          <span>{t("missing")}</span>
-          {b.evaluation.missingCodes.map((code) => (
-            <button key={code} type="button" onClick={() => b.remove(code)} className="h-11 rounded-control border border-input-line px-3 font-mono">
-              {code} · {t("removeMissing")}
-            </button>
-          ))}
-        </div>
+        <Card padding="sm" className="gap-3">
+          <span className="text-sm">{t("missing")}</span>
+          <div className="flex flex-wrap gap-2">
+            {b.evaluation.missingCodes.map((code) => (
+              <Button key={code} type="button" variant="secondary" size="sm" onClick={() => b.remove(code)} className="font-mono">
+                {code} — {t("removeMissing")}
+              </Button>
+            ))}
+          </div>
+        </Card>
       ) : null}
       <div className="grid items-start gap-5 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
         <SlotList slots={slots} parts={b.evaluation.parts} active={active} onSelect={selectSlot} onClear={b.clear} />

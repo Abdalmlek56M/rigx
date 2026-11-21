@@ -4,7 +4,10 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { FaqList } from "@/components/ui/FaqList";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { categoryHref } from "@/components/layout/nav-links";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { HelpIcon } from "@/components/ui/icons";
 import { Gallery } from "@/features/product/Gallery";
 import { ProductInfoBoxes } from "@/features/product/ProductInfoBoxes";
 import { PurchasePanel } from "@/features/product/PurchasePanel";
@@ -13,7 +16,7 @@ import { loadItem } from "@/features/product/load-item";
 import { specRows } from "@/features/product/spec-rows";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FavouriteButton } from "@/features/favourites/FavouriteButton";
-import { Link, permanentRedirect } from "@/i18n/navigation";
+import { permanentRedirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs } from "@/lib/categories";
 import { parseCondition } from "@/lib/condition";
@@ -37,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!item) return {};
   const t = await getTranslations({ locale, namespace: "common.condition" });
   const condition = parseCondition(item.condition);
-  const title = condition ? `${item.modelName} · ${t(condition)}` : item.modelName;
+  const title = condition ? `${item.modelName} — ${t(condition)}` : item.modelName;
   const photo = item.photos[0];
   return {
     title,
@@ -57,7 +60,6 @@ export default async function ProductPage({ params }: Props) {
   if (slug !== item.slug) permanentRedirect({ href: productPath(item.slug), locale });
 
   const t = await getTranslations("product");
-  const tc = await getTranslations("common.condition");
   const [storefront, faqs] = await Promise.all([loadStorefront(), loadItemFaqs(item.code)]);
   const trail = item.categoryId ? categoryPath(storefront.categoryTree, item.categoryId) : [];
   const defs = item.categoryId ? effectiveSpecs(storefront.categoryTree, item.categoryId) : [];
@@ -72,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
     }),
     breadcrumbJsonLd([
       { name: t("home"), url: absoluteUrl(localizedPath(locale, "/")) },
-      ...trail.map((node) => ({ name: node.name, url: absoluteUrl(localizedPath(locale, categoryHref(node.slug))) })),
+      ...trail.map((node) => ({ name: node.name, url: absoluteUrl(localizedPath(locale, `/products?category=${encodeURIComponent(node.slug)}`)) })),
       { name: item.modelName }
     ])
   ];
@@ -81,39 +83,24 @@ export default async function ProductPage({ params }: Props) {
   return (
     <div className="pb-28 md:pb-0">
       <JsonLd data={structuredData} />
-      <nav aria-label={t("breadcrumb")} className="shell pt-6 text-sm text-ink-muted">
-        <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
-          <li><Link href="/" className="hover:underline">{t("home")}</Link></li>
-          {trail.map((node) => (
-            <li key={node.id} className="flex gap-2">
-              <span aria-hidden="true">/</span>
-              <Link href={categoryHref(node.slug)} className="hover:underline">{node.name}</Link>
-            </li>
-          ))}
-          <li className="flex gap-2">
-            <span aria-hidden="true">/</span>
-            <span aria-current="page">{tc(condition)}</span>
-          </li>
-        </ol>
-      </nav>
-
-      <section className="grid shell items-start gap-6 py-6 md:grid-cols-2 md:gap-10 md:py-9">
-        <Gallery photos={item.photos} alt={item.modelName} />
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2.5">
+      <PageHeader
+        breadcrumb={[{ label: t("home"), href: "/" }, ...trail.map((node) => ({ label: node.name, href: `/products?category=${encodeURIComponent(node.slug)}` })), { label: item.modelName }]}
+        breadcrumbLabel={t("breadcrumb")}
+        title={item.modelName}
+        titleDir="ltr"
+        eyebrow={brand?.name}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
             <ConditionBadge condition={condition} />
-            <span className={`text-[13px] font-bold ${soldOut ? "text-ink-muted" : "text-success"}`}>{availability}</span>
-            <FavouriteButton code={item.code} modelName={item.modelName} className="ms-auto" />
+            <StatusBadge tone={soldOut ? "neutral" : "success"}>{availability}</StatusBadge>
+            <FavouriteButton code={item.code} modelName={item.modelName} />
           </div>
-          {brand ? (
-            <Link
-              href={`/products?brand=${brand.slug}`} dir="ltr" aria-label={t("brandLink", { brand: brand.name })}
-              className="-mb-2 self-start text-sm font-bold tracking-wide text-ink-muted uppercase hover:text-orange-text"
-            >
-              {brand.name}
-            </Link>
-          ) : null}
-          <h1 dir="ltr" className="m-0 text-start text-2xl leading-[1.3] font-bold [unicode-bidi:isolate] md:text-[32px]">{item.modelName}</h1>
+        }
+      />
+
+      <section className="grid shell items-start gap-6 pb-8 md:grid-cols-2 md:gap-10">
+        <Gallery photos={item.photos} alt={item.modelName} />
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
           <PurchasePanel
             item={{
               code: item.code,
@@ -131,13 +118,12 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </section>
 
-      <div className="flex shell flex-col gap-10 pb-14">
+      <div className="flex shell flex-col gap-6 pb-14">
         <SpecsTable rows={specRows(item.specs, defs)} />
         {faqs.length > 0 ? (
-          <section className="flex flex-col gap-3">
-            <h2 className="m-0 text-2xl font-bold">{t("faqs")}</h2>
-            <FaqList entries={faqs} />
-          </section>
+          <Card title={t("faqs")} icon={HelpIcon} padding="md">
+            <FaqList entries={faqs} plain />
+          </Card>
         ) : null}
       </div>
     </div>

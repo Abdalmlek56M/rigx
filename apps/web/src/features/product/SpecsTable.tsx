@@ -1,21 +1,21 @@
 import { useTranslations } from "next-intl";
+import { Card } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { CpuIcon } from "@/components/ui/icons";
 import type { SpecRow } from "./spec-rows";
 
+/** The item's specifications as a label-above-value grid in one card. */
 export function SpecsTable({ rows }: { rows: SpecRow[] }) {
   const t = useTranslations("product");
   if (rows.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="m-0 text-2xl font-bold">{t("specs")}</h2>
-      <dl className="m-0 grid grid-cols-1 overflow-hidden rounded-card border border-line bg-surface text-[15px] md:grid-cols-2">
+    <Card title={t("specs")} icon={CpuIcon} padding="md">
+      <InfoGrid columns={2} className="gap-y-4">
         {rows.map((row) => (
-          <div key={row.key} className="flex justify-between gap-4 border-b border-line px-[18px] py-3.5 md:odd:border-e">
-            <dt className="text-ink-muted">{row.name}</dt>
-            <dd dir="auto" className="m-0 font-bold [unicode-bidi:isolate]">{row.value}</dd>
-          </div>
+          <InfoField key={row.key} label={row.name} value={row.value} />
         ))}
-      </dl>
-    </section>
+      </InfoGrid>
+    </Card>
   );
 }

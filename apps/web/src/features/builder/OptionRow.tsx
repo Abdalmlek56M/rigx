@@ -1,6 +1,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { ImagePlaceholderIcon } from "@/components/ui/icons";
 import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
@@ -36,46 +38,44 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
   );
 
   return (
-    <li className={`flex flex-wrap items-center gap-3.5 rounded-card border p-3.5 ${chosen ? "border-orange bg-orange/10" : "border-line bg-surface"}`}>
-      <div className="flex h-14 w-[84px] shrink-0 items-center justify-center overflow-hidden rounded bg-sand text-muted">
-        {group.thumbnailStorageKey ? (
-          // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(group.thumbnailStorageKey)} alt="" width={84} height={56} loading="lazy" className="h-full w-full object-cover" />
-        ) : (
-          <ImagePlaceholderIcon size={32} />
-        )}
+    <Card as="li" padding="sm" className={`gap-3 ${chosen ? "border-orange bg-orange/10" : ""}`}>
+      <div className="flex flex-wrap items-center gap-3.5">
+        <div className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper text-muted">
+          {group.thumbnailStorageKey ? (
+            // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
+            <img src={mediaUrl(group.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="h-full w-full object-contain p-1" />
+          ) : (
+            <ImagePlaceholderIcon size={32} />
+          )}
+        </div>
+        <div className="flex min-w-0 flex-1 basis-[200px] flex-col gap-1">
+          <span dir="ltr" className="text-start font-bold [unicode-bidi:isolate]">{group.modelName}</span>
+          {warranties.length > 0 ? <span className="text-xs text-ink-muted">{warranties.join(" · ")}</span> : null}
+          {reasons.map((reason) => (
+            <span key={reason} className="text-xs text-error">{reason}</span>
+          ))}
+        </div>
+        <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="flex flex-wrap gap-2">
+          {choices.map((choice) => (
+            <Button
+              key={choice.code}
+              type="button"
+              role="radio"
+              aria-checked={choice.selected}
+              aria-disabled={choice.block !== null}
+              disabled={choice.block !== null}
+              variant={choice.selected ? "primary" : "secondary"}
+              onClick={() => onPick(choice.code)}
+              className={`h-auto min-h-[52px] min-w-32 flex-col gap-0.5 px-3.5 py-2 ${choice.block ? "line-through opacity-60" : ""}`}
+            >
+              <span className="text-xs font-bold">{tc(choice.condition)}</span>
+              <span className="text-sm font-bold">
+                {choice.block === "unavailable" ? t("unavailable") : choice.block === "incompatible" ? t("incompatible") : formatEgp(choice.price, locale)}
+              </span>
+            </Button>
+          ))}
+        </div>
       </div>
-      <div className="flex min-w-0 flex-1 basis-[200px] flex-col gap-1">
-        <span dir="ltr" className="text-start font-bold [unicode-bidi:isolate]">{group.modelName}</span>
-        {warranties.length > 0 ? <span className="text-xs text-ink-muted">{warranties.join(" · ")}</span> : null}
-        {reasons.map((reason) => (
-          <span key={reason} className="text-xs text-error">{reason}</span>
-        ))}
-      </div>
-      <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="flex flex-wrap gap-2">
-        {choices.map((choice) => (
-          <button
-            key={choice.code}
-            type="button"
-            role="radio"
-            aria-checked={choice.selected}
-            aria-disabled={choice.block !== null}
-            onClick={() => (choice.block === null ? onPick(choice.code) : undefined)}
-            className={`flex h-[52px] min-w-32 flex-col items-center justify-center rounded-control px-3.5 ${
-              choice.selected
-                ? "border-2 border-carbon bg-carbon text-on-carbon"
-                : choice.block
-                  ? "cursor-not-allowed border border-dashed border-input-line bg-paper text-muted"
-                  : "border-[1.5px] border-ink bg-surface"
-            }`}
-          >
-            <span className={`text-xs font-bold ${choice.block ? "line-through" : ""}`}>{tc(choice.condition)}</span>
-            <span className={`text-sm font-bold ${choice.block ? "line-through" : ""}`}>
-              {choice.block === "unavailable" ? t("unavailable") : choice.block === "incompatible" ? t("incompatible") : formatEgp(choice.price, locale)}
-            </span>
-          </button>
-        ))}
-      </div>
-    </li>
+    </Card>
   );
 }

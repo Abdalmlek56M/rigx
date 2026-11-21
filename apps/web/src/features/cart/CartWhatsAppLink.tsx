@@ -1,8 +1,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { WhatsAppIcon } from "@/components/ui/icons";
-import { whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "./cart-context";
 import { cartWhatsAppText } from "./cart-rules";
@@ -15,14 +15,5 @@ export function CartWhatsAppLink({ number, onClick }: { number: string | null; o
   if (!number || lines.length === 0) return null;
   const text = cartWhatsAppText(lines, { intro: t("intro"), total: t("total") }, (amount) => formatEgp(amount, locale));
 
-  return (
-    <a
-      {...NEW_TAB} href={whatsAppUrl(number, text)}
-      onClick={onClick}
-      className="press flex h-[52px] items-center justify-center gap-2 rounded-control border-2 border-ink font-bold"
-    >
-      <WhatsAppIcon size={20} />
-      {t("cta")}
-    </a>
-  );
+  return <WhatsAppButton href={whatsAppUrl(number, text)} variant="outline" className="w-full" onClick={onClick}>{t("cta")}</WhatsAppButton>;
 }

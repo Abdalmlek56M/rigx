@@ -103,7 +103,9 @@
     "condition": {
       "New": "New",
       "Used": "Used"
-    }
+    },
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "topBar": {
     "defaultAnnouncement": "Shipping to all governorates",
@@ -159,7 +161,9 @@
       "Instagram": "Instagram",
       "TikTok": "TikTok",
       "YouTube": "YouTube"
-    }
+    },
+    "phone": "Phone",
+    "email": "Email"
   },
   "floatingContact": {
     "label": "Contact us",
@@ -192,7 +196,8 @@
       "cta": "Order on WhatsApp",
       "intro": "Hi RIGX, I'd like to order:",
       "total": "Total"
-    }
+    },
+    "summary": "Order summary"
   },
   "usage": {
     "Gaming": "Gaming",
@@ -287,7 +292,8 @@
       "title": "Did not find what you are looking for?",
       "body": "Send us the model and we will look for it. The price and time are confirmed with you before payment.",
       "cta": "Request a part"
-    }
+    },
+    "loading": "Loading products…"
   },
   "product": {
     "home": "Home",
@@ -323,7 +329,7 @@
     "whatsApp": "Hello RIGX, I would like to ask about {item} ({code}).",
     "fitsMyPc": "Will it fit your PC? Try it in “Build your PC”",
     "specs": "Specifications",
-    "faqs": "Questions about this part",
+    "faqs": "Questions about this product",
     "info": {
       "warranty": "Warranty",
       "warrantyLink": "What it covers",
@@ -337,7 +343,8 @@
       },
       "pickupTitle": "Pickup",
       "pickupAndShipping": "From {address}, or shipping to all governorates",
-      "shippingOnly": "Shipping to all governorates"
+      "shippingOnly": "Shipping to all governorates",
+      "title": "Purchase information"
     },
     "orderWhatsApp": "Order it on WhatsApp",
     "brandLink": "All {brand} products"
@@ -356,7 +363,8 @@
     "loadFailed": "Builds could not be loaded now. Please try again shortly.",
     "empty": {
       "title": "No matching builds",
-      "body": "Try another usage or budget, or contact us on WhatsApp for a recommendation."
+      "body": "Try another usage or budget, or contact us on WhatsApp for a recommendation.",
+      "all": "Show all builds"
     },
     "banner": {
       "title": "No suitable build?",
@@ -364,7 +372,9 @@
       "cta": "Recommend one on WhatsApp",
       "message": "I would like a build recommendation."
     },
-    "specs": "Specifications"
+    "specs": "Specifications",
+    "loading": "Loading builds…",
+    "soldOutBadge": "Sold out"
   },
   "build": {
     "breadcrumb": "Breadcrumb",
@@ -694,7 +704,8 @@
     "shippingNote": "Calculated at the next step",
     "subtotal": "Items total",
     "checkout": "Continue to checkout",
-    "continue": "Keep shopping"
+    "continue": "Keep shopping",
+    "summary": "Order summary"
   },
   "checkout": {
     "title": "Checkout",
@@ -884,7 +895,8 @@
       "thanks": "Thank you for rating.",
       "already": "Your rating:",
       "failed": "The rating was not sent. Please try again."
-    }
+    },
+    "details": "Order details"
   },
   "account": {
     "greeting": "Welcome, {name}",
@@ -952,7 +964,10 @@
       "track": "Track order",
       "notFound": "This order does not exist.",
       "couponDiscount": "Coupon discount ({code})",
-      "itemCount": "{count, plural, one {One item} other {# items}}"
+      "itemCount": "{count, plural, one {One item} other {# items}}",
+      "reference": "Order number",
+      "status": "Status",
+      "date": "Order date"
     },
     "warranties": {
       "title": "My warranties",
@@ -970,7 +985,10 @@
       "problem": "Report a problem",
       "whatsAppMessage": "Hi RIGX, I have a problem with {name} ({code}) and it is under warranty.",
       "daysLeftLabel": "Remaining",
-      "daysCount": "{days, plural, one {One day} other {# days}}"
+      "daysCount": "{days, plural, one {One day} other {# days}}",
+      "code": "Item code",
+      "condition": "Condition",
+      "build": "Build"
     },
     "invoices": {
       "title": "My invoices",
@@ -980,7 +998,10 @@
         "Parts": "Single parts"
       },
       "void": "Void",
-      "open": "Open the invoice"
+      "open": "Open the invoice",
+      "kindLabel": "Type",
+      "date": "Issued",
+      "total": "Total"
     },
     "requests": {
       "title": "Service requests",
@@ -1004,7 +1025,11 @@
         "Rejected": "Offer rejected",
         "Converted": "Converted to an order",
         "Closed": "Closed"
-      }
+      },
+      "typeLabel": "Request type",
+      "date": "Request date",
+      "item": "Item",
+      "offerLabel": "Offer"
     },
     "builds": {
       "title": "Saved builds",
@@ -1014,7 +1039,10 @@
       "parts": "{count, plural, one {{count} part} other {{count} parts}}",
       "open": "Open the build",
       "delete": "Delete",
-      "deleteFailed": "It could not be deleted. Please try again."
+      "deleteFailed": "It could not be deleted. Please try again.",
+      "usage": "Usage",
+      "partsLabel": "Parts",
+      "updated": "Last updated"
     },
     "addresses": {
       "title": "Addresses",
@@ -1050,7 +1078,8 @@
         "governorate": "Please choose a governorate.",
         "city": "Please enter the area.",
         "street": "Please enter the street."
-      }
+      },
+      "address": "Address"
     },
     "stepUp": {
       "intro": "For your security, we email you a code before this change.",
@@ -1229,7 +1258,8 @@
     "updated": "Last updated: {date}",
     "helpTitle": "Still have a question?",
     "helpLink": "Message us on WhatsApp",
-    "helpMessage": "Hi RIGX, I have a question about {policy}."
+    "helpMessage": "Hi RIGX, I have a question about {policy}.",
+    "toc": "On this page"
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -2807,7 +2837,11 @@
         "amount": "Amount",
         "hint": "{amount} is still owed to the seller.",
         "confirmLine": "{amount} will be paid to {seller} ({method}).",
-        "methods": { "Cash": "cash", "InstaPay": "InstaPay", "Wallet": "e-wallet" },
+        "methods": {
+          "Cash": "cash",
+          "InstaPay": "InstaPay",
+          "Wallet": "e-wallet"
+        },
         "cancel": "Cancel",
         "confirm": "Confirm payment",
         "done": "The seller payment was recorded."

@@ -2,8 +2,9 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { ModalSheet } from "@/components/ui/ModalSheet";
-import { EmptyIcon } from "@/components/ui/EmptyIcon";
-import { CartIcon, CloseIcon } from "@/components/ui/icons";
+import { ButtonLink, IconButton } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { CartIcon, CloseIcon, WalletIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "./cart-context";
@@ -21,26 +22,19 @@ export function CartDrawer({ whatsAppNumber }: { whatsAppNumber: string | null }
     <ModalSheet open={isOpen} onClose={close} label={t("title")} edge="end">
       <div className="flex max-h-[88dvh] flex-col md:h-full md:max-h-none">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <b className="text-lg">{t("titleWithCount", { count })}</b>
-          <button
-            type="button"
-            aria-label={tc("close")}
-            onClick={close}
-            className="flex h-11 w-11 items-center justify-center rounded-control border border-input-line bg-surface"
-          >
-            <CloseIcon size={18} />
-          </button>
+          <b className="type-section-title">{t("titleWithCount", { count })}</b>
+          <IconButton icon={CloseIcon} label={tc("close")} variant="secondary" onClick={close} />
         </div>
 
         {removedNotice ? (
-          <p role="status" className="bg-paper px-5 py-2 text-sm text-ink-muted">{t("removedNotice")}</p>
+          <p role="status" className="m-0 bg-paper px-5 py-2 text-sm text-ink-muted">{t("removedNotice")}</p>
         ) : null}
 
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-            <EmptyIcon icon={CartIcon} />
-            <p className="m-0 text-lg font-bold">{t("empty")}</p>
-            <Link href="/products" onClick={close} className="text-orange-text underline hover:text-orange-text-hover">
+            <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full bg-paper text-ink-muted"><CartIcon size={26} /></span>
+            <p className="m-0 type-section-title">{t("empty")}</p>
+            <Link href="/products" onClick={close} className="text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
               {t("browse")}
             </Link>
           </div>
@@ -51,30 +45,22 @@ export function CartDrawer({ whatsAppNumber }: { whatsAppNumber: string | null }
                 <CartLineRow key={`${line.code}:${line.priceOption}`} line={line} />
               ))}
             </ul>
-            <div className="flex flex-col gap-2.5 border-t border-line px-5 py-4">
-              <div className="flex justify-between gap-2.5 text-sm">
-                <span className="text-ink-muted">{t("shipping")}</span>
-                <span>{t("shippingNote")}</span>
-              </div>
-              <div className="flex items-baseline justify-between border-t border-line pt-2.5">
-                <span className="font-bold">{t("total")}</span>
-                <span className="text-[22px] font-bold">{formatEgp(subtotal, locale)}</span>
-              </div>
-              <Link
-                href="/checkout"
-                onClick={close}
-                className="flex h-[52px] items-center justify-center rounded-control bg-orange font-bold text-on-orange"
-              >
-                {t("checkout")}
-              </Link>
-              <CartWhatsAppLink number={whatsAppNumber} onClick={close} />
-              <Link
-                href="/cart"
-                onClick={close}
-                className="flex h-11 items-center justify-center rounded-control border border-input-line bg-surface text-sm font-bold"
-              >
-                {t("viewCart")}
-              </Link>
+            <div className="border-t border-line p-5">
+              <Card title={t("summary")} icon={WalletIcon} padding="sm" className="gap-3 border-0 p-0">
+                <dl className="m-0 flex flex-col gap-2.5 text-sm">
+                  <div className="flex justify-between gap-2.5">
+                    <dt className="text-ink-muted">{t("shipping")}</dt>
+                    <dd className="m-0">{t("shippingNote")}</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-2.5 border-t border-line pt-2.5">
+                    <dt className="font-bold">{t("total")}</dt>
+                    <dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(subtotal, locale)}</dd>
+                  </div>
+                </dl>
+                <ButtonLink href="/checkout" variant="accent" onClick={close} className="w-full">{t("checkout")}</ButtonLink>
+                <CartWhatsAppLink number={whatsAppNumber} onClick={close} />
+                <ButtonLink href="/cart" variant="secondary" onClick={close} className="w-full">{t("viewCart")}</ButtonLink>
+              </Card>
             </div>
           </>
         )}

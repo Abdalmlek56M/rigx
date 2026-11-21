@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { Card } from "@/components/ui/Card";
 import type { CheckoutFormState, FieldKey } from "./checkout-request";
 
 export type SetField = <K extends keyof CheckoutFormState>(key: K, value: CheckoutFormState[K]) => void;
@@ -33,17 +34,15 @@ export function FormSection({ title, badge, hint, aside, children }: {
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3.5 rounded-card border border-line bg-surface p-5 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="m-0 text-lg font-bold">{title}</h2>
-          {badge}
-        </div>
-        {aside}
-      </div>
+    <Card
+      title={<>{title}{badge ? <span className="ms-2 align-middle">{badge}</span> : null}</>}
+      actions={aside}
+      padding="md"
+      className="gap-3"
+    >
       {hint ? <p className="m-0 text-sm text-ink-muted">{hint}</p> : null}
       {children}
-    </section>
+    </Card>
   );
 }
 
@@ -72,7 +71,7 @@ export function ChipRadio({ name, label, selected, onSelect, onClear }: ChipRadi
         onClick={() => (selected && onClear ? onClear() : onSelect())}
         className="peer sr-only"
       />
-      <span className="flex min-h-11 items-center rounded-full border border-input-line bg-surface px-4 text-sm transition-colors duration-150 peer-checked:border-carbon peer-checked:bg-carbon peer-checked:font-bold peer-checked:text-on-carbon peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange motion-reduce:transition-none">
+      <span className="flex min-h-11 items-center rounded-full border border-input-line bg-surface px-4 text-sm transition-colors duration-150 peer-checked:border-transparent peer-checked:surface-strong peer-checked:font-bold peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-orange motion-reduce:transition-none">
         {label}
       </span>
     </label>

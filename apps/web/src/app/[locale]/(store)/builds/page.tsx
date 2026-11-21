@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { EmptyIcon } from "@/components/ui/EmptyIcon";
-import { CaseIcon } from "@/components/ui/icons";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -9,6 +7,11 @@ import { BuildCard } from "@/features/builds/BuildCard";
 import { BuildsFilters } from "@/features/builds/BuildsFilters";
 import { parseBuildsParams } from "@/features/builds/build-query";
 import { loadBuilds } from "@/features/builds/load-builds";
+import { ButtonLink } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorBlock } from "@/components/ui/ErrorBlock";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { CaseIcon } from "@/components/ui/icons";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
@@ -33,25 +36,24 @@ export default async function BuildsPage({ params, searchParams }: Props) {
   const t = await getTranslations("builds");
   const state = parseBuildsParams(await searchParams);
   const [builds, storefront] = await Promise.all([loadBuilds(state), loadStorefront()]);
+  const filtered = state.usage !== null || state.budget !== null;
 
   return (
     <>
-      <section className="flex shell flex-col gap-5 pb-5 pt-8 md:pt-10">
-        <div className="flex flex-col gap-2">
-          <h1 className="m-0 text-3xl font-bold md:text-[40px]">{t("title")}</h1>
-          <span className="text-base text-ink-muted">{t("subtitle")}</span>
-        </div>
+      <PageHeader title={t("title")} lead={t("subtitle")} icon={CaseIcon} />
+      <section className="shell pb-5">
         <BuildsFilters state={state} />
       </section>
       <section className="shell pb-10">
         {builds === null ? (
-          <p role="alert" className="rounded-card border border-line bg-surface p-6 text-center">{t("loadFailed")}</p>
+          <ErrorBlock message={t("loadFailed")} />
         ) : builds.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-card border border-line bg-surface p-10 text-center">
-            <EmptyIcon icon={CaseIcon} />
-            <b className="text-lg">{t("empty.title")}</b>
-            <p className="m-0 text-ink-muted">{t("empty.body")}</p>
-          </div>
+          <EmptyState
+            icon={CaseIcon}
+            title={t("empty.title")}
+            help={t("empty.body")}
+            action={filtered ? <ButtonLink href="/builds" variant="secondary">{t("empty.all")}</ButtonLink> : undefined}
+          />
         ) : (
           <ul className="m-0 grid list-none gap-[18px] p-0 md:grid-cols-[repeat(auto-fit,minmax(360px,1fr))]">
             {builds.map((build) => (

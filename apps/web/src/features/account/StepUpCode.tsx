@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError, unwrap } from "@rigx/api-client";
+import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { normalizeCode } from "@/features/auth/auth-rules";
 import { browserApi } from "@/lib/api/browser";
@@ -76,11 +77,11 @@ export function StepUpCode({ onConfirm, onCancel }: StepUpCodeProps) {
       {problem ? <p role="alert" className="m-0 text-sm text-error">{t(`errors.${problem}`)}</p> : null}
       <div className="flex flex-wrap gap-3">
         {sent ? (
-          <button type="button" disabled={busy || code.length !== 6} onClick={() => void confirm()} className="h-11 rounded-control bg-orange px-5 font-bold text-on-orange disabled:opacity-60">{t("confirm")}</button>
+          <Button type="button" variant="accent" loading={busy} disabled={code.length !== 6} onClick={() => void confirm()}>{t("confirm")}</Button>
         ) : (
-          <button type="button" disabled={busy} onClick={() => void send()} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-60">{t("send")}</button>
+          <Button type="button" variant="primary" loading={busy} onClick={() => void send()}>{t("send")}</Button>
         )}
-        <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{t("cancel")}</button>
+        <Button type="button" variant="secondary" onClick={onCancel}>{t("cancel")}</Button>
       </div>
     </div>
   );

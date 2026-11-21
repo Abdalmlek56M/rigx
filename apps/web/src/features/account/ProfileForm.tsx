@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
+import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { refreshSession, type SessionUser } from "@/features/auth/session-store";
 import { browserApi } from "@/lib/api/browser";
@@ -42,7 +43,7 @@ export function ProfileForm({ user }: { user: SessionUser }) {
       {state === "saved" ? <p role="status" className="m-0 text-sm text-success">{t("saved")}</p> : null}
       {state === "failed" ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
       <div>
-        <button type="submit" disabled={state === "busy"} className="h-11 rounded-control bg-orange px-6 font-bold text-on-orange disabled:opacity-60">{t("save")}</button>
+        <Button type="submit" variant="accent" loading={state === "busy"}>{t("save")}</Button>
       </div>
     </form>
   );

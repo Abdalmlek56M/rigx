@@ -8,6 +8,8 @@ import { parseBuilderParams } from "@/features/builder/builder-state";
 import { specNameMap } from "@/features/builder/issue-text";
 import { loadSlots } from "@/features/builder/load-slots";
 import { loadBuilds } from "@/features/builds/load-builds";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { CpuIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
@@ -36,16 +38,17 @@ export default async function BuilderPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <section className="flex shell flex-wrap items-end justify-between gap-4 pb-4 pt-8">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="m-0 text-3xl font-bold md:text-[38px]">{t("title")}</h1>
-          <span className="text-[15px] text-ink-muted">
+      <PageHeader
+        title={t("title")}
+        icon={CpuIcon}
+        lead={
+          <>
             {t("subtitle")}{" "}
             <Link href="/#recommend" className="text-orange-text underline hover:text-orange-text-hover">{t("recommendLink")}</Link>
-          </span>
-        </div>
-        {builds ? <QuickStart builds={builds} /> : null}
-      </section>
+          </>
+        }
+        actions={builds ? <QuickStart builds={builds} /> : undefined}
+      />
       {slots === null ? (
         <p role="alert" className="shell py-16 text-center">{t("loadFailed")}</p>
       ) : (

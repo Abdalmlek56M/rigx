@@ -1,5 +1,6 @@
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
 import { latinNumber } from "@/lib/digits";
+import { fieldClass } from "./field-class";
 
 interface TextFieldProps {
   label: string;
@@ -34,7 +35,7 @@ export function TextField({ label, labelEnd, name, value, onChange, type = "text
   const errorId = `${name}-error`;
   const numeric = type === "number";
   return (
-    <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-bold">
+    <label className="flex min-w-0 flex-col gap-1.5 text-xs font-bold">
       <span className="flex min-w-0 flex-wrap items-center gap-1.5">{label}{labelEnd}</span>
       <input
         name={name}
@@ -52,7 +53,7 @@ export function TextField({ label, labelEnd, name, value, onChange, type = "text
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(numeric ? latinNumber(event.target.value) : event.target.value)}
-        className={`h-12 w-full rounded-control border border-input-line bg-surface px-3 text-sm font-normal text-ink ${ltr ? "text-start" : ""}`}
+        className={`${fieldClass}${ltr ? " text-start" : ""}`}
       />
       {error ? (
         <span id={errorId} role="alert" className="text-xs font-normal text-error">

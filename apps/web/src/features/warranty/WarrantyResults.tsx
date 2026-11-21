@@ -1,10 +1,15 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Schemas } from "@rigx/api-client";
+import { Card } from "@/components/ui/Card";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { WhatsAppIcon } from "@/components/ui/icons";
-import { warrantyStatusKey, WARRANTY_BADGE } from "@/features/account/account-labels";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { warrantyTone } from "@/components/ui/status-badge-rules";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { ShieldIcon } from "@/components/ui/icons";
+import { warrantyStatusKey } from "@/features/account/account-labels";
 import { parseCondition } from "@/lib/condition";
-import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
 import { daysLeftToShow } from "./warranty-query";
 
@@ -23,45 +28,27 @@ async function WarrantyCard({ item, whatsApp }: { item: Schemas["WarrantyPublicV
     || t("whatsAppMessage", { name: item.name, code: item.code });
 
   return (
-    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-col gap-1">
-          <span dir="auto" className="font-bold [unicode-bidi:isolate]">{item.name}</span>
-          <span className="flex flex-wrap items-center gap-2">
-            <span dir="ltr" className="font-mono text-xs text-ink-muted">{item.code}</span>
-            {condition ? <ConditionBadge condition={condition} /> : null}
-            {item.buildCode ? <span dir="ltr" className="font-mono text-xs text-ink-muted">{item.buildCode}</span> : null}
-          </span>
-        </div>
-        {status ? <span className={`rounded-full px-3 py-1 text-xs font-bold ${WARRANTY_BADGE[status]}`}>{t(`status.${status}`)}</span> : null}
-      </div>
-      <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        <div className="flex flex-col gap-0.5">
-          <dt className="text-xs text-ink-muted">{t("plan")}</dt>
-          <dd className="m-0 font-bold">{item.label}</dd>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <dt className="text-xs text-ink-muted">{t("from")}</dt>
-          <dd className="m-0">{formatDate(item.startsAtUtc, locale)}</dd>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <dt className="text-xs text-ink-muted">{t("until")}</dt>
-          <dd className="m-0">{item.endsAtUtc ? formatDate(item.endsAtUtc, locale) : "—"}</dd>
-        </div>
-        {days !== null ? (
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-xs text-ink-muted">{t("daysLeftLabel")}</dt>
-            <dd className="m-0 font-bold text-success">{t("daysCount", { days })}</dd>
-          </div>
-        ) : null}
-      </dl>
+    <Card
+      as="li"
+      title={<span dir="auto" className="[unicode-bidi:isolate]">{item.name}</span>}
+      icon={ShieldIcon}
+      padding="md"
+      className="gap-3"
+      actions={status ? <StatusBadge tone={warrantyTone(status)}>{t(`status.${status}`)}</StatusBadge> : undefined}
+    >
+      <InfoGrid columns={2} className="gap-y-3">
+        <InfoField label={t("code")} ltr value={item.code} />
+        {condition ? <InfoField label={t("condition")} value={<ConditionBadge condition={condition} />} /> : null}
+        {item.buildCode ? <InfoField label={t("build")} ltr value={item.buildCode} /> : null}
+        <InfoField label={t("plan")} value={item.label} />
+        <InfoField label={t("from")} value={formatDate(item.startsAtUtc, locale)} />
+        <InfoField label={t("until")} value={item.endsAtUtc ? formatDate(item.endsAtUtc, locale) : undefined} />
+        {days !== null ? <InfoField label={t("daysLeftLabel")} value={t("daysCount", { days })} className="text-success" /> : null}
+      </InfoGrid>
       {whatsApp.number ? (
-        <a {...NEW_TAB} href={whatsAppUrl(whatsApp.number, text)} className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
-          <WhatsAppIcon size={16} />
-          {t("problem")}
-        </a>
+        <WhatsAppButton href={whatsAppUrl(whatsApp.number, text)} variant="outline" size="sm" className="self-start">{t("problem")}</WhatsAppButton>
       ) : null}
-    </li>
+    </Card>
   );
 }
 

@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { trackingSteps, type TrackingStep } from "@/features/tracking/tracking-steps";
 import type { Order } from "./account-api";
 
-const BAR: Record<TrackingStep["state"], string> = { done: "bg-carbon", current: "bg-orange", upcoming: "bg-line" };
+const BAR: Record<TrackingStep["state"], string> = { done: "surface-strong", current: "bg-orange", upcoming: "bg-line" };
 
 /** A compact progress strip for an order card: one bar per step and the name of the step it is at. */
 export function OrderProgress({ order }: { order: Pick<Order, "status" | "fulfillmentMethod" | "timeline"> }) {

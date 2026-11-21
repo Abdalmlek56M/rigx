@@ -63,7 +63,7 @@ export function LoginMethods() {
                 icon={<GoogleIcon size={18} />}
                 name="Google"
                 status={methods.googleEmail ?? t("notLinked")}
-                action={methods.googleEmail ? <ConfirmButton iconOnly label={t("unlink")} icon={<UnlinkIcon size={16} />} onConfirm={() => void unlink()} /> : undefined}
+                action={methods.googleEmail ? <ConfirmButton iconOnly label={t("unlink")} icon={UnlinkIcon} onConfirm={() => void unlink()} /> : undefined}
               />
             </ul>
             {failed ? <p role="alert" className="m-0 text-sm text-error">{t("unlinkFailed")}</p> : null}

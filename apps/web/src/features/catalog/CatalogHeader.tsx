@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { cardClass } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Link } from "@/i18n/navigation";
 import { categoryPath, type CategoryNode } from "@/lib/categories";
 import { catalogHref, type CatalogState } from "./catalog-query";
@@ -11,7 +13,7 @@ interface CatalogHeaderProps {
   counts: { new: number; used: number };
 }
 
-/** Breadcrumb, title and the condition segmented control (all / new / used, each with its count). */
+/** Breadcrumb, title and the condition segmented control (all / new / used, a count only when it is above zero). */
 export async function CatalogHeader({ state, tree, category, title, counts }: CatalogHeaderProps) {
   const t = await getTranslations("catalog");
   const tc = await getTranslations("common.condition");
@@ -22,37 +24,29 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
     { condition: "Used", label: tc("Used"), count: counts.used }
   ] as const;
   const selected = tabs.findIndex((tab) => tab.condition === state.condition);
+  const breadcrumb = [
+    { label: t("home"), href: "/" },
+    ...trail.map((node) => ({ label: node.name, href: catalogHref(state, { category: node.slug }) })),
+    { label: title }
+  ];
 
   return (
-    <section className="flex shell flex-col gap-4 pb-4 pt-6 md:pt-8">
-      <nav aria-label={t("breadcrumb")} className="text-sm text-ink-muted">
-        <ol className="m-0 flex list-none flex-wrap gap-2 p-0">
-          <li><Link href="/" className="hover:underline">{t("home")}</Link></li>
-          {trail.map((node, index) => (
-            <li key={node.id} className="flex gap-2">
-              <span aria-hidden="true">/</span>
-              {index === trail.length - 1 ? (
-                <span aria-current="page">{node.name}</span>
-              ) : (
-                <Link href={catalogHref(state, { category: node.slug })} className="hover:underline">{node.name}</Link>
-              )}
-            </li>
-          ))}
-        </ol>
-      </nav>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="m-0 text-3xl font-bold md:text-[38px]">{title}</h1>
-          <span className="text-[15px] text-ink-muted">
-            {t("subtitle")}{" "}
-            <Link href="/#recommend" className="text-orange-text underline hover:text-orange-text-hover">{t("recommendLink")}</Link>
-          </span>
-        </div>
-        <div role="group" aria-label={t("conditionGroup")} className="relative grid grid-cols-3 gap-0 rounded-card border border-line bg-surface p-1">
+    <PageHeader
+      breadcrumb={breadcrumb}
+      breadcrumbLabel={t("breadcrumb")}
+      title={title}
+      lead={
+        <>
+          {t("subtitle")}{" "}
+          <Link href="/#recommend" className="text-orange-text underline hover:text-orange-text-hover">{t("recommendLink")}</Link>
+        </>
+      }
+      actions={
+        <div role="group" aria-label={t("conditionGroup")} className={`${cardClass({ layout: "grid", padding: "none", className: "relative grid-cols-3 gap-0 p-1" })}`}>
           <span
             aria-hidden="true"
             style={{ transform: `translateX(calc(var(--dir) * ${Math.max(0, selected)} * 100%))` }}
-            className="absolute inset-y-1 start-1 w-[calc((100%-0.5rem)/3)] rounded-control bg-carbon transition-transform duration-150 ease-out motion-reduce:transition-none"
+            className="absolute inset-y-1 start-1 w-[calc((100%-0.5rem)/3)] rounded-control surface-strong transition-transform duration-150 ease-out motion-reduce:transition-none"
           />
           {tabs.map((tab) => {
             const active = state.condition === tab.condition;
@@ -63,12 +57,13 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
                 aria-current={active ? "true" : undefined}
                 className={`relative z-10 flex h-11 items-center justify-center rounded-control px-3 text-sm transition-colors duration-150 md:px-[18px] motion-reduce:transition-none ${active ? "font-bold text-on-carbon" : "hover:bg-paper"}`}
               >
-                {tab.label} · <span className="font-mono">{tab.count}</span>
+                {tab.label}
+                {tab.count > 0 ? <><span aria-hidden="true" className="mx-1">·</span><span className="font-mono">{tab.count}</span></> : null}
               </Link>
             );
           })}
         </div>
-      </div>
-    </section>
+      }
+    />
   );
 }

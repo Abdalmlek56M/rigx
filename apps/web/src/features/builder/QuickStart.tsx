@@ -1,11 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import type { Schemas } from "@rigx/api-client";
-import { Link } from "@/i18n/navigation";
+import { ButtonLink } from "@/components/ui/Button";
 import { parseUsage } from "@/lib/usage";
 
 const STARTS = ["Gaming", "Editing"] as const;
 
-/** "ابدأ من تجميعة ألعاب / مونتاج": opens the first published build of that usage for editing. */
+/** "ابدأ من تجميعة جاهزة": opens the first published build of that usage for editing. */
 export async function QuickStart({ builds }: { builds: Schemas["AssemblyPublicView"][] }) {
   const t = await getTranslations("builder.quickStart");
   const starts = STARTS.flatMap((usage) => {
@@ -17,13 +17,9 @@ export async function QuickStart({ builds }: { builds: Schemas["AssemblyPublicVi
   return (
     <div role="group" aria-label={t("label")} className="flex flex-wrap gap-1.5">
       {starts.map((start) => (
-        <Link
-          key={start.usage}
-          href={`/builder?from=${start.code}`}
-          className="flex h-11 items-center rounded-control border border-input-line bg-surface px-4 text-sm"
-        >
+        <ButtonLink key={start.usage} href={`/builder?from=${start.code}`} variant="secondary" size="sm">
           {t(start.usage)}
-        </Link>
+        </ButtonLink>
       ))}
     </div>
   );

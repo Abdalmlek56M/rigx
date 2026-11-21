@@ -2,6 +2,10 @@
 
 import { DocumentIcon, EyeIcon } from "@/components/ui/icons";
 import { useLocale, useTranslations } from "next-intl";
+import { Card } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { invoiceTone } from "@/components/ui/status-badge-rules";
 import { formatDate, formatEgp } from "@/lib/format";
 import { fetchInvoices } from "./account-api";
 import { invoiceKindKey } from "./account-labels";
@@ -26,20 +30,28 @@ export function InvoicesList() {
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {invoices.map((invoice) => {
                 const kind = invoiceKindKey(invoice.kind);
+                const voided = invoice.status === "Void";
                 return (
-                  <li key={invoice.accessToken} className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface p-5">
-                    <div className="flex flex-col gap-1">
-                      <span dir="ltr" className="font-mono text-sm font-semibold text-orange-text">{invoice.number}</span>
-                      <span className="text-sm text-ink-muted">
-                        {kind ? `${t(`kind.${kind}`)} · ` : ""}{formatDate(invoice.issuedAtUtc, locale)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {invoice.status === "Void" ? <span className="rounded-full bg-error px-3 py-1 text-xs font-bold text-surface">{t("void")}</span> : null}
-                      <b>{formatEgp(invoice.total, locale)}</b>
-                      <RowLink href={`/i/${invoice.accessToken}`} label={t("open")} icon={EyeIcon} />
-                    </div>
-                  </li>
+                  <Card
+                    key={invoice.accessToken}
+                    as="li"
+                    title={<span dir="ltr" className="font-mono text-orange-text">{invoice.number}</span>}
+                    icon={DocumentIcon}
+                    padding="md"
+                    className="gap-3"
+                    actions={
+                      <div className="flex items-center gap-1.5">
+                        {voided ? <StatusBadge tone={invoiceTone(invoice.status)}>{t("void")}</StatusBadge> : null}
+                        <RowLink href={`/i/${invoice.accessToken}`} label={t("open")} icon={EyeIcon} />
+                      </div>
+                    }
+                  >
+                    <InfoGrid columns={2} className="gap-y-3">
+                      {kind ? <InfoField label={t("kindLabel")} value={t(`kind.${kind}`)} /> : null}
+                      <InfoField label={t("date")} value={formatDate(invoice.issuedAtUtc, locale)} />
+                      <InfoField label={t("total")} value={formatEgp(invoice.total, locale)} />
+                    </InfoGrid>
+                  </Card>
                 );
               })}
             </ul>

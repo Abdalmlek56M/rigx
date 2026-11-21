@@ -1,6 +1,4 @@
 /** Which message a backend status/type string maps to; labels live in the `account` messages. Pure, so they are tested. */
-import type { OrderStatusKey } from "@/features/tracking/tracking-steps";
-
 function known<T extends string>(list: readonly T[], value: string): T | null {
   return list.find((item) => item === value) ?? null;
 }
@@ -28,24 +26,7 @@ export function warrantyStatusKey(status: string): WarrantyStatusKey | null {
   return known(WARRANTY_STATUSES, status);
 }
 
-/** Pill colours of a warranty status (account page and public warranty lookup). */
-export const WARRANTY_BADGE: Record<WarrantyStatusKey, string> = {
-  Active: "bg-success text-surface",
-  Expired: "bg-line text-ink-muted",
-  Void: "bg-error text-surface"
-};
-
 export type InvoiceKindKey = "Build" | "Parts";
-
-/** Pill colours of the customer-visible order status (order cards and order detail). */
-export const ORDER_BADGE: Record<OrderStatusKey, string> = {
-  New: "bg-orange text-on-orange",
-  Confirmed: "bg-paper text-orange-text",
-  Preparing: "bg-paper text-orange-text",
-  Shipped: "bg-carbon text-on-carbon",
-  Delivered: "bg-success text-surface",
-  Cancelled: "bg-error text-surface"
-};
 
 export function invoiceKindKey(kind: string): InvoiceKindKey | null {
   return known(["Build", "Parts"] as const, kind);

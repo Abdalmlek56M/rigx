@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect, useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/Button";
+import { fieldClass } from "@/components/ui/field-class";
 import { formatCountdown, maskEmail, normalizeCode } from "./auth-rules";
 
 interface CodeStepProps {
@@ -38,7 +40,7 @@ export function CodeStep({ email, resendAfterSeconds, sentAt, busy, error, codeD
   return (
     <form onSubmit={submit} className="flex flex-col gap-[18px]">
       <div className="flex flex-col gap-1.5">
-        <h1 className="m-0 text-[28px] font-bold">{t("title")}</h1>
+        <h1 className="m-0 type-page-title">{t("title")}</h1>
         <p className="m-0 text-[15px] text-ink-muted">
           {t.rich("sentTo", {
             email: () => <bdi dir="ltr" className="font-mono text-sm text-ink">{maskEmail(email)}</bdi>
@@ -57,17 +59,13 @@ export function CodeStep({ email, resendAfterSeconds, sentAt, busy, error, codeD
           autoFocus
           aria-invalid={error ? true : undefined}
           onChange={(event) => setCode(normalizeCode(event.target.value))}
-          className={`h-[60px] w-full rounded-card bg-surface text-center font-mono text-2xl font-medium tracking-[0.5em] text-ink ${error ? "border-2 border-error" : "border border-input-line"}`}
+          className={`${fieldClass} h-[60px] text-center font-mono text-2xl font-medium tracking-[0.5em] ${error ? "border-2 border-error" : ""}`}
         />
       </label>
       {error ? <p role="alert" className="m-0 text-sm font-bold text-error">{error}</p> : null}
-      <button
-        type="submit"
-        disabled={busy || code.length < 6 || codeDead}
-        className="h-[52px] w-full rounded-full bg-orange px-4 text-base font-bold text-on-orange shadow-[0_10px_24px_-12px_rgba(255,106,43,.8)] transition-[filter,opacity] hover:brightness-105 disabled:opacity-60"
-      >
+      <Button type="submit" variant="accent" loading={busy} disabled={code.length < 6 || codeDead} className="w-full">
         {busy ? t("submitting") : t("submit")}
-      </button>
+      </Button>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
         {secondsLeft > 0 ? (
           <span className="text-ink-muted">

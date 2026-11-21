@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { FIELD_BASE } from "@/components/ui/field-class";
 import { BUDGETS, buildsHref, isBudget, type BuildsState } from "./build-query";
 
 /** The budget dropdown of the builds list: changing it reloads the list with the budget in the URL. */
@@ -16,7 +17,7 @@ export function BudgetSelect({ state }: { state: BuildsState }) {
       <select
         value={state.budget ?? ""}
         onChange={(event) => router.push(buildsHref(state, { budget: isBudget(event.target.value) ? event.target.value : null }))}
-        className="h-11 rounded-control border border-input-line bg-surface px-2.5"
+        className={`${FIELD_BASE} h-11`}
       >
         <option value="">{t("anyBudget")}</option>
         {BUDGETS.map((entry) => (

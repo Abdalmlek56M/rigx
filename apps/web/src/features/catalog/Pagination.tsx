@@ -27,7 +27,7 @@ export async function Pagination({ current, pages, hrefFor }: PaginationProps) {
                 href={hrefFor(entry)}
                 aria-current={entry === current ? "page" : undefined}
                 aria-label={t("page", { page: entry })}
-                className={`${box} font-mono transition-colors duration-150 motion-reduce:transition-none ${entry === current ? "bg-carbon text-on-carbon" : "border border-input-line hover:bg-paper"}`}
+                className={`${box} font-mono transition-colors duration-150 motion-reduce:transition-none ${entry === current ? "surface-strong" : "border border-input-line hover:bg-paper"}`}
               >
                 {entry}
               </Link>

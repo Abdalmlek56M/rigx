@@ -4,7 +4,9 @@ import { CaseIcon, PencilIcon, TrashIcon } from "@/components/ui/icons";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
-import { Link } from "@/i18n/navigation";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { browserApi } from "@/lib/api/browser";
 import { parseUsage } from "@/lib/usage";
 import { formatDate } from "@/lib/format";
@@ -39,24 +41,32 @@ export function BuildsList() {
       <LoadBoundary state={state} reload={reload}>
         {(builds) =>
           builds.length === 0 ? (
-            <EmptyState icon={CaseIcon} message={t("empty")} action={<Link href="/builder" className="text-orange-text underline hover:text-orange-text-hover">{t("start")}</Link>} />
+            <EmptyState icon={CaseIcon} message={t("empty")} action={<ButtonLink href="/builder" variant="secondary" size="sm">{t("start")}</ButtonLink>} />
           ) : (
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {builds.map((build) => {
                 const usage = parseUsage(build.usage);
                 return (
-                  <li key={build.token} className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface p-5">
-                    <div className="flex min-w-0 flex-col gap-1">
-                      <b dir="auto" className="[unicode-bidi:isolate]">{build.name?.trim() || t("unnamed")}</b>
-                      <span className="text-sm text-ink-muted">
-                        {usage ? `${tUsage(usage)} · ` : ""}{t("parts", { count: build.partCount })} · {formatDate(build.updatedAtUtc, locale)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <RowLink href={`/builder?saved=${encodeURIComponent(build.token)}`} label={t("open")} icon={PencilIcon} />
-                      <ConfirmButton iconOnly label={t("delete")} icon={<TrashIcon size={16} />} onConfirm={() => void remove(build.token)} />
-                    </div>
-                  </li>
+                  <Card
+                    key={build.token}
+                    as="li"
+                    title={<span dir="auto" className="[unicode-bidi:isolate]">{build.name?.trim() || t("unnamed")}</span>}
+                    icon={CaseIcon}
+                    padding="md"
+                    className="gap-3"
+                    actions={
+                      <div className="flex items-center gap-1.5">
+                        <RowLink href={`/builder?saved=${encodeURIComponent(build.token)}`} label={t("open")} icon={PencilIcon} />
+                        <ConfirmButton iconOnly label={t("delete")} icon={TrashIcon} onConfirm={() => void remove(build.token)} />
+                      </div>
+                    }
+                  >
+                    <InfoGrid columns={2} className="gap-y-3">
+                      {usage ? <InfoField label={t("usage")} value={tUsage(usage)} /> : null}
+                      <InfoField label={t("partsLabel")} value={t("parts", { count: build.partCount })} />
+                      <InfoField label={t("updated")} value={formatDate(build.updatedAtUtc, locale)} />
+                    </InfoGrid>
+                  </Card>
                 );
               })}
             </ul>

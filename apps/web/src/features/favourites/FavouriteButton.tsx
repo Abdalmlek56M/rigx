@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
+import { IconButton } from "@/components/ui/Button";
 import { HeartIcon } from "@/components/ui/icons";
 import { favouriteStore } from "./favourite-store";
 
@@ -17,16 +18,16 @@ export function FavouriteButton({ code, modelName, className = "" }: { code: str
     favouriteStore.toggle(code).catch(() => setFailed(true));
   }
 
+  const Heart = ({ size }: { size?: number }) => <HeartIcon size={size} filled={saved} />;
+
   return (
-    <button
-      type="button"
+    <IconButton
+      icon={Heart}
+      label={t(saved ? "remove" : "add", { item: modelName })}
+      variant="secondary"
       aria-pressed={saved}
-      aria-label={t(saved ? "remove" : "add", { item: modelName })}
-      title={failed ? t("failed") : undefined}
       onClick={toggle}
-      className={`press flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface shadow-soft transition-colors ${saved ? "text-orange-text" : "text-ink-muted hover:text-orange-text"} ${failed ? "ring-2 ring-error" : ""} ${className}`}
-    >
-      <HeartIcon filled={saved} />
-    </button>
+      className={`shadow-soft ${saved ? "text-orange-text" : "text-ink-muted"} ${failed ? "ring-2 ring-error" : ""} ${className}`}
+    />
   );
 }

@@ -6,11 +6,13 @@ import { CONDITIONS } from "@/lib/condition";
 import type { Brand } from "@/lib/storefront";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
 import { CheckIcon } from "@/components/ui/icons";
+import { Button } from "@/components/ui/Button";
+import { FIELD_BASE } from "@/components/ui/field-class";
 
 const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] transition-colors duration-150 hover:bg-paper motion-reduce:transition-none";
-const legend = "mb-2 text-sm font-bold";
+const legend = "mb-2 text-xs font-bold";
 const fieldset = "m-0 flex flex-col gap-1 border-0 p-0";
-const numberInput = "h-11 w-full rounded-control border border-input-line bg-surface px-2.5";
+const numberInput = `${FIELD_BASE} h-11 px-2.5`;
 
 interface FilterPanelProps {
   state: CatalogState;
@@ -53,7 +55,7 @@ function CheckBox({ checked }: { checked: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border text-xs transition-colors duration-150 ${checked ? "border-carbon bg-carbon text-on-carbon" : "border-input-line"} motion-reduce:transition-none`}
+      className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border text-xs transition-colors duration-150 ${checked ? "border-transparent surface-strong" : "border-input-line"} motion-reduce:transition-none`}
     >
       {checked ? <CheckIcon size={13} /> : null}
     </span>
@@ -142,7 +144,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
                     href={catalogHref(state, { specs: selected ? rest : { ...rest, [spec.key]: option } })}
                     aria-current={selected ? "true" : undefined}
                     dir="ltr"
-                    className={`flex h-10 items-center rounded-control px-3 font-mono text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "bg-carbon text-on-carbon" : "border border-input-line bg-surface hover:bg-paper"}`}
+                    className={`flex h-10 items-center rounded-control px-3 font-mono text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "surface-strong" : "border border-input-line bg-surface hover:bg-paper"}`}
                   >
                     {option}
                   </Link>
@@ -166,7 +168,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
             <label htmlFor={`${idPrefix}-max`} className="sr-only">{t("max")}</label>
             <input id={`${idPrefix}-max`} name="max" type="number" min={0} inputMode="numeric" placeholder={t("max")} defaultValue={state.max ?? ""} className={numberInput} />
           </div>
-          <button type="submit" className="mt-1 h-11 rounded-control border border-input-line bg-surface text-sm font-bold">{t("apply")}</button>
+          <Button type="submit" variant="secondary" size="sm" className="mt-1 w-full">{t("apply")}</Button>
         </fieldset>
       </form>
 
@@ -181,7 +183,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
                   key={stock.value}
                   href={catalogHref(state, { stock: stock.value })}
                   aria-current={selected ? "true" : undefined}
-                  className={`flex h-10 flex-1 items-center justify-center rounded-control text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "bg-carbon font-bold text-on-carbon" : "hover:bg-surface"}`}
+                  className={`flex h-10 flex-1 items-center justify-center rounded-control text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "surface-strong font-bold" : "hover:bg-surface"}`}
                 >
                   {stock.label}
                 </Link>

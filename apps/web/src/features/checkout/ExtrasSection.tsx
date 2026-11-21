@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/ui/TextField";
+import { textAreaClass } from "@/components/ui/field-class";
 import { CHECKOUT_USAGES } from "./checkout-request";
 import { ChipRadio, FormSection, OptionalPill, useFieldError, type SectionProps } from "./form-parts";
 
@@ -15,7 +16,7 @@ export function ExtrasSection({ form, set, errors, leadSources }: SectionProps &
       <FormSection title={t("notes")} badge={<OptionalPill />}>
         <textarea
           name="notes" aria-label={t("notes")} rows={3} value={form.notes} onChange={(event) => set("notes", event.target.value)}
-          className="w-full rounded-control border border-input-line bg-surface p-3 text-sm text-ink"
+          className={textAreaClass}
         />
       </FormSection>
       <FormSection title={t("usage")} badge={<OptionalPill />}>

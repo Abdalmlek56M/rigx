@@ -24,7 +24,7 @@ export async function BuildsFilters({ state }: { state: BuildsState }) {
               key={entry.label}
               href={buildsHref(state, { usage: entry.usage })}
               aria-current={selected ? "true" : undefined}
-              className={`${chip} ${selected ? "bg-carbon text-on-carbon" : "border border-input-line bg-surface hover:border-ink"}`}
+              className={`${chip} ${selected ? "surface-strong" : "border border-input-line bg-surface hover:border-ink"}`}
             >
               {entry.label}
             </Link>

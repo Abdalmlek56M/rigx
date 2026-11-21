@@ -1,8 +1,10 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { fillTemplate, whatsAppUrl, NEW_TAB } from "@/lib/contact";
+import { Button, ButtonLink, IconButton } from "@/components/ui/Button";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { CopyIcon, DocumentIcon } from "@/components/ui/icons";
+import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "@/features/cart/cart-context";
 import { cartLinesOf, partsSummaryText, type Evaluation } from "./builder-summary";
@@ -23,8 +25,6 @@ interface SummaryActionsProps {
   onCopyLink: () => void;
 }
 
-const secondary = "flex h-11 items-center justify-center rounded-control border border-header-line bg-field px-1 text-[13px] text-on-carbon";
-
 /** Add everything to the cart, ask on WhatsApp, copy the link, the PDF quote, and the "this does not reserve parts" note. */
 export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, onCopyLink }: SummaryActionsProps) {
   const t = useTranslations("builder.actions");
@@ -40,40 +40,40 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="accent"
         disabled={!canOrder}
         onClick={() => {
           for (const line of cartLinesOf(evaluation)) add(line);
           open();
         }}
-        className="flex h-[52px] items-center justify-center rounded-control bg-orange font-bold text-on-orange disabled:opacity-50"
+        className="w-full"
       >
         {t("addAll")}
-      </button>
+      </Button>
       {hasParts && !canOrder && !checking ? <span className="text-xs leading-6 text-[#FFC94D]">{t("cannotOrder")}</span> : null}
       {whatsApp.number ? (
-        <a
-          {...NEW_TAB} href={whatsAppUrl(whatsApp.number, message)}
-          aria-disabled={!hasParts}
-          className={`flex h-[50px] items-center justify-center rounded-control border-[1.5px] border-on-carbon font-bold ${hasParts ? "" : "pointer-events-none opacity-50"}`}
+        <WhatsAppButton
+          href={whatsAppUrl(whatsApp.number, message)}
+          variant="outline"
+          className={`w-full ${hasParts ? "" : "pointer-events-none opacity-50"}`}
         >
           {t("whatsApp")}
-        </a>
+        </WhatsAppButton>
       ) : null}
-      <div className="grid grid-cols-2 gap-1.5">
-        <button
-          type="button"
+      <div className="grid grid-cols-[auto_1fr] gap-1.5">
+        <IconButton
+          icon={CopyIcon}
+          label={t("copyLink")}
+          variant="secondary"
           disabled={!hasParts || checking}
           onClick={onCopyLink}
-          className={`${secondary} disabled:opacity-50`}
-        >
-          {t("copyLink")}
-        </button>
+        />
         {canOrder ? (
-          <Link href={quotePath(parts)} target="_blank" className={secondary}>{t("quote")}</Link>
+          <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon}>{t("quote")}</ButtonLink>
         ) : (
-          <span aria-disabled="true" className={`${secondary} opacity-50`}>{t("quote")}</span>
+          <Button type="button" variant="secondary" icon={DocumentIcon} disabled>{t("quote")}</Button>
         )}
       </div>
       <span role="status" className="text-xs text-footer-text">{shared ? t(shared.saved ? "copiedSaved" : "copiedPlain") : ""}</span>

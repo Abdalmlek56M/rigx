@@ -47,7 +47,7 @@ export function ModalSheet({ open, onClose, label, edge, fullHeight = false, chi
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className={`fixed m-0 max-w-none overflow-hidden border-0 bg-surface p-0 text-ink shadow-[0_0_40px_rgba(21,23,27,.25)] backdrop:bg-carbon/50 ${mobile} ${mobileEdge} ${desktop}`}
+      className={`fixed m-0 max-w-none overflow-hidden border-0 bg-surface p-0 text-ink shadow-[0_0_40px_rgba(21,23,27,.25)] backdrop:bg-black/50 ${mobile} ${mobileEdge} ${desktop}`}
     >
       {open ? children : null}
     </dialog>
