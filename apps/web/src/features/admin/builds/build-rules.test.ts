@@ -88,6 +88,12 @@ describe("build parts", () => {
     assert.equal(toPartForm(part({ warrantyOverridden: true, warrantyLabel: "سنة" })).warrantyLabel, "سنة");
   });
 
+  it("prefills the financing partner and its own percent", () => {
+    const form = toPartForm(part({ partnerId: "partner-1", partnerPercentOverride: 25 }));
+    assert.equal(form.partnerId, "partner-1");
+    assert.equal(form.partnerPercent, "25");
+  });
+
   it("sends no percent without a partner", () => {
     const body = toPartBody({ partPrice: "1200", warrantyLabel: "", partnerId: "", partnerPercent: "30" }, 4);
     assert.deepEqual(body, { partPrice: 1200, warrantyLabel: null, partnerId: null, partnerPercentOverride: null, rowVersion: 4 });

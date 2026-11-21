@@ -9,7 +9,7 @@ import type { ButtonHTMLAttributes, ComponentType, ReactNode } from "react";
  * - danger: deletes, cancellations, resets (red).
  * - ghost: quiet actions inside rows and toolbars (no border until hover).
  */
-export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "dangerGhost" | "ghost";
 export type ButtonSize = "md" | "sm";
 export type ButtonIcon = ComponentType<{ size?: number }>;
 
@@ -24,6 +24,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-carbon text-on-carbon hover:bg-carbon-hover hover:shadow-soft disabled:hover:bg-carbon disabled:hover:shadow-none",
   secondary: "border border-input-line bg-surface text-ink hover:border-ink-muted hover:bg-paper disabled:hover:border-input-line disabled:hover:bg-surface",
   danger: "bg-error text-white hover:bg-error-hover hover:shadow-soft disabled:hover:bg-error disabled:hover:shadow-none",
+  dangerGhost: "text-error hover:bg-error/10 hover:text-error disabled:hover:bg-transparent",
   ghost: "text-ink-muted hover:bg-line hover:text-ink disabled:hover:bg-transparent"
 };
 

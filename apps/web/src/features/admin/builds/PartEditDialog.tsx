@@ -26,6 +26,10 @@ export function PartEditDialog({ part, lookups, onClose, ...action }: BuildActio
   const [form, setForm] = useState<PartForm>(() => toPartForm(part));
   const set = (patch: Partial<PartForm>) => setForm((current) => ({ ...current, ...patch }));
   const error = (field: string) => submit.errors.fields[field];
+  // The part's current partner stays in the select even when it is no longer offered for new financing.
+  const financing = lookups.partners ? financingPartners(lookups.partners) : [];
+  const current = lookups.partners?.find((partner) => partner.id === part.partnerId);
+  const partners = current && !financing.some((partner) => partner.id === current.id) ? [...financing, current] : financing;
 
   async function save() {
     if (!partFormValid(form)) return;
@@ -49,7 +53,7 @@ export function PartEditDialog({ part, lookups, onClose, ...action }: BuildActio
         <WarrantyField value={form.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={lookups.warrantyLabels} error={error("warrantyLabel")} emptyLabel={t("buildWarranty")} />
         {lookups.partners ? (
           <PartnerFields
-            partners={financingPartners(lookups.partners)} partnerId={form.partnerId} percent={form.partnerPercent} namePrefix="partPartner"
+            partners={partners} partnerId={form.partnerId} percent={form.partnerPercent} namePrefix="partPartner"
             onChange={(patch) => set({ ...(patch.partnerId !== undefined ? { partnerId: patch.partnerId } : {}), ...(patch.percent !== undefined ? { partnerPercent: patch.percent } : {}) })}
             errors={{ partnerId: error("partnerId"), percent: error("partnerPercentOverride") }}
           />

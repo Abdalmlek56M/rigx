@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatEgp } from "@/lib/format";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
@@ -22,6 +23,7 @@ const SHOWN_FIELDS = ["name", "publicTitleAr", "publicTitleEn", "salePrice", "us
 export function BuildCardForm({ warrantyLabels, canEdit, ...action }: BuildActionProps & { warrantyLabels: readonly string[] | null; canEdit: boolean }) {
   const t = useTranslations("admin.builds.card");
   const usage = useTranslations("usage");
+  const locale = useLocale();
   const { build } = action;
   const { submit, run } = useBuildAction(action);
   const [form, setForm] = useState<CardForm>(() => toCardForm(build));
@@ -51,6 +53,12 @@ export function BuildCardForm({ warrantyLabels, canEdit, ...action }: BuildActio
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField label={t("salePrice")} name="salePrice" type="number" ltr value={form.salePrice} onChange={(salePrice) => set({ salePrice })} error={error("salePrice")} placeholder={t("salePriceHint")} />
           <TextField label={t("copies")} name="copies" type="number" ltr value={form.copies} onChange={(copies) => set({ copies })} error={error("copies")} />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+          <span>{t("partsTotal", { amount: formatEgp(build.partsTotal, locale) })}</span>
+          <Button size="sm" variant="secondary" onClick={() => set({ salePrice: String(build.partsTotal) })}>{t("useTotal")}</Button>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
           <SelectField
             label={t("usage")} name="usage" value={form.usage} onChange={(next) => set({ usage: next })} error={error("usage")}
             options={[{ value: "", label: t("noUsage") }, ...USAGES.map((entry) => ({ value: entry, label: usage(entry) })), ...(form.usage && !USAGES.some((entry) => entry === form.usage) ? [{ value: form.usage, label: form.usage }] : [])]}

@@ -482,6 +482,22 @@ export const HeartIcon = ({ filled = false, ...p }: IconProps & { filled?: boole
     <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill={filled ? "currentColor" : "none"} />
   </Icon>
 );
+export const InfoIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5" />
+    <path d="M12 8h.01" />
+  </Icon>
+);
+
+export const AlertIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3l9 16H3z" />
+    <path d="M12 9v4" />
+    <path d="M12 16h.01" />
+  </Icon>
+);
+
 export const BellIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />

@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  canSetPaymentStatus,
   canTakePayment,
   canWaivePayment,
   completeBlock,
   customerWhatsAppNumber,
+  eventPaymentAmount,
   filterOrders,
   nextStatus,
   nextStatusBlock,
+  orderAddressText,
   orderEventKey,
+  orderTimeline,
   orderTrail,
   paymentAmountValid,
   reservationHoursValid,
@@ -61,6 +65,13 @@ describe("payments", () => {
     assert.equal(canWaivePayment(order()), true);
     assert.equal(canWaivePayment(order({ paymentStatus: "Paid" })), false);
     assert.equal(canWaivePayment(order({ status: "Completed" })), false);
+  });
+
+  it("hides the manual status select when nothing is left to pay", () => {
+    assert.equal(canSetPaymentStatus(order()), true);
+    assert.equal(canSetPaymentStatus(order({ remaining: 0 })), false);
+    assert.equal(canSetPaymentStatus(order({ paymentStatus: "Paid" })), false);
+    assert.equal(canSetPaymentStatus(order({ paymentStatus: "Waived" })), false);
   });
 
   it("accepts a positive amount with at most 2 decimals up to what is left", () => {
@@ -116,5 +127,31 @@ describe("list and timeline", () => {
   it("puts a local Egyptian mobile in international form for WhatsApp", () => {
     assert.equal(customerWhatsAppNumber("01012345772"), "201012345772");
     assert.equal(customerWhatsAppNumber("4915112345678"), "4915112345678");
+  });
+
+  it("orders the history newest first and keeps equal times in order", () => {
+    const events = [
+      { id: "a", createdAtUtc: "2026-11-20T09:00:00Z" },
+      { id: "b", createdAtUtc: "2026-11-21T09:00:00Z" },
+      { id: "c", createdAtUtc: "2026-11-20T09:00:00Z" }
+    ];
+    assert.deepEqual(orderTimeline(events).map((event) => event.id), ["b", "a", "c"]);
+  });
+
+  it("represents a payment amount only when the note is a number", () => {
+    assert.equal(eventPaymentAmount("5500"), 5500);
+    assert.equal(eventPaymentAmount("5500.5"), 5500.5);
+    assert.equal(eventPaymentAmount("gift"), null);
+    assert.equal(eventPaymentAmount(null), null);
+  });
+});
+
+describe("address", () => {
+  const name = (code: string) => (code === "alex" ? "الإسكندرية" : code);
+
+  it("joins the parts present, in order, with the landmark after a separator", () => {
+    assert.equal(orderAddressText({ governorate: "alex", area: "العجمي", street: "شارع 9", building: "12", landmark: "بجوار المسجد" }, name), "الإسكندرية › العجمي › شارع 9 › 12 · بجوار المسجد");
+    assert.equal(orderAddressText({ governorate: "alex", area: null, street: "شارع 9", building: null, landmark: null }, name), "الإسكندرية › شارع 9");
+    assert.equal(orderAddressText(null, name), null);
   });
 });

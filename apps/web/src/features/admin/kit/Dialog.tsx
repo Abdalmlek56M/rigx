@@ -7,10 +7,12 @@ interface DialogProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /** A wider dialog for previews and tables. */
+  wide?: boolean;
 }
 
 /** A centred native modal `<dialog>` (focus trap, Escape and focus return come from the platform); closes on the backdrop. */
-export function Dialog({ open, onClose, title, children }: DialogProps) {
+export function Dialog({ open, onClose, title, children, wide = false }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -33,7 +35,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className="admin-dialog m-auto w-[min(440px,calc(100vw-32px))] rounded-panel border-0 bg-surface p-0 text-ink shadow-[0_0_40px_rgba(21,23,27,.25)] backdrop:bg-carbon/50"
+      className={`admin-dialog m-auto ${wide ? "w-[min(760px,calc(100vw-32px))]" : "w-[min(440px,calc(100vw-32px))]"} rounded-panel border-0 bg-surface p-0 text-ink shadow-[0_0_40px_rgba(21,23,27,.25)] backdrop:bg-carbon/50`}
     >
       {open ? (
         <div className="flex flex-col gap-4 p-5">

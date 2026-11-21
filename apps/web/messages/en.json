@@ -1297,6 +1297,10 @@
         "found": "You have an unsaved draft from {time}.",
         "restore": "Restore draft",
         "ignore": "Discard"
+      },
+      "toasts": {
+        "region": "Notifications",
+        "close": "Close notification"
       }
     },
     "dashboard": {
@@ -1530,7 +1534,9 @@
           "leadSource": "Heard about us",
           "usage": "Use",
           "notes": "Notes",
-          "satisfaction": "Customer rating"
+          "satisfaction": "Customer rating",
+          "call": "Call the customer",
+          "whatsapp": "Chat with the customer on WhatsApp"
         },
         "money": {
           "title": "Money",
@@ -1565,7 +1571,26 @@
           "reservation": "Hold updated",
           "reservationExpired": "The hold ended",
           "reservationReleased": "The hold was released and the pieces went back to stock",
-          "other": "{type}"
+          "other": "{type}",
+          "empty": "No events yet.",
+          "eventMethods": {
+            "Cash": "cash",
+            "InstaPay": "InstaPay",
+            "Wallet": "wallet",
+            "BankTransfer": "bank transfer",
+            "CashOnDelivery": "cash on delivery",
+            "Split": "split"
+          }
+        },
+        "delivery": {
+          "title": "Delivery",
+          "fulfillment": "Fulfilment",
+          "time": "Delivery time",
+          "courier": "Courier",
+          "waybill": "Waybill number",
+          "reservedUntil": "Held until",
+          "autoRelease": "When the hold ends",
+          "releaseOnEnd": "Release automatically and return the pieces to stock"
         }
       },
       "actions": {
@@ -1622,7 +1647,27 @@
           "hint": "Remaining {amount}",
           "note": "Note · optional",
           "submit": "Record payment",
-          "done": "Payment recorded"
+          "done": "Payment recorded",
+          "button": "Record payment",
+          "methods": {
+            "Cash": "Cash",
+            "InstaPay": "InstaPay",
+            "Wallet": "E-wallet",
+            "BankTransfer": "Bank transfer"
+          },
+          "account": "Account",
+          "defaultAccount": "Default account",
+          "review": "Review payment",
+          "confirm": "Confirm payment",
+          "back": "Back",
+          "cancel": "Cancel",
+          "confirmLine": "Record a payment of {amount} {method} on order {reference}",
+          "adverbs": {
+            "Cash": "in cash",
+            "InstaPay": "by InstaPay",
+            "Wallet": "by e-wallet",
+            "BankTransfer": "by bank transfer"
+          }
         },
         "status": {
           "title": "Payment status",
@@ -1653,6 +1698,15 @@
         "removed": "Removed from the blacklist",
         "removeFailed": "We could not remove it. Try again.",
         "unnamed": "Customer"
+      },
+      "statusCard": {
+        "title": "Order status"
+      },
+      "fulfillmentCard": {
+        "title": "Shipping and hold"
+      },
+      "moreCard": {
+        "title": "Order tools"
       }
     },
     "requests": {
@@ -2607,7 +2661,11 @@
         "failed": "The photo was not changed. Try again.",
         "removeTitle": "Delete this photo?",
         "removeBody": "The photo will be removed from the item.",
-        "removed": "Photo deleted"
+        "removed": "Photo deleted",
+        "preview": "Preview as the customer sees it",
+        "previewTitle": "Photo preview",
+        "main": "Main photo",
+        "photoNumber": "Photo {number}"
       },
       "units": {
         "title": "{count, plural, one {# unit} other {# units}}",
@@ -2908,7 +2966,9 @@
         "warrantyHint": "The build's warranty applies to every part, and any part can set its own.",
         "suitableAr": "Suitable for (Arabic)",
         "suitableEn": "Suitable for (English)",
-        "save": "Save"
+        "save": "Save",
+        "partsTotal": "Parts total: {amount}",
+        "useTotal": "Use the total"
       },
       "summary": {
         "title": "Figures",
@@ -3001,7 +3061,9 @@
         "buildNote": "The two parts swap places between the two builds.",
         "cancel": "Cancel",
         "confirm": "Confirm replacement",
-        "done": "Part replaced"
+        "done": "Part replaced",
+        "categoryChip": "Category: {name}",
+        "clearCategory": "Clear the category filter"
       },
       "split": {
         "title": "Revenue split between parts",

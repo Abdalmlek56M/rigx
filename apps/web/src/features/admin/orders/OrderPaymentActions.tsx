@@ -1,53 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
-import { formatEgp } from "@/lib/format";
+import type { MoneyAccount } from "../expenses/expenses-api";
 import { usePermissions } from "../use-permissions";
 import { FormMessage } from "../kit/PageHeader";
 import { ReasonDialog } from "./ReasonDialog";
-import { addOrderPayment, setPaymentStatus, waivePayment } from "./orders-api";
+import { RecordPaymentDialog } from "./RecordPaymentDialog";
+import { setPaymentStatus, waivePayment } from "./orders-api";
 import {
-  canSetPaymentStatus, canTakePayment, canWaivePayment, paymentAmountValid, SETTABLE_PAYMENT_STATUSES, STORE_PAYMENT_METHODS,
-  waiverReasonValid, type StorePaymentMethod
+  canSetPaymentStatus, canTakePayment, canWaivePayment, SETTABLE_PAYMENT_STATUSES, waiverReasonValid
 } from "./order-rules";
 import { useOrderAction, type OrderActionProps } from "./use-order-action";
 import { BanIcon, CheckIcon, WalletIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
-
-function RecordPayment(props: OrderActionProps) {
-  const { order } = props;
-  const t = useTranslations("admin.orders");
-  const locale = useLocale();
-  const { submit, run } = useOrderAction(props);
-  const [method, setMethod] = useState<StorePaymentMethod>("Cash");
-  const [amount, setAmount] = useState(String(order.remaining));
-  const [note, setNote] = useState("");
-
-  return (
-    <form
-      className="flex flex-col gap-2"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void run(() => addOrderPayment(order.id, method, Number(amount), note.trim() || null, order.rowVersion), t("payment.record.done"));
-      }}
-    >
-      <h3 className="m-0 text-sm font-bold">{t("payment.record.title")}</h3>
-      <SelectField
-        label={t("payment.record.method")} name="method" value={method} onChange={setMethod} error={submit.errors.fields.method}
-        options={STORE_PAYMENT_METHODS.map((value) => ({ value, label: t(`methods.${value}`) }))}
-      />
-      <TextField label={t("payment.record.amount")} name="amount" type="number" ltr value={amount} onChange={setAmount} error={submit.errors.fields.amount} />
-      <p className="m-0 text-xs text-ink-muted">{t("payment.record.hint", { amount: formatEgp(order.remaining, locale) })}</p>
-      <TextField label={t("payment.record.note")} name="note" value={note} onChange={setNote} error={submit.errors.fields.note} />
-      <FormMessage message={submit.errors.general} />
-      <Button type="submit" icon={WalletIcon} className="self-start" loading={submit.busy} disabled={!paymentAmountValid(amount, order.remaining)}>{t("payment.record.submit")}</Button>
-      {submit.dialog}
-    </form>
-  );
-}
 
 function PaymentStatusForm(props: OrderActionProps) {
   const { order } = props;
@@ -78,12 +46,13 @@ function PaymentStatusForm(props: OrderActionProps) {
   );
 }
 
-/** Record money, set the verified-transfer status, or waive the payment (needs `Finance.VerifyPayment`). */
-export function OrderPaymentActions(props: OrderActionProps) {
-  const { order } = props;
+/** Record money in a review dialog, set the verified-transfer status, or waive the payment (needs `Finance.VerifyPayment`). */
+export function OrderPaymentActions(props: OrderActionProps & { accounts: readonly MoneyAccount[] | null }) {
+  const { order, accounts } = props;
   const t = useTranslations("admin.orders");
   const { has } = usePermissions();
   const { apply } = useOrderAction(props);
+  const [recording, setRecording] = useState(false);
   const [waiving, setWaiving] = useState(false);
   if (!has("Finance.VerifyPayment")) return null;
   const take = canTakePayment(order);
@@ -92,9 +61,13 @@ export function OrderPaymentActions(props: OrderActionProps) {
   if (!take && !setStatus && !waive) return null;
 
   return (
-    <section className="flex flex-col gap-4 border-t border-line pt-4">
-      <h3 className="m-0 text-[15px] font-bold">{t("payment.title")}</h3>
-      {take ? <RecordPayment {...props} /> : null}
+    <div className="flex flex-col gap-4">
+      {take ? <Button variant="primary" icon={WalletIcon} className="self-start" onClick={() => setRecording(true)}>{t("payment.record.button")}</Button> : null}
+      {recording ? (
+        <RecordPaymentDialog
+          order={order} accounts={accounts} onUpdated={props.onUpdated} onStale={props.onStale} onClose={() => setRecording(false)}
+        />
+      ) : null}
       {setStatus ? <PaymentStatusForm {...props} /> : null}
       {waive ? (
         <>
@@ -106,6 +79,6 @@ export function OrderPaymentActions(props: OrderActionProps) {
           />
         </>
       ) : null}
-    </section>
+    </div>
   );
 }

@@ -15,6 +15,8 @@ export interface Column<T> {
   sortKey?: string;
   /** Numbers and money line up at the end. */
   align?: "start" | "end";
+  /** A fixed share of the table width (e.g. "32%"), so header and body stay in the same column. */
+  width?: string;
 }
 
 interface DataTableProps<T> {
@@ -35,6 +37,7 @@ const SKELETON_ROWS = 5;
 export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, sort = null, onSort }: DataTableProps<T>) {
   const t = useTranslations("admin.kit");
   const cellAlign = (column: Column<T>) => (column.align === "end" ? "text-end" : "text-start");
+  const fixed = columns.some((column) => column.width);
 
   let body: ReactNode;
   if (state.status === "loading") {
@@ -70,7 +73,8 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
 
   return (
     <div className="overflow-x-auto rounded-card border border-line bg-surface">
-      <table aria-label={label} aria-busy={state.status === "loading"} className="w-full border-collapse text-sm">
+      <table aria-label={label} aria-busy={state.status === "loading"} className={`w-full border-collapse text-sm ${fixed ? "table-fixed" : ""}`}>
+        {fixed ? <colgroup>{columns.map((column) => <col key={column.key} style={column.width ? { width: column.width } : undefined} />)}</colgroup> : null}
         <thead className="bg-paper text-[13px] text-ink-muted">
           <tr>
             {columns.map((column) => (

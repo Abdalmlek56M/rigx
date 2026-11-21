@@ -3,11 +3,14 @@
 import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { formatDateTime, formatEgp } from "@/lib/format";
+import { unitStatusKey } from "../inventory/inventory-rules";
 import { methodKey } from "./order-labels";
-import { orderEventKey } from "./order-rules";
+import { eventPaymentAmount, orderEventKey, orderTimeline } from "./order-rules";
 import type { Order, OrderUnit } from "./orders-api";
+import { BoxIcon, CartIcon, ClockIcon } from "@/components/ui/icons";
+import { SectionCard } from "../kit/SectionCard";
 
-const TABLE = "w-full border-collapse text-sm";
+const TABLE = "w-full min-w-[600px] border-collapse text-sm";
 const TH = "whitespace-nowrap px-2 py-2 text-start text-[13px] font-bold text-ink-muted";
 const TD = "px-2 py-2 align-middle";
 
@@ -16,9 +19,8 @@ export function OrderItems({ order }: { order: Order }) {
   const t = useTranslations("admin.orders.detail.items");
   const locale = useLocale();
   return (
-    <section className="flex flex-col gap-2">
-      <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
-      <div className="overflow-x-auto">
+    <SectionCard title={t("title")} icon={CartIcon}>
+      <div className="-mx-2 overflow-x-auto">
         <table className={TABLE}>
           <thead>
             <tr>
@@ -44,18 +46,18 @@ export function OrderItems({ order }: { order: Order }) {
           </tbody>
         </table>
       </div>
-    </section>
+    </SectionCard>
   );
 }
 
 /** The physical pieces reserved or sold for the order. */
 export function OrderUnits({ units }: { units: readonly OrderUnit[] }) {
   const t = useTranslations("admin.orders.detail.units");
+  const statuses = useTranslations("admin.inventory.units.status");
   if (units.length === 0) return null;
   return (
-    <section className="flex flex-col gap-2">
-      <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
-      <div className="overflow-x-auto">
+    <SectionCard title={t("title")} icon={BoxIcon}>
+      <div className="-mx-2 overflow-x-auto">
         <table className={TABLE}>
           <thead>
             <tr>
@@ -73,23 +75,23 @@ export function OrderUnits({ units }: { units: readonly OrderUnit[] }) {
                 <td className={TD}><span dir="auto" className="[unicode-bidi:isolate]">{unit.name}</span></td>
                 <td className={TD}>{unit.condition === "New" || unit.condition === "Used" ? <ConditionBadge condition={unit.condition} /> : unit.condition}</td>
                 <td className={TD}><span dir="ltr" className="font-mono text-xs">{unit.serialNumber ?? "—"}</span></td>
-                <td className={TD}>{unit.status}</td>
+                <td className={TD}><span className="whitespace-nowrap">{statuses(unitStatusKey(unit.status))}</span></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </section>
+    </SectionCard>
   );
 }
 
-/** What happened to the order, newest first. */
+/** What happened to the order, newest first: a vertical line with one dot per event. */
 export function OrderTimeline({ order }: { order: Order }) {
   const t = useTranslations("admin.orders");
   const locale = useLocale();
   const method = (value: string) => {
     const key = methodKey(value);
-    return key ? t(`methods.${key}`) : value;
+    return key ? t(`detail.timeline.eventMethods.${key}`) : value;
   };
 
   function label(event: Order["events"][number]): string {
@@ -97,7 +99,10 @@ export function OrderTimeline({ order }: { order: Order }) {
     switch (key.key) {
       case "status": return t("detail.timeline.status", { status: t(`statuses.${key.status}`) });
       case "paymentStatus": return t("detail.timeline.paymentStatus", { status: t(`paymentStatuses.${key.status}`) });
-      case "payment": return t("detail.timeline.payment", { method: method(key.method), amount: key.amount ?? "" });
+      case "payment": {
+        const amount = eventPaymentAmount(key.amount);
+        return t("detail.timeline.payment", { method: method(key.method), amount: amount === null ? key.amount ?? "" : formatEgp(amount, locale) });
+      }
       case "other": return t("detail.timeline.other", { type: key.type });
       case "created": return t("detail.timeline.created");
       default: return t(`detail.timeline.${key.key}`);
@@ -109,19 +114,19 @@ export function OrderTimeline({ order }: { order: Order }) {
   };
 
   return (
-    <section className="flex flex-col gap-2">
-      <h3 className="m-0 text-[15px] font-bold">{t("detail.timeline.title")}</h3>
-      <ol className="m-0 flex list-none flex-col p-0">
-        {[...order.events].sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc)).map((event, index) => (
-          <li key={`${event.createdAtUtc}-${index}`} className="flex flex-wrap items-baseline justify-between gap-x-3 border-t border-line py-2 text-sm first:border-t-0">
-            <span className="flex flex-col">
-              <span className="font-bold">{label(event)}</span>
-              {showsNote(event) ? <span dir="auto" className="text-xs text-ink-muted">{event.notes}</span> : null}
-            </span>
-            <span dir="ltr" className="font-mono text-xs text-ink-muted">{formatDateTime(event.createdAtUtc, locale)}</span>
-          </li>
-        ))}
-      </ol>
-    </section>
+    <SectionCard title={t("detail.timeline.title")} icon={ClockIcon}>
+      {order.events.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("detail.timeline.empty")}</p> : (
+        <ol className="relative m-0 flex list-none flex-col gap-4 p-0 ps-5 before:absolute before:bottom-1 before:start-[6px] before:top-1 before:w-px before:bg-line">
+          {orderTimeline(order.events).map((event, index) => (
+            <li key={`${event.createdAtUtc}-${index}`} className="relative min-w-0">
+              <span aria-hidden="true" className="absolute -start-[18px] top-1.5 size-2.5 rounded-full bg-orange-text ring-4 ring-surface" />
+              <p className="m-0 text-sm font-bold">{label(event)}</p>
+              {showsNote(event) ? <p dir="auto" className="m-0 mt-0.5 text-xs text-ink-muted [unicode-bidi:isolate]">{event.notes}</p> : null}
+              <p className="m-0 mt-0.5 text-xs text-ink-muted"><time dir="ltr" dateTime={event.createdAtUtc}>{formatDateTime(event.createdAtUtc, locale)}</time></p>
+            </li>
+          ))}
+        </ol>
+      )}
+    </SectionCard>
   );
 }

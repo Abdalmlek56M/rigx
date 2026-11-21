@@ -21,8 +21,8 @@ export const setOrderStatus = (id: string, status: string, notes: string | null,
 export const completeOrder = (id: string, notes: string | null, rowVersion: number) =>
   required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/complete", { ...path(id), body: { notes, rowVersion } })));
 
-export const addOrderPayment = (id: string, method: string, amount: number, note: string | null, rowVersion: number) =>
-  required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/payments", { ...path(id), body: { method, amount, note, rowVersion } })));
+export const addOrderPayment = (id: string, method: string, amount: number, note: string | null, rowVersion: number, moneyAccountId: string | null) =>
+  required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/payments", { ...path(id), body: { method, amount, note, rowVersion, moneyAccountId } })));
 
 export const setPaymentStatus = (id: string, paymentStatus: string, notes: string | null, rowVersion: number) =>
   required(unwrap(api().POST("/api/v1/admin/retail/orders/{id}/payment", { ...path(id), body: { paymentStatus, notes, rowVersion } })));

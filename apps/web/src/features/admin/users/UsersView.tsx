@@ -32,28 +32,28 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
 
   const columns: Column<StaffUser>[] = [
     {
-      key: "name", header: t("columns.name"), cell: (user) => (
+      key: "name", header: t("columns.name"), width: "24%", cell: (user) => (
         <Link href={`/admin/users/${user.id}`} className="font-bold [overflow-wrap:anywhere] hover:text-orange-text hover:underline">
           {user.fullName}
         </Link>
       )
     },
-    { key: "email", header: t("columns.email"), cell: (user) => <span dir="ltr" className="block break-all font-mono text-xs">{user.email}</span> },
+    { key: "email", header: t("columns.email"), width: "32%", cell: (user) => <span dir="ltr" className="break-all font-mono text-xs">{user.email}</span> },
     {
-      key: "roles", header: t("columns.roles"), cell: (user) => {
+      key: "roles", header: t("columns.roles"), width: "26%", cell: (user) => {
         const names = roleNames(user, roleList, builtIn);
         return names.length === 0 ? <span className="text-ink-muted">{t("noRoles")}</span> : <span className="[overflow-wrap:anywhere]">{names.join("، ")}</span>;
       }
     },
     {
-      key: "active", header: t("columns.status"), cell: (user) => (
+      key: "active", header: t("columns.status"), width: "10%", cell: (user) => (
         <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-line text-ink" : "bg-error/10 text-error"}`}>
           {user.isActive ? t("status.active") : t("status.inactive")}
         </span>
       )
     },
     {
-      key: "edit", header: t("edit"), align: "end", cell: (user) => (
+      key: "edit", header: t("edit"), width: "8%", align: "end", cell: (user) => (
         <Link
           href={`/admin/users/${user.id}`} aria-label={t("editUser", { name: user.fullName })} data-tip={t("edit")}
           className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}

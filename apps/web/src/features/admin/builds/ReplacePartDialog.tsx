@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { formatEgp } from "@/lib/format";
+import type { Category } from "../categories/categories-api";
 import { formMessage } from "../form-message";
+import { categoryPath } from "../inventory/inventory-rules";
+import { CategorySelect } from "../stock/CategorySelect";
 import { Dialog } from "../kit/Dialog";
 import { FormMessage } from "../kit/PageHeader";
 import { StockUnitPicker } from "./StockUnitPicker";
@@ -12,15 +15,15 @@ import { replacePart, type BuildPart } from "./builds-api";
 import { buildOption } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { useOtherBuilds } from "./use-other-builds";
-import { SwapIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
+import { CloseIcon, SwapIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
 
 type Source = "stock" | "build";
 
 const tab = (active: boolean) => `h-11 flex-1 rounded-control border px-3 text-sm font-bold ${active ? "border-carbon bg-carbon text-on-carbon" : "border-input-line bg-surface"}`;
 
 /** Swaps a part for one from free stock, or for a part of another open build (the two builds trade places; the other's row version travels with the call). */
-export function ReplacePartDialog({ part, onClose, ...action }: BuildActionProps & { part: BuildPart; onClose: () => void }) {
+export function ReplacePartDialog({ part, tree, onClose, ...action }: BuildActionProps & { part: BuildPart; tree: readonly Category[]; onClose: () => void }) {
   const t = useTranslations("admin.builds.replaceDialog");
   const locale = useLocale();
   const { build } = action;
@@ -29,6 +32,7 @@ export function ReplacePartDialog({ part, onClose, ...action }: BuildActionProps
   const [source, setSource] = useState<Source>("stock");
   const [targetId, setTargetId] = useState("");
   const [pickedId, setPickedId] = useState("");
+  const [categoryId, setCategoryId] = useState(part.categoryId ?? "");
   const other = others.state.status === "ready" ? others.state.data.find((entry) => entry.id === targetId) : undefined;
   const choose = (next: Source) => {
     setSource(next);
@@ -51,7 +55,17 @@ export function ReplacePartDialog({ part, onClose, ...action }: BuildActionProps
         <button type="button" aria-pressed={source === "build"} onClick={() => choose("build")} className={tab(source === "build")}>{t("fromBuild")}</button>
       </div>
       {source === "stock" ? (
-        <StockUnitPicker categoryId={part.categoryId ?? undefined} pickedId={pickedId} actionLabel={t("pick")} onPick={(unit) => setPickedId(unit.id)} />
+        <div className="flex flex-col gap-2">
+          {categoryId ? (
+            <span className="flex flex-wrap items-center gap-2 self-start rounded-full bg-orange-soft px-3 py-1 text-xs font-bold text-orange-text">
+              {t("categoryChip", { name: categoryPath(tree, categoryId) || categoryId })}
+              <IconButton icon={CloseIcon} label={t("clearCategory")} size="sm" className="-me-2" onClick={() => { setCategoryId(""); setPickedId(""); }} />
+            </span>
+          ) : (
+            <CategorySelect tree={tree} value={categoryId} onChange={(id) => { setCategoryId(id); setPickedId(""); }} name="replaceCategory" />
+          )}
+          <StockUnitPicker categoryId={categoryId || undefined} pickedId={pickedId} actionLabel={t("pick")} onPick={(unit) => setPickedId(unit.id)} />
+        </div>
       ) : others.state.status === "ready" ? (
         <div className="flex flex-col gap-2">
           <SelectField

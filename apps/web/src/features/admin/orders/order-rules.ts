@@ -80,8 +80,9 @@ export function canWaivePayment(order: OrderState): boolean {
   return !isClosed(order) && order.paymentStatus !== "Paid" && order.paymentStatus !== "Waived";
 }
 
+/** The manual status select is hidden once nothing is left to pay (the API refuses "unpaid" on a paid order). */
 export function canSetPaymentStatus(order: OrderState): boolean {
-  return order.status !== "Cancelled" && order.paymentStatus !== "Waived";
+  return order.status !== "Cancelled" && order.paymentStatus !== "Waived" && order.paymentStatus !== "Paid" && order.remaining > 0;
 }
 
 /** Stock is held only while the order waits to leave the store. */
@@ -104,6 +105,35 @@ export function reservationState(order: Pick<Order, "status" | "reservedUntilUtc
   if (order.reservationExpiredAtUtc) return { kind: "expired", at: order.reservationExpiredAtUtc };
   const left = (new Date(order.reservedUntilUtc).getTime() - now.getTime()) / 3_600_000;
   return left <= 0 ? { kind: "expired", at: order.reservedUntilUtc } : { kind: "held", until: order.reservedUntilUtc, hoursLeft: Math.ceil(left) };
+}
+
+export interface OrderAddressParts {
+  governorate: string | null;
+  area: string | null;
+  street: string | null;
+  building: string | null;
+  landmark: string | null;
+}
+
+/** The address as one line: governorate › area › street › building, then the landmark when present. */
+export function orderAddressText(address: OrderAddressParts | null | undefined, governorate: (code: string) => string): string | null {
+  if (!address) return null;
+  const first = [address.governorate ? governorate(address.governorate) : null, address.area, address.street, address.building]
+    .filter((part): part is string => Boolean(part && part.trim()));
+  if (first.length === 0) return address.landmark?.trim() || null;
+  return `${first.join(" › ")}${address.landmark?.trim() ? ` · ${address.landmark.trim()}` : ""}`;
+}
+
+/** The order history newest first; equal timestamps keep the server's order. */
+export function orderTimeline<T extends Pick<Order["events"][number], "createdAtUtc">>(events: readonly T[]): T[] {
+  return [...events].sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc));
+}
+
+/** A payment event's amount as a number, or null when the note is not an amount. */
+export function eventPaymentAmount(amount: string | null): number | null {
+  if (amount === null || amount.trim() === "") return null;
+  const value = Number(amount);
+  return Number.isFinite(value) ? value : null;
 }
 
 /** First line's name and how many more lines the order has. */

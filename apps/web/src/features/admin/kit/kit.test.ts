@@ -103,4 +103,10 @@ describe("toast queue", () => {
     list = dropToast(list, 3);
     assert.deepEqual(list.map((item) => item.id), [2, 4]);
   });
+
+  it("keeps the detail line and the info tone", () => {
+    const [item] = pushToast([], { id: 1, message: "Saved", tone: "info", detail: "The build is published." });
+    assert.equal(item?.detail, "The build is published.");
+    assert.equal(item?.tone, "info");
+  });
 });
