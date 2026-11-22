@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Catalog;
@@ -10,6 +11,16 @@ public sealed class ProductManagementService(
     IDbContextFactory<CatalogDbContext> contextFactory,
     TimeProvider timeProvider)
 {
+    /// <summary>Products of any status whose name contains the text (LIKE wildcards in it are literal), by name, at most <paramref name="limit"/>.</summary>
+    public async Task<IReadOnlyList<ProductNameMatch>> FindNamesAsync(string text, int limit, CancellationToken cancellationToken = default)
+    {
+        var pattern = LikePattern.Contains(text);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.Products.AsNoTracking().Where(product => EF.Functions.ILike(product.Name, pattern, LikePattern.Escape))
+            .OrderBy(product => product.Name).Take(limit)
+            .Select(product => new ProductNameMatch(product.Id, product.Name, product.CategoryId)).ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<ProductSummaryView>> GetProductsAsync(
         CancellationToken cancellationToken = default)
     {

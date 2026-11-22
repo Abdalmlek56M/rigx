@@ -121,10 +121,10 @@ public sealed class CustomerAdminService(
 
     private static IQueryable<UserAccount> Matching(IQueryable<UserAccount> accounts, string search)
     {
-        var pattern = "%" + search.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "%";
+        var pattern = LikePattern.Contains(search);
         var digits = string.Concat(search.Where(char.IsAsciiDigit));
-        return accounts.Where(account => EF.Functions.ILike(account.Person.FullName, pattern) ||
-            EF.Functions.ILike(account.Email, pattern) || EF.Functions.ILike(account.Person.PersonCode, pattern) ||
+        return accounts.Where(account => EF.Functions.ILike(account.Person.FullName, pattern, LikePattern.Escape) ||
+            EF.Functions.ILike(account.Email, pattern, LikePattern.Escape) || EF.Functions.ILike(account.Person.PersonCode, pattern, LikePattern.Escape) ||
             (digits.Length >= 3 && account.Person.PhoneNumber != null &&
              account.Person.PhoneNumber.Replace(" ", "").Replace("-", "").Replace("+", "").Contains(digits)));
     }

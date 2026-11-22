@@ -2,10 +2,8 @@ using HardwareStore.Common.Domain.Paging;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authorization;
-using HardwareStore.Modules.Identity.Persistence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 public static class ReviewEndpoints
 {
@@ -33,12 +31,12 @@ public static class ReviewEndpoints
         Guid productId,
         HttpContext context,
         ReviewService reviews,
-        IDbContextFactory<IdentityDbContext> identityFactory,
+        IdentityProfileService profiles,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
         var response = await reviews.GetProductReviewsAsync(productId, cancellationToken);
-        var authors = await LoadAuthorsAsync(identityFactory, response.Items.Select(item => item.UserAccountId), cancellationToken);
+        var authors = await profiles.GetAuthorsAsync(response.Items.Select(item => item.UserAccountId), cancellationToken);
         return TypedResults.Ok(new PublicProductReviews(response.Aggregate, response.Items.Select(item =>
         {
             authors.TryGetValue(item.UserAccountId, out var author);
@@ -50,12 +48,12 @@ public static class ReviewEndpoints
     private static async Task<Ok<PublicStoreReviews>> GetStoreReviewsAsync(
         HttpContext context,
         ReviewService reviews,
-        IDbContextFactory<IdentityDbContext> identityFactory,
+        IdentityProfileService profiles,
         CancellationToken cancellationToken)
     {
         context.Response.Headers.CacheControl = "public, max-age=60";
         var response = await reviews.GetStoreReviewsAsync(cancellationToken);
-        var authors = await LoadAuthorsAsync(identityFactory, response.Items.Select(item => item.UserAccountId), cancellationToken);
+        var authors = await profiles.GetAuthorsAsync(response.Items.Select(item => item.UserAccountId), cancellationToken);
         return TypedResults.Ok(new PublicStoreReviews(response.Aggregate, response.Items.Select(item =>
         {
             authors.TryGetValue(item.UserAccountId, out var author);
@@ -158,26 +156,6 @@ public static class ReviewEndpoints
             cancellationToken);
         return TypedResults.Ok(result);
     }
-
-    private static async Task<Dictionary<Guid, AuthorProjection>> LoadAuthorsAsync(
-        IDbContextFactory<IdentityDbContext> identityFactory,
-        IEnumerable<Guid> userIds,
-        CancellationToken cancellationToken)
-    {
-        var ids = userIds.Distinct().ToArray();
-        if (ids.Length == 0)
-            return [];
-        await using var db = await identityFactory.CreateDbContextAsync(cancellationToken);
-        return await db.UserAccounts.AsNoTracking()
-            .Where(account => ids.Contains(account.Id) && account.IsActive)
-            .Select(account => new AuthorProjection(
-                account.Id,
-                account.Username,
-                account.AvatarStorageKey))
-            .ToDictionaryAsync(author => author.Id, cancellationToken);
-    }
-
-    private sealed record AuthorProjection(Guid Id, string Name, string? AvatarStorageKey);
 }
 
 public sealed record PublicProductReview(Guid Id, Guid ProductId, int Rating, string? Title, string Body, string AuthorName,

@@ -15,13 +15,17 @@ The code is in good shape for its size (35 k lines of C#, 37 k of TypeScript, 11
 
 ## Findings, most valuable first
 
-### 1. Permission names are 143 string literals with no guard
+### 1. Permission names are 143 string literals with no guard — DONE 22 Nov
 `RequirePermission("Sales.CreatePOS")` and the web's `has("Sales.CreatePOS")` use plain strings; `PermissionCatalog` is a list, not constants, and nothing checks that a literal exists. A typo compiles, passes review and silently gives 403 (API) or a missing button (web). Today every literal does match the catalogue (checked by script), so this is prevention, not a bug.
 **Fix:** (a) a test that scans the API sources and the web sources for permission literals and fails when one is not in `PermissionCatalog.All`; (b) optionally generate constants (`Permissions.Sales.CreatePos`) from the catalogue. (a) alone is one hour and catches the whole class.
+**Done:** `PermissionLiteralsTests` (API sources) and `permission-literals.test.ts` (web sources) fail when a permission is not in `PermissionCatalog`. Constants (b) were not added.
 
-### 2. Host endpoints read other modules' databases directly
+
+### 2. Host endpoints read other modules' databases directly — three of six DONE 22 Nov
 Six Host files open `IdentityDbContext` / `CatalogDbContext` themselves: `ProfileAvatarEndpoints` (writes the avatar key on the account), `ReviewEndpoints` (loads author names), `RetailEndpoints.StockItems` (model-name suggestions from the catalogue), `DashboardComposer`, `RetailMediaReferenceGuard`, `DatabaseHealthCheck`. The first three put persistence logic in an endpoint, against "thin endpoints, rules in the module".
 **Fix:** move each into the owning module as a small service (`IdentityProfileService.SetAvatarAsync`, `IAuthorDirectory` in Identity contracts, `CatalogService.SuggestProductNamesAsync`) and have the endpoint call it. The last three are read-only composition in Host and may stay.
+**Done:** `IdentityProfileService.ReplaceAvatarAsync` and `GetAuthorsAsync` (avatar and review authors) and `ProductManagementService.FindNamesAsync` (model suggestions); the three endpoints no longer touch a module's database. Tests: `StaffProfileTests` (avatar, authors), `CatalogPostgreSqlTests` (name lookup).
+
 
 ### 3. Transaction boilerplate is copied 26 times
 `try { … commit … } catch { await transaction.RollbackQuietlyAsync(); throw; }` appears in 15 files (62 `BeginTransactionAsync` in total). It is correct each time, but a new service has to remember it, and one forgotten rollback leaves a connection busy until disposal.
@@ -38,12 +42,12 @@ Files above 300 lines (14 of 340): the useful ones to split are the ones that ho
 ## Smaller points
 - **`CatalogEndpoints.cs` (362 lines) and `ContentEndpoints.cs` (289)** are one file for many endpoints. Retail already shows the better layout (`RetailEndpoints.Sales.cs`, `.Assemblies.cs`, `.StockItems.cs`); split the two the same way when they are next edited.
 - **Web duplicates:** `categoryPath` exists twice with different shapes (`lib/categories.ts` for the storefront tree, `admin/inventory/inventory-rules.ts` for the admin tree) and `parseAmount` twice. Both are small; merge only if the two trees get one type.
-- **Web logic without tests:** `cart-store.ts` and `refresh-lines.ts` (the cart, money and stale-price handling, the most customer-visible logic), `share-link.ts` (builder links), `newest-items.ts`, `catalog-title.ts`, `coupon-problem-text.ts`, `published-policies.ts`, `account-page.ts`. Add tests for the first two before changing the cart (brief 10 touches `refresh-lines.ts`).
+- **Web logic without tests:** correction: the cart rules (`cart-rules.ts`: totals, merge, stale-price reconcile) were already tested; `cart-store.ts` is now tested too (22 Nov), `refresh-lines.ts` is a thin API call and stays untested. Still untested: `share-link.ts` (builder links), `newest-items.ts`, `catalog-title.ts`, `coupon-problem-text.ts`, `published-policies.ts`, `account-page.ts`. Brief 10 adds its own `cart-rules` tests.
 - **API services not named in any test (27 of 90):** most are covered through the HTTP tests (e.g. `InvoiceService` by `InvoiceTests`), so this is a list to check, not a list of gaps. Worth checking first: `QuoteService`, `SavedBuildService`, `CustomerMergeService` (merging customers is destructive), `TaxonomyImageService`, `RequestPhotoService`, `NotificationService`.
 - **Admin has 319 files in one feature tree**; each slice is small and tidy, so leave it. If it grows, group sales / stock / money / system under four folders.
 
 ## Order to fix (smallest risk first)
-1. **Permission guard test** (finding 1a) — 1 hour, prevents a whole class of bug.
+~~1.~~ done. **Permission guard test** (finding 1a) — 1 hour, prevents a whole class of bug.
 2. **Cart tests** (`cart-store`, `refresh-lines`) — before brief 10 is merged, since it changes the cart refresh.
 3. **Move the three endpoint-level reads into their modules** (finding 2) — about half a day, with tests.
 4. **`InTransactionAsync` helper** (finding 3) — add it, use it in new code, migrate old code when touched.
@@ -51,3 +55,6 @@ Files above 300 lines (14 of 340): the useful ones to split are the ones that ho
 6. **Preview project split** (finding 5) — after launch, when the preview environment is settled.
 
 None of these blocks launch. Items 1 to 3 can run in one session on `main` without touching the storefront files DeepSeek is editing.
+
+## Found while fixing (22 Nov)
+- **Search with `%`, `_` or `\` found nothing** in seven places (customers, customer requests, purchases, sellers, the security log, POS customer lookup, stock-form model suggestions): the text was escaped for ILIKE but the query did not name the escape character, and through Npgsql PostgreSQL then does not treat the backslash as an escape (proved with a failing test: searching "100%" returned nothing). The escaping code was copied in seven places. Now one `LikePattern` (Common.Domain: `Contains(text)` + `Escape`) is used by all of them. The product-search suggestions and a few other `ILike` calls still pass the typed text unescaped, so a `%` there acts as a wildcard (harmless; left as is).

@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.Purchasing;
@@ -20,9 +21,9 @@ public sealed class SellerService(IDbContextFactory<PurchasingDbContext> context
         }
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var namePattern = PurchasingQueries.ContainsPattern(search);
+            var namePattern = LikePattern.Contains(search);
             var digits = string.Concat(search.Where(char.IsAsciiDigit));
-            sellers = sellers.Where(seller => EF.Functions.ILike(seller.Name, namePattern)
+            sellers = sellers.Where(seller => EF.Functions.ILike(seller.Name, namePattern, LikePattern.Escape)
                 || (digits.Length >= 3 && seller.Phone.Contains(digits)));
         }
         var rows = await sellers.OrderBy(seller => seller.Name).ThenBy(seller => seller.Id).Take(MaxResults).ToListAsync(cancellationToken);

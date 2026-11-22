@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Text.Json;
 using HardwareStore.Common.Domain.Paging;
 using Microsoft.EntityFrameworkCore;
@@ -66,8 +67,8 @@ public sealed class SecurityAuditQueryService(IDbContextFactory<SecurityAuditDbC
             rows = rows.Where(entry => entry.OccurredAtUtc <= query.ToUtc.Value);
         if (!string.IsNullOrWhiteSpace(query.EventType))
         {
-            var pattern = $"%{EscapeLike(query.EventType.Trim())}%";
-            rows = rows.Where(entry => EF.Functions.ILike(entry.EventType, pattern));
+            var pattern = LikePattern.Contains(query.EventType);
+            rows = rows.Where(entry => EF.Functions.ILike(entry.EventType, pattern, LikePattern.Escape));
         }
         if (!string.IsNullOrWhiteSpace(query.Outcome))
         {
@@ -85,10 +86,10 @@ public sealed class SecurityAuditQueryService(IDbContextFactory<SecurityAuditDbC
         }
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var pattern = $"%{EscapeLike(query.Search.Trim())}%";
+            var pattern = LikePattern.Contains(query.Search);
             rows = rows.Where(entry =>
-                EF.Functions.ILike(entry.EventType, pattern) ||
-                (entry.CorrelationId != null && EF.Functions.ILike(entry.CorrelationId, pattern)));
+                EF.Functions.ILike(entry.EventType, pattern, LikePattern.Escape) ||
+                (entry.CorrelationId != null && EF.Functions.ILike(entry.CorrelationId, pattern, LikePattern.Escape)));
         }
 
         var total = await rows.CountAsync(cancellationToken);
@@ -177,9 +178,4 @@ public sealed class SecurityAuditQueryService(IDbContextFactory<SecurityAuditDbC
     private static string? Truncate(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null :
         value.Length <= 256 ? value : value[..256];
-
-    private static string EscapeLike(string value) =>
-        value.Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("%", "\\%", StringComparison.Ordinal)
-            .Replace("_", "\\_", StringComparison.Ordinal);
 }

@@ -105,7 +105,7 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var matching = query.PhoneDigits is string digits
             ? db.Orders.Where(order => order.PhoneNumber.Contains(digits))
-            : db.Orders.Where(order => EF.Functions.ILike(order.CustomerName, query.NamePattern!));
+            : db.Orders.Where(order => EF.Functions.ILike(order.CustomerName, query.NamePattern!, LikePattern.Escape));
         var phones = await matching.GroupBy(order => order.PhoneNumber)
             .Select(group => new { Phone = group.Key, Last = group.Max(order => order.CreatedAtUtc) })
             .OrderByDescending(group => group.Last).Take(PosCustomerQuery.MaxResults).Select(group => group.Phone)

@@ -228,6 +228,9 @@ public sealed class OwnerBootstrapDatabase(string connectionString)
             NullLogger<FirstOwnerBootstrapService>.Instance);
     }
 
+    public IdentityProfileService CreateProfileService() =>
+        new(new TestIdentityContextFactory(connectionString), new SecurityAuditWriter(new TestAuditContextFactory(connectionString)));
+
     public IdentityAdministrationService CreateAdministrationService(
         IIdentityEmailDispatcher? emailDispatcher = null)
     {

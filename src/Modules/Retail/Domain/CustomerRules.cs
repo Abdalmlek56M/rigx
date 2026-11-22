@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Linq.Expressions;
 
 namespace HardwareStore.Modules.Retail;
@@ -62,13 +63,8 @@ public sealed record PosCustomerQuery(string? PhoneDigits, string? NamePattern)
         }
         else if (text.Length is >= 2 and <= MaxLength)
         {
-            return new PosCustomerQuery(null, $"%{EscapeLike(text)}%");
+            return new PosCustomerQuery(null, LikePattern.Contains(text));
         }
         throw new RetailException(400, "Type at least 4 digits of the phone number or 2 letters of the name.");
     }
-
-    private static string EscapeLike(string value) =>
-        value.Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("%", "\\%", StringComparison.Ordinal)
-            .Replace("_", "\\_", StringComparison.Ordinal);
 }

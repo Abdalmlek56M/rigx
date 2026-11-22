@@ -1,3 +1,4 @@
+using HardwareStore.Common.Domain;
 using System.Security.Cryptography;
 using HardwareStore.Modules.Auditing;
 using HardwareStore.Modules.Identity;
@@ -114,6 +115,39 @@ public sealed class StaffProfileTests(OwnerBootstrapPostgreSqlFixture fixture) :
         Assert.Equal([staff], (await links.StaffOfCustomerAsync(byPhone)).Select(item => item.Id));
         Assert.Equal([staff], (await links.StaffOfCustomerAsync(byEmail)).Select(item => item.Id));
         Assert.Empty(await links.StaffOfCustomerAsync(unrelated));
+    }
+
+    [Fact]
+    public async Task An_avatar_is_replaced_and_removed_and_the_previous_key_comes_back_for_cleanup()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var profiles = database.CreateProfileService();
+        var accountId = await StaffAsync(database, "avatar-staff@example.test");
+
+        Assert.Null(await profiles.ReplaceAvatarAsync(accountId, "avatars/first.webp"));
+        Assert.Equal("avatars/first.webp", await profiles.ReplaceAvatarAsync(accountId, "avatars/second.webp"));
+        Assert.Equal("avatars/second.webp", (await profiles.GetAuthorsAsync([accountId]))[accountId].AvatarStorageKey);
+        Assert.Equal("avatars/second.webp", await profiles.ReplaceAvatarAsync(accountId, null));
+        Assert.Null((await profiles.GetAuthorsAsync([accountId]))[accountId].AvatarStorageKey);
+
+        var inactiveId = await EmailCodeSignInTests.CreateAccountAsync(database, "avatar-gone@example.test", verified: true, active: false, roleCode: "avatar-gone-role", []);
+        await Assert.ThrowsAsync<UnauthenticatedException>(() => profiles.ReplaceAvatarAsync(inactiveId, "avatars/x.webp"));
+        await Assert.ThrowsAsync<UnauthenticatedException>(() => profiles.ReplaceAvatarAsync(Guid.NewGuid(), null));
+    }
+
+    [Fact]
+    public async Task Authors_are_the_active_accounts_among_the_ids_each_once()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var profiles = database.CreateProfileService();
+        var active = await StaffAsync(database, "author-active@example.test");
+        var inactive = await EmailCodeSignInTests.CreateAccountAsync(database, "author-off@example.test", verified: true, active: false, roleCode: "author-off-role", []);
+
+        Assert.Empty(await profiles.GetAuthorsAsync([]));
+        var authors = await profiles.GetAuthorsAsync([active, active, inactive, Guid.NewGuid()]);
+        var author = Assert.Single(authors);
+        Assert.Equal(active, author.Key);
+        Assert.False(string.IsNullOrWhiteSpace(author.Value.Name));
     }
 
     private sealed class LinkContextFactory(OwnerBootstrapDatabase database) : IDbContextFactory<IdentityDbContext>

@@ -155,10 +155,10 @@ public sealed class PurchaseService(IDbContextFactory<PurchasingDbContext> conte
     private static IQueryable<Purchase> Matching(IQueryable<Purchase> purchases, string search)
     {
         var isCode = PublicCode.TryNormalize(search, PublicCode.Purchase, out var code);
-        var namePattern = PurchasingQueries.ContainsPattern(search);
+        var namePattern = LikePattern.Contains(search);
         var digits = string.Concat(search.Where(char.IsAsciiDigit));
         return purchases.Where(purchase => (isCode && purchase.Code == code)
-            || EF.Functions.ILike(purchase.Seller.Name, namePattern)
+            || EF.Functions.ILike(purchase.Seller.Name, namePattern, LikePattern.Escape)
             || (digits.Length >= 3 && purchase.Seller.Phone.Contains(digits)));
     }
 

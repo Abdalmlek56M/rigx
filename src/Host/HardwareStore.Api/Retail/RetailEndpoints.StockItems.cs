@@ -5,7 +5,6 @@ using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 public static partial class RetailEndpoints
 {
@@ -66,20 +65,16 @@ public static partial class RetailEndpoints
     }
 
     /// <summary>Model names from stock plus catalog products, one entry per spelling-independent model key.</summary>
-    private static async Task<Ok<List<ModelNameSuggestion>>> SuggestModelsAsync(StockItemAdminService items, IDbContextFactory<CatalogDbContext> catalogFactory,
+    private static async Task<Ok<List<ModelNameSuggestion>>> SuggestModelsAsync(StockItemAdminService items, ProductManagementService products,
         CancellationToken ct, string? q = null, Guid? categoryId = null)
     {
         var suggestions = (await items.SuggestModelsAsync(q, categoryId, ct)).ToList();
         var key = ModelName.Key(q ?? string.Empty);
         if (key.Length >= 2)
         {
-            var pattern = "%" + (q ?? string.Empty).Trim().Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "%";
-            await using var catalog = await catalogFactory.CreateDbContextAsync(ct);
-            var products = await catalog.Products.AsNoTracking().Where(product => EF.Functions.ILike(product.Name, pattern))
-                .OrderBy(product => product.Name).Take(MaxCatalogSuggestionCandidates)
-                .Select(product => new { product.Id, product.Name, product.CategoryId }).ToListAsync(ct);
+            var matches = await products.FindNamesAsync(q ?? string.Empty, MaxCatalogSuggestionCandidates, ct);
             var known = suggestions.Select(suggestion => ModelName.Key(suggestion.ModelName)).ToHashSet();
-            foreach (var product in products.Where(product => ModelName.Key(product.Name).Contains(key) && known.Add(ModelName.Key(product.Name))))
+            foreach (var product in matches.Where(match => ModelName.Key(match.Name).Contains(key) && known.Add(ModelName.Key(match.Name))))
                 suggestions.Add(new ModelNameSuggestion(product.Name, product.CategoryId, product.Id, 0));
         }
         return TypedResults.Ok(suggestions);

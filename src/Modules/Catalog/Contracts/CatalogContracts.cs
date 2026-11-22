@@ -136,6 +136,9 @@ public sealed record ProductDetailView(
     IReadOnlyList<ProductSpecificationView> Specifications,
     IReadOnlyList<ProductImageView> Images);
 
+/// <summary>A catalogue product whose name contains the typed text (any status), for stock-form model suggestions.</summary>
+public sealed record ProductNameMatch(Guid Id, string Name, Guid CategoryId);
+
 public sealed record ProductSuggestionView(
     Guid Id,
     string Name,

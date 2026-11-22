@@ -12,8 +12,4 @@ internal static class PurchasingQueries
             .SingleAsync(cancellationToken);
         return PublicCode.Format(PublicCode.Purchase, number);
     }
-
-    /// <summary>A case-insensitive "contains" pattern for ILIKE with the user's wildcard characters escaped.</summary>
-    public static string ContainsPattern(string text) =>
-        "%" + text.Trim().Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "%";
-}
+}

@@ -131,10 +131,10 @@ public sealed class CustomerRequestService(
     private static IQueryable<CustomerRequest> Matching(IQueryable<CustomerRequest> rows, string search)
     {
         if (PublicCode.TryNormalize(search, PublicCode.Request, out var code)) return rows.Where(item => item.Code == code);
-        var pattern = "%" + search.Trim().Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "%";
+        var pattern = LikePattern.Contains(search);
         var digits = string.Concat(search.Where(char.IsAsciiDigit));
-        return rows.Where(item => EF.Functions.ILike(item.Name, pattern)
-            || (item.ModelName != null && EF.Functions.ILike(item.ModelName, pattern))
+        return rows.Where(item => EF.Functions.ILike(item.Name, pattern, LikePattern.Escape)
+            || (item.ModelName != null && EF.Functions.ILike(item.ModelName, pattern, LikePattern.Escape))
             || (digits.Length >= 3 && item.Phone.Contains(digits)));
     }
 

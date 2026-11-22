@@ -296,6 +296,34 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
     }
 
     [Fact]
+    public async Task Product_names_are_found_by_text_of_any_status_and_wildcards_in_the_text_are_literal()
+    {
+        await using var db = fixture.CreateContext();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var category = new CatalogCategory
+        {
+            Id = Guid.CreateVersion7(), Name = "Name lookup", Slug = $"name-lookup-{suffix}",
+            CreatedAtUtc = DateTimeOffset.UtcNow, UpdatedAtUtc = DateTimeOffset.UtcNow
+        };
+        db.Categories.Add(category);
+        await db.SaveChangesAsync();
+        var management = new ProductManagementService(new TestCatalogContextFactory(fixture.Options), TimeProvider.System);
+        var names = new[] { $"Zeta{suffix} 100%", $"Zeta{suffix} 1000", $"Zeta{suffix}_x" };
+        foreach (var (name, index) in names.Select((name, index) => (name, index)))
+            await management.SaveProductAsync(null, new ProductInput(name, $"zeta-{suffix}-{index}", $"ZETA-{suffix}-{index}",
+                null, category.Id, null, null, null, 10m, CatalogProductStatus.Draft, CatalogProductCondition.New, [], null));
+
+        var all = await management.FindNamesAsync($"zeta{suffix}", 10);
+        Assert.Equal(3, all.Count);
+        Assert.All(all, match => Assert.Equal(category.Id, match.CategoryId));
+        Assert.Equal(all.Select(match => match.Name).Order(StringComparer.Ordinal), all.Select(match => match.Name));
+
+        Assert.Equal($"Zeta{suffix} 100%", Assert.Single(await management.FindNamesAsync($"{suffix} 100%", 10)).Name);
+        Assert.Equal($"Zeta{suffix}_x", Assert.Single(await management.FindNamesAsync($"{suffix}_", 10)).Name);
+        Assert.Equal(2, (await management.FindNamesAsync($"zeta{suffix}", 2)).Count);
+    }
+
+    [Fact]
     public async Task Product_management_persists_condition_and_specifications()
     {
         await using var db = fixture.CreateContext();

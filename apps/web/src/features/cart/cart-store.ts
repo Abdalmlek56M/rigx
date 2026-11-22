@@ -1,4 +1,4 @@
-import { parseStoredLines, type CartLine } from "./cart-rules";
+import { parseStoredLines, type CartLine } from "./cart-rules.ts";
 
 const STORAGE_KEY = "rigx.cart.v1";
 const EMPTY: CartLine[] = [];

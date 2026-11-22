@@ -1,9 +1,8 @@
 using HardwareStore.Common.Domain;
 using HardwareStore.Modules.Catalog;
-using HardwareStore.Modules.Identity.Persistence;
+using HardwareStore.Modules.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 public static class ProfileAvatarEndpoints
 {
@@ -16,7 +15,7 @@ public static class ProfileAvatarEndpoints
 
     private static async Task<Ok<AvatarUploadResponse>> UploadAsync(
         HttpContext context,
-        IDbContextFactory<IdentityDbContext> identityFactory,
+        IdentityProfileService profiles,
         ICatalogMediaStorage media,
         CatalogMediaOptions options,
         CancellationToken cancellationToken)
@@ -24,63 +23,33 @@ public static class ProfileAvatarEndpoints
         var accountId = context.RequireUserId();
         var upload = await CatalogEndpoints.ReadSingleImageAsync(context, options, cancellationToken);
         var storageKey = await media.SaveAssetImageAsync("avatars", accountId, Guid.CreateVersion7(), upload, cancellationToken);
-
-        string? previousKey;
-        await using (var db = await identityFactory.CreateDbContextAsync(cancellationToken))
-        {
-            var account = await db.UserAccounts.SingleOrDefaultAsync(
-                item => item.Id == accountId && item.IsActive, cancellationToken);
-            if (account is null)
-                throw new UnauthenticatedException();
-            previousKey = account.AvatarStorageKey;
-            account.AvatarStorageKey = storageKey;
-            await db.SaveChangesAsync(cancellationToken);
-        }
-        if (!string.IsNullOrWhiteSpace(previousKey))
-        {
-            try
-            {
-                await media.DeleteStorageKeyAsync(previousKey, CancellationToken.None);
-            }
-            catch
-            {
-                // Old avatar cleanup is best-effort; the new avatar is already stored.
-            }
-        }
+        await DeleteOldFileAsync(media, await profiles.ReplaceAvatarAsync(accountId, storageKey, cancellationToken));
         context.Response.Headers.CacheControl = "no-store";
         return TypedResults.Ok(new AvatarUploadResponse(storageKey));
     }
 
     private static async Task<NoContent> DeleteAsync(
         HttpContext context,
-        IDbContextFactory<IdentityDbContext> identityFactory,
+        IdentityProfileService profiles,
         ICatalogMediaStorage media,
         CancellationToken cancellationToken)
     {
-        var accountId = context.RequireUserId();
-        string? previousKey;
-        await using (var db = await identityFactory.CreateDbContextAsync(cancellationToken))
-        {
-            var account = await db.UserAccounts.SingleOrDefaultAsync(
-                item => item.Id == accountId && item.IsActive, cancellationToken);
-            if (account is null)
-                throw new UnauthenticatedException();
-            previousKey = account.AvatarStorageKey;
-            account.AvatarStorageKey = null;
-            await db.SaveChangesAsync(cancellationToken);
-        }
-        if (!string.IsNullOrWhiteSpace(previousKey))
-        {
-            try
-            {
-                await media.DeleteStorageKeyAsync(previousKey, CancellationToken.None);
-            }
-            catch
-            {
-                // Keep the account consistent even if file cleanup fails.
-            }
-        }
+        await DeleteOldFileAsync(media, await profiles.ReplaceAvatarAsync(context.RequireUserId(), null, cancellationToken));
         return TypedResults.NoContent();
+    }
+
+    /// <summary>The account already points at the new avatar (or none), so a file that cannot be deleted is left behind rather than failing the request.</summary>
+    private static async Task DeleteOldFileAsync(ICatalogMediaStorage media, string? previousKey)
+    {
+        if (string.IsNullOrWhiteSpace(previousKey)) return;
+        try
+        {
+            await media.DeleteStorageKeyAsync(previousKey, CancellationToken.None);
+        }
+        catch
+        {
+            // Best effort: the account is already consistent.
+        }
     }
 }
 
