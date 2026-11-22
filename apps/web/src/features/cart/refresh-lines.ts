@@ -6,7 +6,7 @@ const NOT_FOUND = 404;
 async function fetchItem(code: string): Promise<FreshItem | null | undefined> {
   const { data, response } = await browserApi().GET("/api/v1/store/items/{key}", { params: { path: { key: code } } });
   if (response.status === NOT_FOUND) return null;
-  return data ? { available: data.available, prices: data.prices } : undefined;
+  return data ? { available: data.available, prices: data.prices, priceOptions: data.priceOptions } : undefined;
 }
 
 async function fetchBuild(code: string): Promise<FreshItem | null | undefined> {

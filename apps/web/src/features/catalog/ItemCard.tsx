@@ -14,6 +14,7 @@ import { productPath } from "@/lib/seo/urls";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { itemLine } from "@/features/cart/cart-rules";
 import { FavouriteButton } from "@/features/favourites/FavouriteButton";
+import { defaultOption, isBuildOnly, offeredOptions, priceOf } from "@/features/product/price-options";
 import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
 import { useCatalogPending } from "./use-catalog-pending";
 
@@ -28,6 +29,10 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const pending = useCatalogPending();
   const condition = parseCondition(item.condition);
   const soldOut = item.available <= 0;
+  const offered = offeredOptions(item.priceOptions);
+  const option = defaultOption(offered);
+  const price = priceOf(item.prices, option);
+  const buildOnly = isBuildOnly(offered);
   const href = productPath(item.slug);
 
   return (
@@ -55,16 +60,17 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
           <span className="flex items-center gap-1.5 text-xs text-ink-muted"><ShieldIcon size={13} />{item.warrantyLabel}</span>
         ) : null}
         <div className="mt-auto flex flex-col gap-2 border-t border-line pt-2.5">
-          <div className="flex min-h-6 items-center">
+          <div className="flex min-h-6 flex-wrap items-center gap-1.5">
             {condition ? <ConditionBadge condition={condition} /> : null}
+            {buildOnly ? <StatusBadge tone="info">{t("inBuildOnly")}</StatusBadge> : null}
           </div>
           <span className="whitespace-nowrap text-[17px] font-bold tracking-tight sm:text-[18px]">
-            {formatEgp(item.prices.alone, locale)}
+            {formatEgp(price, locale)}
           </span>
           {soldOut ? (
             <NotifyMeButton target={{ itemCode: item.code, modelName: item.modelName }} size="sm" className="w-full" />
-          ) : condition ? (
-            <AddToCartButton line={itemLine({ ...item, condition }, "Alone", item.prices.alone)} size="sm" className="w-full" />
+          ) : condition && !buildOnly ? (
+            <AddToCartButton line={itemLine({ ...item, condition }, option, price)} size="sm" className="w-full" />
           ) : null}
         </div>
       </div>

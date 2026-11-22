@@ -9,6 +9,7 @@ import { formatEgp } from "@/lib/format";
 import { useDismiss } from "@/lib/hooks/use-dismiss";
 import { localizedName } from "@/lib/localized-name";
 import { mediaUrl } from "@/lib/media";
+import { cardPrice } from "@/features/product/price-options";
 import { productPath } from "@/lib/seo/urls";
 import type { MenuCategory } from "@/lib/storefront";
 import { conditionLinks } from "./mega-menu-rules";
@@ -39,7 +40,7 @@ function FeaturedItems({ stock, onPick }: { stock: CategoryStock | null | undefi
                     )}
                   </span>
                   <span dir="ltr" className="line-clamp-2 text-start text-xs font-bold leading-snug [unicode-bidi:isolate]">{item.modelName}</span>
-                  <span className="mt-auto text-[13px] font-bold">{formatEgp(item.prices.alone, locale)}</span>
+                  <span className="mt-auto text-[13px] font-bold">{formatEgp(cardPrice(item), locale)}</span>
                 </Link>
               </li>
             ))}

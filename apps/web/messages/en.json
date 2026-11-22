@@ -205,6 +205,7 @@
   },
   "item": {
     "soldOutBadge": "Sold out",
+    "inBuildOnly": "In a build",
     "soldOut": "Not available right now"
   },
   "notify": {
@@ -331,6 +332,10 @@
     "askWhatsApp": "Ask about it on WhatsApp",
     "whatsApp": "Hello RIGX, I would like to ask about {item} ({code}).",
     "fitsMyPc": "Will it fit your PC? Try it in “Build your PC”",
+    "buildOnly": {
+      "note": "This part is sold as part of a build only.",
+      "cta": "Build your PC"
+    },
     "specs": "Specifications",
     "faqs": "Questions about this product",
     "info": {

@@ -86,6 +86,34 @@ describe("reconcile", () => {
   });
 });
 
+describe("reconcile with the offered price options", () => {
+  const offering = (priceOptions: string[]): FreshItem => ({ available: 5, prices: { alone: 90, withBoard: 80, inBuild: 70 }, priceOptions });
+  const reconciled = (option: CartLine["priceOption"], priceOptions: string[]) =>
+    reconcile([line({ priceOption: option, unitPrice: 1 })], new Map([["RX-0001", offering(priceOptions)]]));
+
+  it("keeps a line whose option is still offered", () => {
+    const result = reconciled("WithBoard", ["Alone", "WithBoard", "InBuild"]);
+    assert.deepEqual([result.lines[0]?.priceOption, result.lines[0]?.unitPrice, result.removed], ["WithBoard", 80, 0]);
+  });
+  it("moves a line to the first offered option when its own was switched off", () => {
+    const result = reconciled("Alone", ["WithBoard", "InBuild"]);
+    assert.deepEqual([result.lines[0]?.priceOption, result.lines[0]?.unitPrice, result.removed], ["WithBoard", 80, 0]);
+  });
+  it("drops a line when the part is now sold inside a build only", () => {
+    const result = reconciled("Alone", ["InBuild"]);
+    assert.deepEqual([result.lines.length, result.removed], [0, 1]);
+  });
+  it("keeps a part bought as InBuild when inside a build is the option offered", () => {
+    const result = reconciled("InBuild", ["InBuild"]);
+    assert.deepEqual([result.lines[0]?.priceOption, result.lines[0]?.unitPrice], ["InBuild", 70]);
+  });
+  it("leaves build lines alone and treats an answer without the list as everything offered", () => {
+    const fresh = new Map<string, FreshItem | null>([["BLD-01", buildFreshness({ salePrice: 18000, copies: 3 })], ["RX-0001", { available: 5, prices: { alone: 90, withBoard: 80, inBuild: 70 } }]]);
+    const result = reconcile([build(), line({ priceOption: "Alone" })], fresh);
+    assert.deepEqual(result.lines.map((l) => [l.code, l.priceOption, l.unitPrice]), [["BLD-01", "InBuild", 18000], ["RX-0001", "Alone", 90]]);
+  });
+});
+
 describe("reconcile builds", () => {
   it("refreshes the price and copies of a build line, drops a gone one", () => {
     const fresh = new Map([["BLD-01", buildFreshness({ salePrice: 18000, copies: 1 })]]);

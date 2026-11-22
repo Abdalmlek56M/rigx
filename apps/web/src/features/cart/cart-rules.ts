@@ -1,4 +1,5 @@
 import type { Condition } from "../../lib/condition.ts";
+import { defaultOption, isBuildOnly, offeredOptions } from "../product/price-options.ts";
 
 export type { Condition };
 export type PriceOption = "Alone" | "WithBoard" | "InBuild";
@@ -23,6 +24,8 @@ export interface CartLine {
 export interface FreshItem {
   available: number;
   prices: { alone: number; withBoard: number; inBuild: number };
+  /** The sale prices the item's category offers now; without it (builds) every option is offered. */
+  priceOptions?: readonly string[];
 }
 
 const CONDITIONS: readonly string[] = ["New", "Used"];
@@ -122,11 +125,24 @@ export function reconcile(lines: CartLine[], fresh: ReadonlyMap<string, FreshIte
     if (item === undefined) {
       kept.push(line);
     } else if (item !== null && item.available > 0) {
-      const updated = { ...line, unitPrice: priceFor(item, line.priceOption), maxQuantity: item.available };
+      const option = optionNow(line, item);
+      if (option === null) continue;
+      const updated = { ...line, priceOption: option, unitPrice: priceFor(item, option), maxQuantity: item.available };
       kept.push({ ...updated, quantity: clampQuantity(updated, updated.quantity) });
     }
   }
   return { lines: kept, removed: lines.length - kept.length };
+}
+
+/**
+ * The option a line is bought with now. A line whose option the category no longer offers moves to the first offered one;
+ * when that is "inside a build" the part cannot be bought alone any more, so there is none (the line is dropped).
+ */
+function optionNow(line: CartLine, item: FreshItem): PriceOption | null {
+  if (line.kind === "Build") return line.priceOption;
+  const offered = offeredOptions(item.priceOptions);
+  if (offered.includes(line.priceOption)) return line.priceOption;
+  return isBuildOnly(offered) ? null : defaultOption(offered);
 }
 
 /** Lines saved before builds existed have no `kind`: they are items. */

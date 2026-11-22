@@ -14,7 +14,7 @@ import { formatEgp } from "@/lib/format";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
 import { clampQuantity, itemLine, type PriceOption } from "@/features/cart/cart-rules";
 import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
-import { DEFAULT_OPTION, priceChoices, priceOf, type Prices } from "./price-options";
+import { defaultOption, isBuildOnly, offeredOptions, priceChoices, priceOf, type Prices } from "./price-options";
 
 export interface PurchaseItem {
   code: string;
@@ -24,6 +24,8 @@ export interface PurchaseItem {
   thumbnailStorageKey: string | null;
   available: number;
   prices: Prices;
+  /** The sale prices the category offers, in order; the buyer sees and buys only these. */
+  priceOptions: readonly string[];
 }
 
 interface PurchasePanelProps {
@@ -45,11 +47,13 @@ const optionHelp: Record<PriceOption, "inBuildHelp" | "withBoardHelp" | "aloneHe
 export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
   const t = useTranslations("product");
   const locale = useLocale();
-  const [option, setOption] = useState<PriceOption>(DEFAULT_OPTION);
+  const offered = offeredOptions(item.priceOptions);
+  const [option, setOption] = useState<PriceOption>(() => defaultOption(offered));
   const [quantity, setQuantity] = useState(1);
-  const choices = priceChoices(item.prices);
+  const choices = priceChoices(item.prices, offered);
   const unitPrice = priceOf(item.prices, option);
   const soldOut = item.available <= 0;
+  const buildOnly = isBuildOnly(offered);
   const maxQuantity = item.condition === "Used" ? 1 : item.available;
   const count = clampQuantity({ condition: item.condition, maxQuantity }, quantity);
   const line = itemLine(item, option, unitPrice, count);
@@ -58,6 +62,7 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
     || t("whatsApp", { item: item.modelName, code: item.code });
   const whatsAppHref = whatsApp.number ? whatsAppUrl(whatsApp.number, message) : null;
   const whatsAppLabel = soldOut ? t("askWhatsApp") : t("orderWhatsApp");
+  const builderHref = `/builder?parts=${encodeURIComponent(item.code)}`;
 
   return (
     <Card padding="md" className="gap-4">
@@ -98,7 +103,7 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
           <span className="type-label">{count > 1 ? t("price.total") : t("price.price")}</span>
           <span className="text-[30px] font-bold tabular-nums md:text-[34px]">{formatEgp(unitPrice * count, locale)}</span>
         </div>
-        {!soldOut && item.condition === "New" && item.available > 1 ? (
+        {!soldOut && !buildOnly && item.condition === "New" && item.available > 1 ? (
           <div className="shrink-0 pb-1">
             <QuantityStepper
               value={count}
@@ -112,8 +117,12 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
         ) : null}
       </div>
 
+      {buildOnly ? <p className="m-0 text-sm leading-6 text-ink-muted">{t("buildOnly.note")}</p> : null}
+
       {soldOut ? (
         <NotifyMeButton target={{ itemCode: item.code, modelName: item.modelName }} className="hidden w-full md:flex" />
+      ) : buildOnly ? (
+        <ButtonLink href={builderHref} variant="accent" icon={CpuIcon} className="hidden w-full md:flex">{t("buildOnly.cta")}</ButtonLink>
       ) : (
         <div className="hidden gap-2.5 md:flex">
           <AddToCartButton line={line} thenOpenCart variant="accent" className="flex-1">{t("buyNow")}</AddToCartButton>
@@ -123,14 +132,18 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
 
       {whatsAppHref ? <WhatsAppButton href={whatsAppHref} variant="outline" className="hidden md:flex">{whatsAppLabel}</WhatsAppButton> : null}
 
-      <ButtonLink href={`/builder?parts=${encodeURIComponent(item.code)}`} variant="secondary" size="sm" icon={CpuIcon} className="w-full justify-start">
-        {t("fitsMyPc")}
-      </ButtonLink>
+      {buildOnly ? null : (
+        <ButtonLink href={builderHref} variant="secondary" size="sm" icon={CpuIcon} className="w-full justify-start">
+          {t("fitsMyPc")}
+        </ButtonLink>
+      )}
 
       <div data-sticky-bar="md" className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
         {whatsAppHref ? <WhatsAppButton href={whatsAppHref} label={whatsAppLabel} className="shrink-0" /> : null}
         {soldOut ? (
           <NotifyMeButton target={{ itemCode: item.code, modelName: item.modelName }} className="flex-1" />
+        ) : buildOnly ? (
+          <ButtonLink href={builderHref} variant="accent" icon={CpuIcon} className="flex-1">{t("buildOnly.cta")}</ButtonLink>
         ) : (
           <>
             <AddToCartButton line={line} variant="primary" className="flex-1" />

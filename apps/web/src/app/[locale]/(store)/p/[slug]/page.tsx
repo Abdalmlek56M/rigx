@@ -12,6 +12,7 @@ import { categoryHref } from "@/components/layout/nav-links";
 import { Gallery } from "@/features/product/Gallery";
 import { ProductInfoBoxes } from "@/features/product/ProductInfoBoxes";
 import { PurchasePanel } from "@/features/product/PurchasePanel";
+import { cardPrice } from "@/features/product/price-options";
 import { RelatedItems } from "@/features/product/RelatedItems";
 import { loadRelatedItems } from "@/features/product/load-related-items";
 import { SpecsTable } from "@/features/product/SpecsTable";
@@ -76,7 +77,7 @@ export default async function ProductPage({ params }: Props) {
   const url = absoluteUrl(localizedPath(locale, productPath(item.slug)));
   const structuredData = [
     productJsonLd({
-      name: item.modelName, url, images: item.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: item.prices.alone,
+      name: item.modelName, url, images: item.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: cardPrice(item),
       available: !soldOut, condition, sku: item.code, category: trail.at(-1) ? localizedName(trail.at(-1)!, locale) : undefined, brand: brand?.name,
       organizationId: organizationId()
     }),
@@ -116,7 +117,8 @@ export default async function ProductPage({ params }: Props) {
               warrantyLabel: item.warrantyLabel,
               thumbnailStorageKey: item.photos[0]?.thumbnailStorageKey ?? null,
               available: item.available,
-              prices: item.prices
+              prices: item.prices,
+              priceOptions: item.priceOptions
             }}
             whatsApp={{ number: whatsAppNumber(storefront.contactLinks), template: storefront.whatsAppTemplates.product }}
             pageUrl={siteUrl(storefront.domain, productPath(item.slug))}
