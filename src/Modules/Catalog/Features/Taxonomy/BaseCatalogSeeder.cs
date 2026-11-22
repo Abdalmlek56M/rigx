@@ -18,8 +18,9 @@ public static class BaseCatalogSeeder
         var categoriesAdded = await SeedCategoriesAsync(db, now, cancellationToken);
         var brandsAdded = await SeedBrandsAsync(db, now, cancellationToken);
         var specsAdded = await SeedSpecsAsync(db, now, cancellationToken);
+        var slotsAdded = await SeedBuilderSlotsAsync(db, now, cancellationToken);
         var englishFilled = await FillEnglishNamesAsync(db, now, cancellationToken);
-        if (categoriesRenamed + categoriesAdded + brandsAdded + specsAdded + englishFilled > 0) await db.SaveChangesAsync(cancellationToken);
+        if (categoriesRenamed + categoriesAdded + brandsAdded + specsAdded + englishFilled + slotsAdded > 0) await db.SaveChangesAsync(cancellationToken);
         return new BaseCatalogSeedResult(categoriesAdded, brandsAdded, categoriesRenamed);
     }
 
@@ -129,6 +130,27 @@ public static class BaseCatalogSeeder
             added++;
         }
         return added;
+    }
+
+    /// <summary>
+    /// Makes the base categories the builder's slots (code and "show in builder") when no category has a builder code yet. Once the
+    /// owner has set any slot up, nothing is touched, so a slot the owner removed does not come back.
+    /// </summary>
+    private static async Task<int> SeedBuilderSlotsAsync(CatalogDbContext db, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        if (await db.Categories.AnyAsync(category => category.Code != null || category.ShowInBuilder, cancellationToken)) return 0;
+        var slugs = BaseCatalog.BuilderSlots.Keys.ToList();
+        await db.Categories.Where(category => slugs.Contains(category.Slug)).LoadAsync(cancellationToken);
+        var changed = 0;
+        foreach (var category in db.Categories.Local.Where(category => slugs.Contains(category.Slug)).ToList())
+        {
+            category.Code = BaseCatalog.BuilderSlots[category.Slug];
+            category.ShowInBuilder = true;
+            category.UpdatedAtUtc = now;
+            if (db.Entry(category).State != EntityState.Added) category.RowVersion++;
+            changed++;
+        }
+        return changed;
     }
 
     private static bool SameName(string left, string right) => string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);

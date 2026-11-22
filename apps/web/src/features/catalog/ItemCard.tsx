@@ -5,7 +5,8 @@ import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cardClass } from "@/components/ui/Card";
-import { BanIcon, ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
+import { ButtonLink } from "@/components/ui/Button";
+import { BanIcon, CpuIcon, ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
@@ -49,6 +50,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
         ) : (
           <ImagePlaceholderIcon />
         )}
+        {condition ? <span className="absolute start-3 top-3"><ConditionBadge condition={condition} /></span> : null}
         {soldOut ? (
           <span className="absolute bottom-3 start-3"><StatusBadge tone="neutral" icon={BanIcon}>{t("soldOutBadge")}</StatusBadge></span>
         ) : null}
@@ -60,16 +62,17 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
           <span className="flex items-center gap-1.5 text-xs text-ink-muted"><ShieldIcon size={13} />{item.warrantyLabel}</span>
         ) : null}
         <div className="mt-auto flex flex-col gap-2 border-t border-line pt-2.5">
-          <div className="flex min-h-6 flex-wrap items-center gap-1.5">
-            {condition ? <ConditionBadge condition={condition} /> : null}
-            {buildOnly ? <StatusBadge tone="info">{t("inBuildOnly")}</StatusBadge> : null}
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="whitespace-nowrap text-[17px] font-bold tracking-tight sm:text-[18px]">
+              {formatEgp(price, locale)}
+            </span>
+            {buildOnly ? <span className="text-xs text-ink-muted">{t("inBuildOnly")}</span> : null}
           </div>
-          <span className="whitespace-nowrap text-[17px] font-bold tracking-tight sm:text-[18px]">
-            {formatEgp(price, locale)}
-          </span>
           {soldOut ? (
             <NotifyMeButton target={{ itemCode: item.code, modelName: item.modelName }} size="sm" className="w-full" />
-          ) : condition && !buildOnly ? (
+          ) : buildOnly ? (
+            <ButtonLink href={`/builder?parts=${encodeURIComponent(item.code)}`} variant="secondary" size="sm" icon={CpuIcon} className="w-full">{t("buildIt")}</ButtonLink>
+          ) : condition ? (
             <AddToCartButton line={itemLine({ ...item, condition }, option, price)} size="sm" className="w-full" />
           ) : null}
         </div>

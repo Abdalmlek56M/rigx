@@ -290,6 +290,10 @@ body {
   body:has([data-sticky-bar="md"]) .floating-lift {
     bottom: calc(7rem + env(safe-area-inset-bottom));
   }
+  /* The sticky buy bar already has its own WhatsApp button; a second one floating above it is noise. */
+  body:has([data-sticky-bar="md"]) .floating-contact {
+    display: none;
+  }
 }
 
 /* Cards that lift a little under a mouse (never on touch, where hover sticks). */

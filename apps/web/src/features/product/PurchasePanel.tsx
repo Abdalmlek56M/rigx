@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { CpuIcon } from "@/components/ui/icons";
 import type { Condition } from "@/lib/condition";
+import { Link } from "@/i18n/navigation";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { AddToCartButton } from "@/features/cart/AddToCartButton";
@@ -130,12 +131,13 @@ export function PurchasePanel({ item, whatsApp, pageUrl }: PurchasePanelProps) {
         </div>
       )}
 
-      {whatsAppHref ? <WhatsAppButton href={whatsAppHref} variant="outline" className="hidden md:flex">{whatsAppLabel}</WhatsAppButton> : null}
+      {whatsAppHref ? <WhatsAppButton href={whatsAppHref} variant="outline" className="max-md:hidden">{whatsAppLabel}</WhatsAppButton> : null}
 
       {buildOnly ? null : (
-        <ButtonLink href={builderHref} variant="secondary" size="sm" icon={CpuIcon} className="w-full justify-start">
+        <Link href={builderHref} className="inline-flex items-center gap-2 self-start text-sm font-semibold text-orange-text underline hover:text-orange-text-hover">
+          <CpuIcon size={16} />
           {t("fitsMyPc")}
-        </ButtonLink>
+        </Link>
       )}
 
       <div data-sticky-bar="md" className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2.5 md:hidden">

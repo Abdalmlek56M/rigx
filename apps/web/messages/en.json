@@ -206,7 +206,8 @@
   "item": {
     "soldOutBadge": "Sold out",
     "inBuildOnly": "In a build",
-    "soldOut": "Not available right now"
+    "soldOut": "Not available right now",
+    "buildIt": "Build your PC"
   },
   "notify": {
     "cta": "Notify me when available",
@@ -350,9 +351,10 @@
         "wallet": "E-wallet"
       },
       "pickupTitle": "Pickup and shipping",
-      "pickupFrom": "Pickup from the store:",
-      "shippingAll": "Shipping to all governorates",
-      "title": "Purchase information"
+      "pickupFrom": "Pickup from the store",
+      "shippingAll": "To all governorates",
+      "title": "Purchase information",
+      "shippingTitle": "Shipping"
     },
     "orderWhatsApp": "Order it on WhatsApp",
     "brandLink": "All {brand} products",

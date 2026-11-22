@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CartIcon, WalletIcon } from "@/components/ui/icons";
+import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { useCart } from "./cart-context";
@@ -57,7 +58,7 @@ export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) 
         </dl>
         <ButtonLink href="/checkout" variant="accent" className="w-full">{t("checkout")}</ButtonLink>
         <CartWhatsAppLink number={whatsAppNumber} />
-        <ButtonLink href="/products" variant="secondary" className="w-full">{t("continue")}</ButtonLink>
+        <Link href="/products" className="self-center text-sm font-semibold text-orange-text underline hover:text-orange-text-hover">{t("continue")}</Link>
       </Card>
     </div>
   );

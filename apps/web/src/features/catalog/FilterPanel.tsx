@@ -3,7 +3,6 @@ import { Link, getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { categoryPath, effectiveSpecs, type CategoryNode } from "@/lib/categories";
 import { localizedName } from "@/lib/localized-name";
-import { CONDITIONS } from "@/lib/condition";
 import type { Brand } from "@/lib/storefront";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
 import { CheckIcon } from "@/components/ui/icons";
@@ -63,10 +62,9 @@ function CheckBox({ checked }: { checked: boolean }) {
   );
 }
 
-/** The filter sidebar: condition, category tree, brands, spec chips of the chosen category, price range and availability. Plain links and a GET form, so it works without scripts. */
+/** The filter sidebar (the condition is the segmented control above the grid): category tree, brands, spec chips of the chosen category, price range and availability. Plain links and a GET form, so it works without scripts. */
 export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut, idPrefix }: FilterPanelProps) {
   const t = await getTranslations("catalog.filters");
-  const tc = await getTranslations("common.condition");
   const locale = (await getLocale()) as Locale;
   const openIds = new Set(categoryId ? categoryPath(tree, categoryId).map((node) => node.id) : []);
   const specs = categoryId ? effectiveSpecs(tree, categoryId).filter((spec) => spec.isFilter && spec.options.length > 0) : [];
@@ -82,24 +80,6 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
         <span className="text-[17px] font-bold">{t("title")}</span>
         <Link href="/products" className="text-[13px] text-orange-text underline hover:text-orange-text-hover">{t("clearAll")}</Link>
       </div>
-
-      <fieldset className={fieldset}>
-        <legend className={legend}>{t("condition")}</legend>
-        {CONDITIONS.map((condition) => {
-          const selected = state.condition === condition;
-          return (
-            <Link
-              key={condition}
-              href={catalogHref(state, { condition: selected ? null : condition })}
-              aria-current={selected ? "true" : undefined}
-              className={`${linkRow} gap-2.5 ${selected ? "bg-paper font-bold" : ""}`}
-            >
-              <CheckBox checked={selected} />
-              {tc(condition)}
-            </Link>
-          );
-        })}
-      </fieldset>
 
       {tree.length > 0 ? (
         <fieldset className={fieldset}>

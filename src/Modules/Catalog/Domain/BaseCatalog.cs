@@ -33,6 +33,22 @@ public static class BaseCatalog
         new("cooling", "تبريد", null, "Cooling")
     ];
 
+    /// <summary>
+    /// The PC builder slot (the category code the builder reads) of each base category that is a slot. Given only while no category has a
+    /// builder code yet, so a store that never set the builder up works from the start, and one the owner set up is left alone.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> BuilderSlots = new Dictionary<string, string>
+    {
+        ["processors"] = "CPU",
+        ["motherboards"] = "BOARD",
+        ["memory"] = "RAM",
+        ["graphics-cards"] = "GPU",
+        ["storage"] = "SSD",
+        ["power-supplies"] = "PSU",
+        ["cases"] = "CASE",
+        ["cooling"] = "COOL"
+    };
+
     /// <summary>Starting names the owner asked to change (round 3, 19 Nov 2026).</summary>
     public static readonly IReadOnlyList<BaseCategoryRename> Renames =
     [

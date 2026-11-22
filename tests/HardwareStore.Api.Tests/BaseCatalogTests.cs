@@ -88,6 +88,36 @@ public sealed class BaseCatalogPostgreSqlTests(OwnerBootstrapPostgreSqlFixture f
     }
 
     [Fact]
+    public async Task A_new_store_gets_the_builder_slots_and_a_store_the_owner_set_up_is_left_alone()
+    {
+        var fresh = await fixture.CreateDatabaseAsync();
+        await using (var db = fresh.CreateCatalogContext())
+        {
+            await BaseCatalogSeeder.SeedAsync(db, Now);
+            await BaseCatalogSeeder.SeedAsync(db, Now);
+        }
+        var configured = await fixture.CreateDatabaseAsync();
+        await using (var owner = configured.CreateCatalogContext())
+        {
+            var processors = Category("processors", "معالجات");
+            processors.Code = "CPU";
+            processors.ShowInBuilder = true;
+            owner.Categories.Add(processors);
+            await owner.SaveChangesAsync();
+        }
+        await using (var db = configured.CreateCatalogContext()) await BaseCatalogSeeder.SeedAsync(db, Now);
+
+        await using var freshRead = fresh.CreateCatalogContext();
+        var slots = (await freshRead.Categories.AsNoTracking().Where(category => category.ShowInBuilder).ToListAsync())
+            .ToDictionary(category => category.Slug, category => category.Code!);
+        Assert.Equal(BaseCatalog.BuilderSlots.ToDictionary(), slots);
+        Assert.Equal(1, (await freshRead.Categories.AsNoTracking().SingleAsync(category => category.Slug == "storage")).RowVersion);
+        await using var configuredRead = configured.CreateCatalogContext();
+        var onlyOwnerSlot = await configuredRead.Categories.AsNoTracking().Where(category => category.ShowInBuilder).ToListAsync();
+        Assert.Equal(["processors"], onlyOwnerSlot.Select(category => category.Slug));
+    }
+
+    [Fact]
     public async Task A_renamed_starting_category_is_renamed_only_where_the_owner_kept_the_old_name()
     {
         var kept = await fixture.CreateDatabaseAsync();

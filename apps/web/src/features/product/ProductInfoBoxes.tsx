@@ -59,14 +59,17 @@ export function ProductInfoBoxes({ warrantyLabel, storefront }: { warrantyLabel:
           </InfoRow>
         ) : null}
         <InfoRow icon={TruckIcon} label={t("pickupTitle")}>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             {pickupEnabled && pickupAddress ? (
-              <span className="flex flex-wrap items-baseline gap-x-1.5">
-                <span className="text-ink-muted">{t("pickupFrom")}</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-ink-muted">{t("pickupFrom")}</span>
                 <span className="type-value">{pickupAddress}</span>
-              </span>
+              </div>
             ) : null}
-            <span className="type-value">{t("shippingAll")}</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-ink-muted">{t("shippingTitle")}</span>
+              <span className="type-value">{t("shippingAll")}</span>
+            </div>
           </div>
         </InfoRow>
       </div>

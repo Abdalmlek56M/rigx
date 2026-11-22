@@ -39,23 +39,25 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
 
   return (
     <Card as="li" padding="sm" className={`gap-3 ${chosen ? "border-orange bg-orange/10" : ""}`}>
-      <div className="flex flex-wrap items-center gap-3.5">
-        <div className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper text-muted">
-          {group.thumbnailStorageKey ? (
-            // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-            <img src={mediaUrl(group.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="h-full w-full object-contain p-1" />
-          ) : (
-            <ImagePlaceholderIcon size={32} />
-          )}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3.5">
+        <div className="flex min-w-0 flex-1 items-center gap-3.5">
+          <div className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper text-muted">
+            {group.thumbnailStorageKey ? (
+              // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
+              <img src={mediaUrl(group.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="h-full w-full object-contain p-1" />
+            ) : (
+              <ImagePlaceholderIcon size={32} />
+            )}
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span dir="ltr" className="text-start font-bold [unicode-bidi:isolate]">{group.modelName}</span>
+            {warranties.length > 0 ? <span className="text-xs text-ink-muted">{warranties.join(" · ")}</span> : null}
+            {reasons.map((reason) => (
+              <span key={reason} className="text-xs text-error">{reason}</span>
+            ))}
+          </div>
         </div>
-        <div className="flex min-w-0 flex-1 basis-[200px] flex-col gap-1">
-          <span dir="ltr" className="text-start font-bold [unicode-bidi:isolate]">{group.modelName}</span>
-          {warranties.length > 0 ? <span className="text-xs text-ink-muted">{warranties.join(" · ")}</span> : null}
-          {reasons.map((reason) => (
-            <span key={reason} className="text-xs text-error">{reason}</span>
-          ))}
-        </div>
-        <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="flex flex-wrap gap-2">
+        <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {choices.map((choice) => (
             <Button
               key={choice.code}
@@ -66,7 +68,7 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
               disabled={choice.block !== null}
               variant={choice.selected ? "primary" : "secondary"}
               onClick={() => onPick(choice.code)}
-              className={`h-auto min-h-[52px] min-w-32 flex-col gap-0.5 px-3.5 py-2 ${choice.block ? "line-through opacity-60" : ""}`}
+              className={`h-auto min-h-[52px] sm:min-w-32 flex-col gap-0.5 px-3.5 py-2 ${choice.block ? "line-through opacity-60" : ""}`}
             >
               <span className="text-xs font-bold">{tc(choice.condition)}</span>
               <span className="text-sm font-bold">

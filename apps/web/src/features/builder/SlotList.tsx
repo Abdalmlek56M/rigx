@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { IconButton } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { CloseIcon } from "@/components/ui/icons";
 
 export interface SlotInfo {
@@ -41,7 +42,9 @@ export function SlotList({ slots, parts, active, onSelect, onClear }: SlotListPr
               onClick={() => onSelect(entry.slot)}
               className="flex min-h-14 min-w-0 flex-1 items-center gap-3 px-3.5 py-3 text-start"
             >
-              <span dir="ltr" className="w-11 shrink-0 font-mono text-xs font-semibold">{entry.slot}</span>
+              <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paper/60 text-current">
+                <CategoryIcon slug={entry.slot.toLowerCase()} size={18} />
+              </span>
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-xs opacity-75">{entry.name}</span>
                 <span dir="ltr" className="truncate text-start text-sm font-bold [unicode-bidi:isolate]">
