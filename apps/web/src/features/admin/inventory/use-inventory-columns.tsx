@@ -49,6 +49,18 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
       ))
     },
     {
+      key: "open",
+      header: t("columns.open"),
+      cell: forItem((item) => (
+        <Link
+          href={`/admin/inventory/${item.id}`} aria-label={t("open", { code: item.code })} data-tip={t("openTip")}
+          className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}
+        >
+          <EyeIcon size={buttonIconSize("sm")} />
+        </Link>
+      ))
+    },
+    {
       key: "code",
       header: t("columns.code"),
       cell: (row) => row.kind === "build" ? (
@@ -62,6 +74,7 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
     {
       key: "model",
       header: t("columns.model"),
+      phoneFull: true,
       cell: (row) => row.kind === "build" ? (
         <span className="flex items-center gap-1.5">
           <IconButton
@@ -114,19 +127,7 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
       header: t("columns.visibility"),
       cell: forItem((item) => <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>)
     },
-    { key: "days", header: t("columns.days"), align: "end", cell: forItem((item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span>) },
-    {
-      key: "open",
-      header: t("columns.open"),
-      cell: forItem((item) => (
-        <Link
-          href={`/admin/inventory/${item.id}`} aria-label={t("open", { code: item.code })} data-tip={t("openTip")}
-          className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}
-        >
-          <EyeIcon size={buttonIconSize("sm")} />
-        </Link>
-      ))
-    }
+    { key: "days", header: t("columns.days"), align: "end", cell: forItem((item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span>) }
   );
   return columns;
 }

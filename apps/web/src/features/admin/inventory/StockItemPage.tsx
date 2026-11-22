@@ -96,6 +96,9 @@ export function StockItemPage({ id }: { id: string }) {
         </dl>
         <StockItemActions item={item} onChanged={refresh} />
       </section>
+      <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+        <StockUnits item={item} partners={partners} canAssign={has("Finance.ManagePartnerAgreements")} showCosts={has("Inventory.ViewCosts")} onChanged={refresh} onStale={stale} />
+      </section>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">
           <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
@@ -105,16 +108,13 @@ export function StockItemPage({ id }: { id: string }) {
               onStale={stale}
             />
           </section>
+        </div>
+        <div className="flex min-w-0 flex-col gap-5">
           <PhotoGallery
             photos={item.photos} name={item.modelName} canManage={canEdit} onChanged={refresh}
             upload={(file) => uploadStockPhoto(item.id, file)} remove={(storageKey) => deleteStockPhoto(item.id, storageKey)}
             reorder={(keys) => reorderStockPhotos(item.id, keys)}
           />
-        </div>
-        <div className="flex min-w-0 flex-col gap-5">
-          <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
-            <StockUnits item={item} partners={partners} canAssign={has("Finance.ManagePartnerAgreements")} showCosts={has("Inventory.ViewCosts")} onChanged={refresh} onStale={stale} />
-          </section>
           {has("System.ViewAuditLogs") ? <StockItemHistory key={item.rowVersion} itemId={item.id} /> : null}
         </div>
       </div>

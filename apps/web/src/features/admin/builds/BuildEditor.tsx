@@ -84,9 +84,11 @@ export function BuildEditor({ id }: { id: string }) {
           </>
         }
       />
-      <p dir="auto" className="m-0 text-lg font-bold [unicode-bidi:isolate]">{build.name}</p>
-      {isLocked(build) ? <p role="status" className="m-0 rounded-control bg-line px-3 py-2 text-sm font-bold text-ink-muted">{t("lockedNote")}</p> : null}
-      <BuildActions {...action} canEdit={has("Catalog.ManageProducts")} />
+      <section className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+        <h2 dir="auto" className="m-0 text-[17px] font-bold [unicode-bidi:isolate]">{build.name}</h2>
+        {isLocked(build) ? <p role="status" className="m-0 rounded-control bg-line px-3 py-2 text-sm font-bold text-ink-muted">{t("lockedNote")}</p> : null}
+        <BuildActions {...action} canEdit={has("Catalog.ManageProducts")} />
+      </section>
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <BuildCardForm key={build.rowVersion} {...action} warrantyLabels={state.data.lookups.warrantyLabels} canEdit={canEdit} />
         <div className="flex min-w-0 flex-col gap-4">

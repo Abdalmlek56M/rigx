@@ -17,6 +17,8 @@ export interface Column<T> {
   align?: "start" | "end";
   /** A fixed share of the table width (e.g. "32%"), so header and body stay in the same column. */
   width?: string;
+  /** On a phone this value takes the whole card width (long names). */
+  phoneFull?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -32,6 +34,10 @@ interface DataTableProps<T> {
 }
 
 const SKELETON_ROWS = 5;
+
+// On a phone each row becomes a card: the column names sit above the values (`data-label`), the header row is hidden and empty cells vanish.
+const PHONE_ROW = "max-md:mb-2 max-md:grid max-md:grid-cols-2 max-md:gap-x-3 max-md:gap-y-2.5 max-md:rounded-card max-md:border max-md:border-line max-md:bg-surface max-md:p-3";
+const PHONE_CELL = "max-md:flex max-md:min-w-0 max-md:flex-col max-md:items-start max-md:gap-0.5 max-md:p-0 max-md:text-start max-md:empty:hidden max-md:before:text-xs max-md:before:text-ink-muted max-md:before:content-[attr(data-label)]";
 
 /** The admin list table: sortable headers, loading rows, a retry on failure and an empty message; scrolls sideways on phones. */
 export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, sort = null, onSort }: DataTableProps<T>) {
@@ -65,17 +71,17 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
     );
   } else {
     body = state.data.map((row) => (
-      <tr key={rowKey(row)} className="border-t border-line">
-        {columns.map((column) => <td key={column.key} className={`px-3 py-2.5 align-middle ${cellAlign(column)}`}>{column.cell(row)}</td>)}
+      <tr key={rowKey(row)} className={`border-t border-line max-md:border-t ${PHONE_ROW}`}>
+        {columns.map((column) => <td key={column.key} data-label={column.header} className={`px-3 py-2.5 align-middle ${cellAlign(column)} ${PHONE_CELL}${column.phoneFull ? " max-md:col-span-2" : ""}`}>{column.cell(row)}</td>)}
       </tr>
     ));
   }
 
   return (
-    <div className="overflow-x-auto rounded-card border border-line bg-surface">
-      <table aria-label={label} aria-busy={state.status === "loading"} className={`w-full border-collapse text-sm ${fixed ? "table-fixed" : ""}`}>
+    <div className="overflow-x-auto rounded-card border border-line bg-surface max-md:overflow-visible max-md:border-0 max-md:bg-transparent">
+      <table aria-label={label} aria-busy={state.status === "loading"} className={`w-full border-collapse text-sm max-md:block ${fixed ? "table-fixed" : ""}`}>
         {fixed ? <colgroup>{columns.map((column) => <col key={column.key} style={column.width ? { width: column.width } : undefined} />)}</colgroup> : null}
-        <thead className="bg-paper text-[13px] text-ink-muted">
+        <thead className="bg-paper text-[13px] text-ink-muted max-md:hidden">
           <tr>
             {columns.map((column) => (
               <th key={column.key} scope="col" aria-sort={column.sortKey ? ariaSort(sort, column.sortKey) : undefined} className={`whitespace-nowrap px-3 py-2.5 font-bold ${cellAlign(column)}`}>
@@ -89,7 +95,7 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
             ))}
           </tr>
         </thead>
-        <tbody>{body}</tbody>
+        <tbody className="max-md:block">{body}</tbody>
       </table>
     </div>
   );

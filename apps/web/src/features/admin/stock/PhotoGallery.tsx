@@ -79,7 +79,7 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
               <img src={mediaUrl(photo.thumbnailStorageKey)} alt={t("alt", { model: name })} className="h-full w-full object-cover" />
               <span dir="ltr" className="absolute left-1 top-1 rounded-full bg-carbon/80 px-1.5 py-0.5 font-mono text-[11px] text-on-carbon">{index + 1}</span>
               {index === 0 ? (
-                <span className="absolute left-9 top-1 rounded-[4px] bg-orange px-1.5 py-0.5 text-[11px] font-bold text-on-orange">{t("main")}</span>
+                <span role="img" aria-label={t("main")} title={t("main")} className="absolute left-8 top-1 flex h-[21px] w-[21px] items-center justify-center rounded-full bg-orange text-on-orange"><StarIcon size={12} /></span>
               ) : null}
               {sortable ? (
                 <span className="absolute inset-x-1 bottom-1 z-10 flex justify-center gap-1">
