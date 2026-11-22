@@ -26,19 +26,19 @@
         },
         "unsure": {
           "title": "Not sure",
-          "body": "Tell us what you'll use it for and your budget, and we'll recommend"
+          "body": "Tell us your use and budget"
         }
       }
     },
     "categories": {
-      "title": "Categories"
+      "title": "What part are you after?"
     },
     "rail": {
       "scrollLeft": "Scroll left",
       "scrollRight": "Scroll right"
     },
     "gpus": {
-      "title": "Graphics cards",
+      "title": "Your PC starts with the graphics card",
       "seeAll": "See all cards"
     },
     "latest": {
@@ -85,11 +85,12 @@
       },
       "maintain": {
         "title": "Cleaning and maintenance",
-        "body": "Full cleaning and new thermal paste, with temperatures measured before and after."
+        "body": "Full cleaning and new thermal paste, with temperatures measured before and after.",
+        "example": "Illustrative example"
       }
     },
     "faq": {
-      "title": "Common questions",
+      "title": "What customers ask us",
       "body": "If yours isn't here, <link>send it on WhatsApp</link>.",
       "bodyNoLink": "What people ask most."
     }
@@ -296,7 +297,12 @@
       "body": "Send us the model and we will look for it. The price and time are confirmed with you before payment.",
       "cta": "Request a part"
     },
-    "loading": "Loading products…"
+    "loading": "Loading products…",
+    "view": {
+      "label": "Layout",
+      "grid": "Grid view",
+      "list": "List view"
+    }
   },
   "product": {
     "home": "Home",
@@ -362,7 +368,11 @@
     "orderWhatsApp": "Order it on WhatsApp",
     "brandLink": "All {brand} products",
     "relatedTitle": "Related products",
-    "relatedMore": "View more"
+    "relatedMore": "View more",
+    "alternatives": {
+      "title": "Available now instead",
+      "lead": "Items from the same category that are in stock."
+    }
   },
   "builds": {
     "title": "Ready-made builds",
@@ -999,15 +1009,14 @@
         "Expired": "Expired",
         "Void": "Void"
       },
-      "daysLeft": "{days, plural, one {{days} day left} other {{days} days left}}",
       "invoice": "Invoice",
       "problem": "Report a problem",
       "whatsAppMessage": "Hi RIGX, I have a problem with {name} ({code}) and it is under warranty.",
-      "daysLeftLabel": "Remaining",
       "daysCount": "{days, plural, one {One day} other {# days}}",
       "code": "Item code",
       "condition": "Condition",
-      "build": "Build"
+      "build": "Build",
+      "batteryLabel": "Warranty time remaining"
     },
     "invoices": {
       "title": "My invoices",

@@ -16,7 +16,7 @@ export async function TopBar({ storefront }: { storefront: StorefrontData }) {
 
   return (
     <div className="bg-chrome text-[13px] text-footer-text">
-      <div className="shell flex items-center justify-between gap-4 py-1.5">
+      <div className="shell flex min-h-10 items-center justify-between gap-4 py-1">
         <TopBarTicker messages={messages} />
         {whatsApp ? (
           <a

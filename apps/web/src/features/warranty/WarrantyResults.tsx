@@ -8,6 +8,8 @@ import { warrantyTone } from "@/components/ui/status-badge-rules";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { ShieldIcon } from "@/components/ui/icons";
 import { warrantyStatusKey } from "@/features/account/account-labels";
+import { WarrantyBattery } from "./WarrantyBattery";
+import { warrantyBattery } from "./warranty-battery";
 import { parseCondition } from "@/lib/condition";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
@@ -20,10 +22,12 @@ export interface WarrantyWhatsApp {
 
 async function WarrantyCard({ item, whatsApp }: { item: Schemas["WarrantyPublicView"]; whatsApp: WarrantyWhatsApp }) {
   const t = await getTranslations("account.warranties");
+  const tCommon = await getTranslations("common");
   const locale = await getLocale();
   const status = warrantyStatusKey(item.status);
   const condition = parseCondition(item.condition);
   const days = daysLeftToShow(item.status, item.daysLeft);
+  const battery = warrantyBattery(item.status, item.daysLeft, item.startsAtUtc, item.endsAtUtc);
   const text = fillTemplate(whatsApp.template, { item: item.name, code: item.code })
     || t("whatsAppMessage", { name: item.name, code: item.code });
 
@@ -36,14 +40,14 @@ async function WarrantyCard({ item, whatsApp }: { item: Schemas["WarrantyPublicV
       className="gap-3"
       actions={status ? <StatusBadge tone={warrantyTone(status)}>{t(`status.${status}`)}</StatusBadge> : undefined}
     >
+      {battery ? <WarrantyBattery battery={battery} days={days} /> : null}
       <InfoGrid columns={2} className="gap-y-3">
-        <InfoField label={t("code")} ltr value={item.code} />
+        <InfoField label={t("code")} ltr value={item.code} copy={{ value: item.code, label: tCommon("copy"), copiedLabel: tCommon("copied") }} />
         {condition ? <InfoField label={t("condition")} value={<ConditionBadge condition={condition} />} /> : null}
         {item.buildCode ? <InfoField label={t("build")} ltr value={item.buildCode} /> : null}
         <InfoField label={t("plan")} value={item.label} />
         <InfoField label={t("from")} value={formatDate(item.startsAtUtc, locale)} />
         <InfoField label={t("until")} value={item.endsAtUtc ? formatDate(item.endsAtUtc, locale) : undefined} />
-        {days !== null ? <InfoField label={t("daysLeftLabel")} value={t("daysCount", { days })} className="text-success" /> : null}
       </InfoGrid>
       {whatsApp.number ? (
         <WhatsAppButton href={whatsAppUrl(whatsApp.number, text)} variant="outline" size="sm" className="self-start">{t("problem")}</WhatsAppButton>

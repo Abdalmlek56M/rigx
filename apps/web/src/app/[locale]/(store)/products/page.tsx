@@ -101,10 +101,10 @@ export default async function ProductsPage({ params, searchParams }: Props) {
               action={<ButtonLink href="/products" variant="secondary">{t("empty.clear")}</ButtonLink>}
             />
           ) : (
-            <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-[repeat(auto-fill,minmax(230px,1fr))] md:gap-4 2xl:gap-5">
+            <ul className={`m-0 grid list-none gap-3 p-0 md:gap-4 2xl:gap-5 ${state.view === "list" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(230px,1fr))]"}`}>
               {result.items.map((item) => (
                 <li key={item.code} className="flex">
-                  <ItemCard item={item} />
+                  <ItemCard item={item} layout={state.view} />
                 </li>
               ))}
             </ul>

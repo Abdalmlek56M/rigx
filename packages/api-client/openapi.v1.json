@@ -28963,6 +28963,7 @@
           "prices",
           "available",
           "thumbnailStorageKey",
+          "secondThumbnailStorageKey",
           "listedAtUtc",
           "priceOptions"
         ],
@@ -29001,6 +29002,12 @@
             "format": "int32"
           },
           "thumbnailStorageKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "secondThumbnailStorageKey": {
             "type": [
               "null",
               "string"

@@ -10,7 +10,7 @@ export async function FaqSection({ entries, whatsAppHref }: { entries: FaqEntry[
   return (
     <section className="flex shell flex-wrap gap-10 pb-16">
       <div className="flex flex-1 basis-[320px] flex-col gap-3.5">
-        <h2 className="m-0 type-display-title">{t("title")}</h2>
+        <h2 className="m-0 type-display-title title-hook">{t("title")}</h2>
         <p className="m-0 leading-[1.75] text-ink-muted">
           {whatsAppHref
             ? t.rich("body", {

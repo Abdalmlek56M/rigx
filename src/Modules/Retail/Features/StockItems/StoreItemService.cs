@@ -86,7 +86,7 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         }).ToListAsync(cancellationToken);
         return rows.Select(row => new StoreItemCard(row.Code, row.Slug, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
             StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
-            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc, rule.ForCategory(row.CategoryId).Names)).ToList();
+            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.Photos.Skip(1).FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc, rule.ForCategory(row.CategoryId).Names)).ToList();
     }
 
     /// <summary>Sold-out items stay listed (marked "خلص") but always come after the available ones.</summary>

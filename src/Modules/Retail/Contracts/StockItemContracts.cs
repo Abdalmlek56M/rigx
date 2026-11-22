@@ -22,7 +22,7 @@ public sealed record StockVisibilityRequest(IReadOnlyList<Guid> Ids, bool Hidden
 
 // Storefront (public). Never cost, serial, partner, internal note, or hidden items.
 public sealed record StoreItemCard(string Code, string Slug, string ModelName, string Condition, Guid? CategoryId, string? WarrantyLabel,
-    StockItemPrices Prices, int Available, string? ThumbnailStorageKey, DateTimeOffset ListedAtUtc,
+    StockItemPrices Prices, int Available, string? ThumbnailStorageKey, string? SecondThumbnailStorageKey, DateTimeOffset ListedAtUtc,
     IReadOnlyList<string> PriceOptions);
 public sealed record StoreItemDetail(string Code, string Slug, string ModelName, string Condition, Guid? CategoryId, Guid? BrandId, string? WarrantyLabel,
     int? WarrantyMonths, bool HasBox, StockItemPrices Prices, int Available, IReadOnlyList<StockItemPhoto> Photos,

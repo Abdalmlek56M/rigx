@@ -34,7 +34,7 @@ export default async function ServicesPage({ params }: Props) {
 
   return (
     <>
-      <PageHeader
+      <PageHeader atmosphere
         title={<>{t("hero.line1")}<br />{t("hero.line2")}</>}
         lead={t("hero.body")}
         icon={WrenchIcon}
@@ -48,7 +48,7 @@ export default async function ServicesPage({ params }: Props) {
         <div className="shell grid gap-8 py-14 md:py-16 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12">
           <Card padding="lg" className="accent-panel self-start gap-3.5">
             <span className="type-label font-bold text-orange-text">{t("sell.eyebrow")}</span>
-            <h2 className="m-0 type-display-title">{t("sell.title")}</h2>
+            <h2 className="m-0 type-display-title title-hook">{t("sell.title")}</h2>
             <p className="m-0 text-base leading-[1.8] text-ink-muted">{t("sell.body")}</p>
             <ol className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-ink-muted">
               {([1, 2, 3, 4] as const).map((step) => (

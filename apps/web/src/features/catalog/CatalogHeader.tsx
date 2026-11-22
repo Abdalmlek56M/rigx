@@ -36,7 +36,7 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
   ];
 
   return (
-    <PageHeader
+    <PageHeader atmosphere
       breadcrumb={breadcrumb}
       breadcrumbLabel={t("breadcrumb")}
       title={title}

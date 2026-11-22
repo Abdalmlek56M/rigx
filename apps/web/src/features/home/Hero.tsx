@@ -1,27 +1,27 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { ButtonLink } from "@/components/ui/Button";
+import { Atmosphere } from "@/components/atmosphere/Atmosphere";
 import { cardClass } from "@/components/ui/Card";
 import { CaseIcon, ChevronStartIcon, CpuIcon, HelpIcon, SearchIcon } from "@/components/ui/icons";
+import { Tilt } from "@/components/ui/Tilt";
 import { Link } from "@/i18n/navigation";
 
 function PathTile({ href, icon, title, body, accent = false }: { href: string; icon: ReactNode; title: string; body: string; accent?: boolean }) {
   return (
-    <Link
-      href={href}
-      className={`${cardClass({ padding: "md", interactive: true })} path-tile group h-full justify-between gap-4 sm:min-h-[148px] max-sm:grid max-sm:grid-cols-[auto_minmax(0,1fr)_auto] max-sm:items-center ${accent ? "accent-panel" : ""}`}
-    >
-      <span className="flex items-start justify-between gap-3 max-sm:contents">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-full max-sm:order-1 ${accent ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>{icon}</span>
-        <span aria-hidden="true" className={`path-arrow flex max-sm:order-3 ltr:-scale-x-100 ${accent ? "text-orange-text" : "text-muted"}`}>
+    <Tilt className="h-full">
+      <Link
+        href={href}
+        className={`${cardClass({ padding: "md", interactive: true, layout: "grid" })} path-tile group h-full items-center gap-x-3 gap-y-3 max-sm:grid-cols-[auto_minmax(0,1fr)_auto] max-sm:gap-y-1 sm:min-h-[148px] sm:grid-cols-[minmax(0,1fr)_auto] sm:content-between ${accent ? "accent-panel" : ""}`}
+      >
+        <span className={`flex h-11 w-11 items-center justify-center rounded-full max-sm:row-span-2 sm:col-span-2 ${accent ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>{icon}</span>
+        <b className="type-section-title">{title}</b>
+        <span aria-hidden="true" className={`path-arrow flex max-sm:row-span-2 ltr:-scale-x-100 ${accent ? "text-orange-text" : "text-muted"}`}>
           <ChevronStartIcon size={20} />
         </span>
-      </span>
-      <span className="flex flex-col gap-1 max-sm:order-2">
-        <b className="type-section-title">{title}</b>
-        <span className="text-sm leading-relaxed text-ink-muted">{body}</span>
-      </span>
-    </Link>
+        <span className="text-sm leading-relaxed text-ink-muted sm:col-span-2">{body}</span>
+      </Link>
+    </Tilt>
   );
 }
 
@@ -30,7 +30,8 @@ export function Hero() {
   const t = useTranslations("home.hero");
 
   return (
-    <section className="hero-glow relative overflow-hidden border-b border-line">
+    <section className="hero-glow relative isolate overflow-hidden border-b border-line">
+      <Atmosphere />
       <div className="shell grid items-center gap-10 pb-12 pt-10 md:pb-16 md:pt-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
         <div className="flex min-w-0 flex-col gap-6">
           <h1 className="m-0 text-[36px] leading-[1.25] font-bold md:text-[60px] md:leading-[1.15] xl:text-[68px]">

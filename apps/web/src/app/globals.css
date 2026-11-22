@@ -19,6 +19,9 @@
   --orange-text: #b84a12;
   --orange-text-hover: #8f380c;
   --success: #1f8a55;
+  --warning: #c98a12;
+  /* Dark-theme atmosphere: the cool light behind the hero, and the backdrop a product photo is multiplied into. */
+  --glow-blue: #4f7dff;
   --whatsapp: #1fa855;
   --field: #f5f5f2;
   --header-line: #e3e2dd;
@@ -62,6 +65,8 @@
   --orange-text: #ff8a5c;
   --orange-text-hover: #ffa684;
   --success: #3fd08a;
+  --warning: #f0b64a;
+  --photo-backdrop: #bcbab4;
   --error-text: #ff8a7a;
   --muted: #8c8f96;
   --field: #0e0f12;
@@ -173,6 +178,8 @@ body {
 
 /* —— Type scale: display title 22/30 (home rails, FAQ), page title 28, section title 17, value 14, label 12. Use these, not ad-hoc sizes. —— */
 @utility type-display-title {
+  position: relative;
+  padding-bottom: 12px;
   font-family: var(--font-display);
   font-size: 22px;
   line-height: 1.35;
@@ -731,6 +738,336 @@ dialog[data-sheet="side"][data-edge="start"] {
   border-color: var(--error);
 }
 
+/* —— 4.11 C: motion and atmosphere. Every animation here is decorative and ends or stops under reduced motion (the global rule below). —— */
+
+/* Four "where to start" tiles lean up to 3° toward a mouse (components/ui/Tilt.tsx sets the two variables; touch never does). */
+.tilt {
+  transform: perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 200ms var(--ease-out);
+}
+
+/* The top strip: the next message rises into place from below. */
+@keyframes ticker-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.ticker-in {
+  animation: ticker-in 500ms var(--ease-out);
+}
+
+/* Sliding tab indicator (components/ui/use-tab-indicator.ts measures the live tab and sets --ind-*). Before the first measurement the
+   live tab paints its own fill, so there is no unreadable flash; afterwards the indicator slides between tabs. */
+.tabs-slide {
+  position: relative;
+}
+
+.tabs-slide [data-active="true"] {
+  color: var(--on-carbon);
+}
+
+.tabs-slide:not([data-indicator]) [data-active="true"] {
+  background: var(--carbon);
+}
+
+.tab-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ind-w, 0);
+  height: var(--ind-h, 0);
+  transform: translate(var(--ind-x, 0), var(--ind-y, 0));
+  border-radius: var(--ind-radius, var(--radius-control));
+  background: var(--carbon);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tabs-slide[data-indicator] > .tab-indicator {
+  opacity: 1;
+}
+
+.tabs-slide[data-indicator="slide"] > .tab-indicator {
+  transition:
+    transform 240ms var(--ease-out),
+    width 240ms var(--ease-out),
+    height 240ms var(--ease-out);
+}
+
+/* The panel of a tab rises in when the visitor switches to it (not on the first paint). */
+.tab-rise {
+  animation: rise-in 200ms var(--ease-out) both;
+}
+
+/* The current step of an order: its bar breathes, its dot sends out a ring. */
+@keyframes step-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.step-pulse {
+  animation: step-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes dot-ring {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+.dot-pulse,
+.empty-pulse {
+  position: relative;
+}
+
+.empty-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--input-line);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: dot-ring 3.4s var(--ease-out) infinite;
+}
+
+.dot-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--orange);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: dot-ring 2s var(--ease-out) infinite;
+}
+
+/* Warranty battery: the fill is the share of the warranty that is left; green, then amber, then red. */
+@keyframes battery-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.battery {
+  position: relative;
+  height: 20px;
+  padding: 2px;
+  border: 2px solid var(--input-line);
+  border-radius: 7px;
+}
+
+.battery::after {
+  content: "";
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-end: -7px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--input-line);
+}
+
+.battery-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--success);
+  transform: scaleX(var(--charge, 0));
+  transform-origin: left;
+  animation: battery-fill 900ms var(--ease-out) both;
+}
+
+[dir="rtl"] .battery-fill {
+  transform-origin: right;
+}
+
+.battery[data-tone="warn"] .battery-fill {
+  background: var(--warning);
+}
+
+.battery[data-tone="low"] .battery-fill,
+.battery[data-tone="empty"] .battery-fill {
+  background: var(--error-text);
+}
+
+/* Services: the swap icon turns half a turn, the thermometer bar cools from 85° to 62° (an illustration, labelled as one). */
+.swap-icon,
+.gauge-fill {
+  transition: transform 420ms var(--ease-out), background-color 420ms ease;
+}
+
+.gauge {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.gauge-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--error-text);
+  transform: scaleX(0.85);
+  transform-origin: left;
+}
+
+[dir="rtl"] .gauge-fill {
+  transform-origin: right;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .path-tile:hover .swap-icon {
+    transform: rotate(180deg);
+  }
+
+  .path-tile:hover .gauge-fill {
+    transform: scaleX(0.62);
+    background: var(--success);
+  }
+}
+
+/* A section title carries a short orange line under it that draws in as the title scrolls into view (where the browser supports it). */
+@keyframes hook-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.title-hook::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--orange);
+  transform-origin: left;
+}
+
+[dir="rtl"] .title-hook::after {
+  transform-origin: right;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .title-hook::after {
+      animation: hook-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 80%;
+    }
+  }
+}
+
+/* Dark theme only: two soft lights drift slowly behind the hero and the page headers (the circuit canvas sits in the same layer). */
+.ambient {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 90% 110% at 50% 30%, #000 35%, transparent 100%);
+}
+
+[data-theme="dark"] .ambient {
+  display: block;
+}
+
+.ambient::before,
+.ambient::after {
+  content: "";
+  position: absolute;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.ambient::before {
+  top: -35%;
+  inset-inline-start: -8%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--orange) 18%, transparent), transparent);
+  animation: ambient-a 26s ease-in-out infinite alternate;
+}
+
+.ambient::after {
+  bottom: -45%;
+  inset-inline-end: -6%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--glow-blue) 14%, transparent), transparent);
+  animation: ambient-b 32s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-a {
+  to {
+    transform: translate3d(calc(var(--dir) * 24%), 14%, 0) scale(1.15);
+  }
+}
+
+@keyframes ambient-b {
+  to {
+    transform: translate3d(calc(var(--dir) * -20%), -16%, 0) scale(1.1);
+  }
+}
+
+.ambient canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Dark theme: a hovered card gets a faint orange edge and halo on top of its lift. */
+@media (hover: hover) and (pointer: fine) {
+  [data-theme="dark"] .lift:hover {
+    border-color: color-mix(in srgb, var(--orange) 45%, var(--line));
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--orange) 28%, transparent),
+      0 16px 44px -16px color-mix(in srgb, var(--orange) 24%, transparent),
+      var(--shadow-lift);
+  }
+}
+
+/* Dark theme: product photos sit on a soft warm-grey backdrop and multiply into it, so a white studio background stops glaring. */
+[data-theme="dark"] .photo-frame {
+  background: var(--photo-backdrop);
+}
+
+[data-theme="dark"] .photo-frame img {
+  mix-blend-mode: multiply;
+}
+
+/* Card photo swap and the product photo magnifier: mouse only. The second card photo is only mounted after the first pointer-enter. */
+img.swap-photo {
+  opacity: 0;
+  transition: opacity 200ms ease, transform 240ms var(--ease-out);
+}
+
+.photo-swap-host:hover .swap-photo[data-loaded] {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zoom-photo {
+    cursor: zoom-in;
+    overflow: hidden;
+  }
+
+  .zoom-photo img {
+    transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .zoom-photo:hover img {
+    transform: scale(2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -749,6 +1086,15 @@ dialog[data-sheet="side"][data-edge="start"] {
   .press:active,
   button:active {
     transform: none !important;
+  }
+
+  .ambient::before,
+  .ambient::after {
+    animation: none;
+  }
+
+  .zoom-photo:hover img {
+    transform: none;
   }
 }
 

@@ -40,7 +40,7 @@ export default async function BuildsPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <PageHeader title={t("title")} lead={t("subtitle")} icon={CaseIcon} />
+      <PageHeader atmosphere title={t("title")} lead={t("subtitle")} icon={CaseIcon} />
       <section className="shell pb-5">
         <BuildsFilters state={state} />
       </section>

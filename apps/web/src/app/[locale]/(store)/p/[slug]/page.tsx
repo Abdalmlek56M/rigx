@@ -14,9 +14,11 @@ import { ProductInfoBoxes } from "@/features/product/ProductInfoBoxes";
 import { PurchasePanel } from "@/features/product/PurchasePanel";
 import { cardPrice } from "@/features/product/price-options";
 import { RelatedItems } from "@/features/product/RelatedItems";
+import { SoldOutAlternatives } from "@/features/product/SoldOutAlternatives";
 import { loadRelatedItems } from "@/features/product/load-related-items";
 import { SpecsTable } from "@/features/product/SpecsTable";
 import { loadItem } from "@/features/product/load-item";
+import { soldOutAlternatives } from "@/features/product/related-items";
 import { specRows } from "@/features/product/spec-rows";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { permanentRedirect } from "@/i18n/navigation";
@@ -126,6 +128,8 @@ export default async function ProductPage({ params }: Props) {
           <ProductInfoBoxes warrantyLabel={item.warrantyLabel} storefront={storefront} />
         </div>
       </section>
+
+      {soldOut ? <SoldOutAlternatives items={soldOutAlternatives(related)} /> : null}
 
       <div className="flex shell flex-col gap-6">
         <SpecsTable rows={specRows(item.specs, defs)} />

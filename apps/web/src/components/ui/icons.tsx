@@ -276,6 +276,13 @@ export const GridIcon = (p: IconProps) => (
     <rect x="14" y="14" width="7" height="7" rx="1.5" />
   </Icon>
 );
+export const ListIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="4" width="18" height="4.5" rx="1.5" />
+    <rect x="3" y="10" width="18" height="4.5" rx="1.5" />
+    <rect x="3" y="16" width="18" height="4.5" rx="1.5" />
+  </Icon>
+);
 export const RegisterIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="3" y="11" width="18" height="10" rx="2" />

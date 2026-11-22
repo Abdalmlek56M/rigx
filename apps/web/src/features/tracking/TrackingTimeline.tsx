@@ -5,7 +5,7 @@ import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 
 const DOT: Record<TrackingStep["state"], string> = {
   done: "border-success bg-success text-surface",
-  current: "border-orange accent-strong",
+  current: "dot-pulse border-orange accent-strong",
   upcoming: "border-input-line bg-surface text-transparent"
 };
 

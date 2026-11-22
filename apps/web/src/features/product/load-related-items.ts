@@ -7,7 +7,7 @@ import { toApiQuery, type CatalogState } from "@/features/catalog/catalog-query"
 import { pickRelatedItems, RELATED_MIN } from "./related-items";
 
 const STATE: CatalogState = {
-  search: "", category: null, brand: null, condition: null, stock: "all", min: null, max: null, sort: "newest", page: 1, specs: {}
+  search: "", category: null, brand: null, condition: null, stock: "all", min: null, max: null, sort: "newest", view: "grid", page: 1, specs: {}
 };
 
 async function fetchItems(categoryId: string | null, showSoldOut: boolean): Promise<Schemas["StoreItemCard"][]> {

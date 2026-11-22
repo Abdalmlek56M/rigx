@@ -39,7 +39,7 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
                   className="pointer-events-none max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
                 />
               ) : (
-                <span className="flex size-16 items-center justify-center rounded-full bg-orange-soft text-orange-text transition-transform duration-300 ease-out group-hover:scale-105 md:size-[72px]"><CategoryIcon slug={category.slug} size={30} /></span>
+                <span className="flex size-[72px] items-center justify-center rounded-full bg-orange-soft text-orange-text transition-transform duration-300 ease-out group-hover:scale-105 md:size-20"><CategoryIcon slug={category.slug} size={34} /></span>
               )}
             </span>
             <span className="line-clamp-2">{localizedName(category, locale)}</span>

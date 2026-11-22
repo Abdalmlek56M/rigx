@@ -23,6 +23,28 @@ describe("parseCatalogParams", () => {
   });
 });
 
+describe("the grid / list view", () => {
+  it("is a grid unless the URL says list, and only the list is written back", () => {
+    assert.equal(parse({}).view, "grid");
+    assert.equal(parse({ view: "list" }).view, "list");
+    assert.equal(parse({ view: "table" }).view, "grid");
+    assert.equal(toSearchParams(parse({ view: "list" })).toString(), "view=list");
+    assert.equal(toSearchParams(parse({ view: "grid" })).toString(), "");
+  });
+  it("keeps the page when only the view changes, and survives other changes", () => {
+    const state = parse({ category: "gpu", page: "3" });
+    assert.equal(withPatch(state, { view: "list" }).page, 3);
+    assert.equal(withPatch(parse({ view: "list", page: "3" }), { condition: "New" }).view, "list");
+    assert.equal(catalogHref(parse({ view: "list" }), { sort: "price_asc" }), "/products?sort=price_asc&view=list");
+  });
+  it("is not part of the canonical address, a filter chip or the API query", () => {
+    const state = parse({ category: "gpu", view: "list" });
+    assert.equal(catalogCanonicalPath(state), "/products?category=gpu");
+    assert.equal(activeFilters(parse({ view: "list" })).length, 0);
+    assert.equal("view" in toApiQuery(state, { categoryId: null, brandId: null }), false);
+  });
+});
+
 describe("URL and API mapping", () => {
   it("leaves defaults out of the URL and round-trips", () => {
     const state = parse({ category: "gpu", brand: "msi", condition: "New", stock: "in", min: "500", sort: "price_desc", page: "2", "spec.vram": "8GB" });

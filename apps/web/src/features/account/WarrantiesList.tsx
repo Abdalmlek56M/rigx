@@ -8,6 +8,8 @@ import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { warrantyTone } from "@/components/ui/status-badge-rules";
 import { DocumentIcon, ShieldIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { WarrantyBattery } from "@/features/warranty/WarrantyBattery";
+import { warrantyBattery } from "@/features/warranty/warranty-battery";
 import { parseCondition } from "@/lib/condition";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatDate } from "@/lib/format";
@@ -29,9 +31,11 @@ async function loadWarranties() {
 
 function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty; invoiceToken: string | null; whatsApp: WhatsApp }) {
   const t = useTranslations("account.warranties");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const status = warrantyStatusKey(warranty.status);
   const condition = parseCondition(warranty.condition);
+  const battery = warrantyBattery(warranty.status, warranty.daysLeft, warranty.startsAtUtc, warranty.endsAtUtc);
   const text = fillTemplate(whatsApp.warrantyTemplate, { item: warranty.name, code: warranty.code, order: warranty.orderReference })
     || t("whatsAppMessage", { name: warranty.name, code: warranty.code });
 
@@ -50,16 +54,14 @@ function WarrantyCard({ warranty, invoiceToken, whatsApp }: { warranty: Warranty
         </div>
       }
     >
+      {battery ? <WarrantyBattery battery={battery} days={status === "Active" ? warranty.daysLeft : null} /> : null}
       <InfoGrid columns={2} className="gap-y-3">
-        <InfoField label={t("code")} value={warranty.code} ltr />
+        <InfoField label={t("code")} value={warranty.code} ltr copy={{ value: warranty.code, label: tCommon("copy"), copiedLabel: tCommon("copied") }} />
         <InfoField label={t("plan")} value={warranty.label} />
         {condition ? <InfoField label={t("condition")} value={<ConditionBadge condition={condition} />} /> : null}
         {warranty.buildCode ? <InfoField label={t("build")} value={warranty.buildCode} ltr /> : null}
         <InfoField label={t("from")} value={formatDate(warranty.startsAtUtc, locale)} />
         {warranty.endsAtUtc ? <InfoField label={t("until")} value={formatDate(warranty.endsAtUtc, locale)} /> : null}
-        {status === "Active" && warranty.daysLeft !== null ? (
-          <InfoField label={t("daysLeftLabel")} value={t("daysLeft", { days: warranty.daysLeft })} className="text-success" />
-        ) : null}
       </InfoGrid>
     </Card>
   );

@@ -1,4 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
+import { Atmosphere } from "@/components/atmosphere/Atmosphere";
 import { Link } from "@/i18n/navigation";
 
 export interface BreadcrumbItem {
@@ -27,6 +28,8 @@ interface PageHeaderProps {
   titleDir?: "ltr" | "rtl" | "auto";
   /** Wrap the header in the page container (default); turn off inside a page that already has one. */
   contained?: boolean;
+  /** The dark theme's animated backdrop (full-width page headers of hero-like pages only: catalog, builder, builds, services). */
+  atmosphere?: boolean;
   className?: string;
 }
 
@@ -34,9 +37,10 @@ interface PageHeaderProps {
  * The top of every storefront page: an optional breadcrumb, the 28 px page title, an optional lead line and the page
  * actions. This is the only place a heading sits directly on the page background.
  */
-export function PageHeader({ title, lead, breadcrumb, breadcrumbLabel, actions, below, icon: Icon, eyebrow, titleDir, contained = true, className = "" }: PageHeaderProps) {
+export function PageHeader({ title, lead, breadcrumb, breadcrumbLabel, actions, below, icon: Icon, eyebrow, titleDir, contained = true, atmosphere = false, className = "" }: PageHeaderProps) {
   return (
-    <header className={`${contained ? "shell " : ""}flex flex-col gap-3 pb-5 pt-8 md:pt-10${className ? ` ${className}` : ""}`}>
+    <header className={`${contained ? "shell " : ""}${atmosphere ? "relative isolate " : ""}flex flex-col gap-3 pb-5 pt-8 md:pt-10${className ? ` ${className}` : ""}`}>
+      {atmosphere ? <Atmosphere /> : null}
       {breadcrumb && breadcrumb.length > 0 ? (
         <nav aria-label={breadcrumbLabel} className="text-[13px] text-ink-muted">
           <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 gap-y-1 p-0">

@@ -3,6 +3,8 @@ import { parseCondition, type Condition } from "../../lib/condition.ts";
 /** "all" lists sold-out items too (after the available ones, marked "خلص"); "in" hides them. */
 export type StockFilter = "all" | "in";
 export type SortKey = "newest" | "price_asc" | "price_desc";
+/** How the results are laid out: cards in a grid (default) or one row per item, for scanning prices. */
+export type ViewMode = "grid" | "list";
 
 export const PAGE_SIZE = 24;
 const SORTS: readonly SortKey[] = ["newest", "price_asc", "price_desc"];
@@ -20,6 +22,7 @@ export interface CatalogState {
   min: number | null;
   max: number | null;
   sort: SortKey;
+  view: ViewMode;
   page: number;
   /** One value per spec key (only meaningful with a category). */
   specs: Record<string, string>;
@@ -54,6 +57,7 @@ export function parseCatalogParams(params: RawParams): CatalogState {
     min: parseAmount(first(params.min)),
     max: parseAmount(first(params.max)),
     sort: SORTS.find((key) => key === sort) ?? "newest",
+    view: first(params.view) === "list" ? "list" : "grid",
     page: page >= 1 ? page : 1,
     specs
   };
@@ -70,17 +74,19 @@ export function toSearchParams(state: CatalogState): URLSearchParams {
   if (state.min !== null) query.set("min", String(state.min));
   if (state.max !== null) query.set("max", String(state.max));
   if (state.sort !== "newest") query.set("sort", state.sort);
+  if (state.view === "list") query.set("view", "list");
   if (state.page > 1) query.set("page", String(state.page));
   if (state.category) for (const [key, value] of Object.entries(state.specs)) query.set(`${SPEC_PREFIX}${key}`, value);
   return query;
 }
 
 /**
- * The state after a change. Any change goes back to page 1; changing the category drops the spec filters
- * (they belong to the old category) unless the patch brings its own.
+ * The state after a change. Any change goes back to page 1 (except switching the view, which keeps the page); changing the category
+ * drops the spec filters (they belong to the old category) unless the patch brings its own.
  */
 export function withPatch(state: CatalogState, patch: CatalogPatch): CatalogState {
-  const next = { ...state, page: 1, ...patch };
+  const onlyView = Object.keys(patch).length === 1 && patch.view !== undefined;
+  const next = { ...state, page: onlyView ? state.page : 1, ...patch };
   if (patch.category !== undefined && patch.specs === undefined) next.specs = {};
   return next;
 }
@@ -91,7 +97,7 @@ export function catalogHref(state: CatalogState, patch: CatalogPatch = {}): stri
   return query ? `/products?${query}` : "/products";
 }
 
-/** The canonical catalog address of a state: only the category and the page; filters, sort and search are views of it. */
+/** The canonical catalog address of a state: only the category and the page; filters, sort, search and the view are views of it. */
 export function catalogCanonicalPath(state: CatalogState): string {
   const query = new URLSearchParams();
   if (state.category) query.set("category", state.category);

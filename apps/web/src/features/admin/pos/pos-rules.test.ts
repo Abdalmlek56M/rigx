@@ -39,7 +39,7 @@ describe("search results", () => {
   it("keeps the stock item id from the inventory and sends public items by code", () => {
     const fromStore = toItemPick({
       code: "RX-1", slug: "gpu", modelName: "GPU", condition: "New", categoryId: null, warrantyLabel: "سنة",
-      prices: { alone: 1, withBoard: 1, inBuild: 1 }, available: 3, thumbnailStorageKey: null, listedAtUtc: "", priceOptions: ["Alone", "WithBoard", "InBuild"]
+      prices: { alone: 1, withBoard: 1, inBuild: 1 }, available: 3, thumbnailStorageKey: null, secondThumbnailStorageKey: null, listedAtUtc: "", priceOptions: ["Alone", "WithBoard", "InBuild"]
     });
     assert.equal(fromStore.stockItemId, null);
     assert.equal(fromStore.available, 3);
@@ -48,7 +48,7 @@ describe("search results", () => {
   it("offers only the prices the category offers and starts the line at the first one", () => {
     const card = {
       code: "RX-1", slug: "gpu", modelName: "GPU", condition: "New", categoryId: null, warrantyLabel: null,
-      prices: { alone: 1000, withBoard: 900, inBuild: 800 }, available: 3, thumbnailStorageKey: null, listedAtUtc: "",
+      prices: { alone: 1000, withBoard: 900, inBuild: 800 }, available: 3, thumbnailStorageKey: null, secondThumbnailStorageKey: null, listedAtUtc: "",
       priceOptions: ["WithBoard", "InBuild"]
     };
     const pick = toItemPick(card);

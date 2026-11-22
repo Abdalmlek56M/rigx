@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type TouchEvent } from "react";
+import { useCallback, useRef, useState, type PointerEvent, type TouchEvent } from "react";
 import { useTranslations } from "next-intl";
 import { IconButton } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
@@ -46,6 +46,13 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
     move(end < start ? 1 : -1);
   }
 
+  /** The photo magnifier (mouse only, styled in globals.css) zooms around the pointer. */
+  function aim(event: PointerEvent<HTMLButtonElement>) {
+    const box = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty("--zoom-x", `${(((event.clientX - box.left) / box.width) * 100).toFixed(1)}%`);
+    event.currentTarget.style.setProperty("--zoom-y", `${(((event.clientY - box.top) / box.height) * 100).toFixed(1)}%`);
+  }
+
   function closeViewer() {
     const index = selected;
     setViewerOpen(false);
@@ -55,13 +62,13 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div
-        className={`${cardClass({ padding: "none" })} relative aspect-square w-full overflow-hidden`}
+        className={`${cardClass({ padding: "none" })} photo-frame relative aspect-square w-full overflow-hidden`}
         onTouchStart={swipeStart}
         onTouchEnd={swipeEnd}
         style={{ touchAction: "pan-y" }}
       >
         {current ? (
-          <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} className="group block h-full w-full cursor-zoom-in">
+          <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group block h-full w-full">
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
             <img src={mediaUrl(current.storageKey)} alt={alt} width={720} height={720} fetchPriority={selected === 0 ? "high" : "auto"} className="h-full w-full object-contain p-4" />
             <span aria-hidden="true" className="absolute start-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-soft transition-colors group-hover:text-orange-text">

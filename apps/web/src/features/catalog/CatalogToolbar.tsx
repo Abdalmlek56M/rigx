@@ -8,6 +8,7 @@ import { activeFilters, catalogHref, type CatalogState, type SortKey } from "./c
 import { CatalogClickTracker } from "./CatalogClickTracker";
 import { FiltersDrawer } from "./FiltersDrawer";
 import { SortSelect } from "./SortSelect";
+import { ViewToggle } from "./ViewToggle";
 import { CloseIcon } from "@/components/ui/icons";
 
 const SORT_KEYS: readonly SortKey[] = ["newest", "price_asc", "price_desc"];
@@ -81,8 +82,9 @@ export async function CatalogToolbar({ state, tree, brands, total, panel, queryK
           })}
         </ul>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className="text-sm text-ink-muted">{t("resultCount", { count: total })}</span>
+        <ViewToggle state={state} />
         <SortSelect
           current={state.sort}
           options={SORT_KEYS.map((key) => ({ value: key, label: t(`sort.${key}`), href: catalogHref(state, { sort: key }) }))}

@@ -40,7 +40,7 @@ export default async function BuilderPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <PageHeader
+      <PageHeader atmosphere
         title={t("title")}
         icon={CpuIcon}
         lead={t("subtitle")}

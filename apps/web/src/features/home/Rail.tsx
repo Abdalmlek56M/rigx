@@ -129,7 +129,7 @@ export function Rail({ title, action, autoAdvance = false, arrowsOnMobile = fals
       onTouchStart={hold}
     >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <h2 className="m-0 type-display-title">{title}</h2>
+        <h2 className="m-0 type-display-title title-hook">{title}</h2>
         <div className="ms-auto flex items-center gap-3">
           {action}
           <div className={`flex gap-2 ${arrowsOnMobile ? "" : "max-sm:hidden"}`} dir="ltr">
