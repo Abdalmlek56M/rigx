@@ -86,7 +86,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         counts={result?.counts ?? { new: 0, used: 0 }}
       />
       <section className="flex shell items-start gap-7 pb-16">
-        <aside aria-label={t("filters.panelLabel")} className="hidden w-[272px] shrink-0 self-start md:block">
+        <aside aria-label={t("filters.panelLabel")} className="hidden w-[272px] shrink-0 self-start lg:block">
           <Card padding="sm">{panel("side")}</Card>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col gap-4">

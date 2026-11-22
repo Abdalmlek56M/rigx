@@ -38,8 +38,8 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
   );
 
   return (
-    <Card as="li" padding="sm" className={`gap-3 ${chosen ? "border-orange bg-orange/10" : ""}`}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3.5">
+    <Card as="li" padding="sm" className={`@container gap-3 ${chosen ? "border-orange bg-orange/10" : ""}`}>
+      <div className="flex flex-col gap-3 @md:flex-row @md:items-center @md:gap-3.5">
         <div className="flex min-w-0 flex-1 items-center gap-3.5">
           <div className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper text-muted">
             {group.thumbnailStorageKey ? (
@@ -57,7 +57,7 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
             ))}
           </div>
         </div>
-        <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="grid grid-cols-2 gap-2 @md:flex @md:flex-wrap">
           {choices.map((choice) => (
             <Button
               key={choice.code}
@@ -68,7 +68,7 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
               disabled={choice.block !== null}
               variant={choice.selected ? "primary" : "secondary"}
               onClick={() => onPick(choice.code)}
-              className={`h-auto min-h-[52px] sm:min-w-32 flex-col gap-0.5 px-3.5 py-2 ${choice.block ? "line-through opacity-60" : ""}`}
+              className={`h-auto min-h-[52px] @md:min-w-32 flex-col gap-0.5 px-3.5 py-2 ${choice.block ? "line-through opacity-60" : ""}`}
             >
               <span className="text-xs font-bold">{tc(choice.condition)}</span>
               <span className="text-sm font-bold">

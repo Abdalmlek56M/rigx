@@ -25,7 +25,7 @@ export function SlotList({ slots, parts, active, onSelect, onClear }: SlotListPr
   const t = useTranslations("builder.slots");
 
   return (
-    <ul className="m-0 flex list-none flex-col gap-2 p-0">
+    <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-1">
       {slots.map((entry) => {
         const part = parts.find((candidate) => candidate.slot === entry.slot);
         const isActive = entry.slot === active;

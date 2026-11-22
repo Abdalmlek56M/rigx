@@ -89,7 +89,7 @@ export default async function PolicyPage({ params }: Props) {
         </nav>
         <div className="flex min-w-0 flex-col gap-4">
           <Card padding="lg">
-            <article className="min-w-0 text-[15px] leading-8">
+            <article className="min-w-0 max-w-[72ch] text-[15px] leading-8">
               <PolicyBody body={body} />
             </article>
           </Card>

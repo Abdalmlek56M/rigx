@@ -9,15 +9,15 @@ function PathTile({ href, icon, title, body, accent = false }: { href: string; i
   return (
     <Link
       href={href}
-      className={`${cardClass({ padding: "md", interactive: true })} path-tile group h-full min-h-[148px] justify-between gap-4 ${accent ? "accent-panel" : ""}`}
+      className={`${cardClass({ padding: "md", interactive: true })} path-tile group h-full justify-between gap-4 sm:min-h-[148px] max-sm:grid max-sm:grid-cols-[auto_minmax(0,1fr)_auto] max-sm:items-center ${accent ? "accent-panel" : ""}`}
     >
-      <span className="flex items-start justify-between gap-3">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-full ${accent ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>{icon}</span>
-        <span aria-hidden="true" className={`path-arrow flex ltr:-scale-x-100 ${accent ? "text-orange-text" : "text-muted"}`}>
+      <span className="flex items-start justify-between gap-3 max-sm:contents">
+        <span className={`flex h-11 w-11 items-center justify-center rounded-full max-sm:order-1 ${accent ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>{icon}</span>
+        <span aria-hidden="true" className={`path-arrow flex max-sm:order-3 ltr:-scale-x-100 ${accent ? "text-orange-text" : "text-muted"}`}>
           <ChevronStartIcon size={20} />
         </span>
       </span>
-      <span className="flex flex-col gap-1">
+      <span className="flex flex-col gap-1 max-sm:order-2">
         <b className="type-section-title">{title}</b>
         <span className="text-sm leading-relaxed text-ink-muted">{body}</span>
       </span>

@@ -22,7 +22,7 @@ export function FiltersDrawer({ queryKey, activeCount, children }: FiltersDrawer
   const close = () => setOpenedAt(null);
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <Button
         type="button"
         variant="secondary"
