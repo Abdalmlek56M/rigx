@@ -13,6 +13,7 @@ public sealed class CustomerMergeOrchestrator(
     CustomerSalesService sales,
     AccountRequestService requests,
     SavedBuildStore savedBuilds,
+    BuildReactionStore buildReactions,
     FavouriteService favourites,
     CustomerNotificationService notifications,
     CustomerProfileComposer composer)
@@ -23,6 +24,7 @@ public sealed class CustomerMergeOrchestrator(
         var moved = await sales.MoveAsync(sourceId, targetId, cancellationToken);
         var movedRequests = await requests.MoveAsync(sourceId, targetId, cancellationToken);
         var movedBuilds = await savedBuilds.MoveOwnerAsync(sourceId, targetId, cancellationToken);
+        await buildReactions.MoveAsync(sourceId, targetId, cancellationToken);
         await favourites.MoveAsync(sourceId, targetId, cancellationToken);
         await notifications.MoveAsync(sourceId, targetId, cancellationToken);
         await identity.MergeAsync(targetId, sourceId, actorId, new CustomerMergeCounts(moved.Orders, moved.Warranties, movedRequests, movedBuilds),

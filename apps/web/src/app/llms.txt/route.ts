@@ -5,6 +5,7 @@ export const dynamic = "force-static";
 const LINKS: [string, string][] = [
   ["القطع (الكتالوج) / Parts catalog", "/products"],
   ["التجميعات الجاهزة / Ready-made builds", "/builds"],
+  ["تجميعات العملاء / Customer builds", "/customer-builds"],
   ["جمّع جهازك / PC builder", "/builder"],
   ["الخدمات / Services", "/services"],
   ["الأسئلة الشائعة / FAQ", "/faq"],

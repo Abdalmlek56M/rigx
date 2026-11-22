@@ -9,6 +9,7 @@ import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { CpuIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { fillTemplate, siteUrl, whatsAppUrl } from "@/lib/contact";
+import { CaseBlueprint } from "./CaseBlueprint";
 import { OptionPanel } from "./OptionPanel";
 import { SlotList, type SlotInfo } from "./SlotList";
 import { SummaryPanel } from "./SummaryPanel";
@@ -89,7 +90,10 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
         </Card>
       ) : null}
       <div className="grid items-start gap-5 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
-        <SlotList slots={slots} parts={b.evaluation.parts} active={active} onSelect={selectSlot} onClear={b.clear} />
+        <div className="flex flex-col gap-4">
+          <CaseBlueprint slots={slots} parts={b.evaluation.parts} issues={b.evaluation.issues} active={active} onSelect={selectSlot} />
+          <SlotList slots={slots} parts={b.evaluation.parts} active={active} onSelect={selectSlot} onClear={b.clear} />
+        </div>
         <div ref={panel} className="scroll-mt-4">
           <OptionPanel
             key={active}
@@ -120,6 +124,9 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
           onCopyLink={b.copyLink}
           name={b.name}
           onNameChange={b.setName}
+          visibility={b.visibility}
+          onVisibilityChange={b.setVisibility}
+          shareFailed={b.shareFailed}
         />
       </div>
       <p className="m-0 text-sm text-ink-muted">

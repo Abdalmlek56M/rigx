@@ -7,6 +7,8 @@ import { unwrap } from "@rigx/api-client";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
+import { BuildVisibilityControl } from "@/features/builder/BuildVisibilityControl";
+import { parseVisibility } from "@/features/builder/build-visibility";
 import { browserApi } from "@/lib/api/browser";
 import { parseUsage } from "@/lib/usage";
 import { formatDate } from "@/lib/format";
@@ -66,6 +68,7 @@ export function BuildsList() {
                       <InfoField label={t("partsLabel")} value={t("parts", { count: build.partCount })} />
                       <InfoField label={t("updated")} value={formatDate(build.updatedAtUtc, locale)} />
                     </InfoGrid>
+                    <BuildVisibilityControl token={build.token} visibility={parseVisibility(build.visibility)} moderation={build.moderation ?? null} />
                   </Card>
                 );
               })}

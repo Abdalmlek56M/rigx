@@ -993,6 +993,61 @@
         }
       }
     },
+    "/api/v1/builder/saved/{token}/visibility": {
+      "put": {
+        "tags": [
+          "builder"
+        ],
+        "description": "Signed-in user.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuilderVisibilityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedBuildSummary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/account/builds": {
       "get": {
         "tags": [
@@ -1029,6 +1084,55 @@
             "sessionCookie": []
           }
         ]
+      }
+    },
+    "/api/v1/builder/community": {
+      "get": {
+        "tags": [
+          "builder"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 12
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfCommunityBuildCard"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/store/items": {
@@ -7311,6 +7415,228 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/builder/saved/{token}/reactions/{kind}": {
+      "put": {
+        "tags": [
+          "builder"
+        ],
+        "description": "Signed-in user.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BuildReactionKind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildReactionSummary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "builder"
+        ],
+        "description": "Signed-in user.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BuildReactionKind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildReactionSummary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/customer-builds": {
+      "get": {
+        "tags": [
+          "admin/customer-builds"
+        ],
+        "description": "Permission: \u0060Catalog.ManageProducts\u0060.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "default": "Pending",
+              "$ref": "#/components/schemas/BuildModerationStatus"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResultOfCustomerBuildModerationView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/customer-builds/{token}/decision": {
+      "post": {
+        "tags": [
+          "admin/customer-builds"
+        ],
+        "description": "Permission: \u0060Catalog.ManageProducts\u0060.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerBuildModerationView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
       }
     },
     "/api/v1/admin/retail/units": {
@@ -17375,6 +17701,17 @@
           }
         }
       },
+      "BuildDecisionRequest": {
+        "required": [
+          "decision"
+        ],
+        "type": "object",
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/BuildModerationStatus"
+          }
+        }
+      },
       "BuilderCheckRequest": {
         "required": [
           "parts"
@@ -17767,6 +18104,16 @@
             "items": {
               "$ref": "#/components/schemas/BuilderPartInput"
             }
+          },
+          "visibility": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BuildVisibility"
+              }
+            ]
           }
         }
       },
@@ -17803,6 +18150,16 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          },
+          "visibility": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BuildVisibility"
+              }
+            ]
           }
         }
       },
@@ -17828,6 +18185,63 @@
             }
           }
         }
+      },
+      "BuilderVisibilityRequest": {
+        "required": [
+          "visibility"
+        ],
+        "type": "object",
+        "properties": {
+          "visibility": {
+            "$ref": "#/components/schemas/BuildVisibility"
+          }
+        }
+      },
+      "BuildModerationStatus": {
+        "enum": [
+          "Pending",
+          "Approved",
+          "Rejected",
+          null
+        ]
+      },
+      "BuildReactionKind": {
+        "enum": [
+          "Heart",
+          "Like"
+        ]
+      },
+      "BuildReactionSummary": {
+        "required": [
+          "hearts",
+          "likes",
+          "hearted",
+          "liked"
+        ],
+        "type": "object",
+        "properties": {
+          "hearts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "likes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hearted": {
+            "type": "boolean"
+          },
+          "liked": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BuildVisibility": {
+        "enum": [
+          "Private",
+          "Link",
+          "Public"
+        ]
       },
       "BusinessReportView": {
         "required": [
@@ -18337,6 +18751,83 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "CommunityBuildCard": {
+        "required": [
+          "token",
+          "name",
+          "authorName",
+          "usage",
+          "partCount",
+          "total",
+          "canOrder",
+          "parts",
+          "updatedAtUtc",
+          "reactions"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "authorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "usage": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "canOrder": {
+            "type": "boolean"
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommunityBuildPart"
+            }
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reactions": {
+            "$ref": "#/components/schemas/BuildReactionSummary"
+          }
+        }
+      },
+      "CommunityBuildPart": {
+        "required": [
+          "slot",
+          "modelName"
+        ],
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "string"
+          },
+          "modelName": {
+            "type": "string"
           }
         }
       },
@@ -19396,6 +19887,34 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          }
+        }
+      },
+      "CustomerBuildModerationView": {
+        "required": [
+          "build",
+          "status",
+          "submittedAtUtc",
+          "decidedAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "build": {
+            "$ref": "#/components/schemas/CommunityBuildCard"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BuildModerationStatus"
+          },
+          "submittedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decidedAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -21640,7 +22159,8 @@
         "required": [
           "codes",
           "items",
-          "builds"
+          "builds",
+          "sharedBuilds"
         ],
         "type": "object",
         "properties": {
@@ -21660,6 +22180,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AssemblyPublicView"
+            }
+          },
+          "sharedBuilds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommunityBuildCard"
             }
           }
         }
@@ -23938,6 +24464,35 @@
           }
         }
       },
+      "PagedResultOfCommunityBuildCard": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommunityBuildCard"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "PagedResultOfContentMediaAssetView": {
         "required": [
           "items",
@@ -23951,6 +24506,35 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ContentMediaAssetView"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PagedResultOfCustomerBuildModerationView": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerBuildModerationView"
             }
           },
           "page": {
@@ -27705,6 +28289,8 @@
           "token",
           "name",
           "usage",
+          "visibility",
+          "moderation",
           "partCount",
           "updatedAtUtc"
         ],
@@ -27725,6 +28311,19 @@
               "string"
             ]
           },
+          "visibility": {
+            "$ref": "#/components/schemas/BuildVisibility"
+          },
+          "moderation": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BuildModerationStatus"
+              }
+            ]
+          },
           "partCount": {
             "type": "integer",
             "format": "int32"
@@ -27741,10 +28340,13 @@
           "name",
           "authorName",
           "usage",
+          "visibility",
+          "moderation",
           "createdAtUtc",
           "updatedAtUtc",
           "rowVersion",
           "isOwner",
+          "reactions",
           "evaluation"
         ],
         "type": "object",
@@ -27770,6 +28372,19 @@
               "string"
             ]
           },
+          "visibility": {
+            "$ref": "#/components/schemas/BuildVisibility"
+          },
+          "moderation": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BuildModerationStatus"
+              }
+            ]
+          },
           "createdAtUtc": {
             "type": "string",
             "format": "date-time"
@@ -27784,6 +28399,9 @@
           },
           "isOwner": {
             "type": "boolean"
+          },
+          "reactions": {
+            "$ref": "#/components/schemas/BuildReactionSummary"
           },
           "evaluation": {
             "$ref": "#/components/schemas/BuilderEvaluation"
@@ -30733,6 +31351,9 @@
     },
     {
       "name": "BuilderEndpoints"
+    },
+    {
+      "name": "CommunityBuildEndpoints"
     },
     {
       "name": "RetailEndpoints"

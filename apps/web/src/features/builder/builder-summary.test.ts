@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EMPTY_EVALUATION, cartLinesOf, conditionCounts, partsSummaryText, powerShare, showsInBuildPrice, type Evaluation } from "./builder-summary.ts";
+import { EMPTY_EVALUATION, cartLinesOf, conditionCounts, partsSummaryText, powerAdvice, powerFillPercent, powerShare, showsInBuildPrice, type Evaluation } from "./builder-summary.ts";
 
 type Parts = Evaluation["parts"];
 
@@ -65,5 +65,41 @@ describe("partsSummaryText", () => {
   it("omits the label for an unknown condition and is empty for no parts", () => {
     assert.equal(partsSummaryText([part("CPU", "X", "Weird")], {}, label), "CPU: X");
     assert.equal(partsSummaryText([], {}, label), "");
+  });
+});
+
+describe("powerAdvice", () => {
+  const advice = (estimate: number | null, capacity: number | null) => powerAdvice({ powerEstimateWatts: estimate, psuCapacityWatts: capacity });
+
+  it("says nothing without an estimate", () => {
+    assert.deepEqual(advice(null, null), { state: "unknown", estimate: null, capacity: null, share: null, recommended: null });
+    assert.equal(advice(null, 650).state, "unknown");
+  });
+
+  it("asks for a supply when none is chosen and names an output that leaves the headroom (a multiple of 50 W)", () => {
+    assert.deepEqual(advice(412, null), { state: "noSupply", estimate: 412, capacity: null, share: null, recommended: 550 });
+    assert.equal(advice(400, null).recommended, 500);
+    assert.equal(advice(401, null).recommended, 550);
+  });
+
+  it("is ok up to the warning share, near above it and over past the output of the supply", () => {
+    assert.deepEqual(advice(400, 650), { state: "ok", estimate: 400, capacity: 650, share: 400 / 650, recommended: null });
+    assert.equal(advice(520, 650).state, "ok");
+    assert.equal(advice(521, 650).state, "near");
+    assert.equal(advice(650, 650).state, "near");
+    assert.equal(advice(651, 650).state, "over");
+  });
+
+  it("recommends a larger supply when it is near or over", () => {
+    assert.equal(advice(600, 650).recommended, 750);
+    assert.equal(advice(700, 650).recommended, 900);
+  });
+});
+
+describe("powerFillPercent", () => {
+  it("is the share of the supply in percent, capped at the end of the bar, and empty without a supply", () => {
+    assert.equal(powerFillPercent(powerAdvice({ powerEstimateWatts: 325, psuCapacityWatts: 650 })), 50);
+    assert.equal(powerFillPercent(powerAdvice({ powerEstimateWatts: 900, psuCapacityWatts: 650 })), 100);
+    assert.equal(powerFillPercent(powerAdvice({ powerEstimateWatts: 300, psuCapacityWatts: null })), 0);
   });
 });

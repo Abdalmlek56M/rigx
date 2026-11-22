@@ -61,7 +61,18 @@
         "base": "I'd like a build recommendation.",
         "usage": "Use: {usage}.",
         "budget": "Budget: {budget}."
-      }
+      },
+      "stepsLabel": "Recommendation steps",
+      "steps": {
+        "usage": "Use",
+        "budget": "Budget",
+        "send": "Send"
+      },
+      "sendLegend": "Check your choices, then send them to us",
+      "any": "Not set",
+      "edit": "Change {step}",
+      "back": "Back",
+      "skip": "Skip"
     },
     "builderPromo": {
       "eyebrow": "Know what you want?",
@@ -147,7 +158,8 @@
       "new": "New",
       "used": "Used",
       "builds": "Builds",
-      "builder": "Build your PC"
+      "builder": "Build your PC",
+      "customerBuilds": "Customer builds"
     },
     "allProducts": "All products",
     "warrantyLookup": "Warranty lookup",
@@ -400,7 +412,8 @@
     "specs": "Specifications",
     "loading": "Loading builds…",
     "soldOutBadge": "Sold out",
-    "inStockBadge": "In stock"
+    "inStockBadge": "In stock",
+    "customerBuilds": "Customer builds"
   },
   "build": {
     "breadcrumb": "Breadcrumb",
@@ -475,8 +488,6 @@
       "warning": "Notice",
       "specMismatch": "{slot} and {other} don't match on {spec}.",
       "overLimit": "{slot} is over the limit {other} supports ({spec}).",
-      "powerOver": "The estimated power draw is above the power supply's output. Pick a stronger one.",
-      "powerNear": "The power draw is close to the power supply's output (over 80%). A stronger one is better.",
       "generic": "There is a problem with the compatibility of {slot}."
     },
     "summary": {
@@ -491,7 +502,6 @@
         "warning": "Has a notice",
         "conflict": "Has a conflict"
       },
-      "power": "Estimated power",
       "conditions": "New / used",
       "counts": "{newCount} new, {usedCount} used",
       "total": "Estimated total"
@@ -509,7 +519,12 @@
       "note": "A build doesn't reserve parts. We confirm availability with you before preparing the order.",
       "shareTitle": "Share this build",
       "shareName": "Build name (optional)",
-      "shareNamePlaceholder": "For example: Gaming PC"
+      "shareNamePlaceholder": "For example: Gaming PC",
+      "signInLink": "Sign in",
+      "signInNote": "to make a build private or public.",
+      "copiedPrivate": "Link copied. Only you can open it.",
+      "copiedPublic": "Link copied. The build will show in customer builds once the store approves it.",
+      "shareFailed": "We could not save the build, so no link was copied. Please try again."
     },
     "quote": {
       "title": "Quote",
@@ -523,7 +538,53 @@
       "meta": "{count} parts",
       "metaWithUsage": "{usage}, {count} parts",
       "pricedOn": "Prices as of {date}",
-      "cta": "Build yours on the website"
+      "cta": "Build yours on the website",
+      "copyImage": "Copy as image",
+      "image": {
+        "copied": "Image copied. Paste it into WhatsApp or any chat.",
+        "saved": "We could not copy it, so the image was saved to your device.",
+        "failed": "We could not make the image. Use Print / save as PDF."
+      }
+    },
+    "blueprint": {
+      "title": "Case blueprint",
+      "label": "{count} of {total} parts chosen",
+      "partEmpty": "{slot}: not chosen yet",
+      "partFilled": "{slot}: {model}"
+    },
+    "power": {
+      "label": "Estimated power",
+      "of": "{estimate} W of {capacity} W",
+      "estimateOnly": "{estimate} W",
+      "meter": "Estimated power against the power supply",
+      "ok": "The power supply is enough.",
+      "near": "The margin is tight. A power supply of {watts} W or more is better.",
+      "over": "The power supply is not enough. Choose one of {watts} W or more.",
+      "noSupply": "Choose a power supply of {watts} W or more.",
+      "unknown": "Choose parts to see the estimated power."
+    },
+    "visibility": {
+      "title": "Who can see this build?",
+      "options": {
+        "Private": {
+          "label": "Private",
+          "note": "Only you can open it."
+        },
+        "Link": {
+          "label": "By link",
+          "note": "Anyone with the link can open it."
+        },
+        "Public": {
+          "label": "Public",
+          "note": "Shown in customer builds once the store approves it."
+        }
+      },
+      "moderation": {
+        "pending": "Waiting for the store's approval",
+        "approved": "Shown in customer builds",
+        "rejected": "The store did not approve it for display"
+      },
+      "failed": "We could not save your choice. Please try again."
     }
   },
   "services": {
@@ -1189,7 +1250,8 @@
     "remove": "Remove {item} from favourites",
     "failed": "Not saved. Try again.",
     "empty": "Nothing in your favourites yet. Tap the heart on any product to save it.",
-    "browse": "Browse products"
+    "browse": "Browse products",
+    "sharedTitle": "Customer builds you liked"
   },
   "notifications": {
     "bell": "Notifications",
@@ -1406,7 +1468,8 @@
         "system": "Trash & backups",
         "settings": "Store settings",
         "stockImport": "Stock import",
-        "brands": "Brands"
+        "brands": "Brands",
+        "customerBuilds": "Customer builds"
       }
     },
     "kit": {
@@ -4905,6 +4968,39 @@
         "maxUses": "Must be a whole number above zero.",
         "endsAtUtc": "The end date must be after the start."
       }
+    },
+    "customerBuilds": {
+      "title": "Customer builds",
+      "intro": "Builds our customers made public. Approve one to show it on the Customer builds page, or reject it to keep it off. Every decision is recorded in the activity log.",
+      "statusLabel": "Status",
+      "statuses": {
+        "Pending": "Waiting",
+        "Approved": "Approved",
+        "Rejected": "Rejected"
+      },
+      "columns": {
+        "build": "Build",
+        "parts": "Parts",
+        "total": "Total",
+        "status": "Status",
+        "date": "Date",
+        "actions": "Action"
+      },
+      "open": "Open",
+      "decision": {
+        "Approved": "Approve",
+        "Rejected": "Reject"
+      },
+      "approved": "The build was approved.",
+      "rejected": "The build was rejected.",
+      "failed": "We could not save the decision. Please try again.",
+      "empty": {
+        "Pending": "No builds are waiting for a decision.",
+        "Approved": "No approved builds.",
+        "Rejected": "No rejected builds."
+      },
+      "untitled": "Unnamed build",
+      "anonymous": "Customer"
     }
   },
   "coupon": {
@@ -4939,6 +5035,31 @@
     "unavailable": "Currently unavailable",
     "missing": "Some parts of this build are no longer available in the store.",
     "edit": "Edit it in the builder",
-    "copied": "Link copied"
+    "copied": "Link copied",
+    "visibilityTitle": "Who can see this build?"
+  },
+  "reactions": {
+    "heartAdd": "Add this build to your favourites",
+    "heartRemove": "Remove this build from your favourites",
+    "likeAdd": "Like this build",
+    "likeRemove": "Remove your like",
+    "signIn": "Sign in to react to this build",
+    "failed": "We could not save your reaction. Please try again."
+  },
+  "communityBuilds": {
+    "title": "Customer builds",
+    "subtitle": "PCs our customers designed in the builder, shown after we review them. Like what suits you and edit it.",
+    "startOwn": "Build your PC",
+    "loadFailed": "We can't load the builds right now. Please try again in a moment.",
+    "empty": {
+      "title": "No builds shown yet",
+      "body": "Be the first to share one: build your PC, make it public, and it will show here once we approve it."
+    },
+    "untitled": "A PC build",
+    "by": "Assembled by {name}",
+    "moreParts": "and {count} more",
+    "total": "Total",
+    "unavailable": "Some parts are currently unavailable.",
+    "open": "View the build"
   }
 }

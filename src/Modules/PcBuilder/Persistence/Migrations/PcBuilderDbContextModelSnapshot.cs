@@ -22,6 +22,67 @@ namespace HardwareStore.Modules.PcBuilder.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("HardwareStore.Modules.PcBuilder.BuildModeration", b =>
+                {
+                    b.Property<Guid>("SavedBuildId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("saved_build_id");
+
+                    b.Property<DateTimeOffset?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at_utc");
+
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by_user_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at_utc");
+
+                    b.HasKey("SavedBuildId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_saved_build_moderations_status");
+
+                    b.ToTable("saved_build_moderations", (string)null);
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.PcBuilder.BuildReaction", b =>
+                {
+                    b.Property<Guid>("SavedBuildId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("saved_build_id");
+
+                    b.Property<Guid>("UserAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_account_id");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.HasKey("SavedBuildId", "UserAccountId", "Kind");
+
+                    b.HasIndex("UserAccountId", "Kind")
+                        .HasDatabaseName("ix_saved_build_reactions_user_kind");
+
+                    b.ToTable("saved_build_reactions", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.PcBuilder.SavedBuild", b =>
                 {
                     b.Property<Guid>("Id")
@@ -68,6 +129,12 @@ namespace HardwareStore.Modules.PcBuilder.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_account_id");
 
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("visibility");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Token")
@@ -77,7 +144,35 @@ namespace HardwareStore.Modules.PcBuilder.Persistence.Migrations
                     b.HasIndex("UserAccountId")
                         .HasDatabaseName("ix_saved_builds_user_account_id");
 
+                    b.HasIndex("Visibility")
+                        .HasDatabaseName("ix_saved_builds_visibility");
+
                     b.ToTable("saved_builds", (string)null);
+
+                    b.HasAnnotation("Rigx:AuditExcluded", true);
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.PcBuilder.BuildModeration", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.PcBuilder.SavedBuild", null)
+                        .WithOne("Moderation")
+                        .HasForeignKey("HardwareStore.Modules.PcBuilder.BuildModeration", "SavedBuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.PcBuilder.BuildReaction", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.PcBuilder.SavedBuild", null)
+                        .WithMany()
+                        .HasForeignKey("SavedBuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.PcBuilder.SavedBuild", b =>
+                {
+                    b.Navigation("Moderation");
                 });
 #pragma warning restore 612, 618
         }

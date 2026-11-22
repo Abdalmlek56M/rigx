@@ -2,12 +2,17 @@ import type { Schemas } from "@rigx/api-client";
 import type { CategoryNode } from "../../lib/categories.ts";
 
 /** The issue codes the builder rules produce (`BuilderRules.cs`); the wording lives in the `builder.issues` messages. */
-const MESSAGE_KEYS: Record<string, "specMismatch" | "overLimit" | "powerOver" | "powerNear"> = {
+const MESSAGE_KEYS: Record<string, "specMismatch" | "overLimit"> = {
   SpecMismatch: "specMismatch",
-  OverLimit: "overLimit",
-  PowerOverCapacity: "powerOver",
-  PowerNearCapacity: "powerNear"
+  OverLimit: "overLimit"
 };
+
+const POWER_CODES: ReadonlySet<string> = new Set(["PowerOverCapacity", "PowerNearCapacity"]);
+
+/** Power problems are told by the power meter (with the output to look for), so the problem list leaves them out. */
+export function withoutPowerIssues<T extends { code: string }>(issues: readonly T[]): T[] {
+  return issues.filter((issue) => !POWER_CODES.has(issue.code));
+}
 
 export type IssueMessageKey = (typeof MESSAGE_KEYS)[string] | "generic";
 

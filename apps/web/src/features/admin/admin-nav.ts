@@ -4,7 +4,7 @@ export type AdminAreaKey =
   | "inventory" | "builds" | "purchases" | "stockImport" | "categories" | "brands"
   | "partners" | "expenses" | "accounts"
   | "requests"
-  | "articles" | "faq" | "policies"
+  | "articles" | "faq" | "policies" | "customerBuilds"
   | "users" | "audit" | "system" | "settings";
 
 export type AdminGroupKey = "home" | "sales" | "stock" | "money" | "customers" | "content" | "system";
@@ -66,7 +66,9 @@ export const ADMIN_NAV: readonly AdminGroup[] = [
     areas: [
       { key: "articles", href: "/admin/articles", anyOf: ["System.StoreSettings"] },
       { key: "faq", href: "/admin/faq", anyOf: ["System.StoreSettings"] },
-      { key: "policies", href: "/admin/policies", anyOf: ["System.StoreSettings"] }
+      { key: "policies", href: "/admin/policies", anyOf: ["System.StoreSettings"] },
+      // Customers' public builds wait here for approval; moderating them takes the same permission as managing products and reviews.
+      { key: "customerBuilds", href: "/admin/customer-builds", anyOf: ["Catalog.ManageProducts"] }
     ]
   },
   {

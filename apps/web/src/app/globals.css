@@ -1155,3 +1155,147 @@ img.swap-photo {
     display: none !important;
   }
 }
+
+/* ---- Builder and shared builds (4.11 D) ---- */
+
+/* A status dot that sends out a ring: green = compatible, amber = a warning, red = a conflict. */
+.status-dot {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--dot, var(--success));
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--dot, var(--success));
+  border-radius: inherit;
+  pointer-events: none;
+  animation: dot-ring 2s var(--ease-out) infinite;
+}
+
+.status-dot[data-tone="warn"] {
+  --dot: var(--warning);
+}
+
+.status-dot[data-tone="bad"] {
+  --dot: var(--error-text);
+}
+
+.status-dot[data-tone="idle"] {
+  --dot: var(--muted);
+}
+
+.status-dot[data-tone="idle"]::after {
+  display: none;
+}
+
+/* The case blueprint: a part that is not chosen is a dashed outline, a chosen one fills with the accent. */
+.bp-case {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2;
+  opacity: 0.9;
+}
+
+.bp-part {
+  fill: none;
+  stroke: var(--input-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  cursor: pointer;
+  transition: fill 220ms ease, stroke 220ms ease;
+}
+
+.bp-part[data-solid="true"] {
+  stroke-dasharray: none;
+}
+
+.bp-part[data-state="filled"] {
+  fill: var(--orange-soft);
+  stroke: var(--orange);
+  stroke-dasharray: none;
+}
+
+.bp-part[data-active="true"] {
+  stroke: var(--orange);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--orange) 55%, transparent));
+}
+
+.bp-part[data-issue="warning"] {
+  stroke: var(--warning);
+}
+
+.bp-part[data-issue="conflict"] {
+  stroke: var(--error-text);
+}
+
+.bp-detail {
+  fill: none;
+  stroke: var(--input-line);
+  stroke-width: 1.25;
+  pointer-events: none;
+  transition: stroke 220ms ease;
+}
+
+.bp-detail[data-state="filled"] {
+  stroke: var(--orange);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bp-part:hover {
+    stroke: var(--orange);
+  }
+}
+
+/* The power bar: the fill is the share of the supply the estimate uses; the tick marks the headroom the advice keeps. */
+.power-fill {
+  transition: width 400ms var(--ease-out), background-color 220ms ease;
+}
+
+/* Wizard (home "اقترح لي تجميعة"): a choice card glows when selected; the next step slides in from the side it is on. */
+.choice-card {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, transform 180ms var(--ease-out);
+}
+
+.choice-card[aria-pressed="true"] {
+  border-color: var(--orange);
+  background-color: var(--orange-soft);
+  box-shadow: 0 0 0 1px var(--orange), 0 10px 28px -10px color-mix(in srgb, var(--orange) 60%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .choice-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--orange) 55%, var(--line));
+  }
+}
+
+@keyframes wizard-slide {
+  from {
+    opacity: 0;
+    transform: translateX(var(--wizard-from, 24px));
+  }
+}
+
+.wizard-panel[data-direction] {
+  animation: wizard-slide 220ms var(--ease-out) both;
+}
+
+.wizard-panel[data-direction="back"] {
+  --wizard-from: -24px;
+}
+
+[dir="rtl"] .wizard-panel[data-direction] {
+  --wizard-from: -24px;
+}
+
+[dir="rtl"] .wizard-panel[data-direction="back"] {
+  --wizard-from: 24px;
+}

@@ -514,6 +514,24 @@ export const HeartIcon = ({ filled = false, ...p }: IconProps & { filled?: boole
     <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill={filled ? "currentColor" : "none"} />
   </Icon>
 );
+export const ThumbUpIcon = ({ filled = false, ...p }: IconProps & { filled?: boolean }) => (
+  <Icon {...p}>
+    <path d="M7 11v9H4v-9z" fill={filled ? "currentColor" : "none"} />
+    <path d="M7 11l4-7a2 2 0 0 1 2 2.2L12.5 9H19a2 2 0 0 1 2 2.4l-1.3 6.2a2 2 0 0 1-2 1.6H7" fill={filled ? "currentColor" : "none"} />
+  </Icon>
+);
+export const LockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="5" y="11" width="14" height="9" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </Icon>
+);
+export const LinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Icon>
+);
 export const BankIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M3 9.5L12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" />

@@ -13,10 +13,14 @@ public sealed class SavedBuild
     public Guid? UserAccountId { get; set; }
     public string? Name { get; set; }
     public string? Usage { get; set; }
+    public BuildVisibility Visibility { get; set; } = BuildVisibilityRules.Default;
     public List<SavedBuildPart> Parts { get; set; } = [];
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public long RowVersion { get; set; } = 1;
+
+    /// <summary>The admin's decision, once the build has been made public; null for a build that never was.</summary>
+    public BuildModeration? Moderation { get; set; }
 }
 
 /// <summary>Saved build rules: name cleaning, the per-account limit and the unguessable share token.</summary>

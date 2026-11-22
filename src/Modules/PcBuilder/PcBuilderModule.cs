@@ -15,6 +15,8 @@ public static class PcBuilderRegistration
             ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
         services.AddAuditedDbContextFactory<PcBuilderDbContext>(connectionString);
         services.AddScoped<SavedBuildStore>();
+        services.AddScoped<BuildReactionStore>();
+        services.AddScoped<CommunityBuildStore>();
         services.AddScoped<IDataResetSource, PcBuilderDataReset>();
         return services;
     }

@@ -12,6 +12,7 @@ import { required } from "@/lib/api/required";
 import { parseCondition } from "@/lib/condition";
 import { formatDate, formatEgp } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
+import { QuoteImageButton } from "./QuoteImageButton";
 import { builderPath, partsOf, type PartInput } from "./builder-state";
 
 type Quote = Schemas["QuoteDocument"];
@@ -72,6 +73,7 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
   const tu = useTranslations("usage");
   const locale = useLocale();
   const { frame, scale } = useFitScale();
+  const card = useRef<HTMLElement>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
 
   useEffect(() => {
@@ -104,10 +106,12 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
     <div data-print-document className="mx-auto flex max-w-[1080px] flex-col gap-4 px-4 py-8 md:py-12 print:max-w-none print:p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <ButtonLink href={builderPath(outcome.parts)} variant="secondary" icon={ArrowBackIcon}>{t("backToBuilder")}</ButtonLink>
+        <QuoteImageButton card={card} width={DESIGN_WIDTH} height={DESIGN_HEIGHT} fileLabel={quote.title ?? ""} />
         <Button type="button" variant="primary" icon={PrinterIcon} onClick={() => window.print()}>{t("print")}</Button>
       </div>
       <div ref={frame} data-quote-frame className="relative w-full" style={{ height: DESIGN_HEIGHT * scale }}>
         <article
+          ref={card}
           data-quote-card
           className="absolute top-0 flex origin-top-left flex-col gap-8 overflow-hidden bg-[#15171B] p-16 text-[#F4F2ED]"
           style={{

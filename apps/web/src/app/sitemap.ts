@@ -11,7 +11,7 @@ import type { CategoryNode } from "@/lib/categories";
 /** Rebuilt at most hourly, so new items, builds and categories reach the sitemap without a deploy. */
 export const revalidate = 3600;
 
-const STATIC_PATHS = ["/", "/products", "/builds", "/builder", "/services", "/faq", "/warranty"];
+const STATIC_PATHS = ["/", "/products", "/builds", "/customer-builds", "/builder", "/services", "/faq", "/warranty"];
 const API_PAGE_SIZE = 60;
 /** Safety stop for the item paging (60 × 200 = 12,000 items, far under the 50,000 URL limit). */
 const MAX_PAGES = 200;

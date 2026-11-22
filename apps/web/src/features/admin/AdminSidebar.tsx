@@ -17,7 +17,7 @@ const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
   inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, stockImport: DocumentIcon, categories: FolderIcon, brands: ShieldIcon,
   partners: HandshakeIcon, expenses: WalletIcon, accounts: BankIcon,
   requests: InboxIcon,
-  articles: DocumentIcon, faq: HelpIcon, policies: DocumentIcon,
+  articles: DocumentIcon, faq: HelpIcon, policies: DocumentIcon, customerBuilds: CaseIcon,
   users: KeyIcon, audit: ClockIcon, system: DatabaseIcon, settings: GearIcon
 };
 

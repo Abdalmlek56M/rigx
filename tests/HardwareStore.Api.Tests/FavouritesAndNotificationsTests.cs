@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.Identity;
+using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Retail;
 using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,8 @@ public sealed class FavouritesAndNotificationsTests(OwnerBootstrapPostgreSqlFixt
                 services.AddDbContextFactory<RetailDbContext>(options => options.UseNpgsql(database.ConnectionString));
                 services.RemoveAll<IDbContextFactory<CatalogDbContext>>();
                 services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(database.ConnectionString));
+                services.RemoveAll<IDbContextFactory<PcBuilderDbContext>>();
+                services.AddDbContextFactory<PcBuilderDbContext>(options => options.UseNpgsql(database.ConnectionString));
             }));
         }
 

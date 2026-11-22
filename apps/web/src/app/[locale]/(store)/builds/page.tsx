@@ -11,7 +11,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorBlock } from "@/components/ui/ErrorBlock";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { CaseIcon } from "@/components/ui/icons";
+import { CaseIcon, UsersIcon } from "@/components/ui/icons";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
@@ -40,7 +40,7 @@ export default async function BuildsPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <PageHeader atmosphere title={t("title")} lead={t("subtitle")} icon={CaseIcon} />
+      <PageHeader atmosphere title={t("title")} lead={t("subtitle")} icon={CaseIcon} actions={<ButtonLink href="/customer-builds" variant="secondary" icon={UsersIcon}>{t("customerBuilds")}</ButtonLink>} />
       <section className="shell pb-5">
         <BuildsFilters state={state} />
       </section>

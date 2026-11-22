@@ -29,6 +29,7 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
     { href: "/products?condition=New", label: t("shop.new") },
     { href: "/products?condition=Used", label: t("shop.used") },
     { href: "/builds", label: t("shop.builds") },
+    { href: "/customer-builds", label: t("shop.customerBuilds") },
     { href: "/builder", label: t("shop.builder") }
   ];
   const help = [

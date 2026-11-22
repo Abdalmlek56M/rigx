@@ -17,6 +17,7 @@ public static class IdentityRateLimitPolicies
     public const string WarrantyLookup = "warranty-lookup";
     public const string CouponCheck = "coupon-check";
     public const string BuilderSave = "builder-save";
+    public const string BuilderReaction = "builder-reaction";
     public const string ArticleView = "article-view";
 }
 
@@ -39,6 +40,7 @@ public static class IdentityRateLimiting
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.WarrantyLookup, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.CouponCheck, 20, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.BuilderSave, 20, TimeSpan.FromMinutes(10));
+            AddFixedWindowPolicy(options, IdentityRateLimitPolicies.BuilderReaction, 60, TimeSpan.FromMinutes(10));
             AddFixedWindowPolicy(options, IdentityRateLimitPolicies.ArticleView, 60, TimeSpan.FromMinutes(10));
 
             options.OnRejected = async (rejection, cancellationToken) =>
@@ -93,7 +95,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.EmailChangeConfirm or IdentityRateLimitPolicies.EmailCodeVerify => "600",
         IdentityRateLimitPolicies.CatalogSuggest or IdentityRateLimitPolicies.OrderTracking => "60",
         IdentityRateLimitPolicies.Checkout or IdentityRateLimitPolicies.WarrantyLookup or IdentityRateLimitPolicies.CouponCheck
-            or IdentityRateLimitPolicies.BuilderSave
+            or IdentityRateLimitPolicies.BuilderSave or IdentityRateLimitPolicies.BuilderReaction
             or IdentityRateLimitPolicies.ArticleView or IdentityRateLimitPolicies.RequestPhoto => "600",
         _ => "3600"
     };
@@ -111,6 +113,7 @@ public static class IdentityRateLimiting
         IdentityRateLimitPolicies.WarrantyLookup => "Sales.WarrantyLookup.RateLimited",
         IdentityRateLimitPolicies.CouponCheck => "Sales.CouponCheck.RateLimited",
         IdentityRateLimitPolicies.BuilderSave => "Builder.Save.RateLimited",
+        IdentityRateLimitPolicies.BuilderReaction => "Builder.Reaction.RateLimited",
         IdentityRateLimitPolicies.ArticleView => "Content.ArticleView.RateLimited",
         IdentityRateLimitPolicies.OrderTracking => "Sales.Tracking.RateLimited",
         _ => "Identity.RateLimited"

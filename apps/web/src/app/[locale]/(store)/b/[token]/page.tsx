@@ -2,16 +2,20 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BuildVisibilityControl } from "@/features/builder/BuildVisibilityControl";
 import { SharedBuildParts } from "@/features/builder/SharedBuildParts";
 import { SharedBuildSummary } from "@/features/builder/SharedBuildSummary";
 import { isSavedToken } from "@/features/builder/builder-state";
 import { specNameMap } from "@/features/builder/issue-text";
 import { loadSharedBuild } from "@/features/builder/load-shared-build";
+import { parseVisibility } from "@/features/builder/build-visibility";
 import { loadSlots } from "@/features/builder/load-slots";
 import { localizeSlots } from "@/features/builder/slot-names";
+import { BuildReactions } from "@/features/community/BuildReactions";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EyeIcon } from "@/components/ui/icons";
 import { routing } from "@/i18n/routing";
 import { siteUrl, whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
@@ -41,6 +45,7 @@ export default async function SharedBuildPage({ params }: Props) {
   const slotNames = Object.fromEntries(slots.map((entry) => [entry.slot, entry.name]));
   const usage = parseUsage(build.usage);
   const evaluation = build.evaluation;
+  const visibility = parseVisibility(build.visibility);
 
   return (
     <>
@@ -50,7 +55,12 @@ export default async function SharedBuildPage({ params }: Props) {
         title={build.name ?? t("untitled")}
         titleDir="auto"
         lead={build.authorName ? t("by", { name: build.authorName }) : undefined}
-        actions={usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : undefined}
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            {usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : null}
+            {visibility !== "Private" ? <BuildReactions token={token} initial={build.reactions} /> : null}
+          </div>
+        }
       />
       <div className="grid shell items-start gap-5 pb-16 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col gap-4">
@@ -58,6 +68,11 @@ export default async function SharedBuildPage({ params }: Props) {
             <Card padding="sm"><p className="m-0 text-sm">{t("missing")}</p></Card>
           ) : null}
           <SharedBuildParts parts={evaluation.parts} slotNames={slotNames} />
+          {build.isOwner ? (
+            <Card title={t("visibilityTitle")} icon={EyeIcon}>
+              <BuildVisibilityControl token={token} visibility={visibility} moderation={build.moderation ?? null} />
+            </Card>
+          ) : null}
         </div>
         <SharedBuildSummary
           token={token}

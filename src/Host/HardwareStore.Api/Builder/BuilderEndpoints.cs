@@ -20,6 +20,7 @@ public static class BuilderEndpoints
         builder.MapPost("/saved", SaveAsync).RequireRateLimiting(IdentityRateLimitPolicies.BuilderSave);
         builder.MapGet("/saved/{token}", GetSavedAsync);
         endpoints.MapPut("/api/v1/builder/saved/{token}", UpdateSavedAsync).RequireAuthorization();
+        endpoints.MapPut("/api/v1/builder/saved/{token}/visibility", SetVisibilityAsync).RequireAuthorization();
         endpoints.MapDelete("/api/v1/builder/saved/{token}", DeleteSavedAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/account/builds", ListMineAsync).RequireAuthorization();
         return endpoints;
@@ -59,7 +60,7 @@ public static class BuilderEndpoints
     {
         context.Response.Headers.CacheControl = "no-store";
         Guid? userId = context.TryGetUserId(out var id) ? id : null;
-        return TypedResults.Ok(await saved.SaveAsync(userId, request.Name, request.Usage, request.Parts, ct));
+        return TypedResults.Ok(await saved.SaveAsync(userId, request.Name, request.Usage, request.Parts, request.Visibility, ct));
     }
 
     private static async Task<Ok<SavedBuildView>> GetSavedAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)
@@ -74,7 +75,15 @@ public static class BuilderEndpoints
     {
         var userId = context.RequireUserId();
         context.Response.Headers.CacheControl = "no-store";
-        return TypedResults.Ok(await saved.UpdateAsync(token, userId, request.Name, request.Usage, request.Parts, request.RowVersion, ct));
+        return TypedResults.Ok(await saved.UpdateAsync(token, userId, request.Name, request.Usage, request.Parts, request.Visibility, request.RowVersion, ct));
+    }
+
+    private static async Task<Ok<SavedBuildSummary>> SetVisibilityAsync(string token, BuilderVisibilityRequest request, HttpContext context, SavedBuildService saved,
+        CancellationToken ct)
+    {
+        var userId = context.RequireUserId();
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(await saved.SetVisibilityAsync(token, userId, request.Visibility, ct));
     }
 
     private static async Task<NoContent> DeleteSavedAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)

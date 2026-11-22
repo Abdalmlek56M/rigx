@@ -30,7 +30,7 @@ export function SlotList({ slots, parts, active, onSelect, onClear }: SlotListPr
         const part = parts.find((candidate) => candidate.slot === entry.slot);
         const isActive = entry.slot === active;
         const tone = isActive
-          ? "surface-strong border-transparent"
+          ? "bg-carbon! text-on-carbon! border-transparent"
           : part
             ? ""
             : "border-dashed text-ink-muted";

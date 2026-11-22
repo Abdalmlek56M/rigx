@@ -6,6 +6,7 @@ import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { EMPTY_EVALUATION, type Evaluation } from "./builder-summary";
 import { builderPath, cleanShareName, parsePartsParam, partsOf, partsParam, removeCode, replaceInSlot, type BuilderParams, type PartInput } from "./builder-state";
+import { DEFAULT_VISIBILITY, type Visibility } from "./build-visibility";
 import { createShareLink, type ShareLink } from "./share-link";
 
 export type Unmatched = Schemas["UnmatchedPartView"];
@@ -20,11 +21,13 @@ export function useBuilder(start: BuilderParams) {
   const [evaluated, setEvaluated] = useState<{ key: string; evaluation: Evaluation } | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [visibility, setVisibility] = useState<Visibility>(DEFAULT_VISIBILITY);
+  const [shareFailedKey, setShareFailedKey] = useState<string | null>(null);
   const [share, setShare] = useState<(ShareLink & { key: string }) | null>(null);
   const knownSlots = useRef(new Map<string, string>());
   const key = partsParam(parts);
-  // A copied link is only the current one for the same parts and the same name.
-  const shareKey = `${key}|${cleanShareName(name) ?? ""}`;
+  // A copied link is only the current one for the same parts, name and visibility.
+  const shareKey = `${key}|${cleanShareName(name) ?? ""}|${visibility}`;
 
   useEffect(() => {
     if (!opensExisting) return;
@@ -87,10 +90,15 @@ export function useBuilder(start: BuilderParams) {
   const remove = useCallback((code: string) => setParts((current) => removeCode(current, code)), []);
 
   const copyLink = useCallback(async () => {
-    const link = await createShareLink(parts, name);
-    setShare({ ...link, key: shareKey });
-    await navigator.clipboard.writeText(link.url).catch(() => undefined);
-  }, [parts, name, shareKey]);
+    setShareFailedKey(null);
+    try {
+      const link = await createShareLink(parts, name, visibility);
+      setShare({ ...link, key: shareKey });
+      await navigator.clipboard.writeText(link.url).catch(() => undefined);
+    } catch {
+      setShareFailedKey(shareKey);
+    }
+  }, [parts, name, visibility, shareKey]);
 
   return {
     parts,
@@ -102,7 +110,10 @@ export function useBuilder(start: BuilderParams) {
     checkFailed: failedKey === key,
     name,
     setName,
+    visibility,
+    setVisibility,
     share: share?.key === shareKey ? share : null,
+    shareFailed: shareFailedKey === shareKey,
     pick,
     clear,
     remove,

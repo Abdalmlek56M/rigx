@@ -4,6 +4,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { useSession } from "@/features/auth/use-session";
+import { loginHref } from "@/features/auth/auth-rules";
+import { Link } from "@/i18n/navigation";
 import { CopyIcon, DocumentIcon, ShareIcon } from "@/components/ui/icons";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
@@ -11,6 +14,8 @@ import { useCart } from "@/features/cart/cart-context";
 import { cartLinesOf, partsSummaryText, type Evaluation } from "./builder-summary";
 import { SHARE_NAME_MAX, quotePath, type PartInput } from "./builder-state";
 import type { ShareLink } from "./share-link";
+import type { Visibility } from "./build-visibility";
+import { VisibilityPicker } from "./VisibilityPicker";
 
 interface SummaryActionsProps {
   evaluation: Evaluation;
@@ -27,12 +32,24 @@ interface SummaryActionsProps {
   /** The optional name of the build, shown on the shared page. */
   name: string;
   onNameChange: (value: string) => void;
+  /** Who may open the shared link; only a signed-in visitor can pick anything but "by link". */
+  visibility: Visibility;
+  onVisibilityChange: (value: Visibility) => void;
+  /** Saving a private or public build failed (it is never shared as an open link instead). */
+  shareFailed: boolean;
+}
+
+/** The note after the link was copied: what was saved and who can open it. */
+function copiedKey(shared: ShareLink): "copiedPlain" | "copiedSaved" | "copiedPrivate" | "copiedPublic" {
+  if (!shared.saved) return "copiedPlain";
+  return shared.visibility === "Private" ? "copiedPrivate" : shared.visibility === "Public" ? "copiedPublic" : "copiedSaved";
 }
 
 /** Add everything to the cart, ask on WhatsApp, copy the link, the PDF quote, and the "this does not reserve parts" note. */
-export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, onCopyLink, name, onNameChange }: SummaryActionsProps) {
+export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, onCopyLink, name, onNameChange, visibility, onVisibilityChange, shareFailed }: SummaryActionsProps) {
   const t = useTranslations("builder.actions");
   const tc = useTranslations("common.condition");
+  const session = useSession();
   const locale = useLocale();
   const { add, open } = useCart();
   const hasParts = evaluation.parts.length > 0;
@@ -83,10 +100,19 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
           maxLength={SHARE_NAME_MAX}
           placeholder={t("shareNamePlaceholder")}
         />
+        {session.status === "signedIn" ? (
+          <VisibilityPicker value={visibility} onChange={onVisibilityChange} />
+        ) : session.status === "signedOut" ? (
+          <p className="type-label m-0">
+            <Link href={loginHref("/builder")} className="text-orange-text underline hover:text-orange-text-hover">{t("signInLink")}</Link> {t("signInNote")}
+          </p>
+        ) : null}
         <Button type="button" variant="secondary" icon={CopyIcon} disabled={!hasParts || checking} onClick={onCopyLink} className="w-full">
           {t("copyLink")}
         </Button>
-        <span role="status" className="text-xs text-ink-muted">{shared ? t(shared.saved ? "copiedSaved" : "copiedPlain") : ""}</span>
+        <span role="status" className={`text-xs ${shareFailed ? "text-error-text" : "text-ink-muted"}`}>
+          {shareFailed ? t("shareFailed") : shared ? t(copiedKey(shared)) : ""}
+        </span>
       </div>
       <span className="text-xs leading-6 text-ink-muted">{t("note")}</span>
     </>

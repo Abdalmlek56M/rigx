@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using HardwareStore.Common.Domain.Paging;
+using HardwareStore.Common.Infrastructure.Audit;
 using HardwareStore.Modules.Catalog;
 using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Retail;
@@ -19,7 +20,7 @@ namespace HardwareStore.Api.Tests;
 
 /// <summary>PC builder v2 (roadmap 2.13): slots, options, check, quote, saved builds and "edit this build".</summary>
 [Trait("Category", "RequiresDocker")]
-public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : IClassFixture<OwnerBootstrapPostgreSqlFixture>
+public sealed partial class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : IClassFixture<OwnerBootstrapPostgreSqlFixture>
 {
     private const string Root = "/api/v1/builder";
     private static readonly Guid Actor = Guid.NewGuid();
@@ -44,7 +45,7 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
                 services.RemoveAll<IDbContextFactory<CatalogDbContext>>();
                 services.AddDbContextFactory<CatalogDbContext>(options => options.UseNpgsql(database.ConnectionString));
                 services.RemoveAll<IDbContextFactory<PcBuilderDbContext>>();
-                services.AddDbContextFactory<PcBuilderDbContext>(options => options.UseNpgsql(database.ConnectionString));
+                services.AddAuditedDbContextFactory<PcBuilderDbContext>(database.ConnectionString);
                 services.RemoveAll<IDbContextFactory<StorefrontDbContext>>();
                 services.AddDbContextFactory<StorefrontDbContext>(options => options.UseNpgsql(database.ConnectionString));
             }));
@@ -92,9 +93,9 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
                 current.Specs, current.RowVersion));
         }
 
-        public async Task<HttpClient> SignedInAsync(string name)
+        public async Task<HttpClient> SignedInAsync(string name, params string[] permissions)
         {
-            await EmailCodeSignInTests.CreateAccountAsync(Database, $"{name}@example.test", verified: true, active: true, roleCode: $"{name}-role");
+            await EmailCodeSignInTests.CreateAccountAsync(Database, $"{name}@example.test", verified: true, active: true, roleCode: $"{name}-role", permissions);
             var client = Factory.CreatePreflightedClient(new() { HandleCookies = true });
             await TestSignIn.SignInAsync(client, Factory.Services, $"{name}@example.test");
             return client;
@@ -407,11 +408,12 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
     }
 }
 
-/// <summary>M32 replaces the template tables with saved_builds on a database that already has the old ones.</summary>
+/// <summary>M32 replaces the template tables with saved_builds on a database that already has the old ones; M61 keeps existing builds open by link.</summary>
 [Trait("Category", "RequiresDocker")]
 public sealed class BuilderMigrationTests(OwnerBootstrapPostgreSqlFixture fixture) : IClassFixture<OwnerBootstrapPostgreSqlFixture>
 {
     private const string BeforeSavedBuilds = "20261109162811_M1_PcBuilderTemplates";
+    private const string BeforeVisibility = "20261113213927_M32_SavedBuilds";
 
     [Fact]
     public async Task The_template_tables_are_dropped_and_saved_builds_is_created()
@@ -435,6 +437,28 @@ public sealed class BuilderMigrationTests(OwnerBootstrapPostgreSqlFixture fixtur
         Assert.Null(await TableAsync(db, "pc_build_templates"));
         Assert.Null(await TableAsync(db, "pc_build_slots"));
         Assert.Null(await TableAsync(db, "pc_build_slot_options"));
+    }
+
+    [Fact]
+    public async Task Builds_saved_before_visibility_existed_stay_open_by_link()
+    {
+        var name = $"builder_migration_{Guid.NewGuid():N}";
+        await using (var admin = new NpgsqlConnection(fixture.ConnectionString))
+        {
+            await admin.OpenAsync();
+            await using var create = admin.CreateCommand();
+            create.CommandText = $"CREATE DATABASE \"{name}\"";
+            await create.ExecuteNonQueryAsync();
+        }
+        var connectionString = new NpgsqlConnectionStringBuilder(fixture.ConnectionString) { Database = name }.ConnectionString;
+        await using var db = new PcBuilderDbContext(new DbContextOptionsBuilder<PcBuilderDbContext>().UseNpgsql(connectionString).Options);
+        await db.GetService<IMigrator>().MigrateAsync(BeforeVisibility);
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO saved_builds (id, token, parts, created_at_utc, updated_at_utc) VALUES (gen_random_uuid(), 'old-link', '[]', now(), now())");
+
+        await db.Database.MigrateAsync();
+
+        Assert.Equal("Link", await db.Database.SqlQuery<string>($"SELECT visibility AS \"Value\" FROM saved_builds").SingleAsync());
     }
 
     private static Task<string?> TableAsync(PcBuilderDbContext db, string table) =>

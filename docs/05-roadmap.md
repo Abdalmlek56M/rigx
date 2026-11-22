@@ -64,7 +64,7 @@ Order matters: we restructure before adding features, so new features land in cl
    - [x] **A** defects and the front door (done 22 Nov 2026, see checkpoint 4.11) (governorates, language/services buttons, top strip, filters, category cards, login, copy, sign-out confirm, stock dot)
    - [x] **B** design system v2 (done 22 Nov 2026, see checkpoint 4.11 and `docs/design/storefront-kit.md`) (buttons, headings, tables, states; English pass of cart/checkout/account)
    - [x] **C** motion and atmosphere (done 22 Nov 2026, see checkpoint 4.11 and `docs/design/storefront-kit.md §6`) (CSS motion, tab indicator, warranty battery, dark-theme glow + circuit canvas, card/image ideas judged, grid/list view, hover swap)
-   - [ ] **D** builder and shared builds (blueprint, power bar, visibility, hearts, gallery, PNG)
+   - [x] **D** builder and shared builds (done 22 Nov 2026, see checkpoint 4.11 and `docs/design/storefront-kit.md §7`) (case blueprint, power bar and advice, wizard, visibility, hearts and likes, approved public gallery, copy as PNG; migration M61)
    - [ ] **E** customers (complaints + suggestions, history, invoice/quote, notifications, emails)
    - [ ] **F** admin productivity (command palette, POS, purchase, audit log v3, drag ordering, paste, brand rules)
    - [ ] **G** launch work (deploy, email DNS, Search Console/GA4, offers scheduling, final review)

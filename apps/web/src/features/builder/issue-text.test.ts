@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { CategoryNode } from "../../lib/categories.ts";
-import { describeIssue, specNameMap } from "./issue-text.ts";
+import { describeIssue, specNameMap, withoutPowerIssues } from "./issue-text.ts";
 
 type Issue = Parameters<typeof describeIssue>[0];
 
@@ -18,9 +18,9 @@ describe("describeIssue", () => {
       conflict: true
     });
   });
-  it("maps every known code", () => {
-    const keys = ["SpecMismatch", "OverLimit", "PowerOverCapacity", "PowerNearCapacity"].map((code) => describeIssue(issue({ code }), slots, specs).key);
-    assert.deepEqual(keys, ["specMismatch", "overLimit", "powerOver", "powerNear"]);
+  it("maps every code the list shows", () => {
+    const keys = ["SpecMismatch", "OverLimit"].map((code) => describeIssue(issue({ code }), slots, specs).key);
+    assert.deepEqual(keys, ["specMismatch", "overLimit"]);
   });
   it("uses generic for unknown codes and warnings are not conflicts", () => {
     const text = describeIssue(issue({ code: "Whatever", level: "Warning" }), slots, specs);
@@ -43,5 +43,13 @@ describe("specNameMap", () => {
   });
   it("is empty for an empty tree", () => {
     assert.deepEqual(specNameMap([]), {});
+  });
+});
+
+describe("withoutPowerIssues", () => {
+  it("drops the two power problems, which the power meter tells, and keeps the rest in order", () => {
+    const issues = ["SpecMismatch", "PowerOverCapacity", "OverLimit", "PowerNearCapacity"].map((code) => issue({ code }));
+    assert.deepEqual(withoutPowerIssues(issues).map((entry) => entry.code), ["SpecMismatch", "OverLimit"]);
+    assert.deepEqual(withoutPowerIssues([]), []);
   });
 });
