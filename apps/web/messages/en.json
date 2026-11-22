@@ -4758,6 +4758,8 @@
       },
       "step2": {
         "title": "2. Upload the file",
+        "choose": "Choose file",
+        "noFile": "No file chosen yet.",
         "hint": "Every row is checked first and nothing is saved."
       },
       "table": {

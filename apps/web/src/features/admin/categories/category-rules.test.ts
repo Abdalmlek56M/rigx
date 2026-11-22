@@ -9,6 +9,7 @@ import {
   emptyCategoryForm,
   flattenTree,
   findPath,
+  offeredPrices,
   parentOptions,
   specRowValid,
   specRows,
@@ -54,6 +55,22 @@ describe("category tree", () => {
   it("offers every category as a parent except the node and its subtree", () => {
     assert.deepEqual(parentOptions(tree, "processors").map((option) => option.id), ["gpu", "nvidia"]);
     assert.deepEqual(parentOptions(tree, null).map((option) => option.id), ["processors", "intel", "amd", "gpu", "nvidia"]);
+  });
+});
+
+describe("offered prices", () => {
+  const board = { ...cat("board"), priceOptions: { alone: false, withBoard: true, inBuild: true } };
+  const offered = [{ ...cat("parts"), children: [board] }];
+
+  it("reads the switches of the item's own category, however deep", () => {
+    assert.deepEqual(offeredPrices(offered, "board"), { alone: false, withBoard: true, inBuild: true });
+  });
+
+  it("offers everything while no category is chosen or the category is unknown", () => {
+    const all = { alone: true, withBoard: true, inBuild: true };
+    assert.deepEqual(offeredPrices(offered, null), all);
+    assert.deepEqual(offeredPrices(offered, "missing"), all);
+    assert.deepEqual(offeredPrices(offered, "parts"), all);
   });
 });
 

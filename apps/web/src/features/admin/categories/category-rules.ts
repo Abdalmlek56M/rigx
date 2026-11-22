@@ -45,6 +45,12 @@ export function findPath(nodes: readonly Category[], id: string): Category[] {
   return [];
 }
 
+/** Which of the three sale prices the category offers (all of them while no category is chosen or it is unknown). */
+export function offeredPrices(nodes: readonly Category[], categoryId: string | null): { alone: boolean; withBoard: boolean; inBuild: boolean } {
+  const options = categoryId ? findPath(nodes, categoryId).at(-1)?.priceOptions : undefined;
+  return { alone: options?.alone ?? true, withBoard: options?.withBoard ?? true, inBuild: options?.inBuild ?? true };
+}
+
 /** Every category that may become the parent of `excludeId`: the node itself and its whole subtree are left out (no cycles). */
 export function parentOptions(nodes: readonly Category[], excludeId: string | null): { id: string; name: string; depth: number }[] {
   const options: { id: string; name: string; depth: number }[] = [];

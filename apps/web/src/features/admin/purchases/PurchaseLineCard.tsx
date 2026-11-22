@@ -14,6 +14,7 @@ import { PartnerFields } from "../stock/PartnerFields";
 import { BrandSelect } from "../stock/BrandSelect";
 import { SpecFields } from "../stock/SpecFields";
 import { WarrantyField } from "../stock/WarrantyField";
+import { offeredPrices } from "../categories/category-rules";
 import { ModelInput } from "./ModelInput";
 import { dropPhotoCopy, lineDisplayName, lineTotal, pickModel, typeModel, type LineForm } from "./purchase-rules";
 import { ChevronDownIcon, CloseIcon, CopyIcon, TrashIcon } from "@/components/ui/icons";
@@ -51,6 +52,7 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
   const isUsed = line.condition === "Used";
   const title = lineDisplayName(line, tree, t("lineTitle", { number: index + 1 }));
   const missing = missingFields.length > 0;
+  const prices = offeredPrices(tree, line.categoryId || null);
 
   return (
     <li className={`flex flex-col gap-3 rounded-control border bg-paper p-3 ${missing ? "border-error/40" : "border-line"}`}>
@@ -96,9 +98,9 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
               {isUsed ? <TextField label={t("serial")} name={field("serialNumber")} ltr value={line.serialNumber} onChange={(serialNumber) => set({ serialNumber })} error={errorFor("serialNumber")} /> : null}
               <TextField label={t("unitCost")} name={field("unitCost")} type="number" ltr value={line.unitCost} onChange={(unitCost) => set({ unitCost })} error={errorFor("unitCost")} />
               <TextField label={t("price")} name={field("price")} type="number" ltr value={line.price} onChange={(price) => set({ price })} error={errorFor("price")} />
-              <TextField label={t("withBoardExtra")} name={field("withBoardExtra")} type="number" ltr value={line.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={errorFor("withBoardExtra")} />
-              <TextField label={t("aloneExtra")} name={field("aloneExtra")} type="number" ltr value={line.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={errorFor("aloneExtra")} />
-              <p className="m-0 self-start text-xs font-normal text-ink-muted sm:col-span-2 xl:col-span-3">{t("priceHint")}</p>
+              {prices.withBoard ? <TextField label={t("withBoardExtra")} name={field("withBoardExtra")} type="number" ltr value={line.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={errorFor("withBoardExtra")} /> : null}
+              {prices.alone ? <TextField label={t("aloneExtra")} name={field("aloneExtra")} type="number" ltr value={line.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={errorFor("aloneExtra")} /> : null}
+              {prices.withBoard || prices.alone ? <p className="m-0 self-start text-xs font-normal text-ink-muted sm:col-span-2 xl:col-span-3">{t("priceHint")}</p> : null}
               {partners && partners.length > 0 ? (
                 <PartnerFields
                   partners={partners} partnerId={line.partnerId} percent={line.partnerPercent} namePrefix={`line${index}-partner`}

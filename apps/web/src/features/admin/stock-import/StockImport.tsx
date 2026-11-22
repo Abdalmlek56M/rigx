@@ -53,7 +53,14 @@ export function StockImport() {
       </SectionCard>
 
       <SectionCard title={t("step2.title")} hint={t("step2.hint")}>
-        <input type="file" aria-label={t("step2.title")} accept=".xlsx" disabled={check.busy || commit.busy} onChange={(event) => void choose(event)} className="min-h-11 text-sm file:me-3 file:h-11 file:rounded-control file:border-0 file:bg-carbon file:px-5 file:font-bold file:text-on-carbon" />
+        <div className="flex flex-wrap items-center gap-3">
+          <label className={`${buttonClass({ variant: "primary" })} cursor-pointer ${check.busy || commit.busy ? "opacity-60" : ""}`}>
+            <UploadIcon size={buttonIconSize()} />
+            {t("step2.choose")}
+            <input type="file" accept=".xlsx" disabled={check.busy || commit.busy} onChange={(event) => void choose(event)} className="sr-only" />
+          </label>
+          <span dir="auto" className="text-sm text-ink-muted [unicode-bidi:isolate]">{file ? file.name : t("step2.noFile")}</span>
+        </div>
         <FormMessage message={fileError ?? check.errors.general} />
         {result && summary ? (
           <>

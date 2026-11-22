@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { formatEgp } from "@/lib/format";
+import { offeredPrices } from "../categories/category-rules";
 import { SellerPicker } from "../purchases/SellerPicker";
 import type { SellerSummary } from "../purchases/purchases-api";
 import { SELLER_PAYMENT_METHODS, type SellerPaymentMethod } from "../purchases/purchase-rules";
@@ -52,6 +53,7 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
   const error = (field: string) => submit.errors.fields[field];
   const setSpecs = useCallback((specs: NewPartForm["specs"]) => setForm((current) => ({ ...current, specs })), []);
   const isUsed = form.condition === "Used";
+  const prices = offeredPrices(lookups.tree, form.categoryId || null);
 
   async function add() {
     if (!newPartValid(form)) return;
@@ -86,8 +88,8 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
         {isUsed ? <TextField label={lines("serial")} name="newPartSerial" ltr value={form.serialNumber} onChange={(serialNumber) => set({ serialNumber })} error={error("serialNumber")} /> : null}
         <TextField label={t("cost")} name="newPartCost" type="number" ltr value={form.acquisitionCost} onChange={(acquisitionCost) => set({ acquisitionCost })} error={error("acquisitionCost")} />
         <TextField label={lines("price")} name="newPartPrice" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />
-        <TextField label={lines("withBoardExtra")} name="newPartWithBoard" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} />
-        <TextField label={lines("aloneExtra")} name="newPartAlone" type="number" ltr value={form.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={error("aloneExtra")} />
+        {prices.withBoard ? <TextField label={lines("withBoardExtra")} name="newPartWithBoard" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} /> : null}
+        {prices.alone ? <TextField label={lines("aloneExtra")} name="newPartAlone" type="number" ltr value={form.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={error("aloneExtra")} /> : null}
         {lookups.partners ? (
           <PartnerFields
             partners={financingPartners(lookups.partners)} partnerId={form.partnerId} percent={form.partnerPercent} namePrefix="newPartPartner"

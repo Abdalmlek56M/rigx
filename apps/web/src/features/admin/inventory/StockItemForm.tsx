@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { isConflict } from "@/lib/api/conflict";
+import { offeredPrices } from "../categories/category-rules";
 import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
 import { FormMessage } from "../kit/PageHeader";
@@ -35,6 +36,7 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
   const [form, setForm] = useState<Form>(() => toItemForm(item));
   const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
   const error = (field: string) => submit.errors.fields[field];
+  const prices = offeredPrices(tree, form.categoryId || null);
   const setSpecs = useCallback((specs: Form["specs"]) => setForm((current) => ({ ...current, specs })), []);
 
   async function save() {
@@ -65,10 +67,14 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
         <SpecFields categoryId={form.categoryId} values={form.specs} onChange={setSpecs} namePrefix="spec" error={error("specs")} />
         <div className="grid items-end gap-3 sm:grid-cols-3">
           <TextField label={t("price")} name="price" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />
-          <TextField label={t("withBoardExtra")} name="withBoardExtra" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} />
-          <TextField label={t("aloneExtra")} name="aloneExtra" type="number" ltr value={form.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={error("aloneExtra")} />
+          {prices.withBoard ? (
+            <TextField label={t("withBoardExtra")} name="withBoardExtra" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} />
+          ) : null}
+          {prices.alone ? (
+            <TextField label={t("aloneExtra")} name="aloneExtra" type="number" ltr value={form.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={error("aloneExtra")} />
+          ) : null}
         </div>
-        <p className="m-0 text-xs text-ink-muted">{t("priceHint")}</p>
+        {prices.withBoard || prices.alone ? <p className="m-0 text-xs text-ink-muted">{t("priceHint")}</p> : null}
         <WarrantyField value={form.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={warrantyLabels} error={error("warrantyLabel")} />
         <label className={checkbox}>
           <input type="checkbox" checked={form.hasBox} onChange={(event) => set({ hasBox: event.target.checked })} className="h-5 w-5" />
