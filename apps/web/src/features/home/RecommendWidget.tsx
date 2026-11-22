@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { BUDGETS, type Budget } from "@/features/builds/build-query";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ArrowBackIcon, BookIcon, BroadcastIcon, CheckIcon, FilmIcon, GamepadIcon, HelpIcon, PencilIcon } from "@/components/ui/icons";
+import { ArrowBackIcon, BookIcon, BroadcastIcon, CheckIcon, FilmIcon, GamepadIcon, HelpIcon, PencilIcon, WalletIcon } from "@/components/ui/icons";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { USAGES, type Usage } from "@/lib/usage";
 import { RECOMMEND_STEPS, slideDirection, stepBy, type RecommendStep, type SlideDirection } from "./recommend-steps";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
 
 const USAGE_ICONS: Record<Usage, (p: { size?: number }) => React.JSX.Element> = {
   Gaming: GamepadIcon,
@@ -20,28 +21,6 @@ const USAGE_ICONS: Record<Usage, (p: { size?: number }) => React.JSX.Element> = 
 
 /** A choice that was just made stays lit this long before the next step slides in. */
 const ADVANCE_MS = 280;
-
-interface ChoiceCardProps {
-  label: string;
-  selected: boolean;
-  icon?: ComponentType<{ size?: number }>;
-  onChoose: () => void;
-}
-
-/** One choice of a step: a card that glows when it is the selected one. */
-function ChoiceCard({ label, selected, icon: ChoiceIcon, onChoose }: ChoiceCardProps) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onChoose}
-      className="choice-card press flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-card border border-line bg-surface px-3 py-3 text-sm font-bold"
-    >
-      {ChoiceIcon ? <span aria-hidden="true" className={`flex size-10 items-center justify-center rounded-full ${selected ? "bg-orange text-on-orange" : "bg-paper text-ink-muted"}`}><ChoiceIcon size={20} /></span> : null}
-      {label}
-    </button>
-  );
-}
 
 /**
  * "اقترح لي تجميعة": a three-step wizard (usage, budget, send). Choosing a card lights it for a moment and slides to the next step; both
@@ -102,7 +81,7 @@ export function RecommendWidget({ whatsApp }: { whatsApp: { number: string; temp
             <legend className="mb-3 text-[15px] text-ink-muted">{t("eyebrow")} <b className="text-ink">{t("usageLegend")}</b></legend>
             <div className="grid grid-cols-2 gap-2.5">
               {USAGES.map((entry) => (
-                <ChoiceCard key={entry} label={tu(entry)} icon={USAGE_ICONS[entry]} selected={usage === entry} onChoose={() => choose(() => setUsage(entry))} />
+                <ChoiceTile key={entry} label={tu(entry)} icon={USAGE_ICONS[entry]} selected={usage === entry} onSelect={() => choose(() => setUsage(entry))} />
               ))}
             </div>
           </fieldset>
@@ -113,7 +92,7 @@ export function RecommendWidget({ whatsApp }: { whatsApp: { number: string; temp
             <legend className="mb-3 text-[15px] font-bold">{t("budgetLegend")}</legend>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               {BUDGETS.map((entry) => (
-                <ChoiceCard key={entry} label={tb(entry)} selected={budget === entry} onChoose={() => choose(() => setBudget(entry))} />
+                <ChoiceTile key={entry} label={tb(entry)} icon={WalletIcon} selected={budget === entry} onSelect={() => choose(() => setBudget(entry))} />
               ))}
             </div>
           </fieldset>

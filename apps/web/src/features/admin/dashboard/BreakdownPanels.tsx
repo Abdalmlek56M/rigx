@@ -6,6 +6,7 @@ import { parseUsage } from "@/lib/usage";
 import type { DashboardData } from "./dashboard-api";
 import { withShares } from "./dashboard-rules";
 import { Empty, Panel } from "./Panel";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 function Bar({ width, tone = "bg-carbon" }: { width: number; tone?: string }) {
   return (
@@ -34,7 +35,7 @@ export function TodoPanel({ todo, newRequests }: { todo: DashboardData["todo"]; 
           <li key={row.key} className="border-b border-line last:border-b-0">
             <Link href={row.href} className="flex min-h-11 items-center gap-2.5 py-2 text-sm hover:underline">
               <span className="flex-1">{t(row.key)}</span>
-              <span className={`rounded-[4px] px-2 py-0.5 text-xs font-bold ${row.count > 0 ? "bg-orange/15 text-orange-text" : "bg-line text-ink-muted"}`}>{row.count}</span>
+              <StatusBadge tone={row.count > 0 ? "warning" : "neutral"}>{row.count}</StatusBadge>
             </Link>
           </li>
         ))}

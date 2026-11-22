@@ -7,6 +7,8 @@ import { TextField } from "@/components/ui/TextField";
 import { localizedName } from "@/lib/localized-name";
 import type { FulfillmentMethod } from "./checkout-request";
 import { FormSection, OptionalPill, useFieldError, type SectionProps } from "./form-parts";
+import { ChoiceRadioTile } from "@/components/ui/ChoiceTile";
+import { MapPinIcon, TruckIcon } from "@/components/ui/icons";
 
 interface FulfillmentSectionProps extends SectionProps {
   pickupEnabled: boolean;
@@ -20,18 +22,14 @@ interface OptionProps extends Pick<SectionProps, "form" | "set"> {
   body: string;
 }
 
+const METHOD_ICONS = { Pickup: MapPinIcon, Delivery: TruckIcon } as const;
+
 function Option({ method, form, set, title, body }: OptionProps) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-card border border-input-line p-3.5 transition-colors duration-150 has-[:checked]:border-carbon has-[:checked]:bg-paper motion-reduce:transition-none">
-      <input
-        type="radio" name="fulfillment" value={method} checked={form.fulfillment === method}
-        onChange={() => set("fulfillment", method)} className="mt-1 h-[18px] w-[18px] accent-carbon"
-      />
-      <span className="flex flex-col gap-1">
-        <b className="text-[15px]">{title}</b>
-        <span className="text-[13px] leading-6 text-ink-muted">{body}</span>
-      </span>
-    </label>
+    <ChoiceRadioTile
+      name="fulfillment" value={method} icon={METHOD_ICONS[method]} label={title} note={body}
+      selected={form.fulfillment === method} onSelect={() => set("fulfillment", method)}
+    />
   );
 }
 
@@ -43,7 +41,7 @@ export function FulfillmentSection({ form, set, errors, pickupEnabled, pickupAdd
 
   return (
     <FormSection title={t("title")}>
-      <div role="radiogroup" aria-label={t("title")} className="flex flex-col gap-2.5">
+      <div role="radiogroup" aria-label={t("title")} className="grid gap-2.5 sm:grid-cols-2">
         {pickupEnabled ? (
           <Option
             method="Pickup" form={form} set={set}

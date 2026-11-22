@@ -7,6 +7,8 @@ import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
 import { TrashIcon } from "@/components/ui/icons";
 import { PART_CONDITIONS, PART_TYPES, type OfferedPart } from "./services-data";
+import { ChoiceRadioTile } from "@/components/ui/ChoiceTile";
+import { conditionIcon } from "@/components/ui/condition-icon";
 
 export type SellPart = OfferedPart & { key: number };
 
@@ -51,21 +53,12 @@ export function SellPartFields({ part, index, count, modelError, onChange, onRem
         />
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-bold">{t("condition")}</span>
-          <div role="radiogroup" aria-label={t("condition")} className="grid h-12 grid-cols-2 gap-1 rounded-control border border-input-line bg-surface p-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange">
+          <div role="radiogroup" aria-label={t("condition")} className="grid grid-cols-2 gap-2">
             {PART_CONDITIONS.map((condition) => (
-              <label key={condition} className="flex cursor-pointer">
-                <input
-                  type="radio"
-                  name={`condition-${part.key}`}
-                  value={condition}
-                  checked={part.condition === condition}
-                  onChange={() => onChange({ condition })}
-                  className="peer sr-only"
-                />
-                <span className="flex flex-1 items-center justify-center rounded-[7px] text-sm font-bold text-ink-muted transition-colors peer-checked:surface-strong">
-                  {t(`conditions.${condition}`)}
-                </span>
-              </label>
+              <ChoiceRadioTile
+                key={condition} name={`condition-${part.key}`} value={condition} icon={conditionIcon(condition)} label={t(`conditions.${condition}`)}
+                selected={part.condition === condition} onSelect={() => onChange({ condition })}
+              />
             ))}
           </div>
         </div>

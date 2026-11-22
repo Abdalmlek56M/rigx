@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
@@ -69,7 +70,7 @@ export function Orders() {
         <span className="flex flex-col items-start gap-0.5">
           <span className="flex flex-wrap items-center gap-1.5">
             <span>{order.customerName}</span>
-            {order.isBlacklisted ? <span className="rounded-[4px] bg-error px-1.5 py-0.5 text-[11px] font-bold text-surface">{t("blacklisted")}</span> : null}
+            {order.isBlacklisted ? <StatusBadge tone="danger">{t("blacklisted")}</StatusBadge> : null}
           </span>
           <span className="text-xs text-ink-muted">{t(`channels.${order.channel === "Store" ? "Store" : "Online"}`)}</span>
         </span>

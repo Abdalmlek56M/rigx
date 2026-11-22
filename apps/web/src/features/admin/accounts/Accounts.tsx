@@ -16,6 +16,7 @@ import { usePermissions } from "../use-permissions";
 import { AccountDialog } from "./AccountDialog";
 import { activeBalance } from "./account-rules";
 import { deleteAccount, fetchAccounts, type MoneyAccount } from "./accounts-api";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 /** ADM-Accounts: the places money is kept (cash drawer, InstaPay, wallet, bank) with their balances; add, edit, delete or switch off. */
 export function Accounts() {
@@ -45,7 +46,7 @@ export function Accounts() {
     { key: "balance", header: t("balance"), align: "end", cell: (account) => <span className="whitespace-nowrap font-bold">{formatEgp(account.balance, locale)}</span> },
     {
       key: "status", header: t("status"),
-      cell: (account) => <span className={`text-sm ${account.isActive ? "font-bold text-success" : "text-ink-muted"}`}>{t(account.isActive ? "on" : "off")}</span>
+      cell: (account) => <StatusBadge tone={account.isActive ? "success" : "neutral"}>{t(account.isActive ? "on" : "off")}</StatusBadge>
     },
     ...(canManage ? [{
       key: "actions", header: "",

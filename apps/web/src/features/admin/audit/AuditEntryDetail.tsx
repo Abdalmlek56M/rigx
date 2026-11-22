@@ -13,6 +13,8 @@ import { useAuditLabels } from "./use-audit-labels";
 import { usePermissions } from "../use-permissions";
 import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button, IconButton } from "../kit/Button";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 
 /** One data-change entry: who, when and from which device, then each field before → after with additions and removals marked. */
 export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onClose: () => void; onRestored: () => void }) {
@@ -75,10 +77,10 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
 
 const EMPTY_NAMES: ReadonlyMap<string, string> = new Map();
 
-const STATUS_TONE: Record<DiffStatus, { item: string; chip: string }> = {
-  changed: { item: "border-orange/40", chip: "bg-orange/15 text-orange-text" },
-  added: { item: "border-success/40", chip: "bg-success/15 text-success" },
-  removed: { item: "border-error/40", chip: "bg-error/10 text-error-text" }
+const STATUS_TONE: Record<DiffStatus, { item: string; chip: StatusTone }> = {
+  changed: { item: "border-orange/40", chip: "warning" },
+  added: { item: "border-success/40", chip: "success" },
+  removed: { item: "border-error/40", chip: "danger" }
 };
 
 /** One field: its Arabic name, whether it was added, changed or removed, and its value(s). */
@@ -93,7 +95,7 @@ function DiffItem({ entity, row, linkedNames }: { entity: string; row: DiffRow; 
     <li className={`flex flex-col gap-2 rounded-control border border-s-4 bg-paper p-3 ${tone.item}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm font-bold">{labels.field(row.field)}</span>
-        <span className={`rounded-[4px] px-2 py-[2px] text-[11px] font-bold ${tone.chip}`}>{t(`diff.${row.status}`)}</span>
+        <StatusBadge tone={tone.chip}>{t(`diff.${row.status}`)}</StatusBadge>
       </div>
       {linkSwap ? <p className="m-0 text-sm">{t("diff.linkedChanged")}</p>
         : row.status === "changed" ? (

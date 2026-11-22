@@ -1,13 +1,14 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ImagePlaceholderIcon } from "@/components/ui/icons";
 import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import { describeIssue } from "./issue-text";
 import type { Choice, OptionGroup } from "./option-groups";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { conditionIcon } from "@/components/ui/condition-icon";
 
 interface OptionRowProps {
   group: OptionGroup;
@@ -16,7 +17,7 @@ interface OptionRowProps {
   onPick: (code: string) => void;
 }
 
-/** One model with its جديد and مستعمل choices; an unavailable or incompatible choice is struck through and locked with the reason. */
+/** One model with its جديد and مستعمل choices; an unavailable or incompatible choice is a flat grey tile locked with the reason. */
 export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProps) {
   const t = useTranslations("builder.options");
   const ti = useTranslations("builder.issues");
@@ -57,24 +58,18 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
             ))}
           </div>
         </div>
-        <div role="radiogroup" aria-label={t("conditionGroup", { model: group.modelName })} className="grid grid-cols-2 gap-2 @md:flex @md:flex-wrap">
+        <div role="group" aria-label={t("conditionGroup", { model: group.modelName })} className="grid grid-cols-2 gap-2 @md:flex @md:flex-wrap">
           {choices.map((choice) => (
-            <Button
+            <ChoiceTile
               key={choice.code}
-              type="button"
-              role="radio"
-              aria-checked={choice.selected}
-              aria-disabled={choice.block !== null}
+              icon={conditionIcon(choice.condition)}
+              label={tc(choice.condition)}
+              note={choice.block === "unavailable" ? t("unavailable") : choice.block === "incompatible" ? t("incompatible") : formatEgp(choice.price, locale)}
+              selected={choice.selected}
               disabled={choice.block !== null}
-              variant={choice.selected ? "primary" : "secondary"}
-              onClick={() => onPick(choice.code)}
-              className={`h-auto min-h-[52px] @md:min-w-32 flex-col gap-0.5 px-3.5 py-2 ${choice.block ? "line-through opacity-60" : ""}`}
-            >
-              <span className="text-xs font-bold">{tc(choice.condition)}</span>
-              <span className="text-sm font-bold">
-                {choice.block === "unavailable" ? t("unavailable") : choice.block === "incompatible" ? t("incompatible") : formatEgp(choice.price, locale)}
-              </span>
-            </Button>
+              onSelect={() => onPick(choice.code)}
+              className="@md:w-32"
+            />
           ))}
         </div>
       </div>

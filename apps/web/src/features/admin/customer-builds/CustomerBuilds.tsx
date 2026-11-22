@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { CheckIcon, CloseIcon, ExternalIcon } from "@/components/ui/icons";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
@@ -22,7 +24,7 @@ import { decideCustomerBuild, fetchCustomerBuilds, type CustomerBuild } from "./
 const FILTERS = { status: "Pending", page: "1" };
 const PERMISSION = "Catalog.ManageProducts";
 
-const BADGE = { Pending: "bg-paper text-orange-text", Approved: "bg-success text-surface", Rejected: "bg-error text-surface" } as const;
+const BADGE = { Pending: "warning", Approved: "success", Rejected: "danger" } as const satisfies Record<string, StatusTone>;
 const DECISION_ICON = { Approved: CheckIcon, Rejected: CloseIcon } as const;
 
 /** ADM-CustomerBuilds: the builds customers made public. A waiting one is approved (it then shows in "تجميعات العملاء") or rejected; every decision is audited. */
@@ -84,7 +86,7 @@ export function CustomerBuilds() {
       key: "status", header: t("columns.status"),
       cell: (row) => {
         const rowStatus = parseStatus(row.status);
-        return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${BADGE[rowStatus]}`}>{t(`statuses.${rowStatus}`)}</span>;
+        return <StatusBadge tone={BADGE[rowStatus]}>{t(`statuses.${rowStatus}`)}</StatusBadge>;
       }
     },
     {

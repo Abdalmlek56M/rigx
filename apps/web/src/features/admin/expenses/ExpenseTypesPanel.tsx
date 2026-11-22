@@ -7,6 +7,7 @@ import { ExpenseTypeDialog } from "./ExpenseTypeDialog";
 import type { ExpenseType } from "./expenses-api";
 import { PencilIcon, PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 /** The pickable expense types; renaming one keeps old expenses as recorded. */
 export function ExpenseTypesPanel({ types, canManage, onChanged }: { types: readonly ExpenseType[]; canManage: boolean; onChanged: () => void }) {
@@ -17,7 +18,7 @@ export function ExpenseTypesPanel({ types, canManage, onChanged }: { types: read
   const columns: Column<ExpenseType>[] = [
     { key: "name", header: t("name"), cell: (type) => <span className="font-bold">{type.name}</span> },
     { key: "sort", header: t("sortOrder"), align: "end", cell: (type) => <span className="text-sm">{type.sortOrder}</span> },
-    { key: "active", header: t("active"), cell: (type) => <span className={`text-sm ${type.isActive ? "font-bold text-success" : "text-ink-muted"}`}>{type.isActive ? activeLabel("yes") : activeLabel("no")}</span> },
+    { key: "active", header: t("active"), cell: (type) => <StatusBadge tone={type.isActive ? "success" : "neutral"}>{type.isActive ? activeLabel("yes") : activeLabel("no")}</StatusBadge> },
     ...(canManage ? [{ key: "edit", header: "", cell: (type: ExpenseType) => <Button size="sm" variant="ghost" icon={PencilIcon} onClick={() => setEditing(type)}>{t("edit")}</Button> }] : [])
   ];
 

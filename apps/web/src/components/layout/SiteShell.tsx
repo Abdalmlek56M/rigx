@@ -10,13 +10,14 @@ import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { TopBar } from "./TopBar";
 
-/** The common frame of every page: top bar, header, content, footer, cart drawer and floating controls. */
+/** The common frame of every page: the dark theme's page-wide glow, top bar, header, content, footer, cart drawer and floating controls. */
 export async function SiteShell({ children }: { children: ReactNode }) {
   const storefront = await loadStorefront();
   const floatingLinks = storefront.contactLinks.filter((link) => link.showInFloatingButton);
 
   return (
     <CartProvider>
+      <div aria-hidden="true" className="page-glow" />
       <TopBar storefront={storefront} />
       <Header storefront={storefront} />
       <main className="min-h-[60vh]">{children}</main>

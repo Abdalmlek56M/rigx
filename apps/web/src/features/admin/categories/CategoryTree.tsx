@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { flattenTree } from "./category-rules";
 import type { Category } from "./categories-api";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 /** The tree card: expand/collapse nodes with children and select a category for the edit panel. */
 export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle }: {
@@ -42,8 +43,8 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle 
               )}
               <button type="button" aria-current={selected ? "true" : undefined} onClick={() => onSelect(node.id)} className={`flex min-w-0 flex-1 items-center gap-2 py-2 text-start text-sm ${depth === 0 ? "font-bold" : ""}`}>
                 <span dir="auto" className="truncate [unicode-bidi:isolate]">{node.name}</span>
-                {node.code ? <span className="shrink-0 rounded-[4px] border border-input-line px-1.5 py-0.5 font-mono text-[11px] font-bold">{node.code}</span> : null}
-                {!node.isActive || !node.isEffectivelyActive ? <span className="shrink-0 rounded-[4px] bg-line px-1.5 py-0.5 text-[11px] font-bold text-ink-muted">{t("hidden")}</span> : null}
+                {node.code ? <span className="shrink-0 rounded-control border border-input-line px-1.5 py-0.5 font-mono text-[11px] font-bold">{node.code}</span> : null}
+                {!node.isActive || !node.isEffectivelyActive ? <StatusBadge tone="neutral">{t("hidden")}</StatusBadge> : null}
               </button>
             </li>
           );

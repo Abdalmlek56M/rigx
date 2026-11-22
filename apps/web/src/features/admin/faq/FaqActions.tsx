@@ -11,20 +11,16 @@ import { deleteFaq, publishFaq, unpublishFaq, type Faq } from "./faq-api";
 import { faqStatusKey, type FaqStatusKey } from "./faq-rules";
 import { isConflict } from "@/lib/api/conflict";
 import { TrashIcon, UndoIcon, UploadIcon } from "@/components/ui/icons";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { Button } from "../kit/Button";
 
-const TONES: Record<FaqStatusKey, string> = {
-  Draft: "bg-line text-ink-muted",
-  Review: "bg-orange/15 text-orange-text",
-  Published: "bg-success text-surface",
-  Archived: "bg-line text-ink-muted",
-  Other: "bg-line text-ink-muted"
-};
+const TONES: Record<FaqStatusKey, StatusTone> = { Draft: "neutral", Review: "warning", Published: "success", Archived: "neutral", Other: "neutral" };
 
 export function FaqStatusBadge({ status }: { status: string }) {
   const t = useTranslations("admin.faq.statuses");
   const key = faqStatusKey(status);
-  return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${TONES[key]}`}>{t(key)}</span>;
+  return <StatusBadge tone={TONES[key]}>{t(key)}</StatusBadge>;
 }
 
 /** Publish / unpublish / delete for the FAQ being edited. */

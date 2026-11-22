@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Alexandria, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { Analytics } from "@/components/analytics/Analytics";
-import { THEME_INIT_SCRIPT } from "@/components/layout/theme-script";
+import { THEME_COOKIE, THEME_INIT_SCRIPT, parseTheme } from "@/components/layout/theme-script";
 import { localeDirection, routing } from "@/i18n/routing";
 import { openGraphBase } from "@/lib/seo/page-seo";
 import { siteOrigin } from "@/lib/seo/urls";
@@ -32,9 +33,6 @@ const mono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   display: "swap"
 });
-
-/** Static pages re-render at most every 5 minutes so storefront settings changes (and a recovered API) show up. */
-export const revalidate = 300;
 
 /** `viewportFit: "cover"` lets sticky bars pad themselves with the safe-area insets (notch, home bar). */
 export const viewport: Viewport = {
@@ -66,9 +64,12 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  // The theme is written by the server (from its cookie), so a page that is swapped in by a language switch is never light for a moment;
+  // the head script stays as the fallback for a first visit that only has the old local-storage choice.
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
 
   return (
-    <html lang={locale} dir={localeDirection[locale]} className={`${sans.variable} ${display.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang={locale} dir={localeDirection[locale]} data-theme={theme} className={`${sans.variable} ${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

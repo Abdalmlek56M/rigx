@@ -1,11 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { CheckoutSettings, PaymentMethods } from "@/lib/storefront";
 import { formatEgp } from "@/lib/format";
 import type { PaymentMethod } from "./checkout-request";
 import { FieldAlert, FormSection, useFieldError, type SectionProps } from "./form-parts";
+import { ChoiceRadioTile } from "@/components/ui/ChoiceTile";
+import { BankIcon, CashIcon, WalletIcon } from "@/components/ui/icons";
 
 interface PaymentSectionProps extends SectionProps {
   payment: PaymentMethods;
@@ -40,10 +42,10 @@ function NoteBox({ children }: { children: ReactNode }) {
   return <div className="flex flex-col gap-1.5 rounded-card bg-paper p-3.5 text-[13px] leading-6 text-ink-muted">{children}</div>;
 }
 
-const METHODS: readonly { method: PaymentMethod; enabled: (payment: PaymentMethods) => boolean }[] = [
-  { method: "CashOnDelivery", enabled: (p) => p.cash },
-  { method: "InstaPay", enabled: (p) => p.instaPay },
-  { method: "Wallet", enabled: (p) => p.wallet }
+const METHODS: readonly { method: PaymentMethod; icon: ComponentType<{ size?: number }>; enabled: (payment: PaymentMethods) => boolean }[] = [
+  { method: "CashOnDelivery", icon: CashIcon, enabled: (p) => p.cash },
+  { method: "InstaPay", icon: BankIcon, enabled: (p) => p.instaPay },
+  { method: "Wallet", icon: WalletIcon, enabled: (p) => p.wallet }
 ];
 
 export function PaymentSection({ form, set, errors, payment, settings, pickupEnabled }: PaymentSectionProps) {
@@ -52,18 +54,12 @@ export function PaymentSection({ form, set, errors, payment, settings, pickupEna
 
   return (
     <FormSection title={t("title")}>
-      <div role="radiogroup" aria-label={t("title")} className="flex flex-col gap-2.5 sm:flex-row">
-        {METHODS.filter(({ enabled }) => enabled(payment)).map(({ method }) => (
-          <label
-            key={method}
-            className="flex min-h-12 flex-1 cursor-pointer items-center gap-2.5 rounded-card border border-input-line px-3.5 transition-colors duration-150 has-[:checked]:border-carbon has-[:checked]:bg-paper motion-reduce:transition-none"
-          >
-            <input
-              type="radio" name="paymentMethod" value={method} checked={form.paymentMethod === method}
-              onChange={() => set("paymentMethod", method)} className="h-[18px] w-[18px] accent-carbon"
-            />
-            <span className="text-sm font-bold">{t(`methods.${method}`)}</span>
-          </label>
+      <div role="radiogroup" aria-label={t("title")} className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-2.5">
+        {METHODS.filter(({ enabled }) => enabled(payment)).map(({ method, icon }) => (
+          <ChoiceRadioTile
+            key={method} name="paymentMethod" value={method} icon={icon} label={t(`methods.${method}`)}
+            selected={form.paymentMethod === method} onSelect={() => set("paymentMethod", method)}
+          />
         ))}
       </div>
       <FieldAlert>{error("paymentMethod")}</FieldAlert>

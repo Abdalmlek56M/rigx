@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { formatDate, formatDateTime, formatEgp } from "@/lib/format";
 import { initials } from "@/features/account/profile-rules";
@@ -37,10 +38,8 @@ export function StaffProfileCard({ profile, roleNames }: { profile: StaffProfile
         <span className="flex min-w-0 flex-col gap-1">
           <b className="text-lg [overflow-wrap:anywhere]">{user.fullName}</b>
           <span className="flex flex-wrap gap-1.5">
-            <span className={`rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-success text-surface" : "bg-error/10 text-error-text"}`}>
-              {user.isActive ? status("active") : status("inactive")}
-            </span>
-            {roleNames.map((name) => <span key={name} className="rounded-[4px] border border-line bg-paper px-2 py-[3px] text-xs font-bold">{name}</span>)}
+            <StatusBadge tone={user.isActive ? "success" : "danger"}>{user.isActive ? status("active") : status("inactive")}</StatusBadge>
+            {roleNames.map((name) => <StatusBadge key={name} tone="neutral">{name}</StatusBadge>)}
           </span>
         </span>
       </div>

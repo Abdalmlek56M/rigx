@@ -8,6 +8,7 @@ import { RecurringExpenseDialog } from "./RecurringExpenseDialog";
 import type { ExpenseType, MoneyAccount, RecurringExpense } from "./expenses-api";
 import { PencilIcon, PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 /** The monthly fixed expenses the job posts on their day. */
 export function RecurringExpensesPanel({ templates, types, accounts, canSeeVaults, canManage, onChanged }: {
@@ -29,7 +30,7 @@ export function RecurringExpensesPanel({ templates, types, accounts, canSeeVault
     { key: "amount", header: t("amount"), align: "end", cell: (template) => <span className="whitespace-nowrap font-bold">{formatEgp(template.amount, locale)}</span> },
     { key: "day", header: t("day"), align: "end", cell: (template) => <span className="text-sm">{template.dayOfMonth}</span> },
     ...(canSeeVaults ? [{ key: "account", header: t("account"), cell: (template: RecurringExpense) => <span className="text-xs text-ink-muted">{template.moneyAccountId ? accountsById.get(template.moneyAccountId)?.name ?? t("defaultAccount") : t("defaultAccount")}</span> }] : []),
-    { key: "active", header: t("active"), cell: (template) => <span className={`text-sm ${template.isActive ? "font-bold text-success" : "text-ink-muted"}`}>{template.isActive ? activeLabel("yes") : activeLabel("no")}</span> },
+    { key: "active", header: t("active"), cell: (template) => <StatusBadge tone={template.isActive ? "success" : "neutral"}>{template.isActive ? activeLabel("yes") : activeLabel("no")}</StatusBadge> },
     ...(canManage ? [{ key: "edit", header: "", cell: (template: RecurringExpense) => <Button size="sm" variant="ghost" icon={PencilIcon} onClick={() => setEditing(template)}>{t("edit")}</Button> }] : [])
   ];
 

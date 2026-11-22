@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
@@ -49,8 +50,8 @@ export function CustomerProfileCard({ profile, rates }: { profile: CustomerProfi
       <div className="flex flex-col gap-1.5 text-[13px]">
         <b>{t("loginMethods")}</b>
         <span className="flex flex-wrap gap-1.5">
-          {profile.loginMethods.emailCode ? <span className="rounded-[4px] bg-success px-2 py-[3px] text-xs font-bold text-surface">{t("emailCode")}</span> : null}
-          {profile.loginMethods.googleEmail ? <span className="rounded-[4px] border border-input-line bg-surface px-2 py-[3px] text-xs font-bold">{t("google")}</span> : null}
+          {profile.loginMethods.emailCode ? <StatusBadge tone="success">{t("emailCode")}</StatusBadge> : null}
+          {profile.loginMethods.googleEmail ? <StatusBadge tone="neutral">{t("google")}</StatusBadge> : null}
         </span>
       </div>
 

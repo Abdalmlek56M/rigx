@@ -11,19 +11,16 @@ import { cancelOffer, publishOffer, unpublishOffer, type Offer } from "./offers-
 import { offerStatusKey, type OfferStatusKey } from "./offer-rules";
 import { isConflict } from "@/lib/api/conflict";
 import { BanIcon, UndoIcon, UploadIcon } from "@/components/ui/icons";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { Button } from "../kit/Button";
 
-const TONES: Record<OfferStatusKey, string> = {
-  Draft: "bg-line text-ink-muted",
-  Published: "bg-success text-surface",
-  Cancelled: "bg-error text-surface",
-  Other: "bg-line text-ink-muted"
-};
+const TONES: Record<OfferStatusKey, StatusTone> = { Draft: "neutral", Published: "success", Cancelled: "danger", Other: "neutral" };
 
 export function OfferStatusBadge({ status }: { status: string }) {
   const t = useTranslations("admin.offers.statuses");
   const key = offerStatusKey(status);
-  return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${TONES[key]}`}>{t(key)}</span>;
+  return <StatusBadge tone={TONES[key]}>{t(key)}</StatusBadge>;
 }
 
 /** Publish / unpublish / cancel an offer. */

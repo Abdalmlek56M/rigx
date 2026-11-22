@@ -2,7 +2,8 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { Card } from "@/components/ui/Card";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { CaseIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { BanIcon, CaseIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
@@ -34,7 +35,7 @@ export function SharedBuildParts({ parts, slotNames }: { parts: Schemas["Builder
                   {condition ? <ConditionBadge condition={condition} /> : null}
                   {part.item.warrantyLabel ? <span>{part.item.warrantyLabel}</span> : null}
                   {part.quantity > 1 ? <span>{t("quantity", { count: part.quantity })}</span> : null}
-                  {!part.isAvailable ? <span className="font-bold text-error-text">{t("unavailable")}</span> : null}
+                  {!part.isAvailable ? <StatusBadge tone="neutral" icon={BanIcon}>{t("unavailable")}</StatusBadge> : null}
                 </div>
               </div>
               <span className="shrink-0 text-end font-bold tabular-nums">{formatEgp(part.lineTotal, locale)}</span>

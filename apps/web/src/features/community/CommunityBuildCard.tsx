@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { CaseIcon } from "@/components/ui/icons";
+import { BanIcon, CaseIcon } from "@/components/ui/icons";
 import { formatEgp } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
 import { BuildReactions } from "./BuildReactions";
@@ -42,7 +42,7 @@ export function CommunityBuildCard({ build, actions }: { build: Schemas["Communi
         <span className="type-label">{t("total")}</span>
         <span className="text-xl font-bold">{formatEgp(build.total, locale)}</span>
       </div>
-      {!build.canOrder ? <p className="m-0 text-xs text-orange-text">{t("unavailable")}</p> : null}
+      {!build.canOrder ? <span className="self-start"><StatusBadge tone="neutral" icon={BanIcon}>{t("unavailable")}</StatusBadge></span> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <BuildReactions token={build.token} initial={build.reactions} />
         {actions ?? <ButtonLink href={`/b/${encodeURIComponent(build.token)}`} variant="secondary" size="sm">{t("open")}</ButtonLink>}

@@ -964,7 +964,7 @@ dialog[data-sheet="side"][data-edge="start"] {
   }
 }
 
-/* Dark theme only: two soft lights drift slowly behind the hero and the page headers (the circuit canvas sits in the same layer). */
+/* Dark theme only: the circuit canvas of the hero and the page headers lives in this layer. */
 .ambient {
   display: none;
   position: absolute;
@@ -979,28 +979,43 @@ dialog[data-sheet="side"][data-edge="start"] {
   display: block;
 }
 
-.ambient::before,
-.ambient::after {
+/* Dark theme only: two very faint lights drift behind the whole storefront. Pure CSS, fixed to the window (no repaint on scroll),
+   behind every card; the alpha is low enough that text on the bare page background keeps its contrast. */
+.page-glow {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+[data-theme="dark"] .page-glow {
+  display: block;
+}
+
+.page-glow::before,
+.page-glow::after {
   content: "";
   position: absolute;
-  width: 55%;
+  width: 70vmax;
   aspect-ratio: 1;
   border-radius: 50%;
   will-change: transform;
 }
 
-.ambient::before {
-  top: -35%;
-  inset-inline-start: -8%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--orange) 18%, transparent), transparent);
-  animation: ambient-a 26s ease-in-out infinite alternate;
+.page-glow::before {
+  top: -26vmax;
+  inset-inline-start: -16vmax;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--orange) 11%, transparent), transparent);
+  animation: ambient-a 40s ease-in-out infinite alternate;
 }
 
-.ambient::after {
-  bottom: -45%;
-  inset-inline-end: -6%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--glow-blue) 14%, transparent), transparent);
-  animation: ambient-b 32s ease-in-out infinite alternate;
+.page-glow::after {
+  bottom: -30vmax;
+  inset-inline-end: -16vmax;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--glow-blue) 10%, transparent), transparent);
+  animation: ambient-b 48s ease-in-out infinite alternate;
 }
 
 @keyframes ambient-a {
@@ -1088,8 +1103,8 @@ img.swap-photo {
     transform: none !important;
   }
 
-  .ambient::before,
-  .ambient::after {
+  .page-glow::before,
+  .page-glow::after {
     animation: none;
   }
 
@@ -1100,6 +1115,10 @@ img.swap-photo {
 
 /* Pages marked data-print-document (the PDF quote), data-print-invoice (the A4 invoice) or data-print-export (the admin PDF export) print alone, on white paper, whatever the theme. */
 @media print {
+  .page-glow {
+    display: none !important;
+  }
+
   :root,
   [data-theme="dark"] {
     --paper: #ffffff;
@@ -1217,9 +1236,16 @@ img.swap-photo {
 }
 
 .bp-part[data-state="filled"] {
-  fill: var(--orange-soft);
+  fill: color-mix(in srgb, var(--orange) 26%, transparent);
   stroke: var(--orange);
+  stroke-width: 2;
   stroke-dasharray: none;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--orange) 45%, transparent));
+}
+
+/* The big pieces that hold the others (the case, the board) and the cooler that sits over the processor keep a faint fill, so what is inside them stays the brightest. */
+.bp-part:is([data-slot="CASE"], [data-slot="BOARD"], [data-slot="COOL"])[data-state="filled"] {
+  fill: color-mix(in srgb, var(--orange) 8%, transparent);
 }
 
 .bp-part[data-active="true"] {
@@ -1248,6 +1274,19 @@ img.swap-photo {
   stroke: var(--orange);
 }
 
+/* The name of a chosen part, written on it; the halo keeps it readable over any fill. */
+.bp-label {
+  fill: var(--ink);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .bp-part:hover {
     stroke: var(--orange);
@@ -1264,14 +1303,25 @@ img.swap-photo {
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, transform 180ms var(--ease-out);
 }
 
-.choice-card[aria-pressed="true"] {
+.choice-card[aria-pressed="true"],
+.choice-card[aria-current="true"],
+.choice-card:has(input:checked) {
   border-color: var(--orange);
   background-color: var(--orange-soft);
   box-shadow: 0 0 0 1px var(--orange), 0 10px 28px -10px color-mix(in srgb, var(--orange) 60%, transparent);
 }
 
+/* A tile that cannot be chosen: flat grey like a disabled button, no lift. */
+.choice-card:disabled {
+  border-color: var(--line);
+  background-color: var(--paper);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .choice-card:hover {
+  .choice-card:not(:disabled):hover {
     transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--orange) 55%, var(--line));
   }

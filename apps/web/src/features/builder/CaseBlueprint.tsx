@@ -27,8 +27,8 @@ function draw(shape: Shape, key: number, props: Record<string, string | undefine
 
 /**
  * The case as a drawing: every slot of the builder is a part inside it, an outline until a part is chosen and filled with the accent once
- * it is. The slot being chosen glows; a part that clashes with another is tinted. A click on a part chooses its slot (the slot list
- * stays the keyboard way, so the drawing is not focusable). On a phone the drawing is small and sits beside the count.
+ * it is, with its name written on it. The slot being chosen glows; a part that clashes with another is tinted. A click on a part chooses
+ * its slot (the slot list stays the keyboard way, so the drawing is not focusable).
  */
 export function CaseBlueprint({ slots, parts, issues, active, onSelect }: CaseBlueprintProps) {
   const t = useTranslations("builder.blueprint");
@@ -38,12 +38,12 @@ export function CaseBlueprint({ slots, parts, issues, active, onSelect }: CaseBl
 
   return (
     <Card title={t("title")} icon={CaseIcon} padding="sm">
-      <div className="flex items-center justify-center gap-5 lg:flex-col lg:gap-3">
+      <div className="flex flex-col items-center justify-center gap-3">
         <svg
           role="img"
           aria-label={t("label", { count: filled, total: drawn.length })}
           viewBox={`0 0 ${BLUEPRINT_WIDTH} ${BLUEPRINT_HEIGHT}`}
-          className="h-auto w-[132px] shrink-0 lg:w-full lg:max-w-[240px]"
+          className="h-auto w-full max-w-[240px] shrink-0"
         >
           {draw(CASE_OUTLINE, -1, { className: "bp-case" })}
           {drawn.map((entry) => {
@@ -55,9 +55,10 @@ export function CaseBlueprint({ slots, parts, issues, active, onSelect }: CaseBl
               <g key={entry.slot} onClick={() => onSelect(entry.slot)}>
                 <title>{entry.model ? t("partFilled", { slot: name, model: entry.model }) : t("partEmpty", { slot: name })}</title>
                 {drawing.parts.map((shape, index) =>
-                  draw(shape, index, { className: "bp-part", "data-state": state, "data-active": entry.active ? "true" : undefined, "data-issue": entry.issue === "none" ? undefined : entry.issue })
+                  draw(shape, index, { className: "bp-part", "data-slot": entry.slot, "data-state": state, "data-active": entry.active ? "true" : undefined, "data-issue": entry.issue === "none" ? undefined : entry.issue })
                 )}
                 {drawing.details.map((shape, index) => draw(shape, 100 + index, { className: "bp-detail", "data-state": state }))}
+                {entry.filled ? <text x={drawing.label.x} y={drawing.label.y} textAnchor="middle" className="bp-label">{name}</text> : null}
               </g>
             );
           })}

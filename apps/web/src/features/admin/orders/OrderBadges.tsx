@@ -1,38 +1,32 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { ORDER_STATUSES, orderStatusKey, paymentStatusKey, type OrderStatus, type PaymentStatus } from "./order-rules";
 
-const BADGE = "inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold";
-
-const STATUS_TONES: Record<OrderStatus, string> = {
-  New: "bg-orange text-on-orange",
-  Confirmed: "bg-paper text-orange-text",
-  Preparing: "bg-paper text-orange-text",
-  Shipped: "bg-carbon text-on-carbon",
-  Delivered: "bg-success text-surface",
-  Completed: "bg-success text-surface",
-  Cancelled: "bg-error text-surface"
+const STATUS_TONES: Record<OrderStatus, StatusTone> = {
+  New: "warning",
+  Confirmed: "info",
+  Preparing: "info",
+  Shipped: "info",
+  Delivered: "success",
+  Completed: "success",
+  Cancelled: "danger"
 };
 
-const PAYMENT_TONES: Record<PaymentStatus, string> = {
-  Unpaid: "bg-line text-ink-muted",
-  PendingVerification: "bg-orange/15 text-orange-text",
-  Paid: "bg-success text-surface",
-  Refunded: "bg-paper text-ink-muted",
-  Waived: "bg-paper text-ink-muted"
-};
+const PAYMENT_TONES: Record<PaymentStatus, StatusTone> = { Unpaid: "neutral", PendingVerification: "warning", Paid: "success", Refunded: "neutral", Waived: "neutral" };
 
 export function OrderStatusBadge({ status }: { status: string }) {
   const t = useTranslations("admin.orders.statuses");
   const key = orderStatusKey(status);
-  return <span className={`${BADGE} ${STATUS_TONES[key]}`}>{t(key)}</span>;
+  return <StatusBadge tone={STATUS_TONES[key]}>{t(key)}</StatusBadge>;
 }
 
 export function PaymentStatusBadge({ status }: { status: string }) {
   const t = useTranslations("admin.orders.paymentStatuses");
   const key = paymentStatusKey(status);
-  return <span className={`${BADGE} ${PAYMENT_TONES[key]}`}>{t(key)}</span>;
+  return <StatusBadge tone={PAYMENT_TONES[key]}>{t(key)}</StatusBadge>;
 }
 
 /** The status filter as a segmented control (All + every status). */

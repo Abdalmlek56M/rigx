@@ -8,6 +8,8 @@ import { TextField } from "@/components/ui/TextField";
 import { RequestSheet } from "./RequestSheet";
 import { isEgyptMobile, isEmail } from "./request-fields";
 import { submitRequest, type SubmitOutcome } from "./submit-request";
+import { ChoiceRadioTile } from "@/components/ui/ChoiceTile";
+import { conditionIcon } from "@/components/ui/condition-icon";
 
 export interface NotifyTarget {
   /** The RX code of the sold-out item (the server finds its model). */
@@ -83,21 +85,12 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
           <span dir="auto" className="text-[13px] text-ink-muted [unicode-bidi:isolate]">{target.modelName}</span>
           <div className="flex flex-col gap-1.5">
             <span className="text-[13px] font-bold">{t("condition")}</span>
-            <div role="radiogroup" aria-label={t("condition")} className="grid h-12 grid-cols-3 gap-1 rounded-control border border-input-line bg-surface p-1 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-orange">
+            <div role="radiogroup" aria-label={t("condition")} className="grid grid-cols-3 gap-2">
               {CONDITIONS.map((value) => (
-                <label key={value} className="flex cursor-pointer">
-                  <input
-                    type="radio"
-                    name="notify-condition"
-                    value={value}
-                    checked={condition === value}
-                    onChange={() => setCondition(value)}
-                    className="peer sr-only"
-                  />
-                  <span className="flex flex-1 items-center justify-center rounded-[7px] text-sm font-bold text-ink-muted transition-colors peer-checked:surface-strong">
-                    {t(`conditions.${value}`)}
-                  </span>
-                </label>
+                <ChoiceRadioTile
+                  key={value} name="notify-condition" value={value} icon={conditionIcon(value)} label={t(`conditions.${value}`)}
+                  selected={condition === value} onSelect={() => setCondition(value)}
+                />
               ))}
             </div>
           </div>

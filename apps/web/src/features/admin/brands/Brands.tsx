@@ -11,6 +11,7 @@ import { usePermissions } from "../use-permissions";
 import { BrandForm } from "./BrandForm";
 import { filterBrands } from "./brand-rules";
 import { fetchBrands, type Brand } from "./brands-api";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 /** ADM-Brands: the brand list (with a search) on the start side and the edit / create panel on the end side. */
 export function Brands() {
@@ -68,7 +69,7 @@ export function Brands() {
                         className={`flex min-h-11 w-full items-center justify-between gap-2 rounded-control px-3 text-start text-sm hover:bg-paper ${active ? "bg-orange/10 font-bold" : ""}`}
                       >
                         <span dir="ltr" className="[unicode-bidi:isolate]">{brand.name}</span>
-                        {brand.isActive ? null : <span className="rounded-full bg-paper px-2 py-0.5 text-xs text-ink-muted">{t("off")}</span>}
+                        {brand.isActive ? null : <StatusBadge tone="neutral">{t("off")}</StatusBadge>}
                       </button>
                     </li>
                   );

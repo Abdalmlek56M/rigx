@@ -8,12 +8,23 @@ const tree = [node("c1", "معالجات", "Processors"), node("c2", "بوردا
 const slots = [
   { slot: "CPU", name: "معالجات", categoryIds: ["c1"] },
   { slot: "BOARD", name: "بوردات", categoryIds: ["c2"] },
-  { slot: "RAM", name: "رامات", categoryIds: ["gone"] }
+  { slot: "FAN", name: "مراوح", categoryIds: ["c1"] },
+  { slot: "RGB", name: "إضاءة", categoryIds: ["gone"] }
 ];
 
 describe("localizeSlots", () => {
-  it("uses the English category name in English and the Arabic one in Arabic", () => {
-    assert.deepEqual(localizeSlots(slots, tree, "en").map((entry) => entry.name), ["Processors", "بوردات", "رامات"]);
-    assert.deepEqual(localizeSlots(slots, tree, "ar").map((entry) => entry.name), ["معالجات", "بوردات", "رامات"]);
+  it("names a known slot in the singular, whatever the category is called", () => {
+    assert.deepEqual(localizeSlots(slots, tree, "ar").slice(0, 2).map((entry) => entry.name), ["معالج", "بوردة"]);
+    assert.deepEqual(localizeSlots(slots, tree, "en").slice(0, 2).map((entry) => entry.name), ["Processor", "Motherboard"]);
+  });
+
+  it("names every slot of the blueprint", () => {
+    const codes = ["CPU", "BOARD", "RAM", "GPU", "SSD", "PSU", "COOL", "CASE"].map((slot) => ({ slot, name: "x", categoryIds: [] }));
+    assert.deepEqual(localizeSlots(codes, tree, "ar").map((entry) => entry.name), ["معالج", "بوردة", "رامات", "كرت شاشة", "تخزين", "باور سبلاي", "تبريد", "كيسة"]);
+  });
+
+  it("falls back to the category's name in the visitor's language for a slot it does not know", () => {
+    assert.deepEqual(localizeSlots(slots, tree, "en").slice(2).map((entry) => entry.name), ["Processors", "إضاءة"]);
+    assert.deepEqual(localizeSlots(slots, tree, "ar").slice(2).map((entry) => entry.name), ["معالجات", "إضاءة"]);
   });
 });

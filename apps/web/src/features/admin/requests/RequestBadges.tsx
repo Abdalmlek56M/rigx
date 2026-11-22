@@ -1,34 +1,30 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { requestStatusKey, requestTypeKey, type RequestStatusKey } from "./request-labels";
 
-const TYPE_BADGE = "inline-block whitespace-nowrap rounded-[4px] border border-input-line bg-surface px-2 py-[3px] text-xs font-bold";
-
-const STATUS_TONES: Record<RequestStatusKey, string> = {
-  New: "bg-orange text-on-orange",
-  Following: "bg-paper text-ink-muted",
-  Offered: "bg-paper text-orange-text",
-  Accepted: "bg-success text-surface",
-  Rejected: "bg-error text-surface",
-  Converted: "bg-carbon text-on-carbon",
-  Closed: "bg-line text-ink-muted",
-  Other: "bg-line text-ink-muted"
+const STATUS_TONES: Record<RequestStatusKey, StatusTone> = {
+  New: "warning",
+  Following: "neutral",
+  Offered: "info",
+  Accepted: "success",
+  Rejected: "danger",
+  Converted: "info",
+  Closed: "neutral",
+  Other: "neutral"
 };
 
 export function RequestTypeBadge({ type }: { type: string }) {
   const t = useTranslations("admin.requests.types");
-  return <span className={TYPE_BADGE}>{t(requestTypeKey(type))}</span>;
+  return <StatusBadge tone="neutral">{t(requestTypeKey(type))}</StatusBadge>;
 }
 
 export function RequestStatusBadge({ status }: { status: string }) {
   const t = useTranslations("admin.requests.statuses");
   const key = requestStatusKey(status);
-  return (
-    <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${STATUS_TONES[key]}`}>
-      {t(key)}
-    </span>
-  );
+  return <StatusBadge tone={STATUS_TONES[key]}>{t(key)}</StatusBadge>;
 }
 
 /** The type filter as a segmented control; the badge counts the requests still New (the only counts the API returns). */
@@ -56,9 +52,7 @@ export function RequestTabs({ active, counts, onChange }: {
         >
           {tab.label}
           {tab.count > 0 ? (
-            <span aria-label={t("newCount", { count: tab.count })} className={`rounded-[4px] px-1.5 text-[11px] font-bold ${active === tab.value ? "bg-on-carbon/15" : "bg-orange/15 text-orange-text"}`}>
-              {tab.count}
-            </span>
+            <span aria-label={t("newCount", { count: tab.count })}><StatusBadge tone="warning">{tab.count}</StatusBadge></span>
           ) : null}
         </button>
       ))}

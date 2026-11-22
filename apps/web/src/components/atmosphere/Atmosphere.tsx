@@ -7,8 +7,8 @@ import { useTheme } from "@/components/layout/use-theme";
 const CircuitCanvas = dynamic(() => import("./CircuitCanvas"), { ssr: false });
 
 /**
- * The dark theme's backdrop for a hero or a page header: two slow lights in CSS plus the circuit board canvas. The parent must
- * be `isolate` (the layer sits at z-index -1 inside it). Nothing shows in the light theme.
+ * The dark theme's circuit board canvas for a hero or a page header (the faint lights behind the whole page are `.page-glow`, CSS only).
+ * The parent must be `isolate` (the layer sits at z-index -1 inside it). Nothing shows in the light theme.
  */
 export function Atmosphere() {
   const theme = useTheme();

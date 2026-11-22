@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { DataTable, type Column } from "../kit/DataTable";
@@ -47,9 +48,7 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
     },
     {
       key: "active", header: t("columns.status"), width: "10%", cell: (user) => (
-        <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-line text-ink" : "bg-error/10 text-error-text"}`}>
-          {user.isActive ? t("status.active") : t("status.inactive")}
-        </span>
+        <StatusBadge tone={user.isActive ? "neutral" : "danger"}>{user.isActive ? t("status.active") : t("status.inactive")}</StatusBadge>
       )
     },
     {

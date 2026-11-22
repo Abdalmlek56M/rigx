@@ -8,6 +8,8 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
 import { Button } from "../kit/Button";
 import { DataTable, type Column } from "../kit/DataTable";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { PageHeader } from "../kit/PageHeader";
 import { useReveal } from "../kit/use-reveal";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -17,17 +19,12 @@ import { fetchCoupons, type Coupon } from "./coupons-api";
 
 const FILTERS = { id: "" };
 
-const TONES: Record<CouponStatus, string> = {
-  running: "bg-success text-surface",
-  off: "bg-line text-ink-muted",
-  notStarted: "bg-line text-ink-muted",
-  ended: "bg-error text-surface"
-};
+const TONES: Record<CouponStatus, StatusTone> = { running: "success", off: "neutral", notStarted: "neutral", ended: "danger" };
 
-function StatusBadge({ coupon }: { coupon: Coupon }) {
+function CouponStatusBadge({ coupon }: { coupon: Coupon }) {
   const t = useTranslations("admin.coupons.statuses");
   const status = couponStatus(coupon, new Date());
-  return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${TONES[status]}`}>{t(status)}</span>;
+  return <StatusBadge tone={TONES[status]}>{t(status)}</StatusBadge>;
 }
 
 /** ADM-Coupons: the report per code (source, discount, status, uses, revenue), then the form for the selected or a new code. */
@@ -67,7 +64,7 @@ export function Coupons() {
       )
     },
     { key: "discount", header: t("columns.discount"), cell: discount },
-    { key: "status", header: t("columns.status"), cell: (coupon) => <StatusBadge coupon={coupon} /> },
+    { key: "status", header: t("columns.status"), cell: (coupon) => <CouponStatusBadge coupon={coupon} /> },
     {
       key: "uses", header: t("columns.uses"), align: "end",
       cell: (coupon) => (

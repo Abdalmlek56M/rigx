@@ -12,6 +12,7 @@ import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { fetchCustomers, type CustomerRow } from "./customers-api";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 const FILTERS = { search: "", page: "1" };
 
@@ -33,7 +34,7 @@ export function Customers() {
         <span className="flex flex-col gap-0.5">
           <span className="flex flex-wrap items-center gap-2">
             <Link href={`/admin/customers/${row.customer.id}`} className="font-bold hover:underline">{row.customer.name}</Link>
-            {row.customer.isActive ? null : <span className="rounded-[4px] bg-line px-2 py-[3px] text-xs font-bold text-ink-muted">{t("inactive")}</span>}
+            {row.customer.isActive ? null : <StatusBadge tone="neutral">{t("inactive")}</StatusBadge>}
           </span>
           <span dir="ltr" className="whitespace-nowrap font-mono text-xs text-ink-muted">{row.customer.personCode}</span>
         </span>

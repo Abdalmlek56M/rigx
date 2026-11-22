@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { orderStatusKey } from "@/features/tracking/tracking-steps";
+import { orderTone, warrantyTone } from "@/components/ui/status-badge-rules";
 import { Link } from "@/i18n/navigation";
 import { formatDate, formatDateTime, formatEgp } from "@/lib/format";
 import type { Load } from "@/lib/hooks/use-load";
@@ -113,7 +115,7 @@ export function OrdersTable({ orders, onRetry }: { orders: readonly Order[]; onR
     { key: "channel", header: t("orders.channel"), cell: (row) => channelLabels[orderChannelKey(row.channel)] },
     { key: "total", header: t("orders.total"), align: "end", cell: (row) => <span className="whitespace-nowrap font-bold">{formatEgp(row.total, locale)}</span> },
     { key: "paid", header: t("orders.paid"), align: "end", cell: (row) => <span className="whitespace-nowrap">{formatEgp(row.paidAmount, locale)}</span> },
-    { key: "status", header: t("orders.status"), cell: (row) => <span className="inline-block whitespace-nowrap rounded-[4px] bg-paper px-2 py-[3px] text-xs font-bold">{orderStatus(orderStatusKey(row.status))}</span> }
+    { key: "status", header: t("orders.status"), cell: (row) => <StatusBadge tone={orderTone(row.status)}>{orderStatus(orderStatusKey(row.status))}</StatusBadge> }
   ];
   return <DataTable label={t("tabs.orders", { count: orders.length })} columns={orderColumns} state={ready(orders)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("orders.empty")} />;
 }
@@ -135,7 +137,7 @@ export function WarrantiesTable({ warranties, onRetry }: { warranties: readonly 
 function WarrantyBadge({ status }: { status: string }) {
   const t = useTranslations("admin.customers.warranties");
   const key = warrantyStateKey(status);
-  const tone = key === "Active" ? "bg-success text-surface" : key === "Void" ? "bg-error text-surface" : "bg-line text-ink-muted";
+  const tone = warrantyTone(key);
   const label = key === "Active" ? t("active") : key === "Expired" ? t("expired") : key === "Void" ? t("void") : t("unknown");
-  return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${tone}`}>{label}</span>;
+  return <StatusBadge tone={tone}>{label}</StatusBadge>;
 }

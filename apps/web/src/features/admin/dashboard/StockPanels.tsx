@@ -7,6 +7,7 @@ import type { AdminDashboard, DashboardData } from "./dashboard-api";
 import { Empty, Panel, PanelTable } from "./Panel";
 import { BoxIcon, EyeIcon } from "@/components/ui/icons";
 import { buttonClass, buttonIconSize } from "../kit/Button";
+import { StockDot } from "@/components/ui/StockDot";
 
 const cell = "border-t border-line px-2 py-2";
 
@@ -21,7 +22,7 @@ export function DemandPanel({ rows }: { rows: AdminDashboard["notifyMeDemand"] }
             <tr key={row.modelKey}>
               <td className={cell}><span dir="ltr">{row.modelName}</span></td>
               <td className={cell}>{t("customers", { count: row.open })}</td>
-              <td className={cell}>{row.availableNow ? <b className="text-success">{t("available")}</b> : <span className="text-ink-muted">{t("missing")}</span>}</td>
+              <td className={cell}><StockDot available={row.availableNow} label={row.availableNow ? t("available") : t("missing")} /></td>
               <td className={`${cell} text-end`}>
                 <Link href={`/admin/requests?type=NotifyMe&q=${encodeURIComponent(row.modelName)}`} className={buttonClass({ size: "sm" })}><EyeIcon size={buttonIconSize("sm")} />{t("open")}</Link>
               </td>

@@ -12,6 +12,8 @@ import { OptionRow } from "./OptionRow";
 import { groupOptions } from "./option-groups";
 import { showsInBuildPrice } from "./builder-summary";
 import { useOptions } from "./use-options";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { conditionIcon } from "@/components/ui/condition-icon";
 
 const SEARCH_DELAY_MS = 300;
 
@@ -41,18 +43,9 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
 
   return (
     <Card as="section" title={t("title", { slot: slotName })} titleId="builder-options-title" padding="md" className="gap-4">
-      <div role="group" aria-label={t("conditionTabs")} className="flex flex-wrap gap-1">
+      <div role="group" aria-label={t("conditionTabs")} className="grid grid-cols-3 gap-2">
         {tabs.map((tab) => (
-          <Button
-            key={tab.label}
-            type="button"
-            size="sm"
-            variant={condition === tab.value ? "primary" : "ghost"}
-            aria-pressed={condition === tab.value}
-            onClick={() => setCondition(tab.value)}
-          >
-            {tab.label}
-          </Button>
+          <ChoiceTile key={tab.label} icon={conditionIcon(tab.value)} label={tab.label} selected={condition === tab.value} onSelect={() => setCondition(tab.value)} />
         ))}
       </div>
       <span className="rounded-control bg-success/10 px-3 py-2 text-xs text-success">{t("hint")}</span>

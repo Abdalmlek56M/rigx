@@ -43,7 +43,7 @@ export function FaqExclusions({ categories, currentCategoryId, categoryIds, item
       {categoryIds.length > 0 ? (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
           {categoryIds.map((id) => (
-            <li key={id} className="flex items-center gap-1 rounded-[4px] border border-input-line bg-surface px-2 py-1 text-xs">
+            <li key={id} className="flex items-center gap-1 rounded-control border border-input-line bg-surface px-2 py-1 text-xs">
               {names.get(id) ?? id}
               <button type="button" onClick={() => onChange({ excludedCategoryIds: removeValue(categoryIds, id) })} aria-label={t("remove", { name: names.get(id) ?? id })} className="text-error-text">×</button>
             </li>
@@ -61,7 +61,7 @@ export function FaqExclusions({ categories, currentCategoryId, categoryIds, item
       {itemCodes.length > 0 ? (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
           {itemCodes.map((value) => (
-            <li key={value} className="flex items-center gap-1 rounded-[4px] border border-input-line bg-surface px-2 py-1 font-mono text-xs">
+            <li key={value} className="flex items-center gap-1 rounded-control border border-input-line bg-surface px-2 py-1 font-mono text-xs">
               {value}
               <button type="button" onClick={() => onChange({ excludedItemCodes: removeValue(itemCodes, value) })} aria-label={t("remove", { name: value })} className="text-error-text">×</button>
             </li>

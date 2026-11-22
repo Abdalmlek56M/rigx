@@ -1,18 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { policyStatusKey, type PolicyStatusKey } from "./policy-rules";
 
-const TONES: Record<PolicyStatusKey, string> = {
-  Draft: "bg-line text-ink-muted",
-  Review: "bg-orange/15 text-orange-text",
-  Published: "bg-success text-surface",
-  Archived: "bg-line text-ink-muted",
-  Other: "bg-line text-ink-muted"
-};
+const TONES: Record<PolicyStatusKey, StatusTone> = { Draft: "neutral", Review: "warning", Published: "success", Archived: "neutral", Other: "neutral" };
 
 export function PolicyStatusBadge({ status }: { status: string }) {
   const t = useTranslations("admin.policies.statuses");
   const key = policyStatusKey(status);
-  return <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${TONES[key]}`}>{t(key)}</span>;
+  return <StatusBadge tone={TONES[key]}>{t(key)}</StatusBadge>;
 }
