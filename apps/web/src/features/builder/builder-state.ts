@@ -13,6 +13,9 @@ const ITEM_CODE = /^RX-\d{1,9}$/;
 const BUILD_CODE = /^BLD-\d{1,9}$/;
 const SAVED_TOKEN = /^[A-Za-z0-9_-]{8,64}$/;
 
+/** Whether `value` looks like a saved build's token (so a made-up path is a 404 without asking the API). */
+export const isSavedToken = (value: string): boolean => SAVED_TOKEN.test(value);
+
 type RawParams = Record<string, string | string[] | undefined>;
 
 const first = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);
@@ -60,6 +63,23 @@ function withParts(path: string, parts: readonly PartInput[]): string {
 }
 
 export const builderPath = (parts: readonly PartInput[]) => withParts("/builder", parts);
+
+/** The longest build name the API keeps. */
+export const SHARE_NAME_MAX = 100;
+
+/** The name typed for a shared build: trimmed, single-spaced, cut to the API limit; `null` when empty. */
+export function cleanShareName(value: string): string | null {
+  const name = value.replace(/\s+/g, " ").trim().slice(0, SHARE_NAME_MAX).trim();
+  return name === "" ? null : name;
+}
+
+/**
+ * The public link of a saved build, in the language of the page it was copied from: `/ar/builder` → `<origin>/ar/b/<token>`
+ * (the language prefix stays, the builder path goes).
+ */
+export function sharedBuildUrl(origin: string, pathname: string, token: string): string {
+  return `${origin}${pathname.replace(/\/builder\/?$/, "")}/b/${encodeURIComponent(token)}`;
+}
 
 export const quotePath = (parts: readonly PartInput[]) => withParts("/builder/quote", parts);
 

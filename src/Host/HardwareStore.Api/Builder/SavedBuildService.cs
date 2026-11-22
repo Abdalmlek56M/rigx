@@ -1,27 +1,33 @@
+using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Modules.Retail;
 
-/// <summary>Saved builds: parts are checked at save time (unpublished codes are refused) and re-checked live on every read.</summary>
-public sealed class SavedBuildService(SavedBuildStore store, BuilderService builder)
+/// <summary>
+/// Saved builds: parts are checked at save time (unpublished codes are refused) and re-checked live on every read. A build made by a
+/// signed-in account shows that account's first name ("assembled by ..."); an anonymous build shows none.
+/// </summary>
+public sealed class SavedBuildService(SavedBuildStore store, BuilderService builder, IdentityProfileService profiles)
 {
     public async Task<SavedBuildView> SaveAsync(Guid? userId, string? name, string? usage, IReadOnlyList<BuilderPartInput>? parts,
         CancellationToken cancellationToken)
     {
         var (parsedUsage, selection, evaluation) = await ValidateAsync(usage, parts, cancellationToken);
-        return ToView(await store.CreateAsync(userId, name, parsedUsage, selection, cancellationToken), userId, evaluation);
+        var build = await store.CreateAsync(userId, name, parsedUsage, selection, cancellationToken);
+        return ToView(build, userId, await AuthorNameAsync(build.UserAccountId, cancellationToken), evaluation);
     }
 
     public async Task<SavedBuildView> GetAsync(string token, Guid? userId, CancellationToken cancellationToken)
     {
         var build = await store.GetByTokenAsync(token, cancellationToken);
-        return ToView(build, userId, await builder.CheckAsync(Inputs(build.Parts), cancellationToken));
+        return ToView(build, userId, await AuthorNameAsync(build.UserAccountId, cancellationToken), await builder.CheckAsync(Inputs(build.Parts), cancellationToken));
     }
 
     public async Task<SavedBuildView> UpdateAsync(string token, Guid userId, string? name, string? usage, IReadOnlyList<BuilderPartInput>? parts,
         long rowVersion, CancellationToken cancellationToken)
     {
         var (parsedUsage, selection, evaluation) = await ValidateAsync(usage, parts, cancellationToken);
-        return ToView(await store.UpdateAsync(token, userId, name, parsedUsage, selection, rowVersion, cancellationToken), userId, evaluation);
+        var build = await store.UpdateAsync(token, userId, name, parsedUsage, selection, rowVersion, cancellationToken);
+        return ToView(build, userId, await AuthorNameAsync(build.UserAccountId, cancellationToken), evaluation);
     }
 
     public Task DeleteAsync(string token, Guid userId, CancellationToken cancellationToken) => store.DeleteAsync(token, userId, cancellationToken);
@@ -41,8 +47,16 @@ public sealed class SavedBuildService(SavedBuildStore store, BuilderService buil
         return (parsedUsage, selection, evaluation);
     }
 
-    private static SavedBuildView ToView(SavedBuild build, Guid? userId, BuilderEvaluation evaluation) =>
-        new(build.Token, build.Name, build.Usage, build.CreatedAtUtc, build.UpdatedAtUtc, build.RowVersion,
+    /// <summary>The first word of the creator's full name (only that much is public), or null for an anonymous build.</summary>
+    private async Task<string?> AuthorNameAsync(Guid? ownerId, CancellationToken cancellationToken)
+    {
+        if (ownerId is null) return null;
+        var fullName = await profiles.GetFullNameAsync(ownerId.Value, cancellationToken);
+        return fullName?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
+    }
+
+    private static SavedBuildView ToView(SavedBuild build, Guid? userId, string? authorName, BuilderEvaluation evaluation) =>
+        new(build.Token, build.Name, authorName, build.Usage, build.CreatedAtUtc, build.UpdatedAtUtc, build.RowVersion,
             userId is not null && build.UserAccountId == userId, evaluation);
 
     private static List<BuilderPartInput> Inputs(IEnumerable<SavedBuildPart> parts) =>

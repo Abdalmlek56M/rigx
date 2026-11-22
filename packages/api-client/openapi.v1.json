@@ -27739,6 +27739,7 @@
         "required": [
           "token",
           "name",
+          "authorName",
           "usage",
           "createdAtUtc",
           "updatedAtUtc",
@@ -27752,6 +27753,12 @@
             "type": "string"
           },
           "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "authorName": {
             "type": [
               "null",
               "string"

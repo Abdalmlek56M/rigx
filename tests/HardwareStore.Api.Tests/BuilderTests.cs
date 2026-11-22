@@ -299,6 +299,8 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
         Assert.False(string.IsNullOrWhiteSpace(saved.Token));
         Assert.Equal((false, 1L, 1800m, "Gaming PC", "Gaming"), (saved.IsOwner, saved.RowVersion, saved.Evaluation.Total, saved.Name, saved.Usage));
         Assert.Equal(1900m, again.Evaluation.Total);
+        Assert.Null(saved.AuthorName);
+        Assert.Null(again.AuthorName);
         Assert.Equal(HttpStatusCode.Unauthorized, await StatusAsync(env.Anonymous, HttpMethod.Put, $"{Root}/saved/{saved.Token}", update));
         Assert.Equal(HttpStatusCode.Unauthorized, await StatusAsync(env.Anonymous, HttpMethod.Delete, $"{Root}/saved/{saved.Token}"));
         Assert.Equal(HttpStatusCode.NotFound, await StatusAsync(signedIn, HttpMethod.Put, $"{Root}/saved/{saved.Token}", update));
@@ -331,6 +333,8 @@ public sealed class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture) : ICla
         Assert.Equal((2L, "Better", "Editing", 2), (updated.RowVersion, updated.Name, updated.Usage, updated.Evaluation.Parts.Count));
         Assert.Equal(HttpStatusCode.Conflict, stale);
         Assert.False(strangerView.IsOwner);
+        // The signed-in creator's first name shows to everyone with the link (the test accounts' full name is the part before the @).
+        Assert.Equal(("owner", "owner", "owner"), (saved.AuthorName, updated.AuthorName, strangerView.AuthorName));
         Assert.Equal(HttpStatusCode.NotFound, await StatusAsync(stranger, HttpMethod.Put, $"{Root}/saved/{saved.Token}",
             new { name = "Hijack", parts = Parts(cpu), rowVersion = 2 }));
         Assert.Equal(HttpStatusCode.NotFound, await StatusAsync(stranger, HttpMethod.Delete, $"{Root}/saved/{saved.Token}"));

@@ -118,6 +118,8 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
           shared={b.share}
           fallbackLink={siteUrl(domain, b.path)}
           onCopyLink={b.copyLink}
+          name={b.name}
+          onNameChange={b.setName}
         />
       </div>
       <p className="m-0 text-sm text-ink-muted">

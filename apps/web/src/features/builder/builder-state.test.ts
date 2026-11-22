@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  MAX_PARTS, builderPath, parseBuilderParams, parsePartsParam, partsOf, partsParam, quotePath, removeCode, replaceInSlot
+  MAX_PARTS, SHARE_NAME_MAX, builderPath, cleanShareName, parseBuilderParams, parsePartsParam, partsOf, partsParam, quotePath, removeCode,
+  replaceInSlot, sharedBuildUrl
 } from "./builder-state.ts";
 
 describe("parsePartsParam", () => {
@@ -58,6 +59,23 @@ describe("parseBuilderParams", () => {
   });
   it("takes the first of repeated params", () => {
     assert.equal(parseBuilderParams({ from: ["BLD-1", "BLD-2"] }).from, "BLD-1");
+  });
+});
+
+describe("cleanShareName", () => {
+  it("trims, collapses spaces and returns null when empty", () => {
+    assert.equal(cleanShareName("  جهاز   الألعاب  "), "جهاز الألعاب");
+    assert.equal(cleanShareName("   "), null);
+  });
+  it("cuts to the API limit", () => {
+    assert.equal(cleanShareName("x".repeat(150))?.length, SHARE_NAME_MAX);
+  });
+});
+
+describe("sharedBuildUrl", () => {
+  it("keeps the language prefix and drops the builder path", () => {
+    assert.equal(sharedBuildUrl("https://rigxhardware.com", "/en/builder", "abc12345"), "https://rigxhardware.com/en/b/abc12345");
+    assert.equal(sharedBuildUrl("https://rigxhardware.com", "/builder", "abc12345"), "https://rigxhardware.com/b/abc12345");
   });
 });
 

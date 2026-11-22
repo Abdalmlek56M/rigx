@@ -492,7 +492,10 @@
       "quote": "PDF quote",
       "copiedSaved": "Build link copied.",
       "copiedPlain": "A link with the parts was copied.",
-      "note": "A build doesn't reserve parts. We confirm availability with you before preparing the order."
+      "note": "A build doesn't reserve parts. We confirm availability with you before preparing the order.",
+      "shareTitle": "Share this build",
+      "shareName": "Build name · optional",
+      "shareNamePlaceholder": "For example: Gaming PC"
     },
     "quote": {
       "title": "Quote",
@@ -4911,5 +4914,18 @@
     "warranty": "Warranty",
     "failed": "The details could not be loaded. You can open the product page.",
     "openPage": "Product page"
+  },
+  "sharedBuild": {
+    "home": "Home",
+    "builder": "Build your own PC",
+    "breadcrumb": "Breadcrumb",
+    "untitled": "A PC build",
+    "by": "Assembled by {name}",
+    "parts": "Parts",
+    "quantity": "Quantity: {count}",
+    "unavailable": "Currently unavailable",
+    "missing": "Some parts of this build are no longer available in the store.",
+    "edit": "Edit it in the builder",
+    "copied": "Link copied"
   }
 }

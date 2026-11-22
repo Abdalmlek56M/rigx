@@ -1,14 +1,15 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Button, ButtonLink, IconButton } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { TextField } from "@/components/ui/TextField";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { CopyIcon, DocumentIcon } from "@/components/ui/icons";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "@/features/cart/cart-context";
 import { cartLinesOf, partsSummaryText, type Evaluation } from "./builder-summary";
-import { quotePath, type PartInput } from "./builder-state";
+import { SHARE_NAME_MAX, quotePath, type PartInput } from "./builder-state";
 import type { ShareLink } from "./share-link";
 
 interface SummaryActionsProps {
@@ -23,10 +24,13 @@ interface SummaryActionsProps {
   /** Public `?parts=` URL of the build ("" when the store has no domain set). */
   fallbackLink: string;
   onCopyLink: () => void;
+  /** The optional name of the build, shown on the shared page. */
+  name: string;
+  onNameChange: (value: string) => void;
 }
 
 /** Add everything to the cart, ask on WhatsApp, copy the link, the PDF quote, and the "this does not reserve parts" note. */
-export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, onCopyLink }: SummaryActionsProps) {
+export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, onCopyLink, name, onNameChange }: SummaryActionsProps) {
   const t = useTranslations("builder.actions");
   const tc = useTranslations("common.condition");
   const locale = useLocale();
@@ -62,21 +66,26 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
           {t("whatsApp")}
         </WhatsAppButton>
       ) : null}
-      <div className="grid grid-cols-[auto_1fr] gap-1.5">
-        <IconButton
-          icon={CopyIcon}
-          label={t("copyLink")}
-          variant="secondary"
-          disabled={!hasParts || checking}
-          onClick={onCopyLink}
+      {canOrder ? (
+        <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon} className="w-full">{t("quote")}</ButtonLink>
+      ) : (
+        <Button type="button" variant="secondary" icon={DocumentIcon} disabled className="w-full">{t("quote")}</Button>
+      )}
+      <div className="flex flex-col gap-2 border-t border-dashed border-header-line pt-3.5">
+        <b className="text-sm">{t("shareTitle")}</b>
+        <TextField
+          label={t("shareName")}
+          name="share-name"
+          value={name}
+          onChange={onNameChange}
+          maxLength={SHARE_NAME_MAX}
+          placeholder={t("shareNamePlaceholder")}
         />
-        {canOrder ? (
-          <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon}>{t("quote")}</ButtonLink>
-        ) : (
-          <Button type="button" variant="secondary" icon={DocumentIcon} disabled>{t("quote")}</Button>
-        )}
+        <Button type="button" variant="secondary" icon={CopyIcon} disabled={!hasParts || checking} onClick={onCopyLink} className="w-full">
+          {t("copyLink")}
+        </Button>
+        <span role="status" className="text-xs text-footer-text">{shared ? t(shared.saved ? "copiedSaved" : "copiedPlain") : ""}</span>
       </div>
-      <span role="status" className="text-xs text-footer-text">{shared ? t(shared.saved ? "copiedSaved" : "copiedPlain") : ""}</span>
       <span className="text-xs leading-6 text-footer-text">{t("note")}</span>
     </>
   );

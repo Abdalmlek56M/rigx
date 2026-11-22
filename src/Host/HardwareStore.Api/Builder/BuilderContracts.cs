@@ -19,8 +19,9 @@ public sealed record BuilderOptionView(BuilderItemView Item, IReadOnlyList<Build
 public sealed record UnmatchedPartView(string ModelName, string Condition);
 public sealed record BuilderFromBuildView(string Code, string Title, string? Usage, BuilderEvaluation Evaluation, IReadOnlyList<UnmatchedPartView> Unmatched);
 
-public sealed record SavedBuildView(string Token, string? Name, string? Usage, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc,
-    long RowVersion, bool IsOwner, BuilderEvaluation Evaluation);
+/// <summary><paramref name="AuthorName"/> is the creator's first name when a signed-in account made the build, else null.</summary>
+public sealed record SavedBuildView(string Token, string? Name, string? AuthorName, string? Usage, DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc, long RowVersion, bool IsOwner, BuilderEvaluation Evaluation);
 public sealed record SavedBuildSummary(string Token, string? Name, string? Usage, int PartCount, DateTimeOffset UpdatedAtUtc);
 
 public sealed record BuilderOptionsRequest(string? Slot, IReadOnlyList<BuilderPartInput>? Parts, string? Condition = null, string? Q = null, int Page = 1);

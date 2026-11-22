@@ -5,7 +5,7 @@ import { unwrap, type Schemas } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { EMPTY_EVALUATION, type Evaluation } from "./builder-summary";
-import { builderPath, parsePartsParam, partsOf, partsParam, removeCode, replaceInSlot, type BuilderParams, type PartInput } from "./builder-state";
+import { builderPath, cleanShareName, parsePartsParam, partsOf, partsParam, removeCode, replaceInSlot, type BuilderParams, type PartInput } from "./builder-state";
 import { createShareLink, type ShareLink } from "./share-link";
 
 export type Unmatched = Schemas["UnmatchedPartView"];
@@ -19,20 +19,24 @@ export function useBuilder(start: BuilderParams) {
   const [unmatched, setUnmatched] = useState<Unmatched[]>([]);
   const [evaluated, setEvaluated] = useState<{ key: string; evaluation: Evaluation } | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
+  const [name, setName] = useState("");
   const [share, setShare] = useState<(ShareLink & { key: string }) | null>(null);
   const knownSlots = useRef(new Map<string, string>());
   const key = partsParam(parts);
+  // A copied link is only the current one for the same parts and the same name.
+  const shareKey = `${key}|${cleanShareName(name) ?? ""}`;
 
   useEffect(() => {
     if (!opensExisting) return;
     let cancelled = false;
     const api = browserApi();
     const opening = start.saved
-      ? required(unwrap(api.GET("/api/v1/builder/saved/{token}", { params: { path: { token: start.saved } } }))).then((view) => ({ evaluation: view.evaluation, unmatched: [] as Unmatched[] }))
-      : required(unwrap(api.GET("/api/v1/builder/from-build/{code}", { params: { path: { code: start.from ?? "" } } }))).then((view) => ({ evaluation: view.evaluation, unmatched: view.unmatched }));
+      ? required(unwrap(api.GET("/api/v1/builder/saved/{token}", { params: { path: { token: start.saved } } }))).then((view) => ({ evaluation: view.evaluation, unmatched: [] as Unmatched[], name: view.name }))
+      : required(unwrap(api.GET("/api/v1/builder/from-build/{code}", { params: { path: { code: start.from ?? "" } } }))).then((view) => ({ evaluation: view.evaluation, unmatched: view.unmatched, name: null }));
     opening
       .then((opened) => {
         if (cancelled) return;
+        if (opened.name) setName(opened.name);
         for (const part of opened.evaluation.parts) knownSlots.current.set(part.item.code, part.slot);
         const openedParts = partsOf(opened.evaluation);
         setEvaluated({ key: partsParam(openedParts), evaluation: opened.evaluation });
@@ -83,10 +87,10 @@ export function useBuilder(start: BuilderParams) {
   const remove = useCallback((code: string) => setParts((current) => removeCode(current, code)), []);
 
   const copyLink = useCallback(async () => {
-    const link = await createShareLink(parts);
-    setShare({ ...link, key });
+    const link = await createShareLink(parts, name);
+    setShare({ ...link, key: shareKey });
     await navigator.clipboard.writeText(link.url).catch(() => undefined);
-  }, [parts, key]);
+  }, [parts, name, shareKey]);
 
   return {
     parts,
@@ -96,7 +100,9 @@ export function useBuilder(start: BuilderParams) {
     evaluation: key === "" ? EMPTY_EVALUATION : (evaluated?.evaluation ?? EMPTY_EVALUATION),
     checking: key !== "" && evaluated?.key !== key && failedKey !== key,
     checkFailed: failedKey === key,
-    share: share?.key === key ? share : null,
+    name,
+    setName,
+    share: share?.key === shareKey ? share : null,
     pick,
     clear,
     remove,
