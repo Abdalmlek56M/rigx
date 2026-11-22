@@ -21,9 +21,6 @@ import { loadStorefront, type StorefrontData } from "@/lib/storefront";
 
 const FAQ_LIMIT = 5;
 
-/** The latest items and FAQs come from the API, so the page is rendered per request (the API calls are cached for a few minutes). */
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};

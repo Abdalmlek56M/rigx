@@ -83,8 +83,8 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
           <FulfillmentSection
             form={form} set={set} errors={errors} pickupEnabled={pickupEnabled} pickupAddress={pickupAddress} governorates={governorates}
           />
-          <ExtrasSection form={form} set={set} errors={errors} leadSources={settings.leadSources} />
           <PaymentSection form={form} set={set} errors={errors} payment={payment} settings={settings} pickupEnabled={pickupEnabled} />
+          <ExtrasSection form={form} set={set} errors={errors} leadSources={settings.leadSources} />
         </div>
         <OrderSummary
           form={form} set={set} errors={errors} lines={lines} subtotal={subtotal} quote={quote} minimum={minimum} busy={busy}

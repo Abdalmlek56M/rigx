@@ -5,9 +5,10 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StockDot } from "@/components/ui/StockDot";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
-import { BanIcon, ChevronDownIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
@@ -44,8 +45,8 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
         )}
         <span className="absolute start-3.5 top-3.5 flex flex-wrap justify-start gap-1.5">
           {usage ? <StatusBadge tone="info">{tu(usage)}</StatusBadge> : null}
-          {soldOut ? <StatusBadge tone="neutral" icon={BanIcon}>{t("soldOutBadge")}</StatusBadge> : null}
         </span>
+        <span className="absolute bottom-3.5 start-3.5"><StockDot available={!soldOut} label={soldOut ? t("soldOutBadge") : t("inStockBadge")} /></span>
       </Link>
       <FavouriteButton code={build.code} modelName={title} className="absolute end-3 top-3" />
       <div className="flex flex-1 flex-col gap-3 p-5 md:p-[22px]">

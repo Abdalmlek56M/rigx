@@ -10,9 +10,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { routing } from "@/i18n/routing";
 import { loadStorefront } from "@/lib/storefront";
 
-/** Rendered per request: a copy built during deploy (API not up yet) would show "could not load shipping" until revalidated. */
-export const dynamic = "force-dynamic";
-
 interface Props {
   params: Promise<{ locale: string }>;
 }

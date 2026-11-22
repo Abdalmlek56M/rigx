@@ -9,9 +9,9 @@ import { specNameMap } from "@/features/builder/issue-text";
 import { loadSlots } from "@/features/builder/load-slots";
 import { localizeSlots } from "@/features/builder/slot-names";
 import { loadBuilds } from "@/features/builds/load-builds";
+import { HelpLink } from "@/components/ui/HelpLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CpuIcon } from "@/components/ui/icons";
-import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
@@ -43,12 +43,8 @@ export default async function BuilderPage({ params, searchParams }: Props) {
       <PageHeader
         title={t("title")}
         icon={CpuIcon}
-        lead={
-          <>
-            {t("subtitle")}{" "}
-            <Link href="/#recommend" className="text-orange-text underline hover:text-orange-text-hover">{t("recommendLink")}</Link>
-          </>
-        }
+        lead={t("subtitle")}
+        below={<HelpLink href="/#recommend">{t("recommendLink")}</HelpLink>}
         actions={builds ? <QuickStart builds={builds} /> : undefined}
       />
       {slots === null ? (

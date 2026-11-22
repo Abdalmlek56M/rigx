@@ -122,7 +122,8 @@ const SYSTEMS: readonly [RegExp, string][] = [
 
 /** A stored value as the detail shows it: ids of linked records and masked secrets are never shown as they are. */
 export type AuditValue =
-  | { kind: "empty" | "yes" | "no" | "masked" | "linked" }
+  | { kind: "empty" | "yes" | "no" | "masked" }
+  | { kind: "linked"; ids: string[] }
   | { kind: "text" | "data"; text: string }
   | { kind: "time"; iso: string };
 
@@ -136,12 +137,12 @@ export function auditValue(value: unknown): AuditValue {
   if (typeof value === "number" || typeof value === "bigint") return { kind: "text", text: String(value) };
   if (typeof value === "string") {
     if (value === MASKED) return { kind: "masked" };
-    if (GUID.test(value)) return { kind: "linked" };
+    if (GUID.test(value)) return { kind: "linked", ids: [value] };
     return INSTANT.test(value) ? { kind: "time", iso: value } : { kind: "text", text: value };
   }
   if (Array.isArray(value)) {
     if (value.length === 0) return { kind: "empty" };
-    if (value.every((item) => typeof item === "string" && GUID.test(item))) return { kind: "linked" };
+    if (value.every((item): item is string => typeof item === "string" && GUID.test(item))) return { kind: "linked", ids: value };
     if (value.every((item) => typeof item === "string" || typeof item === "number")) return { kind: "text", text: value.join("، ") };
   }
   return { kind: "data", text: JSON.stringify(value, null, 2) ?? "" };

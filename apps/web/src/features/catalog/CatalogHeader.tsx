@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { cardClass } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { HelpLink } from "@/components/ui/HelpLink";
 import { Link } from "@/i18n/navigation";
 import { categoryPath, type CategoryNode } from "@/lib/categories";
 import { localizedName } from "@/lib/localized-name";
@@ -39,12 +40,8 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
       breadcrumb={breadcrumb}
       breadcrumbLabel={t("breadcrumb")}
       title={title}
-      lead={
-        <>
-          {t("subtitle")}{" "}
-          <Link href="/#recommend" className="text-orange-text underline hover:text-orange-text-hover">{t("recommendLink")}</Link>
-        </>
-      }
+      lead={t("subtitle")}
+      below={<HelpLink href="/#recommend">{t("recommendLink")}</HelpLink>}
       actions={
         <div role="group" aria-label={t("conditionGroup")} className={`${cardClass({ layout: "grid", padding: "none", className: "relative grid-cols-3 gap-0 p-1" })}`}>
           <span
@@ -62,7 +59,7 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
                 className={`relative z-10 flex h-11 items-center justify-center rounded-control px-3 text-sm transition-colors duration-150 md:px-[18px] motion-reduce:transition-none ${active ? "font-bold text-on-carbon" : "hover:bg-paper"}`}
               >
                 {tab.label}
-                {tab.count > 0 ? <><span aria-hidden="true" className="mx-1">·</span><span className="font-mono">{tab.count}</span></> : null}
+                {tab.count > 0 ? <span className={`ms-2 rounded-full px-1.5 font-mono text-xs ${active ? "bg-white/20" : "bg-paper text-ink-muted"}`}>{tab.count}</span> : null}
               </Link>
             );
           })}

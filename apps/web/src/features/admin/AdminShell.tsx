@@ -12,6 +12,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { ADMIN_HOME, areaFor, canOpen, firstAreaHref, isStaff, visibleNav } from "./admin-nav";
 import { AdminSidebar } from "./AdminSidebar";
 import { useAdminBadges } from "./badges/use-admin-badges";
+import { ConfirmDialog } from "./kit/ConfirmDialog";
 import { ToastProvider } from "./kit/Toast";
 
 function Blank() {
@@ -41,6 +42,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   const user = session.status === "signedIn" ? session.user : null;
   const permissions = user?.permissions ?? [];
@@ -73,9 +75,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <ToastProvider>
+      <ConfirmDialog
+        open={confirmingLeave}
+        title={t("signOutConfirm.title")}
+        body={t("signOutConfirm.body")}
+        confirmLabel={t("signOutConfirm.action")}
+        onConfirm={leave}
+        onClose={() => setConfirmingLeave(false)}
+      />
       <div className="flex min-h-dvh bg-paper">
         <div className="sticky top-0 hidden h-dvh w-60 shrink-0 md:block">
-          <AdminSidebar user={user} groups={groups} active={area} badges={badges} onSignOut={() => void leave()} />
+          <AdminSidebar user={user} groups={groups} active={area} badges={badges} onSignOut={() => setConfirmingLeave(true)} />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -87,7 +97,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <span className="w-11" />
           </header>
           <ModalSheet open={menuOpen} onClose={closeMenu} label={t("navLabel")} edge="start" fullHeight>
-            <AdminSidebar user={user} groups={groups} active={area} badges={badges} onNavigate={closeMenu} onSignOut={() => void leave()} />
+            <AdminSidebar user={user} groups={groups} active={area} badges={badges} onNavigate={closeMenu} onSignOut={() => setConfirmingLeave(true)} />
           </ModalSheet>
 
           <main className="flex min-w-0 flex-1 flex-col gap-[18px] px-4 pb-10 pt-6 md:px-7">

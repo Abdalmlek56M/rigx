@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
-import { CopyIcon, DocumentIcon } from "@/components/ui/icons";
+import { CopyIcon, DocumentIcon, ShareIcon } from "@/components/ui/icons";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "@/features/cart/cart-context";
@@ -56,23 +56,25 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
       >
         {t("addAll")}
       </Button>
-      {hasParts && !canOrder && !checking ? <span className="text-xs leading-6 text-[#FFC94D]">{t("cannotOrder")}</span> : null}
-      {whatsApp.number ? (
-        <WhatsAppButton
-          href={whatsAppUrl(whatsApp.number, message)}
-          variant="outline"
-          className={`w-full ${hasParts ? "" : "pointer-events-none opacity-50"}`}
-        >
-          {t("whatsApp")}
-        </WhatsAppButton>
-      ) : null}
-      {canOrder ? (
-        <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon} className="w-full">{t("quote")}</ButtonLink>
-      ) : (
-        <Button type="button" variant="secondary" icon={DocumentIcon} disabled className="w-full">{t("quote")}</Button>
-      )}
-      <div className="flex flex-col gap-2 border-t border-dashed border-header-line pt-3.5">
-        <b className="text-sm">{t("shareTitle")}</b>
+      {hasParts && !canOrder && !checking ? <span className="text-xs leading-6 text-orange-text">{t("cannotOrder")}</span> : null}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2">
+        {whatsApp.number ? (
+          <WhatsAppButton
+            href={whatsAppUrl(whatsApp.number, message)}
+            variant="outline"
+            className={hasParts ? "" : "pointer-events-none opacity-50"}
+          >
+            {t("whatsApp")}
+          </WhatsAppButton>
+        ) : null}
+        {canOrder ? (
+          <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon}>{t("quote")}</ButtonLink>
+        ) : (
+          <Button type="button" variant="secondary" icon={DocumentIcon} disabled>{t("quote")}</Button>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 border-t border-dashed border-line pt-3.5">
+        <b className="flex items-center gap-2 text-sm"><span aria-hidden="true" className="text-orange-text"><ShareIcon size={16} /></span>{t("shareTitle")}</b>
         <TextField
           label={t("shareName")}
           name="share-name"
@@ -84,9 +86,9 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
         <Button type="button" variant="secondary" icon={CopyIcon} disabled={!hasParts || checking} onClick={onCopyLink} className="w-full">
           {t("copyLink")}
         </Button>
-        <span role="status" className="text-xs text-footer-text">{shared ? t(shared.saved ? "copiedSaved" : "copiedPlain") : ""}</span>
+        <span role="status" className="text-xs text-ink-muted">{shared ? t(shared.saved ? "copiedSaved" : "copiedPlain") : ""}</span>
       </div>
-      <span className="text-xs leading-6 text-footer-text">{t("note")}</span>
+      <span className="text-xs leading-6 text-ink-muted">{t("note")}</span>
     </>
   );
 }

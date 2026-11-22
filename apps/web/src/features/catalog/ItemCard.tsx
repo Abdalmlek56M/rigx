@@ -3,9 +3,9 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StockDot } from "@/components/ui/StockDot";
 import { cardClass } from "@/components/ui/Card";
-import { BanIcon, ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
+import { ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
@@ -49,9 +49,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
           <ImagePlaceholderIcon />
         )}
         {condition ? <span className="absolute start-3 top-3"><ConditionBadge condition={condition} /></span> : null}
-        {soldOut ? (
-          <span className="absolute bottom-3 start-3"><StatusBadge tone="neutral" icon={BanIcon}>{t("soldOutBadge")}</StatusBadge></span>
-        ) : null}
+        <span className="absolute bottom-3 start-3"><StockDot available={!soldOut} label={soldOut ? t("soldOutBadge") : t("inStockBadge")} /></span>
       </Link>
       <div className="absolute end-3 top-3 flex flex-col gap-2">
         <FavouriteButton code={item.code} modelName={item.modelName} />

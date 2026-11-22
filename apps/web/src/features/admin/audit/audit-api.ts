@@ -24,5 +24,16 @@ export const fetchAuditFilters = () => required(unwrap(api().GET("/api/v1/admin/
 export const fetchEvents = (query: { fromUtc?: string; toUtc?: string; eventType?: string; outcome?: string; search?: string; page: number }) =>
   required(unwrap(api().GET("/api/v1/admin/audit/events", { params: { query: { ...query, pageSize: PAGE_SIZE } } })));
 
+let linkedNames: Promise<ReadonlyMap<string, string>> | null = null;
+
+/** The names of brands and categories by id, read once: the change log stores a link as an id, and "Brand: Intel" reads better than "Brand: set". A viewer without catalog access gets none. */
+export function fetchLinkedNames(): Promise<ReadonlyMap<string, string>> {
+  linkedNames ??= Promise.all([
+    unwrap(api().GET("/api/v1/admin/catalog/brands")).catch(() => []),
+    unwrap(api().GET("/api/v1/admin/catalog/categories")).catch(() => [])
+  ]).then(([brands, categories]) => new Map([...(brands ?? []), ...(categories ?? [])].map((record) => [record.id, record.name] as const)));
+  return linkedNames;
+}
+
 export const restoreEntry = (id: string, headers: Record<string, string>) =>
   unwrap(browserApi().POST("/api/v1/admin/audit/entries/{id}/restore", { params: { path: { id } }, headers }));

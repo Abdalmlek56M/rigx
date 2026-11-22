@@ -8,7 +8,10 @@ import { HEADER_ICON_BUTTON } from "./nav-links";
 
 const ROW = "flex min-h-11 w-full items-center gap-2.5 rounded-card px-3 text-sm font-bold text-ink transition-colors hover:bg-paper";
 
-/** One button that switches to the other language, keeping the current path; it shows the target language. */
+/**
+ * One button that switches to the other language, keeping the current path; it shows the target language by name.
+ * In the header the name stands alone (a globe next to it would say "language" twice); the menu row keeps its icon.
+ */
 export function LocaleSwitch({ className = "", fullWidth = false }: { className?: string; fullWidth?: boolean }) {
   const t = useTranslations("locale");
   const locale = useLocale();
@@ -29,7 +32,7 @@ export function LocaleSwitch({ className = "", fullWidth = false }: { className?
       data-tip={aria}
       className={`tip ${classes}${className ? ` ${className}` : ""}`}
     >
-      <GlobeIcon size={fullWidth ? 18 : 16} />
+      {fullWidth ? <GlobeIcon size={18} /> : null}
       <span className={font}>{label}</span>
     </Link>
   );

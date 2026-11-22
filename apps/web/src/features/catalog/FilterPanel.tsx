@@ -5,12 +5,12 @@ import { categoryPath, effectiveSpecs, type CategoryNode } from "@/lib/categorie
 import { localizedName } from "@/lib/localized-name";
 import type { Brand } from "@/lib/storefront";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
-import { CheckIcon } from "@/components/ui/icons";
+import type { ReactNode } from "react";
+import { BoxIcon, CheckIcon, CloseIcon, FilterIcon, GearIcon, GridIcon, TagIcon, WalletIcon } from "@/components/ui/icons";
 import { Button } from "@/components/ui/Button";
 import { FIELD_BASE } from "@/components/ui/field-class";
 
 const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] transition-colors duration-150 hover:bg-paper motion-reduce:transition-none";
-const legend = "mb-2 text-xs font-bold";
 const fieldset = "m-0 flex flex-col gap-1 border-0 p-0";
 const numberInput = `${FIELD_BASE} h-11 px-2.5`;
 
@@ -23,6 +23,16 @@ interface FilterPanelProps {
   showSoldOut: boolean;
   /** Keeps the two copies (sidebar and mobile sheet) from sharing input ids. */
   idPrefix: string;
+}
+
+/** A filter group's title: a small orange icon and the name, so each group is recognised at a glance. */
+function Legend({ icon: Icon, children }: { icon: typeof GridIcon; children: ReactNode }) {
+  return (
+    <legend className="mb-2 flex items-center gap-2 text-sm font-bold">
+      <span aria-hidden="true" className="text-orange-text"><Icon size={16} /></span>
+      {children}
+    </legend>
+  );
 }
 
 function CategoryList({ nodes, state, openIds, locale }: { nodes: CategoryNode[]; state: CatalogState; openIds: ReadonlySet<string>; locale: string }) {
@@ -69,6 +79,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
   const openIds = new Set(categoryId ? categoryPath(tree, categoryId).map((node) => node.id) : []);
   const specs = categoryId ? effectiveSpecs(tree, categoryId).filter((spec) => spec.isFilter && spec.options.length > 0) : [];
   const hidden = [...toSearchParams(state).entries()].filter(([name]) => name !== "min" && name !== "max" && name !== "page");
+  const active = [...toSearchParams(state).keys()].some((name) => name !== "sort" && name !== "page");
   const stocks = [
     { value: "all", label: t("allStock") },
     { value: "in", label: t("inStock") }
@@ -76,21 +87,32 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <span className="text-[17px] font-bold">{t("title")}</span>
-        <Link href="/products" className="text-[13px] text-orange-text underline hover:text-orange-text-hover">{t("clearAll")}</Link>
+      <div className="flex min-h-9 items-center justify-between gap-2">
+        <span className="flex items-center gap-2 text-[17px] font-bold">
+          <span aria-hidden="true" className="text-orange-text"><FilterIcon size={18} /></span>
+          {t("title")}
+        </span>
+        {active ? (
+          <Link
+            href="/products"
+            className="press inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-xs font-medium transition-colors hover:border-orange/50 hover:text-orange-text"
+          >
+            <CloseIcon size={14} />
+            {t("clearAll")}
+          </Link>
+        ) : null}
       </div>
 
       {tree.length > 0 ? (
         <fieldset className={fieldset}>
-          <legend className={legend}>{t("category")}</legend>
+          <Legend icon={GridIcon}>{t("category")}</Legend>
           <CategoryList nodes={tree} state={state} openIds={openIds} locale={locale} />
         </fieldset>
       ) : null}
 
       {brands.length > 0 ? (
         <fieldset className={fieldset}>
-          <legend className={legend}>{t("brand")}</legend>
+          <Legend icon={TagIcon}>{t("brand")}</Legend>
           <ul className="m-0 flex max-h-60 list-none flex-col gap-0.5 overflow-y-auto overscroll-contain p-0">
             {brands.map((brand) => {
               const selected = state.brand === brand.slug;
@@ -115,7 +137,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
         const rest = Object.fromEntries(Object.entries(state.specs).filter(([key]) => key !== spec.key));
         return (
           <fieldset key={spec.key} className={fieldset}>
-            <legend className={legend}>{spec.name}</legend>
+            <Legend icon={GearIcon}>{spec.name}</Legend>
             <div className="flex flex-wrap gap-1.5">
               {spec.options.map((option) => {
                 const selected = state.specs[spec.key] === option;
@@ -141,7 +163,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
           <input key={`${name}=${value}`} type="hidden" name={name} value={value} />
         ))}
         <fieldset className={fieldset}>
-          <legend className={legend}>{t("price")}</legend>
+          <Legend icon={WalletIcon}>{t("price")}</Legend>
           <div className="flex items-center gap-2">
             <label htmlFor={`${idPrefix}-min`} className="sr-only">{t("min")}</label>
             <input id={`${idPrefix}-min`} name="min" type="number" min={0} inputMode="numeric" placeholder={t("min")} defaultValue={state.min ?? ""} className={numberInput} />
@@ -155,7 +177,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
 
       {showSoldOut ? (
         <fieldset className={fieldset}>
-          <legend className={legend}>{t("availability")}</legend>
+          <Legend icon={BoxIcon}>{t("availability")}</Legend>
           <div className="flex gap-1 rounded-card bg-paper p-1">
             {stocks.map((stock) => {
               const selected = state.stock === stock.value;

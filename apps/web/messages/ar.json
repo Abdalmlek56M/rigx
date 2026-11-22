@@ -5,9 +5,9 @@
   },
   "home": {
     "hero": {
-      "title": "قطع كمبيوتر جديدة ومستعملة،",
-      "titleAccent": "وتجميعات جاهزة.",
-      "subtitle": "كروت شاشة ومعالجات وبوردات ورامات ووحدات تخزين. كما نجمّع الأجهزة وننظّفها، ونشتري القديم منها أو نستبدله.",
+      "title": "جهازك القادم،",
+      "titleAccent": "قطعة قطعة.",
+      "subtitle": "قطع جديدة ومستعملة وتجميعات جاهزة. نركّب جهازك وننظّفه، ونشتري قديمك أو نستبدله.",
       "browse": "تصفح المنتجات",
       "recommend": "اقترح لي تجميعة",
       "startHere": "من أين تبدأ؟",
@@ -109,7 +109,9 @@
   },
   "topBar": {
     "defaultAnnouncement": "شحن لكل المحافظات",
-    "whatsApp": "واتساب:"
+    "whatsAppHours": "نرد عليك على واتساب {hours}",
+    "pickup": "الاستلام من المحل متاح",
+    "whatsAppAria": "تواصل معنا عبر واتساب"
   },
   "header": {
     "home": "RIGX الرئيسية",
@@ -172,7 +174,7 @@
   "backToTop": "ارجع لفوق",
   "cart": {
     "title": "السلة",
-    "titleWithCount": "السلة · {count}",
+    "titleWithCount": "السلة ({count})",
     "buttonAria": "{count, plural, =0 {السلة} other {السلة، # منتجات}}",
     "empty": "السلة فارغة",
     "browse": "تصفح المنتجات",
@@ -204,17 +206,18 @@
     "Streaming": "ستريم"
   },
   "item": {
-    "soldOutBadge": "خلص",
+    "soldOutBadge": "نفدت الكمية",
     "inBuildOnly": "ضمن تجميعة",
     "soldOut": "غير متاح حاليًا",
-    "buildIt": "جمّع جهازك"
+    "buildIt": "جمّع جهازك",
+    "inStockBadge": "متاح"
   },
   "notify": {
     "cta": "أبلغني عند التوفر",
     "title": "أبلغني عند التوفر",
     "name": "الاسم",
     "phone": "رقم الموبايل أو واتساب",
-    "email": "البريد الإلكتروني · اختياري",
+    "email": "البريد الإلكتروني (اختياري)",
     "condition": "الحالة",
     "conditions": {
       "Any": "أي حالة",
@@ -241,10 +244,10 @@
       "all": "كل المنتجات",
       "new": "قطع جديدة",
       "used": "قطع مستعملة",
-      "search": "نتايج البحث عن «{query}»"
+      "search": "نتائج البحث عن «{query}»"
     },
-    "subtitle": "جديد ومستعمل. وإن لم تكن متأكدًا من الاختيار؟",
-    "recommendLink": "أخبرنا كيف ستستخدمه",
+    "subtitle": "قطع جديدة ومستعملة، كل قطعة بحالتها وضمانها.",
+    "recommendLink": "لست متأكدًا؟ أخبرنا كيف ستستخدمه",
     "conditionGroup": "نوع المنتج",
     "all": "الكل",
     "resultCount": "{count} منتج",
@@ -386,7 +389,8 @@
     },
     "specs": "المواصفات",
     "loading": "جارٍ تحميل التجميعات…",
-    "soldOutBadge": "غير متاح"
+    "soldOutBadge": "غير متاح",
+    "inStockBadge": "متاح"
   },
   "build": {
     "breadcrumb": "مسار الصفحة",
@@ -419,8 +423,8 @@
   },
   "builder": {
     "title": "جمّع جهازك بنفسك",
-    "subtitle": "اختر كل قطعة، جديدة أو مستعملة، وسيراجع الموقع التوافق. وإن كنت لا تعرف ما تختار،",
-    "recommendLink": "خلينا نرشحلك",
+    "subtitle": "اختر كل قطعة، جديدة أو مستعملة، وسيراجع الموقع التوافق بينها.",
+    "recommendLink": "لست متأكدًا؟ دعنا نرشح لك تجميعة",
     "quickStart": {
       "label": "بداية سريعة",
       "Gaming": "ابدأ من تجميعة ألعاب",
@@ -479,22 +483,22 @@
       },
       "power": "الاستهلاك التقريبي",
       "conditions": "جديد / مستعمل",
-      "counts": "{newCount} جديد · {usedCount} مستعمل",
+      "counts": "{newCount} جديد، {usedCount} مستعمل",
       "total": "الإجمالي التقديري"
     },
     "actions": {
       "addAll": "أضف الكل للسلة",
       "cannotOrder": "لإضافتها إلى السلة: أزل التعارضات وتأكد من توفر كل القطع.",
-      "whatsApp": "راجعها معانا على واتساب",
+      "whatsApp": "واتساب",
       "whatsAppItem": "تجميعتي من جمّع جهازك",
       "whatsAppFallback": "مرحبًا RIGX، أرغب في مراجعة تجميعة معكم:",
       "copyLink": "نسخ الرابط",
-      "quote": "عرض سعر PDF",
+      "quote": "عرض سعر",
       "copiedSaved": "تم نسخ رابط التجميعة.",
       "copiedPlain": "تم نسخ رابط يحتوي على القطع.",
       "note": "لا تحجز التجميعة القطع. نؤكد معك التوفر قبل تجهيز الطلب.",
       "shareTitle": "مشاركة التجميعة",
-      "shareName": "اسم التجميعة · اختياري",
+      "shareName": "اسم التجميعة (اختياري)",
       "shareNamePlaceholder": "مثال: جهاز الألعاب"
     },
     "quote": {
@@ -507,7 +511,7 @@
       "total": "الإجمالي",
       "label": "تجميعتي",
       "meta": "{count} قطع",
-      "metaWithUsage": "{usage} · {count} قطع",
+      "metaWithUsage": "{usage}، {count} قطع",
       "pricedOn": "الأسعار يوم {date}",
       "cta": "جمّع تجميعتك على الموقع"
     }
@@ -557,7 +561,7 @@
         "message": "أرغب في حجز فحص لقطعة."
       },
       "maintenance": {
-        "price": "تنظيف من 200 · معجون من 200 ج.م",
+        "price": "تنظيف من 200، معجون من 200 ج.م",
         "title": "صيانة وتنظيف",
         "body": "تنظيف كامل ومعجون حراري جديد، مع قياس الحرارة قبل الصيانة وبعدها.",
         "steps": [
@@ -633,7 +637,7 @@
         "ownedForLine": "معاه من {value}",
         "model": "الموديل",
         "modelPlaceholder": "مثلًا GTX 1660 Super",
-        "ownedFor": "منذ متى تملكها؟ · اختياري",
+        "ownedFor": "منذ متى تملكها؟ (اختياري)",
         "ownedForPlaceholder": "مثلًا سنتين",
         "want": "ماذا تريد؟",
         "wants": {
@@ -666,22 +670,15 @@
   },
   "auth": {
     "title": "تسجيل الدخول",
-    "aside": {
-      "line1": "طلباتك وضمانك",
-      "line2": "في مكان واحد.",
-      "orders": "حالة كل طلب حتى وصوله",
-      "warranty": "ضمان كل قطعة وتاريخه",
-      "invoices": "فواتيرك متاحة متى احتجت إليها"
-    },
     "email": {
-      "title": "تسجيل الدخول إلى حسابك",
-      "subtitle": "تابع طلباتك وضمان قطعك.",
-      "google": "أو عبر كود يُرسل إلى البريد الإلكتروني",
+      "title": "تسجيل الدخول",
+      "subtitle": "طلباتك وضمانك وفواتيرك في حسابك.",
+      "google": "أو بالبريد الإلكتروني",
       "label": "البريد الإلكتروني",
       "placeholder": "name@gmail.com",
-      "send": "إرسال كود إلى البريد الإلكتروني",
-      "sending": "جارٍ إرسال الكود…",
-      "hint": "لا توجد كلمات مرور: نرسل إليك كودًا من ٦ أرقام إلى بريدك الإلكتروني.",
+      "send": "إرسال الكود",
+      "sending": "جارٍ الإرسال…",
+      "hint": "لا حاجة إلى كلمة مرور. سنرسل إليك كودًا من ٦ أرقام.",
       "invalid": "يرجى كتابة بريد إلكتروني صحيح."
     },
     "code": {
@@ -784,7 +781,7 @@
     },
     "extras": {
       "notes": "ملاحظات على الطلب",
-      "usage": "الاستخدام",
+      "usage": "ما استخدامك للجهاز؟",
       "usages": {
         "Gaming": "الألعاب",
         "StudyWork": "العمل والدراسة",
@@ -795,7 +792,9 @@
       },
       "usageNote": "تفاصيل الاستخدام",
       "leadSource": "كيف تعرّفت علينا؟",
-      "leadSourceHint": "يساعدنا ذلك على تحسين خدماتنا."
+      "leadSourceHint": "يساعدنا ذلك على تحسين خدماتنا.",
+      "title": "إضافات",
+      "addNote": "إضافة ملاحظة على الطلب"
     },
     "payment": {
       "title": "الدفع",
@@ -910,7 +909,7 @@
     "whatsAppMessage": "أهلًا RIGX، بخصوص طلبي رقم {reference}.",
     "rating": {
       "title": "تقيّم تجربتك؟",
-      "comment": "تعليق · اختياري",
+      "comment": "تعليق (اختياري)",
       "submit": "أرسل التقييم",
       "thanks": "شكرًا على تقييمك.",
       "already": "تقييمك للطلب:",
@@ -1357,6 +1356,11 @@
       "notFound": {
         "title": "هذه الصفحة غير موجودة",
         "home": "ارجع للنظرة العامة"
+      },
+      "signOutConfirm": {
+        "title": "تسجيل الخروج",
+        "body": "سيتم إنهاء جلستك على هذا الجهاز.",
+        "action": "تسجيل الخروج"
       }
     },
     "nav": {
@@ -1462,7 +1466,7 @@
         "noComparison": "لا توجد فترة سابقة للمقارنة"
       },
       "chart": {
-        "title": "المبيعات والربح · آخر ٣٠ يوم",
+        "title": "المبيعات والربح، آخر ٣٠ يوم",
         "granularity": "عرض الرسم",
         "daily": "يومي",
         "weekly": "أسبوعي",
@@ -1490,7 +1494,7 @@
       "categories": {
         "title": "أكتر الأقسام بيعًا",
         "none": "من غير قسم",
-        "salesMargin": "{sales} · هامش {margin}٪"
+        "salesMargin": "{sales}، هامش {margin}٪"
       },
       "condition": {
         "title": "جديد مقابل مستعمل",
@@ -1499,8 +1503,8 @@
         "splitParts": "بيع تجزئة من تجميعات",
         "singleItems": "قطع منفردة",
         "daysToSellUsed": "متوسط أيام البيع للمستعمل",
-        "builds": "{count} تجميعة · {sales}",
-        "parts": "{count} قطعة · {sales}",
+        "builds": "{count} تجميعة، {sales}",
+        "parts": "{count} قطعة، {sales}",
         "days": "{count} يوم"
       },
       "demand": {
@@ -1528,7 +1532,7 @@
         "empty": "لا توجد قطع راكدة."
       },
       "partners": {
-        "title": "أرباح الشركاء · هذا الشهر",
+        "title": "أرباح الشركاء، هذا الشهر",
         "partner": "الشريك",
         "earned": "نصيبه",
         "empty": "لا توجد أرباح للشركاء هذا الشهر."
@@ -1614,7 +1618,7 @@
       "blacklisted": "قائمة سوداء",
       "moreItems": "+{count}",
       "reservation": {
-        "held": "محجوز · {hours} س",
+        "held": "محجوز، {hours} س",
         "expired": "انتهى الحجز"
       },
       "newestOnly": "يُعرض أحدث {count} طلب فقط. استخدم البحث أو الفلتر لعرض الباقي.",
@@ -1670,7 +1674,7 @@
           "remaining": "المتبقي",
           "refunded": "المسترد",
           "method": "طريقة الدفع",
-          "waived": "تم التنازل عن الدفع في {date} · {reason}",
+          "waived": "تم التنازل عن الدفع في {date}، {reason}",
           "couponDiscount": "خصم الكوبون ({code})"
         },
         "payments": {
@@ -1687,7 +1691,7 @@
           "title": "سجل الطلب",
           "created": "تم إنشاء الطلب",
           "status": "تم تغيير الحالة إلى «{status}»",
-          "payment": "دفعة {method} · {amount}",
+          "payment": "دفعة {method}، {amount}",
           "paymentStatus": "تم تغيير حالة الدفع إلى «{status}»",
           "shipping": "تم تحديث بيانات الشحن",
           "reservation": "تم تحديث الحجز",
@@ -1724,7 +1728,7 @@
           "Shipped": "تسليم لشركة الشحن",
           "Delivered": "تأكيد استلام العميل"
         },
-        "noteLabel": "ملاحظة · اختياري",
+        "noteLabel": "ملاحظة (اختياري)",
         "statusDone": "تم تحديث الحالة.",
         "blocks": {
           "blacklist": "العميل في القائمة السوداء: لا يُؤكد الطلب إلا بعد سداد كامل المبلغ.",
@@ -1744,7 +1748,7 @@
           "title": "إلغاء الطلب؟",
           "body": "ستُعاد القطع المحجوزة إلى المخزون.",
           "confirm": "إلغاء الطلب",
-          "notes": "سبب الإلغاء · اختياري",
+          "notes": "سبب الإلغاء (اختياري)",
           "done": "تم إلغاء الطلب."
         },
         "invoice": {
@@ -1777,7 +1781,7 @@
           "method": "طريقة الدفع",
           "amount": "المبلغ",
           "hint": "المتبقي {amount}",
-          "note": "ملاحظة · اختياري",
+          "note": "ملاحظة (اختياري)",
           "submit": "سجّل الدفعة",
           "done": "تم تسجيل الدفعة.",
           "button": "تسجيل دفعة",
@@ -1805,7 +1809,7 @@
           "title": "حالة الدفع",
           "label": "الحالة",
           "hint": "«مدفوع» هنا تعني تحويلًا تم التحقق منه، ولا تسجّل مبلغًا.",
-          "note": "ملاحظة · اختياري",
+          "note": "ملاحظة (اختياري)",
           "submit": "تحديث الحالة",
           "done": "تم تحديث حالة الدفع."
         },
@@ -1922,7 +1926,7 @@
       },
       "offer": {
         "title": "العرض المبدئي",
-        "current": "العرض: {offer} · سعر البيع المتوقع: {resale}",
+        "current": "العرض: {offer}، سعر البيع المتوقع: {resale}",
         "none": "—",
         "amount": "العرض",
         "expected": "سعر البيع المتوقع",
@@ -1966,7 +1970,7 @@
       "backInStock": {
         "panelTitle": "رجعت للمخزون",
         "panelNote": "طلبات «بلّغني» التي توفرت قطعتها ولم نتواصل مع أصحابها بعد.",
-        "requestLine": "{code} · {name} · اتوفرت {date}",
+        "requestLine": "{code}، {name}، اتوفرت {date}",
         "wanted": "يريده {condition}",
         "wantedAny": "أي حالة",
         "openWhatsApp": "واتساب",
@@ -2009,9 +2013,9 @@
       "viewAsTitle": "شكل حسابه عند العميل",
       "viewAsNote": "عرض فقط — أي تعديل من هنا لن يُحفظ.",
       "tabs": {
-        "orders": "الطلبات · {count}",
-        "warranties": "الضمانات · {count}",
-        "requests": "الطلبات الواردة · {count}",
+        "orders": "الطلبات ({count})",
+        "warranties": "الضمانات ({count})",
+        "requests": "الطلبات الواردة ({count})",
         "notes": "ملاحظات"
       },
       "orders": {
@@ -2179,7 +2183,7 @@
     "policies": {
       "title": "السياسات",
       "version": "النسخة {version}",
-      "publishedInfo": "منشورة: النسخة {version} · {date}",
+      "publishedInfo": "منشورة: النسخة {version}، {date}",
       "notPublished": "لم تُنشر بعد",
       "draftWaiting": "فيه مسودة مستنية (النسخة {version})",
       "startFirst": "لم تُكتب هذه السياسة بعد.",
@@ -2253,14 +2257,14 @@
         "questionEn": "السؤال (إنجليزي)",
         "answerAr": "الإجابة (عربي)",
         "answerEn": "الإجابة (إنجليزي)",
-        "topic": "الموضوع · اختياري",
+        "topic": "الموضوع (اختياري)",
         "sortOrder": "الترتيب",
         "scope": "يظهر في",
         "category": "القسم",
         "pickCategory": "اختر القسم",
         "itemCode": "كود القطعة",
         "helpPageOnly": "صفحة المساعدة فقط",
-        "youTube": "فيديو من يوتيوب · اختياري",
+        "youTube": "فيديو من يوتيوب (اختياري)",
         "youTubeHint": "الصق الرابط، ويُشغَّل الفيديو داخل الموقع."
       },
       "actions": {
@@ -2317,10 +2321,10 @@
       "fields": {
         "titleAr": "اسم العرض (عربي)",
         "titleEn": "اسم العرض (إنجليزي)",
-        "descriptionAr": "الوصف (عربي) · اختياري",
-        "descriptionEn": "الوصف (إنجليزي) · اختياري",
+        "descriptionAr": "الوصف (عربي) (اختياري)",
+        "descriptionEn": "الوصف (إنجليزي) (اختياري)",
         "startDate": "من",
-        "endDate": "إلى · اختياري",
+        "endDate": "إلى (اختياري)",
         "priority": "الأولوية"
       },
       "items": {
@@ -2416,9 +2420,9 @@
         "paidFrom": "اتدفع من",
         "defaultAccount": "الحساب الافتراضي",
         "partnerMoney": "من فلوس {name}",
-        "note": "البيان · اختياري",
+        "note": "البيان (اختياري)",
         "noteHint": "مثلًا شحن طلب أو كراتين تغليف.",
-        "receipt": "صورة الإيصال · اختياري",
+        "receipt": "صورة الإيصال (اختياري)",
         "receiptHint": "صورة واحدة، والحد الأقصى 12 ميجابايت.",
         "newType": "+ نوع جديد",
         "save": "إضافة",
@@ -2447,7 +2451,7 @@
         "day": "يوم الشهر",
         "account": "بتتدفع من",
         "defaultAccount": "الحساب الافتراضي",
-        "note": "البيان · اختياري",
+        "note": "البيان (اختياري)",
         "noteHint": "مثلًا إيجار المحل.",
         "active": "مفعّل",
         "edit": "تعديل",
@@ -2619,7 +2623,7 @@
         "name": "الاسم",
         "phone": "الموبايل",
         "whatsapp": "الرقم عليه واتساب",
-        "email": "البريد الإلكتروني · اختياري",
+        "email": "البريد الإلكتروني (اختياري)",
         "search": "دوّر بالموبايل أو الاسم",
         "results": "عملاء لقيناهم",
         "finding": "بندوّر…",
@@ -2628,7 +2632,7 @@
         "use": "استخدم بياناته",
         "registered": "عميل مسجل",
         "registeredHint": "اشترى منا {orders} من قبل. أكمل أي بيانات ناقصة.",
-        "phoneKnown": "هذا الرقم لعميل مسجل: {name} · {orders}",
+        "phoneKnown": "هذا الرقم لعميل مسجل: {name}، {orders}",
         "new": "عميل جديد",
         "newHint": "هيتسجل مع البيع.",
         "orders": "{count, plural, one {طلب واحد} two {طلبين} few {# طلبات} other {# طلب}}",
@@ -2674,7 +2678,7 @@
         "empty": "أضف شيئًا إلى السلة ليُحتسب الملخص.",
         "calculating": "بنحسب…",
         "previewFailed": "مقدرناش نحدّث الملخص: {message}",
-        "couponLabel": "كوبون · اختياري",
+        "couponLabel": "كوبون (اختياري)",
         "couponDiscount": "خصم الكوبون ({code})"
       },
       "errors": {
@@ -2727,7 +2731,7 @@
       "hiddenNote": "تُحتسب المخفية ضمن المخزون، ويمكن إضافتها إلى تجميعة أو بيعها من «بيع جديد»، لكنها لا تظهر في المتجر.",
       "empty": "لا توجد قطع مطابقة.",
       "days": "{count, plural, one {يوم} two {يومين} few {# أيام} other {# يوم}}",
-      "partnerShare": "{name} · {percent}٪",
+      "partnerShare": "{name}، {percent}٪",
       "columns": {
         "pick": "اختيار",
         "code": "الكود",
@@ -2861,7 +2865,7 @@
         "title": "{count, plural, one {وحدة واحدة} two {وحدتين} few {# وحدات} other {# وحدة}}",
         "none": "—",
         "empty": "لا توجد وحدات.",
-        "partnerShare": "{name} · {percent}٪",
+        "partnerShare": "{name}، {percent}٪",
         "changePartner": "تغيير الشريك",
         "columns": {
           "status": "الحالة",
@@ -3332,7 +3336,7 @@
         "capital": "رأس المال",
         "due": "المستحق",
         "recoverable": "مطلوب منه",
-        "summary": "{percent}٪ · {basis}",
+        "summary": "{percent}٪، {basis}",
         "inactive": "موقوف"
       },
       "form": {
@@ -3479,7 +3483,7 @@
         "financedShares": "أنصبة القطع الممولة",
         "base": "الأساس الذي حُسب عليه",
         "nothingPosted": "لم تُسجَّل أرباح لأي شريك.",
-        "posted": "{name} · {percent}٪"
+        "posted": "{name}، {percent}٪"
       }
     },
     "audit": {
@@ -3515,14 +3519,14 @@
         "unknown": "جهاز غير معروف"
       },
       "diff": {
-        "changed": "اتغيّر",
+        "changed": "تغيّر",
         "added": "أُضيف",
-        "removed": "اتشال",
-        "yes": "أيوه",
-        "no": "لأ",
+        "removed": "أُزيل",
+        "yes": "نعم",
+        "no": "لا",
         "masked": "مخفي",
-        "linked": "متحدد",
-        "linkedChanged": "تغيّر إلى اختيار آخر",
+        "linked": "سجل مرتبط",
+        "linkedChanged": "تغيّر إلى سجل آخر",
         "empty": "فارغ"
       },
       "filters": {
@@ -4259,7 +4263,7 @@
         "tabs": {
           "details": "البيانات",
           "roles": "الدور والصلاحيات",
-          "purchases": "المشتريات والطلبات · {count}",
+          "purchases": "المشتريات والطلبات ({count})",
           "notes": "ملاحظات داخلية",
           "restrictions": "الإيقاف والحظر"
         },
@@ -4847,8 +4851,8 @@
       "maxDiscountNote": "حد أقصى {amount}",
       "usesOf": "{uses} من {max}",
       "completed": "{count} اتمّوا",
-      "totals": "الإجمالي: {uses} استخدام · {completed} اتمّوا",
-      "totalsMoney": "الإجمالي: {uses} استخدام · {completed} اتمّوا · إيرادات {revenue} · خصم {discount}",
+      "totals": "الإجمالي: {uses} استخدام، {completed} اتمّوا",
+      "totalsMoney": "الإجمالي: {uses} استخدام، {completed} اتمّوا، إيرادات {revenue}، خصم {discount}",
       "columns": {
         "source": "المصدر",
         "discount": "الخصم",
@@ -4874,12 +4878,12 @@
         "discountKind": "نوع الخصم",
         "percent": "النسبة %",
         "amount": "المبلغ (ج)",
-        "maxDiscount": "أقصى خصم (ج) · اختياري",
-        "minOrderTotal": "أقل قيمة للطلب (ج) · اختياري",
-        "maxUses": "عدد مرات الاستخدام · فارغ = مفتوح",
+        "maxDiscount": "أقصى خصم (ج) (اختياري)",
+        "minOrderTotal": "أقل قيمة للطلب (ج) (اختياري)",
+        "maxUses": "عدد مرات الاستخدام (فارغ = مفتوح)",
         "oncePerCustomer": "مرة واحدة لكل عميل",
-        "startDate": "من · اختياري",
-        "endDate": "إلى · اختياري",
+        "startDate": "من (اختياري)",
+        "endDate": "إلى (اختياري)",
         "isActive": "مفعّل"
       },
       "errors": {

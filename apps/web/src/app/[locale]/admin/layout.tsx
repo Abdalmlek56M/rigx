@@ -13,6 +13,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: { absolute: t("title"), template: `%s · ${t("title")}` }, robots: { index: false } };
 }
 
+/** Rendered per request like the storefront: a copy built during a deploy (API not up yet) would hold empty lists (the POS governorates, lead sources). */
+export const dynamic = "force-dynamic";
+
 /** The admin has its own frame (no storefront header or footer); the guard and sidebar run in the browser from `/identity/me`. */
 export default async function AdminLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;

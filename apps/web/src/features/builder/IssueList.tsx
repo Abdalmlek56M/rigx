@@ -9,7 +9,7 @@ interface IssueListProps {
   specNames: Readonly<Record<string, string>>;
 }
 
-/** Compatibility problems in plain Arabic: conflicts in red (the build cannot be ordered), warnings in amber. */
+/** Compatibility problems in plain Arabic: conflicts in red (the build cannot be ordered), warnings in orange. */
 export function IssueList({ issues, slotNames, specNames }: IssueListProps) {
   const t = useTranslations("builder.issues");
   if (issues.length === 0) return null;
@@ -19,7 +19,7 @@ export function IssueList({ issues, slotNames, specNames }: IssueListProps) {
       {issues.map((issue, index) => {
         const text = describeIssue(issue, slotNames, specNames);
         return (
-          <li key={`${issue.code}-${issue.slot}-${issue.otherSlot}-${issue.specKey}-${index}`} className={`flex gap-2 ${text.conflict ? "text-[#FF8A7A]" : "text-[#FFC94D]"}`}>
+          <li key={`${issue.code}-${issue.slot}-${issue.otherSlot}-${issue.specKey}-${index}`} className={`flex gap-2 ${text.conflict ? "text-error" : "text-orange-text"}`}>
             <span aria-hidden="true" className="flex">{text.conflict ? <CloseIcon size={16} /> : <HelpIcon size={16} />}</span>
             <span>
               <span className="sr-only">{t(text.conflict ? "conflict" : "warning")}: </span>

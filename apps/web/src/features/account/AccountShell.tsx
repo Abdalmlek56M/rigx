@@ -6,11 +6,11 @@ import { loginHref } from "@/features/auth/auth-rules";
 import { signOut } from "@/features/auth/session-store";
 import { useSession } from "@/features/auth/use-session";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { BoxIcon, CaseIcon, DocumentIcon, HeartIcon, InboxIcon, LogoutIcon, MapPinIcon, ShieldIcon, UserIcon } from "@/components/ui/icons";
+import { ConfirmButton } from "./ConfirmButton";
 import { ACCOUNT_NAV, isActiveNav } from "./account-labels";
 
 const NAV_ICONS = {
@@ -47,7 +47,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
       <PageHeader
         contained={false}
         title={user ? t("greeting", { name: user.fullName || user.email }) : <span aria-hidden="true" className="inline-block h-8 w-56 animate-pulse rounded-control bg-line" />}
-        actions={user ? <Button variant="secondary" icon={LogoutIcon} onClick={() => void leave()}>{t("signOut")}</Button> : undefined}
+        actions={user ? <ConfirmButton iconOnly label={t("signOut")} icon={LogoutIcon} onConfirm={() => void leave()} /> : undefined}
       />
       <div className="grid items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
         <Card as="nav" padding="sm" className="-mx-4 flex-row gap-1 overflow-x-auto px-4 md:mx-0 md:flex-col md:overflow-visible md:px-4" aria-label={t("navLabel")}>

@@ -60,7 +60,7 @@ describe("audit change values", () => {
       ],
       [
         { kind: "empty" }, { kind: "empty" }, { kind: "empty" }, { kind: "yes" }, { kind: "no" }, { kind: "text", text: "12.5" }, { kind: "text", text: "نص" },
-        { kind: "masked" }, { kind: "linked" }, { kind: "linked" },
+        { kind: "masked" }, { kind: "linked", ids: ["0199a000-0000-7000-8000-000000000001"] }, { kind: "linked", ids: ["0199a000-0000-7000-8000-000000000001"] },
         { kind: "time", iso: "2026-11-19T10:00:00+00:00" }, { kind: "text", text: "2026-11-19" }, { kind: "text", text: "a، b" },
         { kind: "data", text: JSON.stringify({ role: "Owner" }, null, 2) }
       ]

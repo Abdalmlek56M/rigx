@@ -5,9 +5,9 @@
   },
   "home": {
     "hero": {
-      "title": "New and used PC parts,",
-      "titleAccent": "and ready-made builds.",
-      "subtitle": "Graphics cards, processors, motherboards, RAM and storage. We also assemble, clean, and buy or trade in old parts.",
+      "title": "Your next PC,",
+      "titleAccent": "part by part.",
+      "subtitle": "New and used parts, and ready builds. We assemble and clean your PC, and buy or trade in your old one.",
       "browse": "Browse products",
       "recommend": "Recommend a build",
       "startHere": "Where do you start?",
@@ -109,7 +109,9 @@
   },
   "topBar": {
     "defaultAnnouncement": "Shipping to all governorates",
-    "whatsApp": "WhatsApp:"
+    "whatsAppHours": "We reply on WhatsApp {hours}",
+    "pickup": "Pickup from the shop is available",
+    "whatsAppAria": "Contact us on WhatsApp"
   },
   "header": {
     "home": "RIGX home",
@@ -172,7 +174,7 @@
   "backToTop": "Back to top",
   "cart": {
     "title": "Cart",
-    "titleWithCount": "Cart · {count}",
+    "titleWithCount": "Cart ({count})",
     "buttonAria": "{count, plural, =0 {Cart} one {Cart, # item} other {Cart, # items}}",
     "empty": "Your cart is empty",
     "browse": "Browse products",
@@ -207,14 +209,15 @@
     "soldOutBadge": "Sold out",
     "inBuildOnly": "In a build",
     "soldOut": "Not available right now",
-    "buildIt": "Build your PC"
+    "buildIt": "Build your PC",
+    "inStockBadge": "In stock"
   },
   "notify": {
     "cta": "Notify me when available",
     "title": "Notify me when available",
     "name": "Name",
     "phone": "Mobile / WhatsApp number",
-    "email": "Email · optional",
+    "email": "Email (optional)",
     "condition": "Condition",
     "conditions": {
       "Any": "Any",
@@ -243,8 +246,8 @@
       "used": "Used parts",
       "search": "Results for \"{query}\""
     },
-    "subtitle": "New and used. Not sure what to choose?",
-    "recommendLink": "Tell us how you will use it",
+    "subtitle": "New and used parts, each with its condition and warranty.",
+    "recommendLink": "Not sure? Tell us how you will use it",
     "conditionGroup": "Product type",
     "all": "All",
     "resultCount": "{count} products",
@@ -386,7 +389,8 @@
     },
     "specs": "Specifications",
     "loading": "Loading builds…",
-    "soldOutBadge": "Sold out"
+    "soldOutBadge": "Sold out",
+    "inStockBadge": "In stock"
   },
   "build": {
     "breadcrumb": "Breadcrumb",
@@ -419,8 +423,8 @@
   },
   "builder": {
     "title": "Build your own PC",
-    "subtitle": "Pick each part, new or used, and the site checks compatibility. Not sure?",
-    "recommendLink": "let us recommend one",
+    "subtitle": "Pick each part, new or used, and the site checks that they fit together.",
+    "recommendLink": "Not sure? Let us suggest a build",
     "quickStart": {
       "label": "Quick start",
       "Gaming": "Start from a gaming build",
@@ -479,22 +483,22 @@
       },
       "power": "Estimated power",
       "conditions": "New / used",
-      "counts": "{newCount} new · {usedCount} used",
+      "counts": "{newCount} new, {usedCount} used",
       "total": "Estimated total"
     },
     "actions": {
       "addAll": "Add all to cart",
       "cannotOrder": "To add it to the cart: no conflicts, and every part in stock.",
-      "whatsApp": "Review it with us on WhatsApp",
+      "whatsApp": "WhatsApp",
       "whatsAppItem": "my build from the PC builder",
       "whatsAppFallback": "Hi RIGX, I'd like to review a build with you:",
       "copyLink": "Copy link",
-      "quote": "PDF quote",
+      "quote": "Quote",
       "copiedSaved": "Build link copied.",
       "copiedPlain": "A link with the parts was copied.",
       "note": "A build doesn't reserve parts. We confirm availability with you before preparing the order.",
       "shareTitle": "Share this build",
-      "shareName": "Build name · optional",
+      "shareName": "Build name (optional)",
       "shareNamePlaceholder": "For example: Gaming PC"
     },
     "quote": {
@@ -507,7 +511,7 @@
       "total": "Total",
       "label": "My build",
       "meta": "{count} parts",
-      "metaWithUsage": "{usage} · {count} parts",
+      "metaWithUsage": "{usage}, {count} parts",
       "pricedOn": "Prices as of {date}",
       "cta": "Build yours on the website"
     }
@@ -557,7 +561,7 @@
         "message": "I'd like to book a check for a part."
       },
       "maintenance": {
-        "price": "Cleaning from EGP 200 · thermal paste from EGP 200",
+        "price": "Cleaning from EGP 200, thermal paste from EGP 200",
         "title": "Maintenance and cleaning",
         "body": "Full cleaning and fresh thermal paste, with temperatures measured before and after.",
         "steps": [
@@ -633,7 +637,7 @@
         "ownedForLine": "owned for {value}",
         "model": "Model",
         "modelPlaceholder": "e.g. GTX 1660 Super",
-        "ownedFor": "How long have you had it? · optional",
+        "ownedFor": "How long have you had it? (optional)",
         "ownedForPlaceholder": "e.g. two years",
         "want": "What do you want?",
         "wants": {
@@ -666,22 +670,15 @@
   },
   "auth": {
     "title": "Sign in",
-    "aside": {
-      "line1": "Your orders and warranty",
-      "line2": "in one place.",
-      "orders": "Every order until it arrives",
-      "warranty": "Every item's warranty and dates",
-      "invoices": "Your invoices when you need them"
-    },
     "email": {
-      "title": "Sign in to your account",
-      "subtitle": "Follow your orders and warranties.",
-      "google": "Or with a code sent to your email",
+      "title": "Sign in",
+      "subtitle": "Your orders, warranties and invoices are in your account.",
+      "google": "Or with your email",
       "label": "Email",
       "placeholder": "name@gmail.com",
-      "send": "Send a code to my email",
-      "sending": "Sending the code…",
-      "hint": "No passwords: we send a 6-digit code to your email.",
+      "send": "Send the code",
+      "sending": "Sending…",
+      "hint": "No password needed. We send a 6-digit code.",
       "invalid": "Please enter a valid email."
     },
     "code": {
@@ -784,7 +781,7 @@
     },
     "extras": {
       "notes": "Order notes",
-      "usage": "Usage",
+      "usage": "What will you use it for?",
       "usages": {
         "Gaming": "Gaming",
         "StudyWork": "Study and work",
@@ -795,7 +792,9 @@
       },
       "usageNote": "Usage details",
       "leadSource": "How did you hear about us?",
-      "leadSourceHint": "This helps us improve our service."
+      "leadSourceHint": "This helps us improve our service.",
+      "title": "Extras",
+      "addNote": "Add a note to the order"
     },
     "payment": {
       "title": "Payment",
@@ -910,7 +909,7 @@
     "whatsAppMessage": "Hello RIGX, about my order {reference}.",
     "rating": {
       "title": "How was your experience?",
-      "comment": "Comment · optional",
+      "comment": "Comment (optional)",
       "submit": "Send rating",
       "thanks": "Thank you for rating.",
       "already": "Your rating:",
@@ -1357,6 +1356,11 @@
       "notFound": {
         "title": "This page doesn't exist",
         "home": "Back to the overview"
+      },
+      "signOutConfirm": {
+        "title": "Sign out",
+        "body": "Your session on this device will end.",
+        "action": "Sign out"
       }
     },
     "nav": {
@@ -1462,7 +1466,7 @@
         "noComparison": "No previous period to compare"
       },
       "chart": {
-        "title": "Sales and profit · last 30 days",
+        "title": "Sales and profit, last 30 days",
         "granularity": "Chart view",
         "daily": "Daily",
         "weekly": "Weekly",
@@ -1490,7 +1494,7 @@
       "categories": {
         "title": "Top categories",
         "none": "No category",
-        "salesMargin": "{sales} · margin {margin}%"
+        "salesMargin": "{sales}, margin {margin}%"
       },
       "condition": {
         "title": "New vs used",
@@ -1499,8 +1503,8 @@
         "splitParts": "Parts sold from builds",
         "singleItems": "Single parts",
         "daysToSellUsed": "Average days to sell used",
-        "builds": "{count} builds · {sales}",
-        "parts": "{count} parts · {sales}",
+        "builds": "{count} builds, {sales}",
+        "parts": "{count} parts, {sales}",
         "days": "{count} days"
       },
       "demand": {
@@ -1528,7 +1532,7 @@
         "empty": "No old stock."
       },
       "partners": {
-        "title": "Partner profits · this month",
+        "title": "Partner profits, this month",
         "partner": "Partner",
         "earned": "Share",
         "empty": "No partner profits this month."
@@ -1614,7 +1618,7 @@
       "blacklisted": "Blacklisted",
       "moreItems": "+{count}",
       "reservation": {
-        "held": "Held · {hours} h",
+        "held": "Held, {hours} h",
         "expired": "Hold ended"
       },
       "newestOnly": "Showing the newest {count} orders only. Use search or filters for the rest.",
@@ -1670,7 +1674,7 @@
           "remaining": "Remaining",
           "refunded": "Refunded",
           "method": "Payment method",
-          "waived": "Payment waived {date} · {reason}",
+          "waived": "Payment waived {date}, {reason}",
           "couponDiscount": "Coupon discount ({code})"
         },
         "payments": {
@@ -1687,7 +1691,7 @@
           "title": "Order history",
           "created": "Order placed",
           "status": "Status became \"{status}\"",
-          "payment": "{method} payment · {amount}",
+          "payment": "{method} payment, {amount}",
           "paymentStatus": "Payment status became \"{status}\"",
           "shipping": "Shipping details updated",
           "reservation": "Hold updated",
@@ -1724,7 +1728,7 @@
           "Shipped": "Mark as shipped",
           "Delivered": "Mark as delivered"
         },
-        "noteLabel": "Note · optional",
+        "noteLabel": "Note (optional)",
         "statusDone": "Status updated",
         "blocks": {
           "blacklist": "Blacklisted customer: the order is confirmed only after full payment.",
@@ -1744,7 +1748,7 @@
           "title": "Cancel this order?",
           "body": "The reserved pieces go back to stock.",
           "confirm": "Cancel the order",
-          "notes": "Reason · optional",
+          "notes": "Reason (optional)",
           "done": "Order cancelled"
         },
         "invoice": {
@@ -1777,7 +1781,7 @@
           "method": "Method",
           "amount": "Amount",
           "hint": "Remaining {amount}",
-          "note": "Note · optional",
+          "note": "Note (optional)",
           "submit": "Record payment",
           "done": "Payment recorded",
           "button": "Record payment",
@@ -1805,7 +1809,7 @@
           "title": "Payment status",
           "label": "Status",
           "hint": "\"Paid\" here means a transfer you verified. It does not record money.",
-          "note": "Note · optional",
+          "note": "Note (optional)",
           "submit": "Update status",
           "done": "Payment status updated"
         },
@@ -1922,7 +1926,7 @@
       },
       "offer": {
         "title": "Offer",
-        "current": "Offer: {offer} · Expected resale: {resale}",
+        "current": "Offer: {offer}, Expected resale: {resale}",
         "none": "—",
         "amount": "Offer",
         "expected": "Expected resale",
@@ -1966,7 +1970,7 @@
       "backInStock": {
         "panelTitle": "Back in stock",
         "panelNote": "Notify-me requests whose item is available again and were not messaged yet.",
-        "requestLine": "{code} · {name} · available {date}",
+        "requestLine": "{code}, {name}, available {date}",
         "wanted": "Wants it {condition}",
         "wantedAny": "Any condition",
         "openWhatsApp": "WhatsApp",
@@ -2009,9 +2013,9 @@
       "viewAsTitle": "Their account view",
       "viewAsNote": "Read only — changes made here are not saved.",
       "tabs": {
-        "orders": "Orders · {count}",
-        "warranties": "Warranties · {count}",
-        "requests": "Requests · {count}",
+        "orders": "Orders ({count})",
+        "warranties": "Warranties ({count})",
+        "requests": "Requests ({count})",
         "notes": "Notes"
       },
       "orders": {
@@ -2179,7 +2183,7 @@
     "policies": {
       "title": "Policies",
       "version": "Version {version}",
-      "publishedInfo": "Published: version {version} · {date}",
+      "publishedInfo": "Published: version {version}, {date}",
       "notPublished": "Not published yet",
       "draftWaiting": "A draft is waiting (version {version})",
       "startFirst": "This policy has not been written yet.",
@@ -2253,14 +2257,14 @@
         "questionEn": "Question (English)",
         "answerAr": "Answer (Arabic)",
         "answerEn": "Answer (English)",
-        "topic": "Topic · optional",
+        "topic": "Topic (optional)",
         "sortOrder": "Sort order",
         "scope": "Shows on",
         "category": "Category",
         "pickCategory": "Pick a category",
         "itemCode": "Item code",
         "helpPageOnly": "Help page only",
-        "youTube": "YouTube video · optional",
+        "youTube": "YouTube video (optional)",
         "youTubeHint": "Paste the link; the video plays inside the site."
       },
       "actions": {
@@ -2317,10 +2321,10 @@
       "fields": {
         "titleAr": "Offer name (Arabic)",
         "titleEn": "Offer name (English)",
-        "descriptionAr": "Description (Arabic) · optional",
-        "descriptionEn": "Description (English) · optional",
+        "descriptionAr": "Description (Arabic) (optional)",
+        "descriptionEn": "Description (English) (optional)",
         "startDate": "From",
-        "endDate": "To · optional",
+        "endDate": "To (optional)",
         "priority": "Priority"
       },
       "items": {
@@ -2416,9 +2420,9 @@
         "paidFrom": "Paid from",
         "defaultAccount": "Default account",
         "partnerMoney": "Partner money ({name})",
-        "note": "Note · optional",
+        "note": "Note (optional)",
         "noteHint": "For example an order's shipping or packing boxes.",
-        "receipt": "Receipt photo · optional",
+        "receipt": "Receipt photo (optional)",
         "receiptHint": "One image, up to 12 MB.",
         "newType": "+ New type",
         "save": "Add",
@@ -2447,7 +2451,7 @@
         "day": "Day of month",
         "account": "Paid from",
         "defaultAccount": "Default account",
-        "note": "Note · optional",
+        "note": "Note (optional)",
         "noteHint": "For example the shop rent.",
         "active": "Active",
         "edit": "Edit",
@@ -2619,7 +2623,7 @@
         "name": "Name",
         "phone": "Mobile",
         "whatsapp": "This number has WhatsApp",
-        "email": "Email · optional",
+        "email": "Email (optional)",
         "search": "Search by mobile or name",
         "results": "Customers found",
         "finding": "Searching…",
@@ -2628,7 +2632,7 @@
         "use": "Use their details",
         "registered": "Registered customer",
         "registeredHint": "{orders} with us before. Complete anything missing.",
-        "phoneKnown": "This number belongs to a registered customer: {name} · {orders}",
+        "phoneKnown": "This number belongs to a registered customer: {name}, {orders}",
         "new": "New customer",
         "newHint": "They will be registered with the sale.",
         "orders": "{count, plural, one {# order} other {# orders}}",
@@ -2674,7 +2678,7 @@
         "empty": "Add something to the cart to see the summary.",
         "calculating": "Calculating…",
         "previewFailed": "Could not update the summary: {message}",
-        "couponLabel": "Coupon · optional",
+        "couponLabel": "Coupon (optional)",
         "couponDiscount": "Coupon discount ({code})"
       },
       "errors": {
@@ -2727,7 +2731,7 @@
       "hiddenNote": "Hidden items still count as stock, can go into a build and can be sold from \"New sale\", but do not show in the store.",
       "empty": "No items match.",
       "days": "{count, plural, one {# day} other {# days}}",
-      "partnerShare": "{name} · {percent}%",
+      "partnerShare": "{name}, {percent}%",
       "columns": {
         "pick": "Select",
         "code": "Code",
@@ -2861,7 +2865,7 @@
         "title": "{count, plural, one {# unit} other {# units}}",
         "none": "—",
         "empty": "No units.",
-        "partnerShare": "{name} · {percent}%",
+        "partnerShare": "{name}, {percent}%",
         "changePartner": "Change partner",
         "columns": {
           "status": "Status",
@@ -3332,7 +3336,7 @@
         "capital": "Capital",
         "due": "Due",
         "recoverable": "To recover",
-        "summary": "{percent}% · {basis}",
+        "summary": "{percent}%, {basis}",
         "inactive": "Inactive"
       },
       "form": {
@@ -3479,7 +3483,7 @@
         "financedShares": "Shares of financed parts",
         "base": "Base the shares are taken from",
         "nothingPosted": "No earnings were posted to any partner.",
-        "posted": "{name} · {percent}%"
+        "posted": "{name}, {percent}%"
       }
     },
     "audit": {
@@ -3521,8 +3525,8 @@
         "yes": "Yes",
         "no": "No",
         "masked": "Hidden",
-        "linked": "Set",
-        "linkedChanged": "Changed to another choice",
+        "linked": "Linked record",
+        "linkedChanged": "Changed to another record",
         "empty": "Empty"
       },
       "filters": {
@@ -4259,7 +4263,7 @@
         "tabs": {
           "details": "Details",
           "roles": "Role",
-          "purchases": "Purchases and orders · {count}",
+          "purchases": "Purchases and orders ({count})",
           "notes": "Internal notes",
           "restrictions": "Suspension and ban"
         },
@@ -4847,8 +4851,8 @@
       "maxDiscountNote": "up to {amount}",
       "usesOf": "{uses} of {max}",
       "completed": "{count} completed",
-      "totals": "Total: {uses} uses · {completed} completed",
-      "totalsMoney": "Total: {uses} uses · {completed} completed · revenue {revenue} · discount {discount}",
+      "totals": "Total: {uses} uses, {completed} completed",
+      "totalsMoney": "Total: {uses} uses, {completed} completed, revenue {revenue}, discount {discount}",
       "columns": {
         "source": "Source",
         "discount": "Discount",
@@ -4874,12 +4878,12 @@
         "discountKind": "Discount type",
         "percent": "Percent %",
         "amount": "Amount (EGP)",
-        "maxDiscount": "Maximum discount (EGP) · optional",
-        "minOrderTotal": "Minimum order (EGP) · optional",
-        "maxUses": "Number of uses · empty = unlimited",
+        "maxDiscount": "Maximum discount (EGP) (optional)",
+        "minOrderTotal": "Minimum order (EGP) (optional)",
+        "maxUses": "Number of uses (empty = unlimited)",
         "oncePerCustomer": "Once per customer",
-        "startDate": "From · optional",
-        "endDate": "To · optional",
+        "startDate": "From (optional)",
+        "endDate": "To (optional)",
         "isActive": "Running"
       },
       "errors": {

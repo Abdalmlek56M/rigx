@@ -9,8 +9,8 @@ import type { MenuCategory } from "@/lib/storefront";
 import { Rail } from "./Rail";
 
 /**
- * "الأقسام": the top-level menu categories as a draggable, auto-advancing rail. Each card has the category icon and, when the
- * owner uploaded one, the category picture (usually a transparent PNG) standing on the card's end side.
+ * "الأقسام": the top-level menu categories as a draggable, auto-advancing rail. Every card has the same size: the category
+ * picture the owner uploaded (usually a transparent PNG) or, without one, the category icon, centred, with the name under it.
  */
 export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
   const t = useTranslations("home.categories");
@@ -24,22 +24,25 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
           <Link
             href={categoryHref(category.slug)}
             draggable={false}
-            className={`${cardClass({ padding: "sm", interactive: true })} group relative min-h-[132px] justify-between overflow-hidden text-base font-bold hover:border-orange/50 md:min-h-[148px]`}
+            className={`${cardClass({ padding: "sm", interactive: true })} group min-h-[152px] items-center justify-center gap-3 text-center text-base font-bold hover:border-orange/50 md:min-h-[168px]`}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-soft text-orange-text"><CategoryIcon slug={category.slug} size={22} /></span>
-            {category.image ? (
-              // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-              <img
-                src={mediaUrl(category.image)}
-                alt=""
-                width={112}
-                height={112}
-                loading="lazy"
-                draggable={false}
-                className="pointer-events-none absolute end-3 top-3 h-[72px] w-[88px] rounded-[8px] object-contain transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:scale-[1.04] md:h-[84px] md:w-[108px]"
-              />
-            ) : null}
-            <span className="relative line-clamp-2">{localizedName(category, locale)}</span>
+            <span className="flex h-[84px] w-full items-center justify-center md:h-24">
+              {category.image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
+                <img
+                  src={mediaUrl(category.image)}
+                  alt=""
+                  width={160}
+                  height={96}
+                  loading="lazy"
+                  draggable={false}
+                  className="pointer-events-none max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
+                />
+              ) : (
+                <span className="flex size-16 items-center justify-center rounded-full bg-orange-soft text-orange-text transition-transform duration-300 ease-out group-hover:scale-105 md:size-[72px]"><CategoryIcon slug={category.slug} size={30} /></span>
+              )}
+            </span>
+            <span className="line-clamp-2">{localizedName(category, locale)}</span>
           </Link>
         </li>
       ))}

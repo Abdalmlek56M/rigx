@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatDateTimeFull } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { deviceOf, diffRows, entryTitle, type AuditValue, type DiffRow, type DiffStatus } from "./audit-rules";
-import { fetchEntry } from "./audit-api";
+import { fetchEntry, fetchLinkedNames } from "./audit-api";
 import { AuditActionBadge } from "./AuditActionBadge";
 import { AuditField as Row } from "./AuditField";
 import { AuditRestore } from "./AuditRestore";
@@ -21,6 +21,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   const locale = useLocale();
   const load = useCallback(() => fetchEntry(id), [id]);
   const { state, reload } = useLoad(load);
+  const names = useLoad(fetchLinkedNames).state;
   const { has } = usePermissions();
   if (state.status === "loading") return <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
   if (state.status === "error") {
@@ -33,6 +34,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   }
 
   const entry = state.data;
+  const linkedNames = names.status === "ready" ? names.data : EMPTY_NAMES;
   const rows = diffRows(entry.changes);
   const title = entryTitle(entry.changes);
   const device = deviceOf(entry.device);
@@ -62,7 +64,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
         <h3 className="m-0 text-[15px] font-bold">{t("changes.fields")}</h3>
         {rows.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("changes.noChanges")}</p> : (
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {rows.map((row) => <DiffItem key={row.field} entity={entry.entity} row={row} />)}
+            {rows.map((row) => <DiffItem key={row.field} entity={entry.entity} row={row} linkedNames={linkedNames} />)}
           </ul>
         )}
       </div>
@@ -71,6 +73,8 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   );
 }
 
+const EMPTY_NAMES: ReadonlyMap<string, string> = new Map();
+
 const STATUS_TONE: Record<DiffStatus, { item: string; chip: string }> = {
   changed: { item: "border-orange/40", chip: "bg-orange/15 text-orange-text" },
   added: { item: "border-success/40", chip: "bg-success/15 text-success" },
@@ -78,12 +82,13 @@ const STATUS_TONE: Record<DiffStatus, { item: string; chip: string }> = {
 };
 
 /** One field: its Arabic name, whether it was added, changed or removed, and its value(s). */
-function DiffItem({ entity, row }: { entity: string; row: DiffRow }) {
+function DiffItem({ entity, row, linkedNames }: { entity: string; row: DiffRow; linkedNames: ReadonlyMap<string, string> }) {
   const t = useTranslations("admin.audit");
   const labels = useAuditLabels();
   const tone = STATUS_TONE[row.status];
   const name = (text: string) => labels.value(entity, row.field, text);
-  const linkSwap = row.status === "changed" && row.before.kind === "linked" && row.after.kind === "linked";
+  const linkSwap = row.status === "changed" && row.before.kind === "linked" && row.after.kind === "linked"
+    && !(isNamed(row.before, linkedNames) && isNamed(row.after, linkedNames));
   return (
     <li className={`flex flex-col gap-2 rounded-control border border-s-4 bg-paper p-3 ${tone.item}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -93,26 +98,29 @@ function DiffItem({ entity, row }: { entity: string; row: DiffRow }) {
       {linkSwap ? <p className="m-0 text-sm">{t("diff.linkedChanged")}</p>
         : row.status === "changed" ? (
           <div className="grid gap-2 text-sm sm:grid-cols-2">
-            <Side label={t("changes.before")} value={row.before} name={name} struck />
-            <Side label={t("changes.after")} value={row.after} name={name} />
+            <Side label={t("changes.before")} value={row.before} name={name} linkedNames={linkedNames} struck />
+            <Side label={t("changes.after")} value={row.after} name={name} linkedNames={linkedNames} />
           </div>
-        ) : row.status === "added" ? <ValueText value={row.after} name={name} />
-        : <ValueText value={row.before} name={name} struck />}
+        ) : row.status === "added" ? <ValueText value={row.after} name={name} linkedNames={linkedNames} />
+        : <ValueText value={row.before} name={name} linkedNames={linkedNames} struck />}
     </li>
   );
 }
 
-function Side({ label, value, name, struck = false }: { label: string; value: AuditValue; name: (text: string) => string; struck?: boolean }) {
+/** Whether every id of a link has a known name. */
+const isNamed = (value: AuditValue, linkedNames: ReadonlyMap<string, string>) => value.kind === "linked" && value.ids.every((id) => linkedNames.has(id));
+
+function Side({ label, value, name, linkedNames, struck = false }: { label: string; value: AuditValue; name: (text: string) => string; linkedNames: ReadonlyMap<string, string>; struck?: boolean }) {
   return (
     <span className="flex min-w-0 flex-col gap-0.5">
       <span className="text-xs text-ink-muted">{label}</span>
-      <ValueText value={value} name={name} struck={struck} />
+      <ValueText value={value} name={name} linkedNames={linkedNames} struck={struck} />
     </span>
   );
 }
 
 /** A value in words: coded values by their admin label, yes/no, hidden, a set link and times read as text; nested data stays as a small scrollable block. */
-function ValueText({ value, name, struck = false }: { value: AuditValue; name: (text: string) => string; struck?: boolean }) {
+function ValueText({ value, name, linkedNames, struck = false }: { value: AuditValue; name: (text: string) => string; linkedNames: ReadonlyMap<string, string>; struck?: boolean }) {
   const t = useTranslations("admin.audit.diff");
   const locale = useLocale();
   const tone = struck ? "text-ink-muted line-through" : "font-bold";
@@ -123,6 +131,8 @@ function ValueText({ value, name, struck = false }: { value: AuditValue; name: (
       return <span dir="auto" className={`text-sm [overflow-wrap:anywhere] ${tone}`}>{name(value.text)}</span>;
     case "time":
       return <span className={`text-sm ${tone}`}>{formatDateTimeFull(value.iso, locale)}</span>;
+    case "linked":
+      return <span dir="auto" className={`text-sm [overflow-wrap:anywhere] ${tone}`}>{isNamed(value, linkedNames) ? value.ids.map((id) => linkedNames.get(id)).join("، ") : t("linked")}</span>;
     default:
       return <span className={`text-sm ${tone}`}>{t(value.kind)}</span>;
   }
