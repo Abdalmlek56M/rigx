@@ -1531,6 +1531,12 @@
       "undo": {
         "restored": "Restored.",
         "failed": "Could not restore."
+      },
+      "paste": {
+        "button": "Paste a picture from the clipboard",
+        "hint": "You can also paste a picture from the clipboard: click here, then press Ctrl+V.",
+        "empty": "There is no picture on the clipboard.",
+        "denied": "The clipboard could not be read. Allow the site to read it, or click this box and press Ctrl+V."
       }
     },
     "dashboard": {
@@ -2241,7 +2247,6 @@
         "parent": "Under",
         "code": "Code",
         "description": "Description",
-        "sortOrder": "Sort order",
         "active": "Visible",
         "showInMenu": "Show in the menu",
         "showInBuilder": "Show in the builder",
@@ -2303,7 +2308,13 @@
         "advanced": "Advanced",
         "keyAuto": "Generated automatically",
         "itemNote": "Every spec is optional on every item: leave its field empty on an item it does not apply to and it will not appear on that item's page."
-      }
+      },
+      "drag": "Drag to reorder",
+      "moveUp": "Move the category up",
+      "moveDown": "Move the category down",
+      "reordered": "The category order was saved.",
+      "reorderFailed": "The order was not saved. The list was refreshed; try again.",
+      "orderHint": "Drag a category by the dotted icon, or select it and use the two arrows, to change its place among the categories at its level."
     },
     "policies": {
       "title": "Policies",
@@ -2552,7 +2563,8 @@
         "newType": "+ New type",
         "save": "Add",
         "saved": "Expense added",
-        "receiptFailed": "The expense was saved but the receipt didn't upload."
+        "receiptFailed": "The expense was saved but the receipt didn't upload.",
+        "receiptClear": "Remove the picture"
       },
       "types": {
         "title": "Expense types",
@@ -2931,7 +2943,8 @@
         "percent": "Partner share %",
         "percentDefault": "The partner's default share",
         "brand": "Brand",
-        "noBrand": "No brand"
+        "noBrand": "No brand",
+        "suggested": "Suggested"
       },
       "detail": {
         "loading": "Loading the item",
@@ -2984,7 +2997,7 @@
         "earlier": "Move the photo earlier",
         "later": "Move the photo later",
         "reordered": "The photo order was saved.",
-        "orderHint": "The first photo is the main one. Use the arrows to reorder. The watermark is added automatically.",
+        "orderHint": "The first photo is the main one. Drag a photo to its new place or use the arrows. The watermark is added automatically.",
         "title": "Photos ({count})",
         "empty": "No photos yet.",
         "alt": "Photo of {model}",
@@ -3710,8 +3723,9 @@
         "before": "Before",
         "after": "After",
         "restored": "This change put earlier values back.",
-        "pick": "Pick a change from the list to see before and after.",
-        "count": "{count} changes"
+        "count": "{count, plural, one {# change} other {# changes}}",
+        "separator": ", ",
+        "more": "{count, plural, one {and 1 more} other {and # more}}"
       },
       "security": {
         "title": "Event details",
@@ -3813,7 +3827,8 @@
           "warehouses": "Warehouses",
           "warranties": "Warranties",
           "warranty_extensions": "Warranty extensions",
-          "wishlist_items": "Wishlist"
+          "wishlist_items": "Wishlist",
+          "brand_categories": "Brand suggested for a category"
         },
         "fields": {
           "AccessToken": "Access token",
@@ -4181,6 +4196,9 @@
           "YearMonth": "Year month",
           "YouTubeId": "You tube id"
         }
+      },
+      "day": {
+        "label": "Changes of the day"
       }
     },
     "users": {
@@ -4966,7 +4984,30 @@
       },
       "slugHint": "Lowercase English letters, numbers and dashes. It appears in the brand filter link.",
       "save": "Save brand",
-      "saved": "Brand saved"
+      "saved": "Brand saved",
+      "drag": "Drag to reorder",
+      "moveUp": "Move the brand up",
+      "moveDown": "Move the brand down",
+      "reordered": "The brand order was saved.",
+      "reorderFailed": "The order was not saved. The list was refreshed; try again.",
+      "orderHint": "Drag a brand by the dotted icon, or use the two arrows, to change its place in the lists.",
+      "categories": {
+        "title": "Suggested categories",
+        "hint": "A suggestion only: the brand is listed first when one of these categories is chosen. It can still be chosen in any other category.",
+        "none": "There are no categories yet."
+      },
+      "logo": {
+        "title": "Brand logo",
+        "hint": "A logo on a transparent background is best. JPG, PNG or WebP.",
+        "alt": "{name} logo",
+        "upload": "Upload a logo",
+        "change": "Change the logo",
+        "remove": "Delete the logo",
+        "removeTitle": "Delete the brand logo?",
+        "removeBody": "The brand will show by its name only.",
+        "removed": "Logo deleted.",
+        "failed": "The logo was not changed. Try another picture."
+      }
     },
     "coupons": {
       "title": "Coupons",

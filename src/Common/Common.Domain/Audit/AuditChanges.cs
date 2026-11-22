@@ -22,6 +22,17 @@ public static class AuditChanges
         [.. JsonNode.Parse(json)!.AsArray().Select(item => new AuditFieldChange(
             item!["field"]!.GetValue<string>(), item["before"]?.DeepClone(), item["after"]?.DeepClone()))];
 
+    /// <summary>Every id (a GUID written as text, alone or in a list) the changes hold on either side, each once; these are links to other records.</summary>
+    public static IReadOnlyList<Guid> LinkedIds(IEnumerable<AuditFieldChange> changes) =>
+        [.. changes.SelectMany(change => IdsIn(change.Before).Concat(IdsIn(change.After))).Distinct()];
+
+    private static IEnumerable<Guid> IdsIn(JsonNode? value) => value switch
+    {
+        JsonArray array => array.SelectMany(IdsIn),
+        JsonValue text when text.TryGetValue<string>(out var raw) && Guid.TryParse(raw, out var id) => [id],
+        _ => []
+    };
+
     private static decimal Number(JsonValue value) => decimal.Parse(value.ToJsonString(), NumberStyles.Float, CultureInfo.InvariantCulture);
 
     /// <summary>Structural equality: object key order is ignored and numbers compare by value (1.50 equals 1.5).</summary>

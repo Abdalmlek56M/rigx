@@ -17,6 +17,8 @@ public static class AuditEndpoints
         var entries = endpoints.MapGroup("/api/v1/admin/audit");
         entries.MapGet("/entries", ListEntriesAsync).RequirePermission(View);
         entries.MapGet("/entries/{id:guid}", GetEntryAsync).RequirePermission(View);
+        entries.MapGet("/months", MonthsAsync).RequirePermission(View);
+        entries.MapGet("/days", DaysAsync).RequirePermission(View);
         entries.MapGet("/filters", FiltersAsync).RequirePermission(View);
         entries.MapPost("/entries/{id:guid}/restore", RestoreAsync).RequirePermission(Restore).RequireStepUp();
         return endpoints;
@@ -28,6 +30,20 @@ public static class AuditEndpoints
     {
         context.Response.Headers.CacheControl = "no-store";
         return TypedResults.Ok(await audit.QueryAsync(actorUserId, module, entity, entityId, action, from, to, page, pageSize, cancellationToken));
+    }
+
+    private static async Task<Ok<IReadOnlyList<AuditMonthResponse>>> MonthsAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken,
+        string? module = null, string? entity = null, string? action = null)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(await audit.MonthsAsync(module, entity, action, cancellationToken));
+    }
+
+    private static async Task<Ok<IReadOnlyList<AuditDayResponse>>> DaysAsync(HttpContext context, AuditLogService audit, CancellationToken cancellationToken,
+        string? month = null, string? module = null, string? entity = null, string? action = null)
+    {
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(await audit.DaysAsync(month, module, entity, action, cancellationToken));
     }
 
     private static async Task<Ok<AuditEntryResponse>> GetEntryAsync(Guid id, HttpContext context, AuditLogService audit, CancellationToken cancellationToken)

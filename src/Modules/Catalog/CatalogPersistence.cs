@@ -56,10 +56,20 @@ public sealed class CatalogBrand
     public string? LogoStorageKey { get; set; }
     public string? SupportUrl { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>Position in the brand lists (admin and storefront); equal positions fall back to the name.</summary>
+    public int SortOrder { get; set; }
     public int RowVersion { get; set; } = 1;
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public ICollection<CatalogProduct> Products { get; set; } = new List<CatalogProduct>();
+    public ICollection<CatalogBrandCategory> Categories { get; set; } = new List<CatalogBrandCategory>();
+}
+
+/// <summary>A suggestion that a brand belongs to a category: pickers list such brands first. It never limits what can be chosen.</summary>
+public sealed class CatalogBrandCategory
+{
+    public Guid BrandId { get; set; }
+    public Guid CategoryId { get; set; }
 }
 
 public sealed class CatalogProduct
@@ -119,6 +129,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 {
     public DbSet<CatalogCategory> Categories => Set<CatalogCategory>();
     public DbSet<CatalogBrand> Brands => Set<CatalogBrand>();
+    public DbSet<CatalogBrandCategory> BrandCategories => Set<CatalogBrandCategory>();
     public DbSet<CatalogProduct> Products => Set<CatalogProduct>();
     public DbSet<CatalogProductSpecification> ProductSpecifications => Set<CatalogProductSpecification>();
     public DbSet<CatalogProductImage> ProductImages => Set<CatalogProductImage>();
@@ -184,9 +195,21 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.Property(brand => brand.LogoStorageKey).HasColumnName("logo_storage_key").HasMaxLength(512);
             entity.Property(brand => brand.SupportUrl).HasColumnName("support_url").HasMaxLength(512);
             entity.Property(brand => brand.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(brand => brand.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
             entity.Property(brand => brand.RowVersion).HasColumnName("row_version").IsConcurrencyToken().HasDefaultValue(1);
             entity.Property(brand => brand.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(brand => brand.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
+        });
+
+        model.Entity<CatalogBrandCategory>(entity =>
+        {
+            entity.ToTable("brand_categories");
+            entity.HasKey(link => new { link.BrandId, link.CategoryId });
+            entity.Property(link => link.BrandId).HasColumnName("brand_id");
+            entity.Property(link => link.CategoryId).HasColumnName("category_id");
+            entity.HasIndex(link => link.CategoryId).HasDatabaseName("ix_brand_categories_category");
+            entity.HasOne<CatalogBrand>().WithMany(brand => brand.Categories).HasForeignKey(link => link.BrandId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<CatalogCategory>().WithMany().HasForeignKey(link => link.CategoryId).OnDelete(DeleteBehavior.Restrict);
         });
 
         model.Entity<CatalogProduct>(entity =>

@@ -12,8 +12,10 @@ import { useSubmit } from "../kit/use-submit";
 import { ExpenseTypeDialog } from "./ExpenseTypeDialog";
 import { createExpense, uploadExpenseReceipt, type Expense, type ExpenseType, type MoneyAccount, type Partner } from "./expenses-api";
 import { emptyExpenseForm, expenseValid, toExpenseCreate, type ExpenseForm as Form } from "./expense-rules";
-import { PlusIcon, SaveIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
+import { CloseIcon, PlusIcon, SaveIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
+import { PasteImageButton } from "../kit/PasteImageButton";
+import { useImagePaste } from "../kit/use-image-paste";
 
 /** The daily expense form: amount, type, note, who paid and an optional receipt photo. */
 export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, onCreated, onTypesChanged }: {
@@ -40,6 +42,13 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
     ...accounts.map((account) => ({ value: `account:${account.id}`, label: `${account.name} · ${formatEgp(account.balance, locale)}` })),
     ...partners.filter((partner) => partner.isActive).map((partner) => ({ value: `partner:${partner.id}`, label: t("partnerMoney", { name: partner.name }) }))
   ];
+
+  function clearReceipt() {
+    setFile(null);
+    if (input.current) input.current.value = "";
+  }
+
+  const paste = useImagePaste(setFile);
 
   async function save() {
     if (!expenseValid(form)) return;
@@ -83,15 +92,26 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
           {canSeeVaults ? <SelectField label={t("paidFrom")} name="paidFrom" value={form.paidFrom} onChange={(paidFrom) => set({ paidFrom })} options={payerOptions} /> : null}
         </div>
         <TextAreaField label={t("note")} name="note" value={form.note} onChange={(note) => set({ note })} rows={2} maxLength={1000} hint={t("noteHint")} />
-        <label className="flex flex-col gap-1.5 text-[13px] font-bold">
-          {t("receipt")}
-          <input
-            ref={input} type="file" accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            className="text-sm font-normal file:me-3 file:h-10 file:rounded-control file:border file:border-input-line file:bg-surface file:px-3 file:font-bold"
-          />
-          <span className="text-xs font-normal text-ink-muted">{t("receiptHint")}</span>
-        </label>
+        <div className="flex flex-col gap-1.5 rounded-control focus-visible:outline-2 focus-visible:outline-orange" {...paste}>
+          <label className="flex flex-col gap-1.5 text-[13px] font-bold">
+            {t("receipt")}
+            <input
+              ref={input} type="file" accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              className="text-sm font-normal file:me-3 file:h-10 file:rounded-control file:border file:border-input-line file:bg-surface file:px-3 file:font-bold"
+            />
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <PasteImageButton onImage={setFile} />
+            {file ? (
+              <span className="flex min-w-0 items-center gap-1 text-sm">
+                <span dir="ltr" className="min-w-0 truncate">{file.name}</span>
+                <IconButton icon={CloseIcon} label={t("receiptClear")} size="sm" onClick={clearReceipt} />
+              </span>
+            ) : null}
+          </div>
+          <span className="text-xs text-ink-muted">{t("receiptHint")}</span>
+        </div>
         <FormMessage message={submit.errors.general} />
         <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!expenseValid(form)}>{t("save")}</Button>
         {submit.dialog}

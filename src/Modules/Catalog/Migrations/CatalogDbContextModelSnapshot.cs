@@ -67,6 +67,12 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("character varying(160)")
                         .HasColumnName("slug");
 
+                    b.Property<int>("SortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("sort_order");
+
                     b.Property<string>("SupportUrl")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
@@ -88,6 +94,24 @@ namespace HardwareStore.Modules.Catalog.Migrations
 
                             t.HasCheckConstraint("ck_brands_slug_format", "slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'");
                         });
+                });
+
+            modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogBrandCategory", b =>
+                {
+                    b.Property<Guid>("BrandId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("brand_id");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.HasKey("BrandId", "CategoryId");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_brand_categories_category");
+
+                    b.ToTable("brand_categories", (string)null);
                 });
 
             modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogCategory", b =>
@@ -853,6 +877,21 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogBrandCategory", b =>
+                {
+                    b.HasOne("HardwareStore.Modules.Catalog.CatalogBrand", null)
+                        .WithMany("Categories")
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HardwareStore.Modules.Catalog.CatalogCategory", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogCategory", b =>
                 {
                     b.HasOne("HardwareStore.Modules.Catalog.CatalogCategory", "Parent")
@@ -923,6 +962,8 @@ namespace HardwareStore.Modules.Catalog.Migrations
 
             modelBuilder.Entity("HardwareStore.Modules.Catalog.CatalogBrand", b =>
                 {
+                    b.Navigation("Categories");
+
                     b.Navigation("Products");
                 });
 

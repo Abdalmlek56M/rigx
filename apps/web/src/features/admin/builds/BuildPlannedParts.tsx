@@ -64,7 +64,7 @@ export function BuildPlannedParts({ canEdit, lookups, ...action }: BuildActionPr
                 ) : null}
               </div>
               <CategorySelect tree={lookups.tree} name={`planned${index}-category`} value={row.categoryId} onChange={(categoryId) => change(row.key, (current) => ({ ...current, categoryId }))} />
-              <BrandSelect brands={lookups.brands} name={`planned${index}-brand`} value={row.brandId} onChange={(brandId) => change(row.key, (current) => ({ ...current, brandId }))} />
+              <BrandSelect brands={lookups.brands} tree={lookups.tree} categoryId={row.categoryId} name={`planned${index}-brand`} value={row.brandId} onChange={(brandId) => change(row.key, (current) => ({ ...current, brandId }))} />
               <TextField
                 label={t("price")} name={`planned${index}-price`} type="number" ltr value={row.price} error={field(index, "price")}
                 onChange={(price) => change(row.key, (current) => ({ ...current, price }))}

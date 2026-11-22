@@ -1,4 +1,5 @@
 /** Tree walking and form mapping for the categories screen. Pure, so it is tested. Messages live under `admin.categories`. */
+import { inOrder } from "../kit/reorder-rules.ts";
 import type { Category, CategoryInput, SpecDefinition } from "./categories-api";
 
 export interface FlatCategory {
@@ -33,6 +34,30 @@ export function flattenTree(nodes: readonly Category[], collapsed: ReadonlySet<s
   };
   walk(nodes, 0);
   return rows;
+}
+
+/** The parent of a category in the tree: null for a top-level one, undefined when the id is not in the tree. */
+export function parentIdOf(nodes: readonly Category[], id: string): string | null | undefined {
+  const path = findPath(nodes, id);
+  return path.length === 0 ? undefined : (path.at(-2)?.id ?? null);
+}
+
+/** The ids of the categories under `parentId` (null = the top level), in the tree's order. */
+export function siblingIds(nodes: readonly Category[], parentId: string | null): string[] {
+  const list = parentId === null ? nodes : (findPath(nodes, parentId).at(-1)?.children ?? []);
+  return list.map((node) => node.id);
+}
+
+/** The tree with the children of `parentId` (null = the top level) shown in the order of `ids`; what the screen shows while the new order is saved. */
+export function reorderChildren(nodes: readonly Category[], parentId: string | null, ids: readonly string[]): Category[] {
+  if (parentId === null) return inOrder(nodes, ids);
+  return nodes.map((node) => ({ ...node, children: node.id === parentId ? inOrder(node.children, ids) : reorderChildren(node.children, parentId, ids) }));
+}
+
+/** Where a new category goes under `parentId`: after the last one that is there. */
+export function nextSortOrder(nodes: readonly Category[], parentId: string | null): number {
+  const list = parentId === null ? nodes : (findPath(nodes, parentId).at(-1)?.children ?? []);
+  return list.reduce((last, node) => Math.max(last, node.sortOrder), -1) + 1;
 }
 
 /** The chain from the root to the category (empty when the id is not in the tree). */
@@ -117,9 +142,9 @@ export interface CategoryForm {
   priceInBuild: boolean;
 }
 
-export function emptyCategoryForm(parentId: string | null): CategoryForm {
+export function emptyCategoryForm(parentId: string | null, sortOrder = 0): CategoryForm {
   return {
-    name: "", nameEn: "", slug: "", parentId: parentId ?? "", code: "", description: "", sortOrder: "0",
+    name: "", nameEn: "", slug: "", parentId: parentId ?? "", code: "", description: "", sortOrder: String(sortOrder),
     isActive: true, showInMenu: true, showInBuilder: false, priceAlone: true, priceWithBoard: true, priceInBuild: true
   };
 }

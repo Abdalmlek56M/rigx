@@ -2,6 +2,8 @@
 export interface ComboOption {
   value: string;
   label: string;
+  /** A small word after the label (for instance "suggested"). */
+  note?: string;
 }
 
 export function filterComboOptions<T extends ComboOption>(options: readonly T[], query: string): T[] {

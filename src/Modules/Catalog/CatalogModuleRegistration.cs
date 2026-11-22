@@ -39,8 +39,10 @@ public static class CatalogModuleRegistration
         services.AddSingleton<ICatalogMediaStorage, LocalCatalogMediaStorage>();
         services.AddScoped<ProductSearchService>();
         services.AddScoped<ProductManagementService>();
+        services.AddScoped<CatalogNames>();
         services.AddScoped<ProductImageService>();
         services.AddScoped<TaxonomyService>();
+        services.AddScoped<TaxonomyOrderService>();
         services.AddScoped<CategorySpecService>();
         services.AddScoped<TaxonomyImageService>();
         services.AddScoped<CatalogMediaMaintenanceService>();

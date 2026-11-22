@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { formatDate, formatDateTime, formatDateTimeFull, formatMonth, formatTime } from "./format.ts";
+import { formatDate, formatDateTime, formatDateTimeFull, formatMonth, formatMonthYear, formatTime, formatWeekday } from "./format.ts";
 
 describe("formatMonth / formatDate", () => {
   it("names the month in the visitor's language", () => {
@@ -14,6 +14,16 @@ describe("formatMonth / formatDate", () => {
   it("uses Cairo time at the day boundary", () => {
     assert.equal(formatDate("2026-06-30T22:30:00Z", "en"), "1 July 2026");
     assert.equal(formatMonth("2026-06-30T22:30:00Z", "en"), "July");
+  });
+});
+
+describe("formatMonthYear / formatWeekday", () => {
+  it("names the month with its year and the weekday, in Cairo time", () => {
+    assert.equal(formatMonthYear("2026-11-14T10:00:00Z", "en"), "November 2026");
+    assert.equal(formatMonthYear("2026-11-14T10:00:00Z", "ar"), "نوفمبر 2026");
+    assert.equal(formatWeekday("2026-11-22T12:00:00Z", "en"), "Sunday");
+    assert.equal(formatWeekday("2026-11-22T12:00:00Z", "ar"), "الأحد");
+    assert.equal(formatWeekday("2026-11-21T22:30:00Z", "en"), "Sunday");
   });
 });
 

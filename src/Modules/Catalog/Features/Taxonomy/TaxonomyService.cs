@@ -66,10 +66,11 @@ public sealed class TaxonomyService(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await db.Brands.AsNoTracking()
             .Where(brand => brand.IsActive)
-            .OrderBy(brand => brand.Name)
+            .OrderBy(brand => brand.SortOrder).ThenBy(brand => brand.Name)
             .Select(brand => new BrandView(
                 brand.Id, brand.Name, brand.Slug, brand.Description,
-                brand.LogoStorageKey, brand.SupportUrl, brand.IsActive, brand.RowVersion))
+                brand.LogoStorageKey, brand.SupportUrl, brand.IsActive, brand.RowVersion, brand.SortOrder,
+                brand.Categories.Select(link => link.CategoryId).Order().ToList()))
             .ToListAsync(cancellationToken);
     }
 
@@ -95,10 +96,11 @@ public sealed class TaxonomyService(
     public async Task<IReadOnlyList<BrandView>> GetBrandsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Brands.AsNoTracking().OrderBy(brand => brand.Name)
+        return await db.Brands.AsNoTracking().OrderBy(brand => brand.SortOrder).ThenBy(brand => brand.Name)
             .Select(brand => new BrandView(
                 brand.Id, brand.Name, brand.Slug, brand.Description,
-                brand.LogoStorageKey, brand.SupportUrl, brand.IsActive, brand.RowVersion))
+                brand.LogoStorageKey, brand.SupportUrl, brand.IsActive, brand.RowVersion, brand.SortOrder,
+                brand.Categories.Select(link => link.CategoryId).Order().ToList()))
             .ToListAsync(cancellationToken);
     }
 
@@ -200,7 +202,7 @@ public sealed class TaxonomyService(
                 Slug = string.Empty,
                 CreatedAtUtc = UtcNow()
             }
-            : await db.Brands.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
+            : await db.Brands.Include(item => item.Categories).SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
               ?? throw new CatalogNotFoundException("Brand was not found.");
         CatalogValidation.EnsureVersion(brand.RowVersion, input.RowVersion, id);
         if (await db.Brands.AnyAsync(item => item.Slug == slug && item.Id != brand.Id, cancellationToken))
@@ -213,8 +215,13 @@ public sealed class TaxonomyService(
         brand.SupportUrl = supportUrl;
         brand.IsActive = input.IsActive;
         brand.UpdatedAtUtc = UtcNow();
+        if (input.CategoryIds is { } categoryIds)
+            await ApplyCategoryLinksAsync(db, brand, categoryIds, cancellationToken);
         if (id is null)
+        {
+            brand.SortOrder = (await db.Brands.MaxAsync(item => (int?)item.SortOrder, cancellationToken) ?? -1) + 1;
             db.Brands.Add(brand);
+        }
         else
             brand.RowVersion++;
 
@@ -227,6 +234,18 @@ public sealed class TaxonomyService(
             throw new CatalogConflictException("Brand data conflicts with an existing record.");
         }
         return brand.ToView();
+    }
+
+    /// <summary>Makes the brand's category suggestions exactly <paramref name="categoryIds"/> (each must be a category).</summary>
+    private static async Task ApplyCategoryLinksAsync(CatalogDbContext db, CatalogBrand brand, IReadOnlyList<Guid> categoryIds, CancellationToken cancellationToken)
+    {
+        var wanted = categoryIds.ToHashSet();
+        if (await db.Categories.CountAsync(category => wanted.Contains(category.Id), cancellationToken) != wanted.Count)
+            throw new CatalogValidationException("categoryIds", "A category was not found.");
+        foreach (var stale in brand.Categories.Where(link => !wanted.Contains(link.CategoryId)).ToList())
+            brand.Categories.Remove(stale);
+        foreach (var added in wanted.Except(brand.Categories.Select(link => link.CategoryId)))
+            brand.Categories.Add(new CatalogBrandCategory { BrandId = brand.Id, CategoryId = added });
     }
 
     private DateTimeOffset UtcNow() => timeProvider.GetUtcNow().ToUniversalTime();

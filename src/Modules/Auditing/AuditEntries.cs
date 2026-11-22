@@ -63,6 +63,9 @@ public sealed record AuditEntryView(Guid Id, DateTimeOffset OccurredAtUtc, strin
 public sealed record AuditEntryFilter(Guid? ActorUserId, string? Module, string? Entity, string? EntityId, string? Action,
     DateTimeOffset FromUtc, DateTimeOffset ToUtc, int Page, int PageSize);
 
+/// <summary>A range of the log narrowed by kind only; the month and day tallies read the log this way.</summary>
+public sealed record AuditRangeFilter(string? Module, string? Entity, string? Action, DateTimeOffset FromUtc, DateTimeOffset ToUtc);
+
 public sealed record AuditFilterLists(IReadOnlyList<string> Modules, IReadOnlyList<string> Entities, IReadOnlyList<string> Actions);
 
 /// <summary>Reads the business audit log. There is no write or delete here on purpose.</summary>
@@ -94,6 +97,27 @@ public sealed class AuditEntryStore(IDbContextFactory<SecurityAuditDbContext> co
         return entry is null ? null : ToView(entry);
     }
 
+    /// <summary>Who and when for every entry in the range (the changes themselves are not read).</summary>
+    public async Task<IReadOnlyList<AuditStamp>> StampsAsync(AuditRangeFilter filter, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await Narrow(InRange(db, filter.FromUtc, filter.ToUtc), filter.Module, filter.Entity, filter.Action)
+            .Select(entry => new AuditStamp(entry.OccurredAtUtc, entry.ActorKind, entry.ActorUserId)).ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> CountAsync(AuditRangeFilter filter, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await Narrow(InRange(db, filter.FromUtc, filter.ToUtc), filter.Module, filter.Entity, filter.Action).CountAsync(cancellationToken);
+    }
+
+    /// <summary>The instant of the oldest entry, or null for an empty log.</summary>
+    public async Task<DateTimeOffset?> EarliestAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.AuditEntries.MinAsync(entry => (DateTimeOffset?)entry.OccurredAtUtc, cancellationToken);
+    }
+
     public async Task<AuditFilterLists> FiltersAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -102,14 +126,22 @@ public sealed class AuditEntryStore(IDbContextFactory<SecurityAuditDbContext> co
         return new AuditFilterLists(modules, entities, AuditAction.All);
     }
 
+    private static IQueryable<AuditEntry> InRange(SecurityAuditDbContext db, DateTimeOffset fromUtc, DateTimeOffset toUtc) =>
+        db.AuditEntries.AsNoTracking().Where(entry => entry.OccurredAtUtc >= fromUtc && entry.OccurredAtUtc < toUtc);
+
+    private static IQueryable<AuditEntry> Narrow(IQueryable<AuditEntry> rows, string? module, string? entity, string? action)
+    {
+        if (!string.IsNullOrWhiteSpace(module)) rows = rows.Where(entry => entry.Module == module);
+        if (!string.IsNullOrWhiteSpace(entity)) rows = rows.Where(entry => entry.Entity == entity);
+        if (!string.IsNullOrWhiteSpace(action)) rows = rows.Where(entry => entry.Action == action);
+        return rows;
+    }
+
     private static IQueryable<AuditEntry> Filtered(SecurityAuditDbContext db, AuditEntryFilter filter)
     {
-        var rows = db.AuditEntries.AsNoTracking().Where(entry => entry.OccurredAtUtc >= filter.FromUtc && entry.OccurredAtUtc < filter.ToUtc);
+        var rows = Narrow(InRange(db, filter.FromUtc, filter.ToUtc), filter.Module, filter.Entity, filter.Action);
         if (filter.ActorUserId is { } actor) rows = rows.Where(entry => entry.ActorUserId == actor);
-        if (!string.IsNullOrWhiteSpace(filter.Module)) rows = rows.Where(entry => entry.Module == filter.Module);
-        if (!string.IsNullOrWhiteSpace(filter.Entity)) rows = rows.Where(entry => entry.Entity == filter.Entity);
         if (!string.IsNullOrWhiteSpace(filter.EntityId)) rows = rows.Where(entry => entry.EntityId == filter.EntityId);
-        if (!string.IsNullOrWhiteSpace(filter.Action)) rows = rows.Where(entry => entry.Action == filter.Action);
         return rows;
     }
 

@@ -2,14 +2,22 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { suggestBrandsFirst } from "../brands/brand-rules";
 import { createBrand, type Brand } from "../brands/brands-api";
+import { findPath } from "../categories/category-rules";
+import type { Category } from "../categories/categories-api";
 import { ComboBox } from "../kit/ComboBox";
 import { usePermissions } from "../use-permissions";
 import { brandSlug } from "./brand-slug";
 
-/** The searchable brand picker of the stock forms; staff who may manage the catalog can add a missing brand inline. */
-export function BrandSelect({ brands, value, onChange, onCreated, name = "brandId", error }: {
+/**
+ * The searchable brand picker of the stock forms; staff who may manage the catalog can add a missing brand inline. Once the item's
+ * category is known (`tree` and `categoryId`) the brands suggested for it come first, marked; every other brand stays in the list.
+ */
+export function BrandSelect({ brands, tree, categoryId, value, onChange, onCreated, name = "brandId", error }: {
   brands: readonly Brand[];
+  tree?: readonly Category[];
+  categoryId?: string;
   value: string;
   onChange: (id: string) => void;
   /** Lets the screen keep the new brand in its own lookup list too (the line cards remount on validation). */
@@ -24,6 +32,7 @@ export function BrandSelect({ brands, value, onChange, onCreated, name = "brandI
   const [problem, setProblem] = useState<string | null>(null);
   const canCreate = has("Catalog.ManageTaxonomy");
   const all = [...brands, ...created.filter((brand) => !brands.some((known) => known.id === brand.id))];
+  const chain = tree && categoryId ? findPath(tree, categoryId).map((category) => category.id) : [];
 
   async function create(name: string) {
     const clean = name.trim();
@@ -59,7 +68,10 @@ export function BrandSelect({ brands, value, onChange, onCreated, name = "brandI
   return (
     <ComboBox
       label={t("brand")} name={name} value={value} error={error ?? problem}
-      options={[{ value: "", label: t("noBrand") }, ...all.map((brand) => ({ value: brand.id, label: brand.name }))]}
+      options={[
+        { value: "", label: t("noBrand") },
+        ...suggestBrandsFirst(all, chain).map(({ brand, suggested }) => ({ value: brand.id, label: brand.name, note: suggested ? t("suggested") : undefined }))
+      ]}
       onChange={select} onCreate={canCreate ? create : undefined}
     />
   );

@@ -2,15 +2,19 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   AUDIT_FILTERS,
+  actorsLine,
   auditOutcomeKey,
   auditRangeUtc,
   auditGroup,
   auditValue,
   auditView,
+  dayWhen,
+  defaultOpenMonth,
   deviceOf,
   diffRows,
   entryTitle,
-  groupByDay,
+  monthOfDate,
+  groupByKind,
   shortId
 } from "./audit-rules.ts";
 
@@ -100,24 +104,44 @@ describe("audit grouping", () => {
     );
   });
 
-  it("groups by Cairo day (today, yesterday, earlier) and inside a day by kind in a fixed order", () => {
-    const entry = (id: string, occurredAtUtc: string, entity: string) => ({ id, occurredAtUtc, entity });
-    const days = groupByDay([
-      entry("1", "2026-11-19T21:30:00Z", "store_settings"), // 23:30 Cairo, the 19th
-      entry("2", "2026-11-19T10:00:00Z", "invoices"),
-      entry("3", "2026-11-19T09:00:00Z", "store_settings"),
-      entry("4", "2026-11-18T22:30:00Z", "stock_items"), // 00:30 Cairo, the 19th
-      entry("5", "2026-11-18T08:00:00Z", "partners"),
-      entry("6", "2026-11-10T08:00:00Z", "invoices")
-    ], "2026-11-19");
+  it("groups a day's entries by kind in a fixed order and keeps their order inside a kind", () => {
+    const entry = (id: string, entity: string) => ({ id, entity });
+    const groups = groupByKind([entry("1", "store_settings"), entry("2", "invoices"), entry("3", "store_settings"), entry("4", "stock_items")]);
     assert.deepEqual(
-      days.map((day) => [day.date, day.when, day.groups.map((group) => [group.group, group.entries.map((item) => item.id)])]),
-      [
-        ["2026-11-19", "today", [["sales", ["2"]], ["stock", ["4"]], ["settings", ["1", "3"]]]],
-        ["2026-11-18", "yesterday", [["partners", ["5"]]]],
-        ["2026-11-10", "earlier", [["sales", ["6"]]]]
-      ]
+      groups.map((group) => [group.group, group.entries.map((item) => item.id)]),
+      [["sales", ["2"]], ["stock", ["4"]], ["settings", ["1", "3"]]]
     );
+    assert.deepEqual(groupByKind([]), []);
+  });
+});
+
+describe("audit month and day browsing", () => {
+  it("tells today, yesterday and older days apart", () => {
+    assert.deepEqual(["2026-11-19", "2026-11-18", "2026-11-10", "2026-10-31"].map((day) => dayWhen(day, "2026-11-19")), ["today", "yesterday", "earlier", "earlier"]);
+    assert.equal(dayWhen("2026-10-31", "2026-11-01"), "yesterday");
+  });
+
+  it("reads the month of a date", () => {
+    assert.equal(monthOfDate("2026-11-19"), "2026-11");
+    assert.equal(monthOfDate(""), "");
+  });
+
+  it("opens the month of a linked day, else the newest month, else none", () => {
+    const months = [{ month: "2026-11" }, { month: "2026-09" }];
+    assert.equal(defaultOpenMonth(months, ""), "2026-11");
+    assert.equal(defaultOpenMonth(months, "2026-09-03"), "2026-09");
+    assert.equal(defaultOpenMonth(months, "2026-07-03"), "2026-11");
+    assert.equal(defaultOpenMonth([], "2026-09-03"), "");
+  });
+
+  it("shows the first two people of a day and counts the rest", () => {
+    assert.deepEqual(actorsLine(["Sara", "Omar", "Mona", "Ali"]), { shown: ["Sara", "Omar"], more: 2 });
+    assert.deepEqual(actorsLine(["Sara"]), { shown: ["Sara"], more: 0 });
+    assert.deepEqual(actorsLine([]), { shown: [], more: 0 });
+  });
+
+  it("keeps the day and entry in the URL and the month list needs no dates", () => {
+    assert.deepEqual([AUDIT_FILTERS.day, AUDIT_FILTERS.entry], ["", ""]);
   });
 });
 

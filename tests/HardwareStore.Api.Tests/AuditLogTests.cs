@@ -27,9 +27,13 @@ public sealed class AuditLogTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
     private sealed record Change(string Field, JsonElement? Before, JsonElement? After);
 
     private sealed record Entry(Guid Id, DateTimeOffset OccurredAtUtc, string ActorKind, Guid? ActorUserId, string? ActorName, string? Device,
-        string? CorrelationId, string Module, string Entity, string EntityId, string Action, List<Change> Changes, Guid? RestoredFromEntryId, bool CanRestore);
+        string? CorrelationId, string Module, string Entity, string EntityId, string Action, List<Change> Changes, Guid? RestoredFromEntryId, bool CanRestore, Dictionary<Guid, string>? LinkedNames);
 
     private sealed record EntryPage(List<Entry> Items, int Page, int PageSize, int Total);
+
+    private sealed record MonthRow(string Month, int Count);
+
+    private sealed record DayRow(string Date, int Count, List<string> ActorNames, List<string> OtherActors);
 
     private sealed record Filters(List<string> Modules, List<string> Entities, List<string> Actions);
 
@@ -171,6 +175,59 @@ public sealed class AuditLogTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         Assert.Equal(["Catalog", "Retail"], filters.Modules);
         Assert.Equal(["categories", "stock_items"], filters.Entities);
         Assert.Equal(AuditAction.All, filters.Actions);
+    }
+
+    [Fact]
+    public async Task An_entry_names_the_users_it_points_to_and_leaves_unknown_ids_out()
+    {
+        var (database, factory, client, editorId) = await StartAsync(fixture);
+        await using var _ = factory;
+        using var __ = client;
+        var stranger = Guid.NewGuid();
+        var id = await InsertEntryAsync(database, "Identity", "user_roles", "x", "Created",
+            $$"""[{"field":"AccountId","before":null,"after":"{{editorId}}"},{"field":"Other","before":null,"after":"{{stranger}}"}]""", DateTimeOffset.UtcNow);
+
+        var entry = (await client.GetFromJsonAsync<Entry>($"{Api}/entries/{id}"))!;
+
+        Assert.False(string.IsNullOrWhiteSpace(entry.LinkedNames![editorId]));
+        Assert.DoesNotContain(stranger, entry.LinkedNames.Keys);
+        var listed = (await client.GetFromJsonAsync<EntryPage>($"{Api}/entries"))!.Items.Single(item => item.Id == id);
+        Assert.Empty(listed.LinkedNames!);
+    }
+
+    [Fact]
+    public async Task The_log_is_browsed_by_month_then_by_day_with_counts_and_the_people_behind_them()
+    {
+        var (database, factory, client, editorId) = await StartAsync(fixture);
+        await using var _ = factory;
+        using var __ = client;
+        var now = DateTimeOffset.UtcNow;
+        var today = BusinessDay.Of(now, RetailSales.BusinessZone);
+        var thisMonth = new DateOnly(today.Year, today.Month, 1);
+        var longAgo = thisMonth.AddMonths(-3).AddDays(9);
+        var longAgoNoon = new DateTimeOffset(longAgo.ToDateTime(new TimeOnly(10, 0)), TimeSpan.FromHours(2)).ToUniversalTime();
+        await InsertEntryAsync(database, "Retail", "stock_items", "a", "Updated", "[]", now, editorId);
+        await InsertEntryAsync(database, "Retail", "stock_items", "b", "Updated", "[]", now, editorId);
+        await InsertEntryAsync(database, "Catalog", "categories", "c", "Created", "[]", now);
+        await InsertEntryAsync(database, "Catalog", "categories", "d", "Created", "[]", longAgoNoon);
+
+        var months = (await client.GetFromJsonAsync<List<MonthRow>>($"{Api}/months"))!;
+        Assert.Equal([$"{thisMonth:yyyy-MM}", $"{thisMonth.AddMonths(-3):yyyy-MM}"], months.Select(month => month.Month));
+        Assert.Equal([3, 1], months.Select(month => month.Count));
+        Assert.Equal([1, 1], (await client.GetFromJsonAsync<List<MonthRow>>($"{Api}/months?module=Catalog"))!.Select(month => month.Count));
+        Assert.Equal([2], (await client.GetFromJsonAsync<List<MonthRow>>($"{Api}/months?entity=stock_items"))!.Select(month => month.Count));
+
+        var days = (await client.GetFromJsonAsync<List<DayRow>>($"{Api}/days?month={thisMonth:yyyy-MM}"))!;
+        var latest = Assert.Single(days, day => day.Date == today.ToString("yyyy-MM-dd"));
+        Assert.Equal(3, latest.Count);
+        Assert.Single(latest.ActorNames);
+        Assert.Equal(["System"], latest.OtherActors);
+        Assert.Equal(1, (await client.GetFromJsonAsync<List<DayRow>>($"{Api}/days?month={thisMonth.AddMonths(-3):yyyy-MM}"))!.Single().Count);
+        Assert.Empty((await client.GetFromJsonAsync<List<DayRow>>($"{Api}/days?month={thisMonth.AddMonths(-1):yyyy-MM}"))!);
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync($"{Api}/days")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync($"{Api}/days?month=2026-13")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync($"{Api}/months?action=Nonsense")).StatusCode);
     }
 
     [Theory]

@@ -13,6 +13,7 @@
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
+    "@dnd-kit/core": "6.3.1",
     "@rigx/api-client": "*",
     "@sentry/nextjs": "11.14.0",
     "next": "16.4.6",

@@ -126,6 +126,26 @@ export const ChevronDownIcon = (p: IconProps) => (
     <path d="M6 9l6 6 6-6" />
   </Icon>
 );
+export const ClipboardIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="6" y="4" width="12" height="17" rx="2" />
+    <path d="M9 4h6v3H9z" />
+    <path d="M9 12h6M9 16h4" />
+  </Icon>
+);
+/** Six dots: the handle that says "drag me". */
+export const GripIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <g {...solid}>
+      <circle cx="9" cy="6" r="1.6" />
+      <circle cx="15" cy="6" r="1.6" />
+      <circle cx="9" cy="12" r="1.6" />
+      <circle cx="15" cy="12" r="1.6" />
+      <circle cx="9" cy="18" r="1.6" />
+      <circle cx="15" cy="18" r="1.6" />
+    </g>
+  </Icon>
+);
 export const ArrowUpIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M12 19V5M5 12l7-7 7 7" />

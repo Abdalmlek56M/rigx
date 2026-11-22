@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDateTimeFull } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { deviceOf, diffRows, entryTitle, type AuditValue, type DiffRow, type DiffStatus } from "./audit-rules";
-import { fetchEntry, fetchLinkedNames } from "./audit-api";
+import { fetchEntry } from "./audit-api";
 import { AuditActionBadge } from "./AuditActionBadge";
 import { AuditField as Row } from "./AuditField";
 import { AuditRestore } from "./AuditRestore";
@@ -23,8 +23,8 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   const locale = useLocale();
   const load = useCallback(() => fetchEntry(id), [id]);
   const { state, reload } = useLoad(load);
-  const names = useLoad(fetchLinkedNames).state;
   const { has } = usePermissions();
+  const linkedNames = useMemo(() => new Map(Object.entries(state.status === "ready" ? state.data.linkedNames : {})), [state]);
   if (state.status === "loading") return <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
   if (state.status === "error") {
     return (
@@ -36,7 +36,6 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   }
 
   const entry = state.data;
-  const linkedNames = names.status === "ready" ? names.data : EMPTY_NAMES;
   const rows = diffRows(entry.changes);
   const title = entryTitle(entry.changes);
   const device = deviceOf(entry.device);
@@ -74,8 +73,6 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
     </section>
   );
 }
-
-const EMPTY_NAMES: ReadonlyMap<string, string> = new Map();
 
 const STATUS_TONE: Record<DiffStatus, { item: string; chip: StatusTone }> = {
   changed: { item: "border-orange/40", chip: "warning" },

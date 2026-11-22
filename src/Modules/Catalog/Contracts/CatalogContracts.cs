@@ -25,7 +25,14 @@ public sealed record BrandInput(
     string? LogoStorageKey,
     string? SupportUrl,
     bool IsActive,
-    int? RowVersion);
+    int? RowVersion,
+    IReadOnlyList<Guid>? CategoryIds = null);
+
+/// <summary>The brands in the order they should be listed; the list must hold every brand once.</summary>
+public sealed record BrandOrderInput(IReadOnlyList<Guid>? Ids);
+
+/// <summary>The children of one parent (null = the top level) in the order they should be listed; the list must hold every one of them once.</summary>
+public sealed record CategoryOrderInput(Guid? ParentId, IReadOnlyList<Guid>? Ids);
 
 public sealed record ProductSpecificationInput(
     Guid? Id,
@@ -76,7 +83,9 @@ public sealed record BrandView(
     string? LogoStorageKey,
     string? SupportUrl,
     bool IsActive,
-    int RowVersion);
+    int RowVersion,
+    int SortOrder,
+    IReadOnlyList<Guid> CategoryIds);
 
 public sealed record ProductSpecificationView(
     Guid Id,

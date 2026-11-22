@@ -7,12 +7,15 @@ import { isConflict } from "@/lib/api/conflict";
 import { Button } from "../kit/Button";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
+import { BrandCategoriesField } from "./BrandCategoriesField";
+import type { Category } from "../categories/categories-api";
 import { brandForm, brandFormValid, emptyBrandForm, slugFromName, toBrandInput, type BrandForm as Form } from "./brand-rules";
 import { createBrand, updateBrand, type Brand } from "./brands-api";
 
-/** A brand's name, link part and visibility. For a new brand the link part follows the name until the owner edits it. */
-export function BrandForm({ brand, canManage, onSaved, onStale, onCancel }: {
+/** A brand's name, link part, visibility and the categories it is suggested for. For a new brand the link part follows the name until the owner edits it. */
+export function BrandForm({ brand, tree, canManage, onSaved, onStale, onCancel }: {
   brand: Brand | null;
+  tree: readonly Category[];
   canManage: boolean;
   onSaved: (saved: Brand) => void;
   onStale: () => void;
@@ -61,6 +64,7 @@ export function BrandForm({ brand, canManage, onSaved, onStale, onCancel }: {
           />
         </div>
         <p className="m-0 text-xs text-ink-muted">{t("slugHint")}</p>
+        <BrandCategoriesField tree={tree} value={form.categoryIds} onChange={(categoryIds) => set({ categoryIds })} />
         <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
           <input type="checkbox" checked={form.isActive} onChange={(event) => set({ isActive: event.target.checked })} className="h-5 w-5 accent-orange" />
           {t("fields.active")}

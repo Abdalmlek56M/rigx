@@ -4,13 +4,17 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { mediaUrl } from "@/lib/media";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
+import { DragItem, DragSort } from "../kit/DragSort";
+import { PasteImageButton } from "../kit/PasteImageButton";
+import { useImagePaste } from "../kit/use-image-paste";
 import { Dialog } from "../kit/Dialog";
 import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import type { Schemas } from "@rigx/api-client";
 import { ArrowBackIcon, ArrowEndIcon, EyeIcon, PlusIcon, StarIcon, TrashIcon } from "@/components/ui/icons";
 import { IconButton, buttonClass, buttonIconSize } from "../kit/Button";
-import { makeMain, moveKey } from "./photo-order";
+import { dropOn, moveKey, sameOrder } from "../kit/reorder-rules";
+import { makeMain } from "./photo-order";
 
 type Photo = Schemas["StockItemPhoto"];
 
@@ -30,6 +34,7 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
   onChanged: () => Promise<void>;
 }) {
   const t = useTranslations("admin.inventory.photos");
+  const tPaste = useTranslations("admin.kit.paste");
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -57,12 +62,13 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
     await change(() => uploadPhoto(file)).catch(() => undefined);
   }
 
+  const paste = useImagePaste((file) => void upload(file), busy || !canManage);
   const keys = photos.map((photo) => photo.storageKey);
   const sortable = canManage && reorder !== undefined && photos.length > 1;
-  const saveOrder = (next: string[]) => reorder ? change(() => reorder(next), t("reordered")).catch(() => undefined) : Promise.resolve();
+  const saveOrder = (next: string[]) => reorder && !sameOrder(keys, next) ? change(() => reorder(next), t("reordered")).catch(() => undefined) : Promise.resolve();
 
   return (
-    <div className="flex flex-col gap-3 rounded-control border border-line bg-paper p-3">
+    <div className="flex flex-col gap-3 rounded-control border border-line bg-paper p-3 focus-visible:outline-2 focus-visible:outline-orange" {...(canManage ? paste : {})}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="m-0 text-[15px] font-bold">{t("title", { count: photos.length })}</h3>
         {photos.length > 0 ? (
@@ -72,9 +78,10 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
         ) : null}
       </div>
       {photos.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("empty")}</p> : (
+        <DragSort onMove={(active, over) => void saveOrder(dropOn(keys, active, over))}>
         <ul className="m-0 grid list-none grid-cols-3 gap-2 p-0 md:grid-cols-4">
           {photos.map((photo, index) => (
-            <li key={photo.storageKey} className="relative aspect-square overflow-hidden rounded-control border border-line bg-surface">
+            <DragItem key={photo.storageKey} id={photo.storageKey} disabled={!sortable || busy} className="relative aspect-square touch-manipulation overflow-hidden rounded-control border border-line bg-surface">
               {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
               <img src={mediaUrl(photo.thumbnailStorageKey)} alt={t("alt", { model: name })} className="h-full w-full object-cover" />
               <span dir="ltr" className="absolute left-1 top-1 rounded-full bg-carbon/80 px-1.5 py-0.5 font-mono text-[11px] text-on-carbon">{index + 1}</span>
@@ -93,18 +100,23 @@ export function PhotoGallery({ photos, name, canManage, upload: uploadPhoto, rem
                   <IconButton icon={TrashIcon} label={t("remove")} variant="danger" size="sm" disabled={busy} onClick={() => setRemoving(photo)} />
                 </span>
               ) : null}
-            </li>
+            </DragItem>
           ))}
         </ul>
+        </DragSort>
       )}
       {canManage ? (
-        <label className={`${buttonClass()} cursor-pointer self-start ${busy ? "opacity-60" : ""}`}>
-          <PlusIcon size={buttonIconSize()} />
-          {t("add")}
-          <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => void upload(event.target.files?.[0])} className="sr-only" />
-        </label>
+        <div className="flex flex-wrap gap-2 self-start">
+          <label className={`${buttonClass()} cursor-pointer ${busy ? "pointer-events-none" : ""}`} aria-disabled={busy || undefined}>
+            <PlusIcon size={buttonIconSize()} />
+            {t("add")}
+            <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => void upload(event.target.files?.[0])} className="sr-only" />
+          </label>
+          <PasteImageButton onImage={(file) => void upload(file)} disabled={busy} />
+        </div>
       ) : null}
       <p className="m-0 text-xs text-ink-muted">{sortable ? t("orderHint") : t("hint")}</p>
+      {canManage ? <p className="m-0 text-xs text-ink-muted">{tPaste("hint")}</p> : null}
       <Dialog open={previewing} onClose={() => setPreviewing(false)} title={t("previewTitle")} wide>
         {photos.length > 0 ? (
           <div className="mx-auto flex w-full min-w-0 max-w-md flex-col gap-3">

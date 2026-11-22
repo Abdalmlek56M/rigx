@@ -28,7 +28,7 @@ public sealed class CatalogModelTests
         Assert.Equal(
             new[]
             {
-                "brands", "categories", "content_media_asset_usages", "content_media_assets",
+                "brand_categories", "brands", "categories", "content_media_asset_usages", "content_media_assets",
                 "product_images", "product_reviews", "product_specifications", "products", "store_reviews"
             },
             tables);

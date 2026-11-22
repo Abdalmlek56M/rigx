@@ -12,6 +12,7 @@ import {
   categoryForm,
   categoryFormValid,
   emptyCategoryForm,
+  nextSortOrder,
   findPath,
   parentOptions,
   toCategoryInput,
@@ -57,7 +58,7 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
   const t = useTranslations("admin.categories");
   const kit = useTranslations("admin.kit");
   const submit = useSubmit();
-  const [form, setForm] = useState<Form>(() => category ? categoryForm(category) : emptyCategoryForm(parentId));
+  const [form, setForm] = useState<Form>(() => category ? categoryForm(category) : emptyCategoryForm(parentId, nextSortOrder(tree, parentId)));
   const parent = category ? findPath(tree, category.id).at(-2)?.name ?? null : parentId ? findPath(tree, parentId).at(-1)?.name ?? null : null;
   const valid = categoryFormValid(form);
 
@@ -101,7 +102,6 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
           error={submit.errors.fields.parentId}
         />
         <TextField label={t("fields.code")} name="code" value={form.code} onChange={(code) => set({ code: code.toUpperCase() })} ltr error={submit.errors.fields.code} />
-        <TextField label={t("fields.sortOrder")} name="sortOrder" type="number" ltr value={form.sortOrder} onChange={(sortOrder) => set({ sortOrder })} error={submit.errors.fields.sortOrder} />
       </div>
       <TextAreaField label={t("fields.description")} name="description" value={form.description} onChange={(description) => set({ description })} rows={3} error={submit.errors.fields.description} />
       <div className="flex flex-wrap gap-x-5">

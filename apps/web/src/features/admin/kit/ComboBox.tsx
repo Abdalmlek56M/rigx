@@ -130,6 +130,7 @@ export function ComboBox({ label, name, value, options, onChange, placeholder, e
                 className={`flex min-h-11 cursor-pointer items-center rounded-control px-2.5 text-start text-sm ${index === activeRow ? "bg-paper font-bold" : "hover:bg-paper"}`}
               >
                 {option.label}
+                {option.note ? <span className="ms-auto ps-2 text-xs font-normal text-ink-muted">{option.note}</span> : null}
               </li>
             ))}
             {showCreate ? (

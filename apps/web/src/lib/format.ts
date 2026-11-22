@@ -14,6 +14,16 @@ export function formatMonth(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(calendarLocale(locale), { month: "long", timeZone: CAIRO }).format(new Date(iso));
 }
 
+/** "نوفمبر 2026" / "November 2026", in Cairo time. */
+export function formatMonthYear(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(calendarLocale(locale), { month: "long", year: "numeric", timeZone: CAIRO }).format(new Date(iso));
+}
+
+/** "الأحد" / "Sunday", in Cairo time. */
+export function formatWeekday(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(calendarLocale(locale), { weekday: "long", timeZone: CAIRO }).format(new Date(iso));
+}
+
 /** "14 نوفمبر 2026" / "14 November 2026", in Cairo time. */
 export function formatDate(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(calendarLocale(locale), { day: "numeric", month: "long", year: "numeric", timeZone: CAIRO }).format(new Date(iso));

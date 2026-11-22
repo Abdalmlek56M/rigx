@@ -60,4 +60,14 @@ describe("design kit rules", () => {
     assert.deepEqual(violations((line) => line.includes("type=\"radio\""), (name) => name.startsWith("features/admin/") || RADIO_OWNERS.has(name)), []);
     assert.deepEqual(violations((line) => /choice-card/.test(line), (name) => name === "components/ui/ChoiceTile.tsx"), []);
   });
+
+  it("keeps @dnd-kit inside the admin's one DragSort file, so it loads with the admin chunks only", () => {
+    assert.deepEqual(violations((line) => line.includes("@dnd-kit"), (name) => name === "features/admin/kit/DragSort.tsx"), []);
+  });
+
+  it("lets every admin picture upload take a paste from the clipboard", () => {
+    const uploads = FILES.filter((file) => file.name.startsWith("features/admin/") && file.lines.some((line) => line.includes("accept=\"image/")));
+    const withoutPaste = uploads.filter((file) => !file.lines.some((line) => /PasteImageButton|useImagePaste/.test(line))).map((file) => file.name);
+    assert.deepEqual(withoutPaste, []);
+  });
 });

@@ -10,8 +10,12 @@ import {
   flattenTree,
   findPath,
   moveSpec,
+  nextSortOrder,
   offeredPrices,
+  parentIdOf,
   parentOptions,
+  reorderChildren,
+  siblingIds,
   specRowValid,
   specRows,
   toCategoryInput,
@@ -188,5 +192,42 @@ describe("spec rows for the owner", () => {
     assert.deepEqual(moveSpec(rows, "b", 1).map((entry) => entry.id), ["a", "c", "b"]);
     assert.deepEqual(moveSpec(rows, "a", -1).map((entry) => entry.id), ["a", "b", "c"]);
     assert.deepEqual(moveSpec(rows, "c", 1).map((entry) => entry.id), ["a", "b", "c"]);
+  });
+});
+
+describe("ordering categories by hand", () => {
+  const ordered = [
+    { ...cat("a"), sortOrder: 0 },
+    { ...cat("b", [{ ...cat("b1", [], [], "b"), sortOrder: 0 }, { ...cat("b2", [], [], "b"), sortOrder: 4 }]), sortOrder: 5 }
+  ];
+
+  it("finds the parent of a category: null at the top, undefined when it is not there", () => {
+    assert.equal(parentIdOf(ordered, "a"), null);
+    assert.equal(parentIdOf(ordered, "b2"), "b");
+    assert.equal(parentIdOf(ordered, "zzz"), undefined);
+  });
+
+  it("lists the ids under a parent in the tree's order", () => {
+    assert.deepEqual(siblingIds(ordered, null), ["a", "b"]);
+    assert.deepEqual(siblingIds(ordered, "b"), ["b1", "b2"]);
+    assert.deepEqual(siblingIds(ordered, "a"), []);
+    assert.deepEqual(siblingIds(ordered, "zzz"), []);
+  });
+
+  it("shows the children of one parent in a new order without touching the rest", () => {
+    const top = reorderChildren(ordered, null, ["b", "a"]);
+    assert.deepEqual(top.map((node) => node.id), ["b", "a"]);
+    assert.deepEqual(top[0]!.children.map((node) => node.id), ["b1", "b2"]);
+    const inner = reorderChildren(ordered, "b", ["b2", "b1"]);
+    assert.deepEqual(inner.map((node) => node.id), ["a", "b"]);
+    assert.deepEqual(inner[1]!.children.map((node) => node.id), ["b2", "b1"]);
+  });
+
+  it("puts a new category after the last one under its parent", () => {
+    assert.equal(nextSortOrder(ordered, null), 6);
+    assert.equal(nextSortOrder(ordered, "b"), 5);
+    assert.equal(nextSortOrder(ordered, "a"), 0);
+    assert.equal(nextSortOrder([], null), 0);
+    assert.equal(emptyCategoryForm("b", 5).sortOrder, "5");
   });
 });

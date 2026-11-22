@@ -96,7 +96,7 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
                 name={field("modelName")} value={line.modelName} categoryId={line.categoryId} error={errorFor("modelName")}
                 onType={(text) => onChange(typeModel(line, text))} onPick={(suggestion) => onChange(pickModel(line, suggestion))}
               />
-              <BrandSelect brands={brands} name={field("brandId")} value={line.brandId} onChange={(brandId) => set({ brandId })} error={errorFor("brandId")} onCreated={onBrandCreated} />
+              <BrandSelect brands={brands} tree={tree} categoryId={line.categoryId} name={field("brandId")} value={line.brandId} onChange={(brandId) => set({ brandId })} error={errorFor("brandId")} onCreated={onBrandCreated} />
               <SelectField
                 label={t("condition")} name={field("condition")} value={line.condition} onChange={(condition) => set({ condition, ...(condition === "New" ? { serialNumber: "" } : {}) })} error={errorFor("condition")}
                 options={[{ value: "Used", label: t("used") }, { value: "New", label: t("new") }]}

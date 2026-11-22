@@ -4,14 +4,15 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
 import { PageHeader } from "../kit/PageHeader";
+import { useToast } from "../kit/Toast";
 import { useReveal } from "../kit/use-reveal";
 import { usePermissions } from "../use-permissions";
 import { CategoryForm } from "./CategoryForm";
 import { CategoryImageCard } from "./CategoryImageCard";
 import { CategorySpecsEditor } from "./CategorySpecsEditor";
 import { CategoryTree } from "./CategoryTree";
-import { effectiveSpecs, findPath } from "./category-rules";
-import { fetchCategories, type Category } from "./categories-api";
+import { effectiveSpecs, findPath, reorderChildren } from "./category-rules";
+import { fetchCategories, reorderCategories, type Category } from "./categories-api";
 import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
@@ -19,14 +20,18 @@ import { Button } from "../kit/Button";
 export function Categories() {
   const t = useTranslations("admin.categories");
   const { has } = usePermissions();
+  const toast = useToast();
   const canManage = has("Catalog.ManageTaxonomy");
   const load = useCallback(() => fetchCategories(), []);
   const { state, reload } = useLoad(load);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState<{ parentId: string | null } | null>(null);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  const [pending, setPending] = useState<{ over: readonly Category[]; next: Category[] } | null>(null);
 
-  const tree = state.status === "ready" ? state.data : [];
+  const loaded = state.status === "ready" ? state.data : [];
+  // The new order shows at once and is dropped as soon as the tree is read again (a different array).
+  const tree = pending && pending.over === loaded ? pending.next : loaded;
   const activeId = creating ? null : selectedId ?? tree[0]?.id ?? null;
   const selected = findPath(tree, activeId ?? "").at(-1) ?? null;
   const panelRef = useReveal<HTMLElement>(creating ? `new-${creating.parentId ?? "root"}` : selectedId);
@@ -36,6 +41,17 @@ export function Categories() {
     if (!next.delete(id)) next.add(id);
     return next;
   });
+  async function reorder(parentId: string | null, ids: string[]) {
+    setPending({ over: loaded, next: reorderChildren(loaded, parentId, ids) });
+    try {
+      await reorderCategories(parentId, ids);
+      toast(t("reordered"));
+    } catch {
+      toast(t("reorderFailed"), "error");
+    }
+    reload();
+  }
+
   const saved = (category: Category) => {
     setCreating(null);
     setSelectedId(category.id);
@@ -61,8 +77,9 @@ export function Categories() {
         <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
           <div className="flex flex-col gap-2">
             {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
-              <CategoryTree nodes={tree} selectedId={activeId} collapsed={collapsed} onSelect={(id) => { setSelectedId(id); setCreating(null); }} onToggle={toggle} />
+              <CategoryTree nodes={tree} selectedId={activeId} collapsed={collapsed} onSelect={(id) => { setSelectedId(id); setCreating(null); }} onToggle={toggle} onReorder={canManage ? (parentId, ids) => void reorder(parentId, ids) : undefined} />
             )}
+            {canManage && tree.length > 1 ? <p className="m-0 px-1 text-xs text-ink-muted">{t("orderHint")}</p> : null}
           </div>
 
           <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">

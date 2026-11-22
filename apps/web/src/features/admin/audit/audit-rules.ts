@@ -1,7 +1,7 @@
 /** Audit screen: view/outcome mappers, Cairo days, the day/kind grouping, the before/after diff and the device name. Pure, so it is tested. */
 import type { FilterValues } from "../kit/url-filters";
 import { addDays } from "../dashboard/dashboard-rules.ts";
-import { cairoDate, cairoDayEndUtc, cairoDayStartUtc } from "../offers/offer-rules.ts";
+import { cairoDayEndUtc, cairoDayStartUtc } from "../offers/offer-rules.ts";
 
 export const AUDIT_VIEWS = ["changes", "security"] as const;
 export type AuditView = (typeof AUDIT_VIEWS)[number];
@@ -17,12 +17,13 @@ export function auditOutcomeKey(outcome: string): AuditOutcomeKey {
   return AUDIT_OUTCOMES.find((known) => known === outcome) ?? "Other";
 }
 
-/** Every filter the screen keeps in the URL; the entries and the events views share the dates and page. */
+/** Every filter the screen keeps in the URL; the change log reads month → day → entry, the events view takes dates and a page. */
 export const AUDIT_FILTERS = {
   view: "changes",
   module: "",
   entity: "",
   action: "",
+  day: "",
   from: "",
   to: "",
   page: "1",
@@ -65,7 +66,7 @@ const GROUP_OF_ENTITY: Readonly<Record<string, AuditGroup>> = {
   stock_items: "stock", inventory_units: "stock", assemblies: "stock", assembly_units: "stock", warehouses: "stock",
   stock_imports: "stock", stock_item_old_slugs: "stock", purchases: "stock", purchase_lines: "stock", purchase_receipts: "stock", sellers: "stock",
   money_accounts: "money", money_movements: "money", retail_expenses: "money", recurring_expenses: "money", expense_types: "money",
-  products: "catalog", product_images: "catalog", product_specifications: "catalog", product_reviews: "catalog", categories: "catalog", brands: "catalog",
+  products: "catalog", product_images: "catalog", product_specifications: "catalog", product_reviews: "catalog", categories: "catalog", brands: "catalog", brand_categories: "catalog",
   content_articles: "content", content_faqs: "content", content_policies: "content", content_media_assets: "content", store_reviews: "content",
   persons: "customers", customer_addresses: "customers", customer_requests: "customers", blacklist_entries: "customers",
   user_accounts: "accounts", user_roles: "accounts", roles: "accounts", role_permissions: "accounts", account_restrictions: "accounts", external_logins: "accounts",
@@ -78,28 +79,39 @@ export function auditGroup(entity: string): AuditGroup {
   return (Object.hasOwn(GROUP_OF_ENTITY, entity) ? GROUP_OF_ENTITY[entity] : undefined) ?? "other";
 }
 
-export interface AuditDay<T> {
-  /** Cairo calendar date, `YYYY-MM-DD`. */
-  date: string;
-  when: "today" | "yesterday" | "earlier";
-  groups: { group: AuditGroup; entries: T[] }[];
+export interface AuditKindGroup<T> {
+  group: AuditGroup;
+  entries: T[];
 }
 
-/** Entries (newest first) by Cairo day, and inside a day by kind of work in {@link AUDIT_GROUPS} order; entries keep their order. */
-export function groupByDay<T extends { occurredAtUtc: string; entity: string }>(entries: readonly T[], today: string): AuditDay<T>[] {
-  const days = new Map<string, Map<AuditGroup, T[]>>();
+/** A day's entries (newest first) by kind of work in {@link AUDIT_GROUPS} order; entries keep their order. */
+export function groupByKind<T extends { entity: string }>(entries: readonly T[]): AuditKindGroup<T>[] {
+  const groups = new Map<AuditGroup, T[]>();
   for (const entry of entries) {
-    const date = cairoDate(entry.occurredAtUtc);
-    const groups = days.get(date) ?? days.set(date, new Map()).get(date)!;
     const group = auditGroup(entry.entity);
     groups.set(group, [...(groups.get(group) ?? []), entry]);
   }
-  const yesterday = addDays(today, -1);
-  return [...days].map(([date, groups]) => ({
-    date,
-    when: date === today ? "today" : date === yesterday ? "yesterday" : "earlier",
-    groups: AUDIT_GROUPS.filter((group) => groups.has(group)).map((group) => ({ group, entries: groups.get(group)! }))
-  }));
+  return AUDIT_GROUPS.filter((group) => groups.has(group)).map((group) => ({ group, entries: groups.get(group)! }));
+}
+
+export type DayWhen = "today" | "yesterday" | "earlier";
+
+/** Whether a Cairo date (`YYYY-MM-DD`) is today, yesterday or older. */
+export function dayWhen(date: string, today: string): DayWhen {
+  return date === today ? "today" : date === addDays(today, -1) ? "yesterday" : "earlier";
+}
+
+/** `2026-11` of the Cairo date `2026-11-22`. */
+export const monthOfDate = (date: string): string => date.slice(0, 7);
+
+/** The month that starts open: the one holding the day a link points to, else the newest ("" for an empty log). */
+export function defaultOpenMonth(months: readonly { month: string }[], day: string): string {
+  return months.find((entry) => entry.month === monthOfDate(day))?.month ?? months[0]?.month ?? "";
+}
+
+/** The first people of a day card and how many more there are (names are already in the reader's language). */
+export function actorsLine(names: readonly string[], limit = 2): { shown: string[]; more: number } {
+  return { shown: names.slice(0, limit), more: Math.max(0, names.length - limit) };
 }
 
 /** The browser and system a stored user agent names ("Chrome", "Windows"); null parts when it names none. */

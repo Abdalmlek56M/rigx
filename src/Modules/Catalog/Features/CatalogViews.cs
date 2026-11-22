@@ -12,5 +12,6 @@ internal static class CatalogViews
 
     public static BrandView ToView(this CatalogBrand brand) => new(
         brand.Id, brand.Name, brand.Slug, brand.Description,
-        brand.LogoStorageKey, brand.SupportUrl, brand.IsActive, brand.RowVersion);
+        brand.LogoStorageKey, brand.SupportUrl, brand.IsActive, brand.RowVersion, brand.SortOrder,
+        [.. brand.Categories.Select(link => link.CategoryId).Order()]);
 }

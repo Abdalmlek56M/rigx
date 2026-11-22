@@ -80,7 +80,7 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
           name="newPartModel" value={form.modelName} categoryId={form.categoryId} error={error("modelName")}
           onType={(text) => setForm((current) => editModel(current, text))} onPick={(suggestion) => setForm((current) => applySuggestion(current, suggestion))}
         />
-        <BrandSelect brands={lookups.brands} name="newPartBrand" value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")} />
+        <BrandSelect brands={lookups.brands} tree={lookups.tree} categoryId={form.categoryId} name="newPartBrand" value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")} />
         <SelectField
           label={lines("condition")} name="newPartCondition" value={form.condition} onChange={(condition) => set({ condition, ...(condition === "New" ? { serialNumber: "" } : {}) })} error={error("condition")}
           options={[{ value: "Used", label: lines("used") }, { value: "New", label: lines("new") }]}

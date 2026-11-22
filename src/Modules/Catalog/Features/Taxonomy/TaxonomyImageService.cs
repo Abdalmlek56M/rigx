@@ -63,7 +63,7 @@ public sealed class TaxonomyImageService(
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var brand = await db.Brands.SingleOrDefaultAsync(item => item.Id == brandId, cancellationToken)
+        var brand = await db.Brands.Include(item => item.Categories).SingleOrDefaultAsync(item => item.Id == brandId, cancellationToken)
             ?? throw new CatalogNotFoundException("Brand was not found.");
         var previous = brand.LogoStorageKey;
         var assetId = Guid.CreateVersion7();
@@ -90,7 +90,7 @@ public sealed class TaxonomyImageService(
         CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var brand = await db.Brands.SingleOrDefaultAsync(item => item.Id == brandId, cancellationToken)
+        var brand = await db.Brands.Include(item => item.Categories).SingleOrDefaultAsync(item => item.Id == brandId, cancellationToken)
             ?? throw new CatalogNotFoundException("Brand was not found.");
         var previous = brand.LogoStorageKey;
         brand.LogoStorageKey = null;

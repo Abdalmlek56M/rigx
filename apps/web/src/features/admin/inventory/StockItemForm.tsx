@@ -63,7 +63,7 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
         <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
         <TextField label={t("model")} name="modelName" ltr value={form.modelName} onChange={(modelName) => set({ modelName })} error={error("modelName")} />
         <CategorySelect tree={tree} value={form.categoryId} onChange={(categoryId) => set({ categoryId })} error={error("categoryId")} />
-        <BrandSelect brands={brands} value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")} />
+        <BrandSelect brands={brands} tree={tree} categoryId={form.categoryId} value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")} />
         <SpecFields categoryId={form.categoryId} values={form.specs} onChange={setSpecs} namePrefix="spec" error={error("specs")} />
         <div className="grid items-end gap-3 sm:grid-cols-3">
           <TextField label={t("price")} name="price" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />

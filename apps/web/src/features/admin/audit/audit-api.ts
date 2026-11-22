@@ -3,6 +3,8 @@ import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
 export type AuditEntry = Schemas["AuditEntryResponse"];
+export type AuditMonth = Schemas["AuditMonthResponse"];
+export type AuditDay = Schemas["AuditDayResponse"];
 export type AuditFilters = Schemas["AuditFilterLists"];
 export type AuditEntryPage = Schemas["PagedResultOfAuditEntryResponse"];
 export type SecurityEvent = Schemas["SecurityAuditItemView"];
@@ -24,16 +26,13 @@ export const fetchAuditFilters = () => required(unwrap(api().GET("/api/v1/admin/
 export const fetchEvents = (query: { fromUtc?: string; toUtc?: string; eventType?: string; outcome?: string; search?: string; page: number }) =>
   required(unwrap(api().GET("/api/v1/admin/audit/events", { params: { query: { ...query, pageSize: PAGE_SIZE } } })));
 
-let linkedNames: Promise<ReadonlyMap<string, string>> | null = null;
+/** The months that hold changes (newest first) with their counts, narrowed by kind. */
+export const fetchMonths = (query: { module?: string; entity?: string; action?: string }) =>
+  required(unwrap(api().GET("/api/v1/admin/audit/months", { params: { query } })));
 
-/** The names of brands and categories by id, read once: the change log stores a link as an id, and "Brand: Intel" reads better than "Brand: set". A viewer without catalog access gets none. */
-export function fetchLinkedNames(): Promise<ReadonlyMap<string, string>> {
-  linkedNames ??= Promise.all([
-    unwrap(api().GET("/api/v1/admin/catalog/brands")).catch(() => []),
-    unwrap(api().GET("/api/v1/admin/catalog/categories")).catch(() => [])
-  ]).then(([brands, categories]) => new Map([...(brands ?? []), ...(categories ?? [])].map((record) => [record.id, record.name] as const)));
-  return linkedNames;
-}
+/** The days of one month (`yyyy-MM`) that hold changes, with the count and the people behind each. */
+export const fetchDays = (query: { month: string; module?: string; entity?: string; action?: string }) =>
+  required(unwrap(api().GET("/api/v1/admin/audit/days", { params: { query } })));
 
 export const restoreEntry = (id: string, headers: Record<string, string>) =>
   unwrap(browserApi().POST("/api/v1/admin/audit/entries/{id}/restore", { params: { path: { id } }, headers }));

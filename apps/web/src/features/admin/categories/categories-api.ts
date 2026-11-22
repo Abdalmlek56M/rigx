@@ -33,3 +33,7 @@ export const uploadCategoryImage = (id: string, file: File) => {
 
 export const deleteCategoryImage = (id: string) =>
   required(unwrap(api().DELETE("/api/v1/admin/catalog/categories/{id}/image", { params: { path: { id } } })));
+
+/** The categories under one parent (null = the top level) in this order, every one of them once; the API refuses a list that is out of date. */
+export const reorderCategories = (parentId: string | null, ids: string[]) =>
+  unwrap(api().PUT("/api/v1/admin/catalog/categories/order", { body: { parentId, ids } }));

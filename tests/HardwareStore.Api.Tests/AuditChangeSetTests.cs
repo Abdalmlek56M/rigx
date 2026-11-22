@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using HardwareStore.Common.Domain;
 using HardwareStore.Common.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
@@ -223,6 +224,22 @@ public sealed class AuditChangeSetTests
         context.Add(new Line { OrderId = orderId, Number = 3, Text = "x" });
 
         Assert.Equal($"{orderId}|3", Assert.Single(AuditChangeSet.Collect(context, false)).EntityId);
+    }
+
+    [Fact]
+    public void The_ids_a_change_list_points_to_are_found_once_alone_or_in_a_list_on_either_side()
+    {
+        var brand = Guid.NewGuid();
+        var category = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var changes = new[]
+        {
+            new AuditFieldChange("BrandId", JsonValue.Create(brand.ToString()), JsonValue.Create(category.ToString())),
+            new AuditFieldChange("Related", null, new JsonArray(brand.ToString(), other.ToString(), "not an id")),
+            new AuditFieldChange("Name", JsonValue.Create("Intel"), JsonValue.Create(12))
+        };
+
+        Assert.Equal([brand, category, other], AuditChanges.LinkedIds(changes).Order());
     }
 
     [Fact]
