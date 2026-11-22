@@ -101,7 +101,7 @@ export function AddressesPanel({ governorates }: { governorates: readonly Govern
         <h2 className="sr-only">{t("title")}</h2>
         {editing ? null : <Button type="button" variant="accent" icon={PlusIcon} onClick={() => setEditing({ kind: "new" })}>{t("add")}</Button>}
       </div>
-      {failed && !editing ? <p role="alert" className="m-0 text-sm text-error">{t("actionFailed")}</p> : null}
+      {failed && !editing ? <p role="alert" className="m-0 text-sm text-error-text">{t("actionFailed")}</p> : null}
       {editing ? (
         <AddressFormView
           key={editing.kind === "edit" ? editing.address.id : "new"}

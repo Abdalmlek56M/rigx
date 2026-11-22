@@ -47,7 +47,7 @@ export function FormSection({ title, badge, hint, aside, children }: {
 }
 
 export function FieldAlert({ children }: { children: ReactNode }) {
-  return children ? <p role="alert" className="m-0 text-xs text-error">{children}</p> : null;
+  return children ? <p role="alert" className="m-0 text-xs text-error-text">{children}</p> : null;
 }
 
 interface ChipRadioProps {

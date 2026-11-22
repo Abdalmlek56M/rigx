@@ -49,7 +49,7 @@ export function CartLineRow({ line }: { line: CartLine }) {
           label={t("removeAria", { model: line.modelName })}
           variant="ghost"
           size="sm"
-          className="text-ink-muted hover:bg-error/10 hover:text-error"
+          className="text-ink-muted hover:bg-error/10 hover:text-error-text"
           onClick={() => remove(line.code, line.priceOption)}
         />
       </span>

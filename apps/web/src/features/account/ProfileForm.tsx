@@ -41,7 +41,7 @@ export function ProfileForm({ user }: { user: SessionUser }) {
       </div>
       <p className="m-0 text-[13px] text-ink-muted">{t("phoneNote")}</p>
       {state === "saved" ? <p role="status" className="m-0 text-sm text-success">{t("saved")}</p> : null}
-      {state === "failed" ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+      {state === "failed" ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
       <div>
         <Button type="submit" variant="accent" loading={state === "busy"}>{t("save")}</Button>
       </div>

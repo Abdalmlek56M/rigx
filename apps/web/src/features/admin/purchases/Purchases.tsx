@@ -8,6 +8,7 @@ import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
+import { NameCell } from "../kit/NameCell";
 import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -42,12 +43,7 @@ export function Purchases() {
     {
       key: "seller",
       header: t("columns.seller"),
-      cell: (purchase) => (
-        <span className="flex flex-col gap-0.5">
-          <span dir="auto" className="[unicode-bidi:isolate]">{purchase.seller.name}</span>
-          <span dir="ltr" className="text-start font-mono text-xs text-ink-muted">{purchase.seller.phone}</span>
-        </span>
-      )
+      cell: (purchase) => <NameCell name={purchase.seller.name} detail={purchase.seller.phone} />
     },
     { key: "kind", header: t("columns.kind"), cell: (purchase) => <span className="whitespace-nowrap">{t(`kinds.${kindKey(purchase.kind)}`)}</span> },
     { key: "date", header: t("columns.date"), cell: (purchase) => <span className="whitespace-nowrap text-xs">{formatDate(purchase.purchaseDate, locale)}</span> },
@@ -57,7 +53,7 @@ export function Purchases() {
       key: "remaining",
       header: t("columns.remaining"),
       align: "end",
-      cell: (purchase) => <span className={`whitespace-nowrap ${purchase.remaining > 0 ? "font-bold text-error" : "text-ink-muted"}`}>{formatEgp(purchase.remaining, locale)}</span>
+      cell: (purchase) => <span className={`whitespace-nowrap ${purchase.remaining > 0 ? "font-bold text-error-text" : "text-ink-muted"}`}>{formatEgp(purchase.remaining, locale)}</span>
     },
     { key: "status", header: t("columns.status"), cell: (purchase) => <PurchaseStatusBadge status={purchase.status} /> }
   ];

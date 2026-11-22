@@ -51,7 +51,7 @@ export function PartnerCapital({ partnerId, today, accounts, canPost, onChanged 
     { key: "kind", header: t("columns.kind"), cell: (entry) => <span className="whitespace-nowrap">{t(`kinds.${capitalKindKey(entry.kind)}`)}</span> },
     {
       key: "amount", header: t("columns.amount"), align: "end",
-      cell: (entry) => <span className={`whitespace-nowrap font-bold ${entry.kind === "Withdrawal" ? "text-error" : ""}`}>{formatEgp(entry.amount, locale)}</span>
+      cell: (entry) => <span className={`whitespace-nowrap font-bold ${entry.kind === "Withdrawal" ? "text-error-text" : ""}`}>{formatEgp(entry.amount, locale)}</span>
     },
     { key: "method", header: t("columns.method"), cell: (entry) => (entry.method ? methods(payMethodKey(entry.method)) : <span className="text-ink-muted">{t("none")}</span>) },
     { key: "note", header: t("columns.note"), cell: (entry) => (entry.note ? <span dir="auto" className="[unicode-bidi:isolate]">{entry.note}</span> : <span className="text-ink-muted">{t("none")}</span>) }

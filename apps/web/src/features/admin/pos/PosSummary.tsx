@@ -26,7 +26,7 @@ function Row({ label, value, strong = false, tone }: { label: string; value: str
   return (
     <div className={`flex items-baseline justify-between gap-3 ${strong ? "border-t border-line pt-2.5 text-lg font-bold" : "text-sm"}`}>
       <dt className={strong ? undefined : "text-ink-muted"}>{label}</dt>
-      <dd dir="ltr" className={`m-0 text-end font-bold ${tone === "error" ? "text-error" : ""}`}>{value}</dd>
+      <dd dir="ltr" className={`m-0 text-end font-bold ${tone === "error" ? "text-error-text" : ""}`}>{value}</dd>
     </div>
   );
 }
@@ -62,7 +62,7 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
           onChange={(event) => onCouponCode(event.target.value.toUpperCase())}
           className="h-11 w-full rounded-control border border-input-line bg-surface px-3 text-start font-mono text-sm font-normal text-ink"
         />
-        {coupon?.problem ? <span role="alert" className="text-xs font-normal text-error">{problemText(coupon.problem)}</span> : null}
+        {coupon?.problem ? <span role="alert" className="text-xs font-normal text-error-text">{problemText(coupon.problem)}</span> : null}
       </label>
       {preview && preview.warnings.length > 0 ? (
         <div role="status" className="flex flex-col gap-1 rounded-control bg-orange/15 px-3 py-2 text-sm">
@@ -75,7 +75,7 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
           {t("returning", { count: preview.returningToStock.length, codes: preview.returningToStock.map((part) => part.code).join(", ") })}
         </p>
       ) : null}
-      {previewError ? <p role="alert" className="m-0 text-xs text-error">{t("previewFailed", { message: previewError })}</p> : null}
+      {previewError ? <p role="alert" className="m-0 text-xs text-error-text">{t("previewFailed", { message: previewError })}</p> : null}
       <FormMessage message={saleError} />
       <div className="flex flex-col gap-2">
         <Button variant="primary" icon={CheckIcon} loading={busy} disabled={lineCount === 0} onClick={() => onSell(true)}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/ui/TextField";
 import { isConflict } from "@/lib/api/conflict";
+import { Button } from "../kit/Button";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { brandForm, brandFormValid, emptyBrandForm, slugFromName, toBrandInput, type BrandForm as Form } from "./brand-rules";
@@ -67,8 +68,8 @@ export function BrandForm({ brand, canManage, onSaved, onStale, onCancel }: {
         <FormMessage message={submit.errors.general} />
         {canManage ? (
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={submit.busy || !valid} className="h-11 rounded-control bg-carbon px-5 font-bold text-on-carbon disabled:opacity-50">{t("save")}</button>
-            {brand ? null : <button type="button" onClick={onCancel} className="h-11 rounded-control border border-input-line bg-surface px-5 font-bold">{kit("cancel")}</button>}
+            <Button type="submit" variant="primary" loading={submit.busy} disabled={!valid}>{t("save")}</Button>
+            {brand ? null : <Button onClick={onCancel}>{kit("cancel")}</Button>}
           </div>
         ) : null}
       </fieldset>

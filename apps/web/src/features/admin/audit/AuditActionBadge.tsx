@@ -4,8 +4,8 @@ import { useAuditLabels } from "./use-audit-labels";
 
 const ACTION_TONE: Readonly<Record<string, string>> = {
   Created: "border-success/40 text-success",
-  Deleted: "border-error/40 text-error",
-  SoftDeleted: "border-error/40 text-error"
+  Deleted: "border-error/40 text-error-text",
+  SoftDeleted: "border-error/40 text-error-text"
 };
 
 /** The action as a small coloured tag: additions green, deletions red, the rest neutral. */

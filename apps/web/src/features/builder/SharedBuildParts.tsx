@@ -34,7 +34,7 @@ export function SharedBuildParts({ parts, slotNames }: { parts: Schemas["Builder
                   {condition ? <ConditionBadge condition={condition} /> : null}
                   {part.item.warrantyLabel ? <span>{part.item.warrantyLabel}</span> : null}
                   {part.quantity > 1 ? <span>{t("quantity", { count: part.quantity })}</span> : null}
-                  {!part.isAvailable ? <span className="font-bold text-error">{t("unavailable")}</span> : null}
+                  {!part.isAvailable ? <span className="font-bold text-error-text">{t("unavailable")}</span> : null}
                 </div>
               </div>
               <span className="shrink-0 text-end font-bold tabular-nums">{formatEgp(part.lineTotal, locale)}</span>

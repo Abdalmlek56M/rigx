@@ -43,7 +43,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
   const user = session.status === "signedIn" ? session.user : null;
 
   return (
-    <section className="shell pb-16">
+    <section className="shell scroll-mt-36 pb-16 md:scroll-mt-24">
       <PageHeader
         contained={false}
         title={user ? t("greeting", { name: user.fullName || user.email }) : <span aria-hidden="true" className="inline-block h-8 w-56 animate-pulse rounded-control bg-line" />}

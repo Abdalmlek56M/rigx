@@ -50,7 +50,7 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
       </Link>
       <FavouriteButton code={build.code} modelName={title} className="absolute end-3 top-3" />
       <div className="flex flex-1 flex-col gap-3 p-5 md:p-[22px]">
-        <h2 className="m-0 line-clamp-2 min-h-10 text-lg leading-6 font-bold">
+        <h2 className="m-0 line-clamp-2 min-h-12 type-section-title">
           <Link href={href}>{title}</Link>
         </h2>
         <Button

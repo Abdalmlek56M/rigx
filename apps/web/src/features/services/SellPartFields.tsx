@@ -35,7 +35,7 @@ export function SellPartFields({ part, index, count, modelError, onChange, onRem
             label={t("removePart", { number: index + 1 })}
             variant="ghost"
             size="sm"
-            className="text-ink-muted hover:bg-error/10 hover:text-error"
+            className="text-ink-muted hover:bg-error/10 hover:text-error-text"
             onClick={onRemove}
           />
         ) : null}

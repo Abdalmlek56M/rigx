@@ -48,7 +48,7 @@ export function SummaryPanel({ evaluation, checking, checkFailed, slotCount, slo
         </Button>
       </div>
       <div className={`${expanded ? "flex" : "hidden"} flex-col gap-4 lg:flex`}>
-        {checkFailed ? <p role="alert" className="m-0 text-sm text-error">{t("checkFailed")}</p> : null}
+        {checkFailed ? <p role="alert" className="m-0 text-sm text-error-text">{t("checkFailed")}</p> : null}
         <BuildFacts
           evaluation={evaluation}
           slotNames={slotNames}

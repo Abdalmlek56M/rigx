@@ -51,7 +51,7 @@ export function BackupsSection({ canDownload }: { canDownload: boolean }) {
     if (run.verifyPassed == null) return <span className="text-ink-muted">{t("notVerified")}</span>;
     return run.verifyPassed
       ? <span className="font-bold">{t("verifiedOk", { tables: run.verifyTables ?? 0, rows: run.verifyRows ?? 0 })}</span>
-      : <span className="font-bold text-error [overflow-wrap:anywhere]">{run.verifyError || t("verifiedFailed")}</span>;
+      : <span className="font-bold text-error-text [overflow-wrap:anywhere]">{run.verifyError || t("verifiedFailed")}</span>;
   };
 
   const columns: Column<BackupRun>[] = [
@@ -64,7 +64,7 @@ export function BackupsSection({ canDownload }: { canDownload: boolean }) {
       const key = backupStatusKey(run.status);
       return (
         <span className="flex flex-col gap-0.5">
-          <span className={`font-bold ${backupSucceeded(run) ? "" : "text-error"}`}>{key ? t(`status.${key}`) : run.status}</span>
+          <span className={`font-bold ${backupSucceeded(run) ? "" : "text-error-text"}`}>{key ? t(`status.${key}`) : run.status}</span>
           {run.error ? <span dir="ltr" className="text-xs text-ink-muted [overflow-wrap:anywhere]">{run.error}</span> : null}
         </span>
       );

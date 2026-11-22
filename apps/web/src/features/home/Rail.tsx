@@ -115,7 +115,7 @@ export function Rail({ title, action, autoAdvance = false, arrowsOnMobile = fals
   const release = () => {
     paused.current = false;
   };
-  const arrow = "press flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-soft transition-[opacity,border-color,color] hover:border-orange hover:text-orange-text disabled:pointer-events-none disabled:opacity-35";
+  const arrow = "press flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-soft transition-[opacity,border-color,color] hover:border-orange hover:text-orange-text disabled:pointer-events-none disabled:bg-paper disabled:text-muted disabled:shadow-none";
 
   return (
     <section
@@ -129,7 +129,7 @@ export function Rail({ title, action, autoAdvance = false, arrowsOnMobile = fals
       onTouchStart={hold}
     >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <h2 className="m-0 text-[22px] font-bold md:text-[30px]">{title}</h2>
+        <h2 className="m-0 type-display-title">{title}</h2>
         <div className="ms-auto flex items-center gap-3">
           {action}
           <div className={`flex gap-2 ${arrowsOnMobile ? "" : "max-sm:hidden"}`} dir="ltr">

@@ -103,7 +103,7 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
         </span>
       </label>
       <FieldAlert>{error("terms")}</FieldAlert>
-      {minimum !== null ? <p role="alert" className="m-0 text-sm text-error">{t("minimum", { amount: formatEgp(minimum, locale) })}</p> : null}
+      {minimum !== null ? <p role="alert" className="m-0 text-sm text-error-text">{t("minimum", { amount: formatEgp(minimum, locale) })}</p> : null}
       {problem}
       <Button type="submit" variant="accent" loading={busy} disabled={minimum !== null} className="w-full">
         {busy ? t("sending") : t("confirm")}

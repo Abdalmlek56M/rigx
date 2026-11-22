@@ -16,7 +16,7 @@ export function LatestTabs({ title, groupLabel, tabs }: { title: string; groupLa
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 text-[22px] font-bold md:text-[30px]">{title}</h2>
+        <h2 className="m-0 type-display-title">{title}</h2>
         <div role="group" aria-label={groupLabel} className="flex gap-1.5">
           {tabs.map((tab) => (
             <Button

@@ -78,7 +78,7 @@ const EMPTY_NAMES: ReadonlyMap<string, string> = new Map();
 const STATUS_TONE: Record<DiffStatus, { item: string; chip: string }> = {
   changed: { item: "border-orange/40", chip: "bg-orange/15 text-orange-text" },
   added: { item: "border-success/40", chip: "bg-success/15 text-success" },
-  removed: { item: "border-error/40", chip: "bg-error/10 text-error" }
+  removed: { item: "border-error/40", chip: "bg-error/10 text-error-text" }
 };
 
 /** One field: its Arabic name, whether it was added, changed or removed, and its value(s). */

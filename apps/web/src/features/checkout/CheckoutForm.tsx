@@ -72,7 +72,7 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
         <div className="flex min-w-0 flex-col gap-4">
           {removedNotice ? <p role="status" className="m-0 rounded-card bg-paper p-3 text-sm text-ink-muted">{t("removedNotice")}</p> : null}
           {problem?.kind === "incomplete" ? (
-            <div role="alert" className="rounded-card border border-error bg-error/5 p-4 text-sm font-bold text-error">
+            <div role="alert" className="rounded-card border border-error bg-error/5 p-4 text-sm font-bold text-error-text">
               <p className="m-0">{t("missingFields", { fields: joinFieldNames(problem.fields, names) })}</p>
             </div>
           ) : null}
@@ -96,7 +96,7 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
           }}
           problem={
             summaryProblem ? (
-              <div role="alert" className="flex flex-col gap-1 text-sm text-error">
+              <div role="alert" className="flex flex-col gap-1 text-sm text-error-text">
                 {summaryProblem.kind === "invalid" ? summaryProblem.messages.map((message) => <p key={message} className="m-0">{message}</p>) : <p className="m-0">{problemText}</p>}
                 {summaryProblem.kind === "signIn" ? <Link href={loginHref("/checkout")} className={linkClass}>{t("loginLink")}</Link> : null}
               </div>

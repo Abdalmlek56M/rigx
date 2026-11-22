@@ -53,7 +53,7 @@ export function SellerPicker({ seller, readOnly, missing = false, governorates, 
   return (
     <section data-field="seller" className={`flex flex-col gap-3 rounded-card border bg-surface p-5 ${missing ? "border-error" : "border-line"}`}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
-      {missing ? <p role="alert" className="m-0 text-sm font-bold text-error">{t("required")}</p> : null}
+      {missing ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{t("required")}</p> : null}
       {editing ? (
         <SellerFormCard
           key={editing.seller?.rowVersion ?? "new"} seller={editing.seller} phone={editing.phone} governorates={governorates}
@@ -89,7 +89,7 @@ export function SellerPicker({ seller, readOnly, missing = false, governorates, 
               {matches.state.data.length === 0 ? <li className="text-sm text-ink-muted">{t("noMatch")}</li> : null}
             </ul>
           ) : null}
-          {matches.state.status === "error" ? <p role="alert" className="m-0 text-sm font-bold text-error">{t("searchFailed")}</p> : null}
+          {matches.state.status === "error" ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{t("searchFailed")}</p> : null}
           {canManage ? <Button icon={PlusIcon} className="self-start" onClick={() => setEditing({ seller: null, phone: looksLikePhone(query) ? query : "" })}>{t("new")}</Button> : null}
         </div>
       )}

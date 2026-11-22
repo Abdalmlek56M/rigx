@@ -102,7 +102,7 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
       align: "end",
       cell: forItem((item) => {
         const profit = expectedProfit(item);
-        return profit === null ? none : <span className={`whitespace-nowrap font-bold ${profit < 0 ? "text-error" : ""}`}>{formatEgp(profit, locale)}</span>;
+        return profit === null ? none : <span className={`whitespace-nowrap font-bold ${profit < 0 ? "text-error-text" : ""}`}>{formatEgp(profit, locale)}</span>;
       })
     });
   }

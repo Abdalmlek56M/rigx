@@ -25,7 +25,7 @@ function ReservationCell({ order }: { order: Order }) {
   const t = useTranslations("admin.orders");
   const state = reservationState(order, new Date());
   if (state.kind === "held") return <span className="whitespace-nowrap">{t("reservation.held", { hours: state.hoursLeft })}</span>;
-  if (state.kind === "expired") return <span className="whitespace-nowrap font-bold text-error">{t("reservation.expired")}</span>;
+  if (state.kind === "expired") return <span className="whitespace-nowrap font-bold text-error-text">{t("reservation.expired")}</span>;
   return <span className="text-ink-muted">{t("none")}</span>;
 }
 

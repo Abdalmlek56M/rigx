@@ -5,7 +5,7 @@ import { IssueList } from "./IssueList";
 import { powerShare, type Evaluation } from "./builder-summary";
 
 /** Tone of a compatibility result or of the power use: green when fine, orange for a warning, red for a conflict. */
-const TONE = { ok: "text-success", warning: "text-orange-text", conflict: "text-error" } as const;
+const TONE = { ok: "text-success", warning: "text-orange-text", conflict: "text-error-text" } as const;
 const BAR = { ok: "bg-success", warning: "bg-orange", conflict: "bg-error" } as const;
 
 interface BuildFactsProps {

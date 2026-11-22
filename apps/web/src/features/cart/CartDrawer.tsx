@@ -5,7 +5,6 @@ import { ModalSheet } from "@/components/ui/ModalSheet";
 import { ButtonLink, IconButton } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CartIcon, CloseIcon, WalletIcon } from "@/components/ui/icons";
-import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "./cart-context";
 import { CartLineRow } from "./CartLineRow";
@@ -34,9 +33,7 @@ export function CartDrawer({ whatsAppNumber }: { whatsAppNumber: string | null }
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full bg-paper text-ink-muted"><CartIcon size={26} /></span>
             <p className="m-0 type-section-title">{t("empty")}</p>
-            <Link href="/products" onClick={close} className="text-sm font-bold text-orange-text underline hover:text-orange-text-hover">
-              {t("browse")}
-            </Link>
+            <ButtonLink href="/products" variant="secondary" onClick={close}>{t("browse")}</ButtonLink>
           </div>
         ) : (
           <>

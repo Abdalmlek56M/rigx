@@ -18,14 +18,14 @@ const BASE =
   // Colours ease on hover; the press scale (0.97, from `.press`) uses the site's strong ease-out so it answers at once.
   "[transition:background-color_150ms_ease,border-color_150ms_ease,color_150ms_ease,box-shadow_150ms_ease,transform_140ms_var(--ease-out)] " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange " +
-  "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50";
+  "disabled:cursor-not-allowed aria-disabled:pointer-events-none";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-carbon text-on-carbon hover:bg-carbon-hover hover:shadow-soft disabled:hover:bg-carbon disabled:hover:shadow-none",
-  secondary: "border border-input-line bg-surface text-ink hover:border-ink-muted hover:bg-paper disabled:hover:border-input-line disabled:hover:bg-surface",
-  danger: "bg-error text-white hover:bg-error-hover hover:shadow-soft disabled:hover:bg-error disabled:hover:shadow-none",
-  dangerGhost: "text-error hover:bg-error/10 hover:text-error disabled:hover:bg-transparent",
-  ghost: "text-ink-muted hover:bg-line hover:text-ink disabled:hover:bg-transparent"
+  primary: "btn-off bg-carbon text-on-carbon hover:bg-carbon-hover hover:shadow-soft",
+  secondary: "btn-off border border-input-line bg-surface text-ink hover:border-ink-muted hover:bg-paper",
+  danger: "btn-off bg-error text-white hover:bg-error-hover hover:shadow-soft",
+  dangerGhost: "btn-off-quiet text-error-text hover:bg-error/10 hover:text-error-text",
+  ghost: "btn-off-quiet text-ink-muted hover:bg-line hover:text-ink"
 };
 
 const SIZES: Record<ButtonSize, { label: string; square: string; icon: number }> = {

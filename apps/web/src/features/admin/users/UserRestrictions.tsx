@@ -80,7 +80,7 @@ export function UserRestrictions({ userId }: { userId: string }) {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="font-bold">{t(`types.${restrictionType(item.type)}`)}</span>
-                  <span className={`rounded-[4px] px-2 py-[3px] text-xs font-bold ${item.isActive ? "bg-error/10 text-error" : "bg-line text-ink-muted"}`}>{item.isActive ? t("active") : t("ended")}</span>
+                  <span className={`rounded-[4px] px-2 py-[3px] text-xs font-bold ${item.isActive ? "bg-error/10 text-error-text" : "bg-line text-ink-muted"}`}>{item.isActive ? t("active") : t("ended")}</span>
                 </span>
                 {item.isActive ? (
                   <Button icon={UndoIcon} onClick={() => setReinstating(item)}>{t("reinstate")}</Button>

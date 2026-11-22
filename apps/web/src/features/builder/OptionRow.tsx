@@ -53,7 +53,7 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
             <span dir="ltr" className="text-start font-bold [unicode-bidi:isolate]">{group.modelName}</span>
             {warranties.length > 0 ? <span className="text-xs text-ink-muted">{warranties.join(" · ")}</span> : null}
             {reasons.map((reason) => (
-              <span key={reason} className="text-xs text-error">{reason}</span>
+              <span key={reason} className="text-xs text-error-text">{reason}</span>
             ))}
           </div>
         </div>

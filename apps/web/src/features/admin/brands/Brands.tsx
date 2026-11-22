@@ -3,14 +3,14 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
+import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 import { PageHeader } from "../kit/PageHeader";
 import { useReveal } from "../kit/use-reveal";
 import { usePermissions } from "../use-permissions";
 import { BrandForm } from "./BrandForm";
 import { filterBrands } from "./brand-rules";
 import { fetchBrands, type Brand } from "./brands-api";
-
-const button = "inline-flex h-11 items-center whitespace-nowrap rounded-control px-4 text-sm font-bold";
 
 /** ADM-Brands: the brand list (with a search) on the start side and the edit / create panel on the end side. */
 export function Brands() {
@@ -38,15 +38,13 @@ export function Brands() {
       <PageHeader
         title={t("title")}
         actions={canManage ? (
-          <button type="button" onClick={() => { setCreating(true); setSelectedId(null); }} className={`${button} bg-carbon text-on-carbon`}>
-            {t("new")}
-          </button>
+          <Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); setSelectedId(null); }}>{t("new")}</Button>
         ) : null}
       />
       {state.status === "error" ? (
         <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
           <p className="m-0 font-bold">{t("failed")}</p>
-          <button type="button" onClick={reload} className={`${button} bg-carbon text-on-carbon`}>{t("retry")}</button>
+          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">

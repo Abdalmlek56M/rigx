@@ -81,7 +81,7 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
     <div className="overflow-x-auto rounded-card border border-line bg-surface max-md:overflow-visible max-md:border-0 max-md:bg-transparent">
       <table aria-label={label} aria-busy={state.status === "loading"} className={`w-full border-collapse text-sm max-md:block ${fixed ? "table-fixed" : ""}`}>
         {fixed ? <colgroup>{columns.map((column) => <col key={column.key} style={column.width ? { width: column.width } : undefined} />)}</colgroup> : null}
-        <thead className="bg-paper text-[13px] text-ink-muted max-md:hidden">
+        <thead className="border-b border-line bg-paper text-[13px] text-ink max-md:hidden">
           <tr>
             {columns.map((column) => (
               <th key={column.key} scope="col" aria-sort={column.sortKey ? ariaSort(sort, column.sortKey) : undefined} className={`whitespace-nowrap px-3 py-2.5 font-bold ${cellAlign(column)}`}>

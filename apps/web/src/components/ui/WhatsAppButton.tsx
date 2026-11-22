@@ -10,6 +10,8 @@ interface WhatsAppButtonProps {
   size?: ButtonSize;
   variant?: "solid" | "outline";
   className?: string;
+  /** Not available yet (an empty build): the link is switched off and reads as a disabled button. */
+  disabled?: boolean;
   onClick?: () => void;
 }
 
@@ -17,7 +19,7 @@ interface WhatsAppButtonProps {
  * The one WhatsApp action style: green for "order on WhatsApp", an outline for a quiet question. Always opens a new tab;
  * the shared look is what makes the green read as WhatsApp rather than a second brand colour.
  */
-export function WhatsAppButton({ href, children, label, size = "md", variant = "solid", className, onClick }: WhatsAppButtonProps) {
+export function WhatsAppButton({ href, children, label, size = "md", variant = "solid", className, disabled = false, onClick }: WhatsAppButtonProps) {
   const iconOnly = children === undefined;
   const tone = variant === "solid"
     ? "bg-whatsapp text-white hover:brightness-105"
@@ -26,7 +28,8 @@ export function WhatsAppButton({ href, children, label, size = "md", variant = "
   const base = buttonClass({ variant: variant === "solid" ? "ghost" : "secondary", size, iconOnly });
   return (
     <a
-      href={href}
+      href={disabled ? undefined : href}
+      aria-disabled={disabled || undefined}
       target="_blank"
       rel="noreferrer"
       aria-label={iconOnly ? label : undefined}

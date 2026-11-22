@@ -54,7 +54,7 @@ export function EmailStep({ initialEmail, busy, error, onSubmit, onGoogle }: Ema
         onChange={setEmail}
         error={invalid ? t("invalid") : null}
       />
-      {error ? <p role="alert" className="m-0 text-sm font-bold text-error">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{error}</p> : null}
       <Button type="submit" variant="accent" loading={busy} className="w-full">
         {busy ? t("sending") : t("send")}
       </Button>

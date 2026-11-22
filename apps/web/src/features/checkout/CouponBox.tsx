@@ -85,8 +85,8 @@ export function CouponBox({ orderTotal, phone, applied, problem, onApplied, onRe
           {checking ? t("checking") : t("apply")}
         </Button>
       </div>
-      {problem ? <p role="alert" className="m-0 text-xs text-error">{problemText(problem)}</p> : null}
-      {failed ? <p role="alert" className="m-0 text-xs text-error">{t("failed")}</p> : null}
+      {problem ? <p role="alert" className="m-0 text-xs text-error-text">{problemText(problem)}</p> : null}
+      {failed ? <p role="alert" className="m-0 text-xs text-error-text">{t("failed")}</p> : null}
     </div>
   );
 }

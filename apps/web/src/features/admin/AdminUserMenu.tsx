@@ -174,7 +174,7 @@ export function AdminUserMenu({ user, onSignOut, onNavigate }: AdminUserMenuProp
               close(false);
               onSignOut();
             }}
-            className={`${ITEM} text-error hover:bg-error/10`}
+            className={`${ITEM} text-error-text hover:bg-error/10`}
           >
             <LogoutIcon size={18} /> {t("menu.signOut")}
           </button>

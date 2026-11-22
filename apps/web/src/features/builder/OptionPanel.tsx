@@ -65,7 +65,7 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
         className={fieldClass}
       />
       {failed ? (
-        <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p>
+        <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p>
       ) : groups.length === 0 && !loading ? (
         <p role="status" className="m-0 py-6 text-center text-ink-muted">{t("empty")}</p>
       ) : (

@@ -63,7 +63,7 @@ export function RatingForm({ token, canRate, score }: { token: string; canRate: 
         name="comment" aria-label={t("comment")} placeholder={t("comment")} rows={3} value={comment} onChange={(event) => setComment(event.target.value)}
         className={textAreaClass}
       />
-      {failed ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+      {failed ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
       <Button type="submit" variant="primary" loading={busy} disabled={chosen === null} className="self-start">{t("submit")}</Button>
     </form>
   );

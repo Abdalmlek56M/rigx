@@ -24,7 +24,7 @@ function FeaturedItems({ stock, onPick }: { stock: CategoryStock | null | undefi
 
   return (
     <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
-      <h3 className="m-0 text-xs font-bold text-ink-muted">{t("megaLatest")}</h3>
+      <h3 className="m-0 type-label font-bold">{t("megaLatest")}</h3>
       <ul className="m-0 grid list-none grid-cols-3 gap-2 p-0">
         {stock === undefined
           ? [0, 1, 2].map((index) => <li key={index} aria-hidden="true" className="h-[132px] animate-pulse rounded-control bg-paper" />)
@@ -140,7 +140,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
             </ul>
             <div key={active.slug} className="mega-pane flex min-w-0 flex-col gap-3 py-1">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="m-0 text-lg font-bold">{localizedName(active, locale)}</h2>
+                <h2 className="m-0 type-section-title">{localizedName(active, locale)}</h2>
                 <Link href={categoryHref(active.slug)} onClick={close} className="press inline-flex min-h-9 items-center gap-1.5 rounded-full border border-input-line px-3.5 text-[13px] font-bold transition-colors hover:border-orange hover:text-orange-text">
                   {t("seeAll", { name: localizedName(active, locale) })}
                   <span aria-hidden="true" className="flex ltr:-scale-x-100"><ChevronStartIcon size={16} /></span>

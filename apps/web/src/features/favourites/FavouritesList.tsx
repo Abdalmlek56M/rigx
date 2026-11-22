@@ -49,7 +49,7 @@ export function FavouritesList() {
               ) : null}
               {builds.length > 0 ? (
                 <div className="flex flex-col gap-3">
-                  {items.length > 0 ? <h2 className="m-0 text-lg font-bold">{t("buildsTitle")}</h2> : null}
+                  {items.length > 0 ? <h2 className="m-0 type-section-title">{t("buildsTitle")}</h2> : null}
                   <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 xl:grid-cols-2">
                     {builds.map((build) => (
                       <li key={build.code} className="flex">

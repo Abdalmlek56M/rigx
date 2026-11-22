@@ -20,7 +20,7 @@ function Summary({ offer }: { offer: Offer }) {
   const locale = useLocale();
   return (
     <div className="flex flex-col gap-3 text-sm">
-      <p className="m-0 text-xs font-bold text-error">{t("cancelledNote")}</p>
+      <p className="m-0 text-xs font-bold text-error-text">{t("cancelledNote")}</p>
       <dl className="m-0 grid gap-2 sm:grid-cols-2">
         <div><dt className="text-xs text-ink-muted">{t("fields.titleAr")}</dt><dd className="m-0 font-bold">{offer.titleAr}</dd></div>
         <div><dt className="text-xs text-ink-muted">{t("fields.titleEn")}</dt><dd className="m-0 font-bold">{offer.titleEn}</dd></div>

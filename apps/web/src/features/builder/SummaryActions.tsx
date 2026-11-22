@@ -62,7 +62,7 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
           <WhatsAppButton
             href={whatsAppUrl(whatsApp.number, message)}
             variant="outline"
-            className={hasParts ? "" : "pointer-events-none opacity-50"}
+            disabled={!hasParts}
           >
             {t("whatsApp")}
           </WhatsAppButton>

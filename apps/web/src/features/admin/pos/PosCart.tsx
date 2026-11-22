@@ -35,7 +35,7 @@ function SalePrice({ label, value, below, onChange }: { label: string; value: st
   return (
     <div className="flex flex-col gap-0.5">
       <MoneyInput label={label} value={value} onChange={onChange} invalid={!moneyValid(value)} />
-      {below ? <span className="text-xs font-bold text-error">{t("belowCost")}</span> : null}
+      {below ? <span className="text-xs font-bold text-error-text">{t("belowCost")}</span> : null}
     </div>
   );
 }
@@ -196,7 +196,7 @@ export function PosCart({ cart, below, errors, onChange }: PosCartProps) {
         </div>
       )}
       <p className="m-0 text-[13px] text-ink-muted">{t("note")}</p>
-      {problems.map((message) => <p key={message} role="alert" className="m-0 text-xs text-error">{message}</p>)}
+      {problems.map((message) => <p key={message} role="alert" className="m-0 text-xs text-error-text">{message}</p>)}
     </FormSection>
   );
 }

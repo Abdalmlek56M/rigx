@@ -144,7 +144,7 @@ export function ComboBox({ label, name, value, options, onChange, placeholder, e
           </ul>
         ) : null}
       </div>
-      {error ? <span id={errorId} role="alert" className="text-xs font-normal text-error">{error}</span> : null}
+      {error ? <span id={errorId} role="alert" className="text-xs font-normal text-error-text">{error}</span> : null}
     </div>
   );
 }

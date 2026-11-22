@@ -13,7 +13,7 @@ const ToastContext = createContext<ShowToast | null>(null);
 
 const TONES: Record<ToastTone, { role: "status" | "alert"; icon: typeof CheckIcon; color: string }> = {
   success: { role: "status", icon: CheckIcon, color: "text-success" },
-  error: { role: "alert", icon: AlertIcon, color: "text-error" },
+  error: { role: "alert", icon: AlertIcon, color: "text-error-text" },
   info: { role: "status", icon: InfoIcon, color: "text-orange-text" }
 };
 

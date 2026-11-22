@@ -98,7 +98,7 @@ function Status<T>({ state, reload, isEmpty, children }: StatusProps<T>) {
   if (state.status === "loading") return <p role="status" className="m-0 text-sm text-ink-muted">{t("loading")}</p>;
   if (state.status === "error") {
     return (
-      <p role="alert" className="m-0 flex flex-wrap items-center gap-3 text-sm font-bold text-error">
+      <p role="alert" className="m-0 flex flex-wrap items-center gap-3 text-sm font-bold text-error-text">
         {t("failed")}
         <Button icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
       </p>

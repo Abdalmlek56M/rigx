@@ -62,7 +62,7 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
         </span>
       ) : null}
       {isVoid(invoice.status) ? (
-        <span className="pointer-events-none absolute end-10 top-24 -rotate-12 select-none rounded-lg border-[5px] border-error px-6 py-1 text-5xl font-bold text-error opacity-80 [print-color-adjust:exact]">{t("void")}</span>
+        <span className="pointer-events-none absolute end-10 top-24 -rotate-12 select-none rounded-lg border-[5px] border-error px-6 py-1 text-5xl font-bold text-error-text opacity-80 [print-color-adjust:exact]">{t("void")}</span>
       ) : null}
 
       <header className="grid gap-6 border-b-2 border-ink pb-5 md:grid-cols-2 md:items-start">

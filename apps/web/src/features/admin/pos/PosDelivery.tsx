@@ -41,7 +41,7 @@ export function PosDelivery({ form, set, errors, governorates, leadSources }: Po
         </div>
         {form.fulfillment === "Delivery" ? (
           <>
-            {governorates.length === 0 ? <p role="status" className="m-0 text-sm font-bold text-error">{t("noRates")}</p> : null}
+            {governorates.length === 0 ? <p role="status" className="m-0 text-sm font-bold text-error-text">{t("noRates")}</p> : null}
             <div className="grid gap-3.5 sm:grid-cols-2">
               <SelectField
                 label={address("governorate")} name="governorate" value={form.governorate} onChange={(value) => set("governorate", value)} error={error("governorate")}

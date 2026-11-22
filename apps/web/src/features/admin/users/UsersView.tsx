@@ -47,7 +47,7 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
     },
     {
       key: "active", header: t("columns.status"), width: "10%", cell: (user) => (
-        <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-line text-ink" : "bg-error/10 text-error"}`}>
+        <span className={`inline-block whitespace-nowrap rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-line text-ink" : "bg-error/10 text-error-text"}`}>
           {user.isActive ? t("status.active") : t("status.inactive")}
         </span>
       )

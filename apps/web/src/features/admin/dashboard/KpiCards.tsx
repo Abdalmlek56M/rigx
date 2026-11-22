@@ -19,7 +19,7 @@ function Change({ value }: { value: number | null }) {
   const t = useTranslations("admin.dashboard.kpi");
   const direction = changeDirection(value);
   if (direction === null || value === null) return <>{t("noComparison")}</>;
-  const tone = direction === "up" ? "text-success" : direction === "down" ? "text-error" : "";
+  const tone = direction === "up" ? "text-success" : direction === "down" ? "text-error-text" : "";
   const arrow = direction === "up" ? "▲" : direction === "down" ? "▼" : "•";
   return <span className={tone}>{t("change", { arrow, percent: Math.abs(value) })}</span>;
 }

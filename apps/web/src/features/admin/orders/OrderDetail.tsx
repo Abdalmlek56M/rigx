@@ -131,7 +131,7 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-4">
-          {order.isBlacklisted ? <p role="status" className="m-0 rounded-control border border-error px-3 py-2 text-sm font-bold text-error">{t("detail.blacklistWarning")}</p> : null}
+          {order.isBlacklisted ? <p role="status" className="m-0 rounded-control border border-error px-3 py-2 text-sm font-bold text-error-text">{t("detail.blacklistWarning")}</p> : null}
           {order.reservationExpiredAtUtc ? <p role="status" className="m-0 rounded-control border border-orange px-3 py-2 text-sm font-bold text-orange-text">{t("detail.reservationExpired")}</p> : null}
           <OrderItems order={order} />
           <OrderUnits units={state.data.units} />

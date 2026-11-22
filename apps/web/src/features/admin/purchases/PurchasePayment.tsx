@@ -61,7 +61,7 @@ export function PurchasePayment({ form, errors, missing, submitted, onChange }: 
       {hasTradeIn(form.paymentMethod) ? (
         <TextAreaField label={t("tradeInNote")} name="tradeInNote" value={form.tradeInNote} onChange={(tradeInNote) => set({ tradeInNote })} rows={2} maxLength={500} hint={t("tradeInHint")} error={errorFor("tradeInNote")} />
       ) : null}
-      {isOverpaid(form) ? <p role="alert" className="m-0 text-sm font-bold text-error">{t("overpaid")}</p> : null}
+      {isOverpaid(form) ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{t("overpaid")}</p> : null}
       <TextAreaField label={t("notes")} name="notes" value={form.notes} onChange={(notes) => set({ notes })} rows={2} maxLength={2000} error={errors.notes} />
     </section>
   );

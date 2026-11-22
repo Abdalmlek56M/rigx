@@ -37,7 +37,7 @@ export function BuildsList() {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="sr-only">{t("title")}</h2>
-      {failed ? <p role="alert" className="m-0 text-sm text-error">{t("deleteFailed")}</p> : null}
+      {failed ? <p role="alert" className="m-0 text-sm text-error-text">{t("deleteFailed")}</p> : null}
       <LoadBoundary state={state} reload={reload}>
         {(builds) =>
           builds.length === 0 ? (

@@ -5,7 +5,7 @@ export function SectionCard({ title, hint, children, danger = false }: { title: 
   return (
     <section className={`flex min-w-0 flex-col gap-3 rounded-card border bg-surface p-5 ${danger ? "border-error/40" : "border-line"}`}>
       <div className="flex flex-col gap-1">
-        <h2 className={`m-0 text-lg font-bold ${danger ? "text-error" : ""}`}>{title}</h2>
+        <h2 className={`m-0 text-lg font-bold ${danger ? "text-error-text" : ""}`}>{title}</h2>
         {hint ? <p className="m-0 text-sm text-ink-muted">{hint}</p> : null}
       </div>
       {children}

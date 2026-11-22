@@ -52,7 +52,7 @@ export function AddressFormView({ initial, governorates, busy, failed, onSubmit,
         <input type="checkbox" checked={form.isDefault} onChange={(event) => set("isDefault", event.target.checked)} className="h-[18px] w-[18px] accent-orange" />
         {t("makeDefault")}
       </label>
-      {failed ? <p role="alert" className="m-0 text-sm text-error">{t("saveFailed")}</p> : null}
+      {failed ? <p role="alert" className="m-0 text-sm text-error-text">{t("saveFailed")}</p> : null}
       <div className="flex flex-wrap gap-3">
         <Button type="submit" variant="accent" loading={busy}>{t("save")}</Button>
         <Button type="button" variant="secondary" onClick={onCancel}>{t("cancel")}</Button>

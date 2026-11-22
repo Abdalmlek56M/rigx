@@ -29,7 +29,7 @@ function Toggle({ initial }: { initial: boolean }) {
         <input type="checkbox" checked={enabled} onChange={(event) => void change(event.target.checked)} className="h-[18px] w-[18px] accent-carbon" />
         {t("label")}
       </label>
-      {failed ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+      {failed ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
     </>
   );
 }

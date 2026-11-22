@@ -61,7 +61,7 @@ export function AvatarEditor({ user }: { user: SessionUser }) {
             </Button>
           ) : null}
         </div>
-        {problem ? <p role="alert" className="m-0 text-xs text-error">{t(`errors.${problem}`)}</p> : null}
+        {problem ? <p role="alert" className="m-0 text-xs text-error-text">{t(`errors.${problem}`)}</p> : null}
       </div>
     </div>
   );

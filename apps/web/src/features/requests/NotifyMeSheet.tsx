@@ -110,7 +110,7 @@ export function NotifyMeSheet({ open, onClose, target }: NotifyMeSheetProps) {
             label={t("email")} name="email" type="email" ltr autoComplete="email" placeholder="name@gmail.com"
             value={email} onChange={setEmail} error={errors.email ?? null}
           />
-          {outcome ? <p role="alert" className="text-sm text-error">{t(outcome.status === "invalid" ? "errors.invalid" : "errors.failed")}</p> : null}
+          {outcome ? <p role="alert" className="text-sm text-error-text">{t(outcome.status === "invalid" ? "errors.invalid" : "errors.failed")}</p> : null}
           <Button
             type="submit"
             variant="primary"

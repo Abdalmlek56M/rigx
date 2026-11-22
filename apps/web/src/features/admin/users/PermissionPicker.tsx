@@ -35,7 +35,7 @@ export function PermissionPicker({ codes, selected, onChange }: { codes: readonl
           </fieldset>
         );
       })}
-      {system.length > 0 ? <p role="status" className="m-0 rounded-control bg-error/10 px-3 py-2 text-sm font-bold text-error">{t("systemWarning")}</p> : null}
+      {system.length > 0 ? <p role="status" className="m-0 rounded-control bg-error/10 px-3 py-2 text-sm font-bold text-error-text">{t("systemWarning")}</p> : null}
     </div>
   );
 }

@@ -28,13 +28,13 @@ export function ConfirmButton({ label, icon, onConfirm, busy = false, iconOnly =
         variant="secondary"
         size="sm"
         onClick={() => setAsking(true)}
-        className={`border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error ${className}`}
+        className={`border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error-text ${className}`}
       />
     );
   }
   if (!asking) {
     return (
-      <Button type="button" variant="secondary" size="sm" icon={icon} onClick={() => setAsking(true)} className={`text-error ${className}`}>
+      <Button type="button" variant="secondary" size="sm" icon={icon} onClick={() => setAsking(true)} className={`text-error-text ${className}`}>
         {label}
       </Button>
     );

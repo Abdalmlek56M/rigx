@@ -32,7 +32,7 @@ export function SessionsList() {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="m-0 type-section-title">{t("title")}</h3>
-      {failed ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+      {failed ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
       <LoadBoundary state={state} reload={reload}>
         {(sessions) => (
           <>

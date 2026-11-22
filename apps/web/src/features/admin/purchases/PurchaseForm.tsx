@@ -195,7 +195,7 @@ export function PurchaseForm({ purchase, today, lookups, onUpdated, onReceived, 
       {purchase ? <SellerPaymentCard purchase={purchase} onUpdated={onUpdated} onStale={onStale} /> : null}
       <FormMessage message={submit.errors.general ?? error("lines") ?? error("sellerId") ?? null} />
       {submitted && missing.length > 0 ? (
-        <p role="alert" className="m-0 rounded-control bg-paper px-3 py-2 text-sm font-bold text-error">
+        <p role="alert" className="m-0 rounded-control bg-paper px-3 py-2 text-sm font-bold text-error-text">
           {t("missing.summary", { items })}
         </p>
       ) : null}

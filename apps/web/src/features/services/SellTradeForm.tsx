@@ -83,7 +83,7 @@ export function SellTradeForm() {
       <Card padding="lg" className="flex-1 basis-[480px] gap-3">
         <StatusBadge tone="success" icon={CheckIcon}>{t("sentTitle")}</StatusBadge>
         <p className="m-0 text-sm leading-7">{t("sent")}</p>
-        {result.photosFailed > 0 ? <p className="m-0 text-sm leading-7 text-error">{t("photosFailed", { count: result.photosFailed })}</p> : null}
+        {result.photosFailed > 0 ? <p className="m-0 text-sm leading-7 text-error-text">{t("photosFailed", { count: result.photosFailed })}</p> : null}
       </Card>
     );
   }
@@ -127,7 +127,7 @@ export function SellTradeForm() {
           {t("photosDrop", { max: MAX_PHOTOS })}
         </label>
         <input id="sell-photos" type="file" multiple accept={PHOTO_TYPES.join(",")} onChange={choosePhotos} className="sr-only" />
-        {photoProblem ? <span role="alert" className="text-xs text-error">{t(`photoProblems.${photoProblem}`, { max: MAX_PHOTOS })}</span> : null}
+        {photoProblem ? <span role="alert" className="text-xs text-error-text">{t(`photoProblems.${photoProblem}`, { max: MAX_PHOTOS })}</span> : null}
         {photos.length > 0 ? (
           <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
             {photos.map((photo, index) => (
@@ -151,7 +151,7 @@ export function SellTradeForm() {
         value={phone} onChange={setPhone} error={errors.phone ?? null}
       />
       {result ? (
-        <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{t(result.outcome.status === "invalid" ? "errors.invalid" : "errors.failed")}</p>
+        <p role="alert" className="m-0 text-sm text-error-text sm:col-span-2">{t(result.outcome.status === "invalid" ? "errors.invalid" : "errors.failed")}</p>
       ) : null}
       <Button type="submit" variant="accent" loading={busy} className="w-full sm:col-span-2">{t("submit")}</Button>
     </form>

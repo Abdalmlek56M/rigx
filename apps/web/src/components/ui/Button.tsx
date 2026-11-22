@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
  * - `secondary`: other actions (outlined).
  * - `ghost`: quiet actions inside rows and toolbars.
  * - `danger`: deletes, cancellations and other destructive actions.
+ * A disabled button turns flat grey (`.btn-off` in globals.css), whatever its variant; the rules are in docs/design/storefront-kit.md.
  *
  * Use `IconButton` when the action is clear from its icon (it requires a `label`), and `ButtonLink` for a link that
  * looks like a button. Words stay for the one main action of a screen; everything else can be an icon with a tip.
@@ -20,14 +21,14 @@ const BASE =
   "press inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control font-bold select-none max-sm:min-h-11 " +
   "[transition:background-color_150ms_ease,border-color_150ms_ease,color_150ms_ease,box-shadow_150ms_ease,transform_110ms_var(--ease-out)] " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange " +
-  "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50";
+  "disabled:cursor-not-allowed aria-disabled:pointer-events-none";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "surface-strong hover:brightness-110 disabled:hover:brightness-100",
-  accent: "accent-strong hover:brightness-105 disabled:hover:brightness-100",
-  secondary: "border border-input-line bg-surface text-ink hover:border-ink-muted hover:bg-paper",
-  ghost: "text-ink-muted hover:bg-line hover:text-ink",
-  danger: "bg-error text-white hover:bg-error-hover"
+  primary: "btn-off surface-strong hover:brightness-110",
+  accent: "btn-off accent-strong hover:brightness-105",
+  secondary: "btn-off border border-input-line bg-surface text-ink hover:border-ink-muted hover:bg-paper",
+  ghost: "btn-off-quiet text-ink-muted hover:bg-line hover:text-ink",
+  danger: "btn-off bg-error text-white hover:bg-error-hover"
 };
 
 const SIZES: Record<ButtonSize, { label: string; square: string; icon: number }> = {

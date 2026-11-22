@@ -49,7 +49,7 @@ export function OrderStatusActions(props: OrderActionProps) {
           <Button type="submit" variant="primary" icon={ArrowEndIcon} loading={submit.busy} disabled={block !== null}>
             {t(`next.${forward}`)}
           </Button>
-          {block ? <p className="m-0 text-xs text-error">{t(`blocks.${block}`, { amount: formatEgp(order.upfrontDue, locale) })}</p> : null}
+          {block ? <p className="m-0 text-xs text-error-text">{t(`blocks.${block}`, { amount: formatEgp(order.upfrontDue, locale) })}</p> : null}
         </form>
       ) : null}
       {complete ? (
@@ -60,7 +60,7 @@ export function OrderStatusActions(props: OrderActionProps) {
           >
             {t("complete.button")}
           </Button>
-          {completeReason ? <p className="m-0 text-xs text-error">{t(`complete.blocks.${completeReason}`)}</p> : null}
+          {completeReason ? <p className="m-0 text-xs text-error-text">{t(`complete.blocks.${completeReason}`)}</p> : null}
         </div>
       ) : null}
       <FormMessage message={submit.errors.general} />

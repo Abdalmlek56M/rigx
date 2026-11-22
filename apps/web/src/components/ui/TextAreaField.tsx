@@ -38,7 +38,7 @@ export function TextAreaField({ label, name, value, onChange, rows = 3, placehol
         className={textAreaClass}
       />
       {hint && !error ? <span id={hintId} className="text-xs font-normal text-ink-muted">{hint}</span> : null}
-      {error ? <span id={errorId} role="alert" className="text-xs font-normal text-error">{error}</span> : null}
+      {error ? <span id={errorId} role="alert" className="text-xs font-normal text-error-text">{error}</span> : null}
     </label>
   );
 }

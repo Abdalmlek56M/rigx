@@ -62,7 +62,7 @@ export function CodeStep({ email, resendAfterSeconds, sentAt, busy, error, codeD
           className={`${fieldClass} h-[60px] text-center font-mono text-2xl font-medium tracking-[0.5em] ${error ? "border-2 border-error" : ""}`}
         />
       </label>
-      {error ? <p role="alert" className="m-0 text-sm font-bold text-error">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{error}</p> : null}
       <Button type="submit" variant="accent" loading={busy} disabled={code.length < 6 || codeDead} className="w-full">
         {busy ? t("submitting") : t("submit")}
       </Button>

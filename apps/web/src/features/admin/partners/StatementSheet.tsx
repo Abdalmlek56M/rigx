@@ -53,7 +53,7 @@ export function StatementSheet({ statement }: { statement: Statement }) {
                     <td className="whitespace-nowrap px-2 py-2 text-xs">{formatDate(line.at, locale)}</td>
                     <td className="whitespace-nowrap px-2 py-2">{t(`kinds.${statementKindKey(line.kind)}`)}</td>
                     <td className="px-2 py-2">{detail ? <span dir="auto" className="[unicode-bidi:isolate]">{detail}</span> : <span className="text-ink-muted">{t("none")}</span>}</td>
-                    <td className={`px-2 py-2 text-end font-bold ${line.amount < 0 ? "text-error" : ""}`}>{money(line.amount)}</td>
+                    <td className={`px-2 py-2 text-end font-bold ${line.amount < 0 ? "text-error-text" : ""}`}>{money(line.amount)}</td>
                   </tr>
                 );
               })

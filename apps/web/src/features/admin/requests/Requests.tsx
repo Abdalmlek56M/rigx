@@ -6,6 +6,7 @@ import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
+import { NameCell } from "../kit/NameCell";
 import { PageHeader } from "../kit/PageHeader";
 import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
@@ -52,12 +53,7 @@ export function Requests() {
     {
       key: "customer",
       header: t("columns.customer"),
-      cell: (row) => (
-        <span className="flex flex-col gap-0.5">
-          <span>{row.name}</span>
-          <span dir="ltr" className="font-mono text-xs text-ink-muted">{row.phone}</span>
-        </span>
-      )
+      cell: (row) => <NameCell name={row.name} detail={row.phone} />
     },
     { key: "type", header: t("columns.type"), cell: (row) => <RequestTypeBadge type={row.type} /> },
     { key: "status", header: t("columns.status"), cell: (row) => <RequestStatusBadge status={row.status} /> },

@@ -62,7 +62,7 @@ Order matters: we restructure before adding features, so new features land in cl
 
 11. **Owner review round 5** (22 Nov 2026, planned; details, verdicts on the AI-suggested ideas and decisions in `docs/checkpoints/4.11-owner-round-5.md`). One session each, in order:
    - [x] **A** defects and the front door (done 22 Nov 2026, see checkpoint 4.11) (governorates, language/services buttons, top strip, filters, category cards, login, copy, sign-out confirm, stock dot)
-   - [ ] **B** design system v2 (buttons, headings, tables, states; English pass of cart/checkout/account)
+   - [x] **B** design system v2 (done 22 Nov 2026, see checkpoint 4.11 and `docs/design/storefront-kit.md`) (buttons, headings, tables, states; English pass of cart/checkout/account)
    - [ ] **C** motion and atmosphere (CSS motion, warranty bar, dark-theme glow + circuit canvas)
    - [ ] **D** builder and shared builds (blueprint, power bar, visibility, hearts, gallery, PNG)
    - [ ] **E** customers (complaints + suggestions, history, invoice/quote, notifications, emails)

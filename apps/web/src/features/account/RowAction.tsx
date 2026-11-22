@@ -10,7 +10,7 @@ interface RowActionProps {
   danger?: boolean;
 }
 
-const DANGER = "border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error";
+const DANGER = "border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error-text";
 
 /** An icon-only action on a row (view, invoice, edit, set default); the label is its name and tip. */
 export function RowLink({ href, label, icon, danger = false, external = false }: RowActionProps & { href: string; external?: boolean }) {

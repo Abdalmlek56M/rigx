@@ -60,7 +60,7 @@ export function InviteUserDialog({ roles, onClose, onCreated }: { roles: readonl
         <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
           <legend className="mb-1.5 p-0 text-[13px] font-bold">{t("roles")}</legend>
           <RoleCheckboxes roles={roles} selected={roleIds} onChange={setRoleIds} />
-          {submit.errors.fields.roleIds ? <p role="alert" className="m-0 text-xs font-bold text-error">{submit.errors.fields.roleIds}</p> : null}
+          {submit.errors.fields.roleIds ? <p role="alert" className="m-0 text-xs font-bold text-error-text">{submit.errors.fields.roleIds}</p> : null}
         </fieldset>
         <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
         <FormMessage message={formMessage(submit.errors, SHOWN)} />

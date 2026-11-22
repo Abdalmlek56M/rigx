@@ -22,7 +22,7 @@ interface PosPaymentsProps {
 const METHOD_ICON: Record<StorePaymentMethod, string> = { Cash: "💵", InstaPay: "⚡", Wallet: "📱", BankTransfer: "🏦" };
 
 function Line({ icon, label, children, tone }: { icon: string; label: string; children: ReactNode; tone?: "due" | "done" | "error" }) {
-  const color = tone === "due" ? "text-orange" : tone === "done" ? "text-success" : tone === "error" ? "text-error" : "";
+  const color = tone === "due" ? "text-orange" : tone === "done" ? "text-success" : tone === "error" ? "text-error-text" : "";
   return (
     <div className="flex min-h-11 items-center justify-between gap-3">
       <dt className="flex items-center gap-2 text-sm text-ink-muted"><span aria-hidden className="text-base">{icon}</span>{label}</dt>
@@ -85,7 +85,7 @@ export function PosPayments({ form, set, errors, total }: PosPaymentsProps) {
         {state.kind === "settled" ? <Line icon="🎉" label={t("remaining")} tone="done">{t("settled")}</Line> : null}
         {state.kind === "over" ? <Line icon="⚠️" label={t("over")} tone="error">{egp(state.amount)}</Line> : null}
       </dl>
-      {problems.map((message) => <p key={message} role="alert" className="m-0 text-xs text-error">{message}</p>)}
+      {problems.map((message) => <p key={message} role="alert" className="m-0 text-xs text-error-text">{message}</p>)}
     </FormSection>
   );
 }

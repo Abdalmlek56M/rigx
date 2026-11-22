@@ -58,7 +58,7 @@ export function TextField({ label, labelEnd, name, value, onChange, type = "text
         className={`${fieldClass}${ltr ? " text-start" : ""}`}
       />
       {error ? (
-        <span id={errorId} role="alert" className="text-xs font-normal text-error">
+        <span id={errorId} role="alert" className="text-xs font-normal text-error-text">
           {error}
         </span>
       ) : null}

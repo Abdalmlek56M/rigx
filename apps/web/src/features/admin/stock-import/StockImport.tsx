@@ -83,7 +83,7 @@ export function StockImport() {
                         <td className="px-3 py-2.5">{row.itemsToCreate}</td>
                         <td className="px-3 py-2.5">
                           {rowHasErrors(row) ? (
-                            <ul className="m-0 flex list-none flex-col gap-0.5 p-0 font-bold text-error">
+                            <ul className="m-0 flex list-none flex-col gap-0.5 p-0 font-bold text-error-text">
                               {row.errors.map((error) => <li key={error}>{error}</li>)}
                             </ul>
                           ) : t("none")}

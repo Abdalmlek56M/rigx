@@ -49,7 +49,7 @@ export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { ca
           </label>
         ))}
       </fieldset>
-      <p role="status" className={`m-0 text-sm font-bold ${valid ? "" : "text-error"}`}>
+      <p role="status" className={`m-0 text-sm font-bold ${valid ? "" : "text-error-text"}`}>
         {t("sum", { sum: allocationSum(form) })}
         {difference === 0 ? null : ` · ${t(difference > 0 ? "missing" : "over", { amount: Math.abs(difference) })}`}
       </p>

@@ -36,7 +36,7 @@ export function SelectField<T extends string>({ label, labelEnd, name, value, on
         ))}
       </select>
       {error ? (
-        <span id={errorId} role="alert" className="text-xs font-normal text-error">
+        <span id={errorId} role="alert" className="text-xs font-normal text-error-text">
           {error}
         </span>
       ) : null}

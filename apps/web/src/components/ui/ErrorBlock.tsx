@@ -15,7 +15,7 @@ export function ErrorBlock({ message, onRetry, retryLabel, className }: ErrorBlo
   return (
     <Card className={`items-start gap-3 ${className ?? ""}`} padding="md">
       <div role="alert" className="flex items-start gap-3">
-        <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-error/10 text-error">
+        <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-error/10 text-error-text">
           <AlertIcon size={18} />
         </span>
         <p className="m-0 text-sm font-bold leading-6">{message}</p>

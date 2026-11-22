@@ -66,15 +66,12 @@ export function StepUpCode({ onConfirm, onCancel }: StepUpCodeProps) {
         <TextField label={t("code")} name="stepUpCode" ltr value={code} onChange={(value) => setCode(normalizeCode(value))} autoComplete="one-time-code" />
       ) : null}
       {sent ? (
-        <button
-          type="button" disabled={busy || secondsLeft > 0} onClick={() => void send(true)}
-          className="self-start text-sm font-bold text-orange-text underline disabled:cursor-not-allowed disabled:text-ink-muted disabled:no-underline"
-        >
+        <Button variant="ghost" size="sm" disabled={busy || secondsLeft > 0} onClick={() => void send(true)} className="self-start">
           {secondsLeft > 0 ? t("resendIn", { seconds: secondsLeft }) : t("resend")}
-        </button>
+        </Button>
       ) : null}
       {resent ? <p role="status" className="m-0 text-sm font-bold text-success">{t("resent")}</p> : null}
-      {problem ? <p role="alert" className="m-0 text-sm text-error">{t(`errors.${problem}`)}</p> : null}
+      {problem ? <p role="alert" className="m-0 text-sm text-error-text">{t(`errors.${problem}`)}</p> : null}
       <div className="flex flex-wrap gap-3">
         {sent ? (
           <Button type="button" variant="accent" loading={busy} disabled={code.length !== 6} onClick={() => void confirm()}>{t("confirm")}</Button>

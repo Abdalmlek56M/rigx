@@ -108,7 +108,7 @@ export function QuickView({ item }: { item: Schemas["StoreItemCard"] }) {
                 <Skeleton className="h-10 w-full" />
               </div>
             ) : null}
-            {load.status === "failed" ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+            {load.status === "failed" ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
             {data ? (
               <InfoGrid columns={2} className="gap-y-3">
                 {data.brand ? <InfoField label={t("brand")} value={data.brand} /> : null}

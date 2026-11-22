@@ -38,7 +38,7 @@ export function ViewAsDialog({ id, onClose }: { id: string; onClose: () => void 
     <Dialog open onClose={onClose} title={t("viewAsTitle")}>
       <p className="m-0 text-xs text-ink-muted">{t("viewAsNote")}</p>
       {state.status === "loading" ? <p className="m-0 text-sm">{t("loading")}</p> : null}
-      {state.status === "error" ? <p role="alert" className="m-0 text-sm font-bold text-error">{t("failed")}</p> : null}
+      {state.status === "error" ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{t("failed")}</p> : null}
       {state.status === "ready" ? (
         <div className="flex max-h-[65vh] flex-col gap-4 overflow-y-auto pe-1">
           <Section title={sections("profile")}>

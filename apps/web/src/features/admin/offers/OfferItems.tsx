@@ -44,7 +44,7 @@ export function OfferItems({ items, products, onChange, onReload }: {
       key: "discount", header: t("discount"), align: "end",
       cell: (item) => {
         const value = Number(item.offerPrice);
-        if (!Number.isFinite(value) || value <= 0 || value >= item.basePrice) return <span className="text-xs font-bold text-error">{t("invalid")}</span>;
+        if (!Number.isFinite(value) || value <= 0 || value >= item.basePrice) return <span className="text-xs font-bold text-error-text">{t("invalid")}</span>;
         return <span className="whitespace-nowrap font-bold">{itemDiscount(item.basePrice, value)}%</span>;
       }
     },

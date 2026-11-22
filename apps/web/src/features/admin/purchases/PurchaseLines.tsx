@@ -84,7 +84,7 @@ export function PurchaseLines({ lines, minLines, tree, brands, partners, warrant
           />
         ))}
       </ul>
-      {lines.length < minLines ? <p role="status" className="m-0 text-sm font-bold text-error">{t("needMore", { count: minLines })}</p> : null}
+      {lines.length < minLines ? <p role="status" className="m-0 text-sm font-bold text-error-text">{t("needMore", { count: minLines })}</p> : null}
       <Button icon={PlusIcon} className="self-start" onClick={add}>{t("add")}</Button>
       <p className="m-0 text-xs text-ink-muted">{t("modelHint")}</p>
     </section>

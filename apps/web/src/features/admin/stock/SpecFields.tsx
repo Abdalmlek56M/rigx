@@ -72,7 +72,7 @@ export function SpecFields({ categoryId, values, onChange, namePrefix, error }: 
           <span dir="auto" className="[unicode-bidi:isolate]">{dropped.map(([key, value]) => `${key}: ${value}`).join(" · ")}</span>
         </p>
       ) : null}
-      {error ? <p role="alert" className="m-0 text-sm font-bold text-error">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{error}</p> : null}
     </fieldset>
   );
 }

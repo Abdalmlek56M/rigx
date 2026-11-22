@@ -76,7 +76,7 @@ export function PoliciesScreen() {
                         <span className="text-xs text-ink-muted">
                           {t("publishedInfo", { version: info.published.versionNumber, date: formatDateTimeFull(info.published.publishedAtUtc ?? info.published.updatedAtUtc, locale) })}
                         </span>
-                      ) : <span className="text-xs text-error">{t("notPublished")}</span>}
+                      ) : <span className="text-xs text-error-text">{t("notPublished")}</span>}
                       {info.draft ? <span className="text-xs font-bold text-orange-text">{t("draftWaiting", { version: info.draft.versionNumber })}</span> : null}
                     </button>
                   </li>

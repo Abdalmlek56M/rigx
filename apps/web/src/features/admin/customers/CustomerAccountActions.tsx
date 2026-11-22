@@ -109,7 +109,7 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
           </Button>
         </>
       ) : null}
-      {profile.sales.blacklisted && canViewBlacklist ? <p className="m-0 rounded-control bg-error/10 px-3 py-2 text-sm font-bold text-error">{t("blacklistState")}</p> : null}
+      {profile.sales.blacklisted && canViewBlacklist ? <p className="m-0 rounded-control bg-error/10 px-3 py-2 text-sm font-bold text-error-text">{t("blacklistState")}</p> : null}
       {canApprove && !profile.sales.blacklisted ? (
         <Button variant="danger" icon={BanIcon} className="w-full" onClick={() => setAdding(true)}>
           {t("blacklist")}

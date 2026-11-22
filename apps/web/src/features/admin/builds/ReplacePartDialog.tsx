@@ -90,7 +90,7 @@ export function ReplacePartDialog({ part, tree, onClose, ...action }: BuildActio
           </ul>
         </div>
       ) : others.state.status === "error" ? (
-        <p role="alert" className="m-0 text-sm font-bold text-error">{t("loadFailed")}</p>
+        <p role="alert" className="m-0 text-sm font-bold text-error-text">{t("loadFailed")}</p>
       ) : (
         <div role="status" aria-label={t("loading")} className="h-11 animate-pulse rounded-control bg-line" />
       )}

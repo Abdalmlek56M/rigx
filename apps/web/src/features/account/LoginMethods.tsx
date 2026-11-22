@@ -53,7 +53,7 @@ export function LoginMethods() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="m-0 text-base font-bold">{t("title")}</h3>
+      <h3 className="m-0 type-section-title">{t("title")}</h3>
       <LoadBoundary state={state} reload={reload}>
         {(methods) => (
           <>
@@ -66,7 +66,7 @@ export function LoginMethods() {
                 action={methods.googleEmail ? <ConfirmButton iconOnly label={t("unlink")} icon={UnlinkIcon} onConfirm={() => void unlink()} /> : undefined}
               />
             </ul>
-            {failed ? <p role="alert" className="m-0 text-sm text-error">{t("unlinkFailed")}</p> : null}
+            {failed ? <p role="alert" className="m-0 text-sm text-error-text">{t("unlinkFailed")}</p> : null}
             {!methods.googleEmail && pendingToken === null ? <GoogleButton onCredential={onCredential} /> : null}
             {pendingToken !== null ? <StepUpCode onConfirm={link} onCancel={() => setPendingToken(null)} /> : null}
           </>

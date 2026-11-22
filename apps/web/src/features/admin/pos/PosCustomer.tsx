@@ -88,7 +88,7 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
       <div className="flex flex-col gap-2">
         <SearchBox key={searchKey} label={t("search")} value="" onChange={find} />
         {search.status === "busy" ? <p role="status" className="m-0 text-sm text-ink-muted">{t("finding")}</p> : null}
-        {search.status === "failed" ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+        {search.status === "failed" ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
         {search.status === "done" && search.customers.length === 0 ? <p role="status" className="m-0 text-sm text-ink-muted">{t("noMatch")}</p> : null}
         {search.status === "done" && search.customers.length > 0 ? (
           <ul aria-label={t("results")} className="m-0 flex list-none flex-col gap-1.5 p-0">
@@ -118,7 +118,7 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
         </Notice>
       ) : known === null ? (
         <Notice tone="new" icon={<PlusIcon size={18} />}><b>{t("new")}</b> · {t("newHint")}</Notice>
-      ) : check?.phone === phone && check.status === "failed" ? <p role="alert" className="m-0 text-sm text-error">{t("failed")}</p> : null}
+      ) : check?.phone === phone && check.status === "failed" ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
 
       <div className="grid gap-3.5 sm:grid-cols-2">
         <TextField label={t("name")} name="name" value={form.name} onChange={(value) => set("name", value)} autoComplete="off" required error={error("name")} />

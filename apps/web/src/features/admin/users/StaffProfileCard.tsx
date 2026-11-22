@@ -37,7 +37,7 @@ export function StaffProfileCard({ profile, roleNames }: { profile: StaffProfile
         <span className="flex min-w-0 flex-col gap-1">
           <b className="text-lg [overflow-wrap:anywhere]">{user.fullName}</b>
           <span className="flex flex-wrap gap-1.5">
-            <span className={`rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-success text-surface" : "bg-error/10 text-error"}`}>
+            <span className={`rounded-[4px] px-2 py-[3px] text-xs font-bold ${user.isActive ? "bg-success text-surface" : "bg-error/10 text-error-text"}`}>
               {user.isActive ? status("active") : status("inactive")}
             </span>
             {roleNames.map((name) => <span key={name} className="rounded-[4px] border border-line bg-paper px-2 py-[3px] text-xs font-bold">{name}</span>)}
