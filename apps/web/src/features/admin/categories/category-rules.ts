@@ -45,10 +45,29 @@ export function findPath(nodes: readonly Category[], id: string): Category[] {
   return [];
 }
 
-/** Which of the three sale prices the category offers (all of them while no category is chosen or it is unknown). */
-export function offeredPrices(nodes: readonly Category[], categoryId: string | null): { alone: boolean; withBoard: boolean; inBuild: boolean } {
-  const options = categoryId ? findPath(nodes, categoryId).at(-1)?.priceOptions : undefined;
-  return { alone: options?.alone ?? true, withBoard: options?.withBoard ?? true, inBuild: options?.inBuild ?? true };
+export interface OfferedPrices {
+  alone: boolean;
+  withBoard: boolean;
+  inBuild: boolean;
+}
+
+const EVERY_PRICE: OfferedPrices = { alone: true, withBoard: true, inBuild: true };
+
+/**
+ * A category's own switches below its parent's effective ones: a price is offered only when both offer it. When that leaves nothing
+ * the category's own switches apply (the same rule as the API's `CategoryPriceRules`).
+ */
+export function combinePrices(own: Partial<OfferedPrices> | null | undefined, parent: OfferedPrices | null): OfferedPrices {
+  const mine = { ...EVERY_PRICE, ...own };
+  if (!parent) return mine;
+  const combined = { alone: mine.alone && parent.alone, withBoard: mine.withBoard && parent.withBoard, inBuild: mine.inBuild && parent.inBuild };
+  return combined.alone || combined.withBoard || combined.inBuild ? combined : mine;
+}
+
+/** Which of the three sale prices the category offers, following its parents (all of them while no category is chosen or it is unknown). */
+export function offeredPrices(nodes: readonly Category[], categoryId: string | null): OfferedPrices {
+  if (!categoryId) return EVERY_PRICE;
+  return findPath(nodes, categoryId).reduce<OfferedPrices | null>((parent, node) => combinePrices(node.priceOptions, parent), null) ?? EVERY_PRICE;
 }
 
 /** Every category that may become the parent of `excludeId`: the node itself and its whole subtree are left out (no cycles). */

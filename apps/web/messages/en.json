@@ -2112,7 +2112,7 @@
         "showInMenu": "Show in the menu",
         "showInBuilder": "Show in the builder",
         "priceTitle": "Sale prices offered",
-        "priceHint": "A price that is off is not shown in the store or at the POS and cannot be chosen in an online order. At least one stays on.",
+        "priceHint": "A price that is off is not shown in the store or at the POS and cannot be chosen in an online order. At least one stays on. A category's switches also apply to its sub-categories, which can only switch off more prices.",
         "priceAlone": "Alone",
         "priceWithBoard": "With a RIGX motherboard",
         "priceInBuild": "Inside a build"

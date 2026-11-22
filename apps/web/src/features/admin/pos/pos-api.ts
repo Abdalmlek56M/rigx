@@ -1,6 +1,7 @@
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
+import { combinePrices, type OfferedPrices } from "../categories/category-rules";
 import { offeredOptions, PRICE_OPTIONS, toBuildPick, toItemPick, type BuildPick, type ItemPick, type PriceOption } from "./pos-rules";
 
 export type PosSaleRequest = Schemas["PosSaleRequest"];
@@ -15,15 +16,15 @@ type CategoryNode = { id: string; priceOptions?: { alone: boolean; withBoard: bo
 /** The sale prices each category offers (from the public category tree), as `PriceOption`s; a category not listed offers all three. */
 async function loadOptionsOf(): Promise<(categoryId: string | null) => readonly PriceOption[]> {
   const byId = new Map<string, readonly PriceOption[]>();
-  const walk = (nodes: readonly CategoryNode[]) => {
+  const walk = (nodes: readonly CategoryNode[], parent: OfferedPrices | null) => {
     for (const node of nodes) {
-      const set = node.priceOptions;
-      if (set) byId.set(node.id, offeredOptions([set.alone ? "Alone" : "", set.withBoard ? "WithBoard" : "", set.inBuild ? "InBuild" : ""]));
-      walk(node.children ?? []);
+      const set = combinePrices(node.priceOptions, parent);
+      byId.set(node.id, offeredOptions([set.alone ? "Alone" : "", set.withBoard ? "WithBoard" : "", set.inBuild ? "InBuild" : ""]));
+      walk(node.children ?? [], set);
     }
   };
   try {
-    walk(await required(unwrap(api().GET("/api/v1/catalog/categories"))));
+    walk(await required(unwrap(api().GET("/api/v1/catalog/categories"))), null);
   } catch {
     // Without the tree every price stays offered; the server still decides what an order may use.
   }

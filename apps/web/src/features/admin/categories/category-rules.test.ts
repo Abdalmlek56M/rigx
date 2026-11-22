@@ -66,6 +66,21 @@ describe("offered prices", () => {
     assert.deepEqual(offeredPrices(offered, "board"), { alone: false, withBoard: true, inBuild: true });
   });
 
+  it("follows the parent: a price the parent switched off is off below it, and a child can only switch off more", () => {
+    const child = { ...cat("amd"), priceOptions: { alone: true, withBoard: false, inBuild: true } };
+    const grandchild = cat("am5");
+    const parent = { ...cat("cpus"), priceOptions: { alone: false, withBoard: true, inBuild: true }, children: [{ ...child, children: [grandchild] }] };
+    assert.deepEqual(offeredPrices([parent], "cpus"), { alone: false, withBoard: true, inBuild: true });
+    assert.deepEqual(offeredPrices([parent], "amd"), { alone: false, withBoard: false, inBuild: true });
+    assert.deepEqual(offeredPrices([parent], "am5"), { alone: false, withBoard: false, inBuild: true });
+  });
+
+  it("uses the child's own switches when the parent's and the child's leave nothing", () => {
+    const child = { ...cat("amd"), priceOptions: { alone: false, withBoard: true, inBuild: false } };
+    const parent = { ...cat("cpus"), priceOptions: { alone: false, withBoard: false, inBuild: true }, children: [child] };
+    assert.deepEqual(offeredPrices([parent], "amd"), { alone: false, withBoard: true, inBuild: false });
+  });
+
   it("offers everything while no category is chosen or the category is unknown", () => {
     const all = { alone: true, withBoard: true, inBuild: true };
     assert.deepEqual(offeredPrices(offered, null), all);
