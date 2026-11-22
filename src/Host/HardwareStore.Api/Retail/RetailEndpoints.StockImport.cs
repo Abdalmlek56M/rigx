@@ -36,12 +36,12 @@ public static partial class RetailEndpoints
 
     private static async Task<StockImportFile> ReadImportFileAsync(HttpContext context, CancellationToken ct)
     {
-        if (!context.Request.HasFormContentType) throw ImportFileProblem("لازم ترفع الملف في فورم multipart");
+        if (!context.Request.HasFormContentType) throw ImportFileProblem("يجب رفع الملف في نموذج multipart.");
         if (context.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } limit)
             limit.MaxRequestBodySize = StockImportRules.MaxFileBytes + 64 * 1024;
         var form = await context.Request.ReadFormAsync(ct);
-        var upload = form.Files.GetFile("file") ?? throw ImportFileProblem("ارفع ملف Excel");
-        if (upload.Length > StockImportRules.MaxFileBytes) throw ImportFileProblem("حجم الملف لازم يكون أقل من 2 ميجا");
+        var upload = form.Files.GetFile("file") ?? throw ImportFileProblem("ارفع ملف Excel.");
+        if (upload.Length > StockImportRules.MaxFileBytes) throw ImportFileProblem("يجب أن يكون حجم الملف أقل من 2 ميغابايت.");
         using var content = new MemoryStream();
         await upload.CopyToAsync(content, ct);
         return new StockImportFile(Path.GetFileName(upload.FileName), content.ToArray());

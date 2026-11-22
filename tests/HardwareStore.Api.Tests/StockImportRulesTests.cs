@@ -72,14 +72,14 @@ public sealed class StockImportRulesTests
         var row = Parse("Nope", "", "قديم", "0", "-5", "", "", "", "99", "ممكن", "", "", "");
 
         Assert.Null(row.Line);
-        Assert.Contains("القسم \"Nope\" مش موجود", row.Errors);
+        Assert.Contains("القسم \"Nope\" غير موجود", row.Errors);
         Assert.Contains("الموديل مطلوب", row.Errors);
-        Assert.Contains("الحالة لازم تكون جديد أو مستعمل", row.Errors);
-        Assert.Contains(row.Errors, error => error.StartsWith("الكمية"));
-        Assert.Contains(row.Errors, error => error.StartsWith("التكلفة"));
-        Assert.Contains("السعر في تجميعة مطلوبة", row.Errors);
-        Assert.Contains(row.Errors, error => error.StartsWith("الضمان 99 شهر"));
-        Assert.Contains(row.Errors, error => error.StartsWith("بالكرتونة"));
+        Assert.Contains("يجب أن تكون الحالة «جديد» أو «مستعمل»", row.Errors);
+        Assert.Contains(row.Errors, error => error.Contains("الكمية"));
+        Assert.Contains(row.Errors, error => error.Contains("التكلفة"));
+        Assert.Contains("الحقل السعر في تجميعة مطلوب", row.Errors);
+        Assert.Contains(row.Errors, error => error.StartsWith("الضمان 99 شهرًا"));
+        Assert.Contains(row.Errors, error => error.Contains("بالكرتونة"));
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class StockImportRulesTests
         Assert.Null(Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "").Line!.BrandId);
         Assert.Equal(MsiId, Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "msi").Line!.BrandId);
         Assert.Equal(MsiId, Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "MSI").Line!.BrandId);
-        Assert.Equal(["الماركة \"Nope\" مش موجودة في قائمة الماركات"], Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "Nope").Errors);
+        Assert.Equal(["الماركة \"Nope\" غير موجودة في قائمة الماركات"], Parse("GPU", "A", "جديد", "1", "1", "2", "", "", "", "", "", "", "", "Nope").Errors);
     }
 
     [Fact]
@@ -96,17 +96,17 @@ public sealed class StockImportRulesTests
     {
         var row = Parse("GPU", "A", "جديد", "1", "1", "100", "", "", "6", "", "", "", "");
 
-        Assert.Equal(["الضمان 6 شهر مش موجود في قائمة الضمانات في الإعدادات"], row.Errors);
+        Assert.Equal(["الضمان 6 شهرًا غير موجود في قائمة الضمانات في الإعدادات"], row.Errors);
     }
 
     [Fact]
     public void Full_prices_cannot_be_below_the_base_price_and_a_serial_needs_a_single_piece()
     {
         var below = Parse("GPU", "A", "جديد", "1", "1", "100", "90", "", "", "", "", "", "");
-        Assert.Equal(["السعر مع بوردة لازم تكون أكبر من أو تساوي السعر في تجميعة"], below.Errors);
+        Assert.Equal(["يجب ألا تقل قيمة السعر مع بوردة عن السعر في تجميعة"], below.Errors);
 
         var serial = Parse("GPU", "A", "جديد", "2", "1", "100", "", "", "", "", "SN", "", "");
-        Assert.Equal(["السيريال ينفع بس لما الكمية 1"], serial.Errors);
+        Assert.Equal(["يُسمح بالرقم التسلسلي فقط عندما تكون الكمية 1"], serial.Errors);
     }
 
     [Fact]

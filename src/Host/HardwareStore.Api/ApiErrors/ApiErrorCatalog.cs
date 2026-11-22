@@ -24,7 +24,7 @@ public static partial class ApiErrorCatalog
         return first.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>The Arabic text of an English message, or null when the catalogue has none.</summary>
+    /// <summary>The Arabic text of an English message, or null when the catalogue has none. A message already written in Arabic in the code is shown as written.</summary>
     public static string? Find(string english)
     {
         if (ApiErrorMessages.Exact.TryGetValue(english, out var exact)) return exact;
@@ -37,7 +37,7 @@ public static partial class ApiErrorCatalog
             return Cache.GetOrAdd(english, _ => match.Groups.Cast<Group>().Skip(1)
                 .Aggregate(arabic, (text, group) => text.Replace($"{{{group.Name}}}", group.Value, StringComparison.Ordinal)));
         }
-        return null;
+        return ArabicLetters().IsMatch(english) ? english : null;
     }
 
     /// <summary>A short Arabic sentence for a status, used when a message has no entry.</summary>
@@ -67,6 +67,9 @@ public static partial class ApiErrorCatalog
             foreach (var key in validation.Errors.Keys.ToList())
                 validation.Errors[key] = [.. validation.Errors[key].Select(message => Find(message) ?? ForStatus(400))];
     }
+
+    [GeneratedRegex(@"\p{IsArabic}", RegexOptions.CultureInvariant)]
+    private static partial Regex ArabicLetters();
 
     [GeneratedRegex(@"^The .+ field ", RegexOptions.CultureInvariant)]
     private static partial Regex FrameworkValidation();

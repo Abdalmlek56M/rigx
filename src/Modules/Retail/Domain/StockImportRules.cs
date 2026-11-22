@@ -84,7 +84,7 @@ public static class StockImportRules
         var warranty = ParseWholeNumber(Cell(StockImportColumn.WarrantyMonths), "الضمان بالشهور", 1, 120, errors);
         string? warrantyLabel = null;
         if (warranty is { } months && !lookups.WarrantyLabels.TryGetValue(months, out warrantyLabel))
-            errors.Add($"الضمان {months} شهر مش موجود في قائمة الضمانات في الإعدادات");
+            errors.Add($"الضمان {months} شهرًا غير موجود في قائمة الضمانات في الإعدادات");
         var hasBox = ParseYesNo(Cell(StockImportColumn.HasBox), "بالكرتونة", errors);
         var hidden = ParseYesNo(Cell(StockImportColumn.Hidden), "مخفي", errors);
         var serial = ParseSerial(Cell(StockImportColumn.Serial), quantity, errors);
@@ -126,7 +126,7 @@ public static class StockImportRules
         }
         var found = categories.FirstOrDefault(category => string.Equals(category.Code, text, StringComparison.OrdinalIgnoreCase))
             ?? categories.FirstOrDefault(category => string.Equals(category.Name, text, StringComparison.OrdinalIgnoreCase));
-        if (found is null) errors.Add($"القسم \"{text}\" مش موجود");
+        if (found is null) errors.Add($"القسم \"{text}\" غير موجود");
         return found;
     }
 
@@ -136,7 +136,7 @@ public static class StockImportRules
         if (text.Length == 0) return null;
         var found = brands.FirstOrDefault(brand => string.Equals(brand.Name, text, StringComparison.OrdinalIgnoreCase)
             || string.Equals(brand.Slug, text, StringComparison.OrdinalIgnoreCase));
-        if (found is null) errors.Add($"الماركة \"{text}\" مش موجودة في قائمة الماركات");
+        if (found is null) errors.Add($"الماركة \"{text}\" غير موجودة في قائمة الماركات");
         return found;
     }
 
@@ -148,7 +148,7 @@ public static class StockImportRules
         }
         catch (RetailException)
         {
-            errors.Add(text.Length == 0 ? "الموديل مطلوب" : $"الموديل طويل أوي (أقصى {ModelName.MaxLength} حرف)");
+            errors.Add(text.Length == 0 ? "الموديل مطلوب" : $"الموديل طويل جدًا (الحد الأقصى {ModelName.MaxLength} حرفًا)");
             return null;
         }
     }
@@ -160,7 +160,7 @@ public static class StockImportRules
             case "جديد" or "new": return StockCondition.New;
             case "مستعمل" or "used": return StockCondition.Used;
             default:
-                errors.Add("الحالة لازم تكون جديد أو مستعمل");
+                errors.Add("يجب أن تكون الحالة «جديد» أو «مستعمل»");
                 return null;
         }
     }
@@ -170,7 +170,7 @@ public static class StockImportRules
         if (text.Length == 0) return null;
         if (!TryParseNumber(text, out var number) || number != decimal.Truncate(number) || number < min || number > max)
         {
-            errors.Add($"{column} لازم تكون رقم صحيح من {min} لـ {max}");
+            errors.Add($"يجب أن تكون قيمة {column} رقمًا صحيحًا من {min} إلى {max}");
             return null;
         }
         return (int)number;
@@ -180,12 +180,12 @@ public static class StockImportRules
     {
         if (text.Length == 0)
         {
-            if (required) errors.Add($"{column} مطلوبة");
+            if (required) errors.Add($"الحقل {column} مطلوب");
             return null;
         }
         if (!TryParseNumber(text, out var number) || number < 0 || number > StockImportRules.MaxMoney)
         {
-            errors.Add($"{column} لازم تكون رقم من صفر وأكتر");
+            errors.Add($"يجب أن تكون قيمة {column} رقمًا لا يقل عن صفر");
             return null;
         }
         return Math.Round(number, 2);
@@ -196,7 +196,7 @@ public static class StockImportRules
     {
         var full = ParseMoney(text, column, required: false, errors);
         if (full is null || price is null) return full;
-        if (full < price) errors.Add($"{column} لازم تكون أكبر من أو تساوي السعر في تجميعة");
+        if (full < price) errors.Add($"يجب ألا تقل قيمة {column} عن السعر في تجميعة");
         return full;
     }
 
@@ -207,7 +207,7 @@ public static class StockImportRules
             case "" or "لا" or "no" or "false" or "0": return false;
             case "نعم" or "yes" or "true" or "1": return true;
             default:
-                errors.Add($"{column} لازم تكون نعم أو لا");
+                errors.Add($"يجب أن تكون قيمة {column} «نعم» أو «لا»");
                 return false;
         }
     }
@@ -215,8 +215,8 @@ public static class StockImportRules
     private static string? ParseSerial(string text, int quantity, List<string> errors)
     {
         if (text.Length == 0) return null;
-        if (quantity != 1) errors.Add("السيريال ينفع بس لما الكمية 1");
-        else if (text.Length > StockItemRules.MaxSerialLength) errors.Add("السيريال طويل أوي");
+        if (quantity != 1) errors.Add("يُسمح بالرقم التسلسلي فقط عندما تكون الكمية 1");
+        else if (text.Length > StockItemRules.MaxSerialLength) errors.Add("الرقم التسلسلي طويل جدًا");
         return text;
     }
 
@@ -228,7 +228,7 @@ public static class StockImportRules
         }
         catch (RetailException)
         {
-            errors.Add($"الملاحظة طويلة أوي (أقصى {StockItemRules.MaxInternalNoteLength} حرف)");
+            errors.Add($"الملاحظة طويلة جدًا (الحد الأقصى {StockItemRules.MaxInternalNoteLength} حرفًا)");
             return null;
         }
     }

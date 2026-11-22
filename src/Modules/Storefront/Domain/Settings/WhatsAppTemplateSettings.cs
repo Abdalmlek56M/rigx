@@ -23,13 +23,13 @@ public sealed partial record WhatsAppTemplateSettings : IStoreSettingsSection<Wh
     public static WhatsAppTemplateSettings Read(StoreSettings settings) => settings.WhatsAppTemplates;
     public static void Write(StoreSettings settings, WhatsAppTemplateSettings value) => settings.WhatsAppTemplates = value;
 
-    public string General { get; init; } = "أهلًا RIGX، عندي استفسار.";
-    public string Product { get; init; } = "أهلًا RIGX، عايز أسأل على {القطعة} ({الكود}) بسعر {السعر}.\n{اللينك}";
-    public string Build { get; init; } = "أهلًا RIGX، عايز أسأل على التجميعة {القطعة} ({الكود}) بسعر {السعر}.\n{اللينك}";
-    public string Order { get; init; } = "أهلًا RIGX، بخصوص طلبي رقم {الطلب}.";
-    public string Warranty { get; init; } = "أهلًا RIGX، عندي مشكلة في {القطعة} ({الكود}) وعليها ضمان.";
-    public string RequestReply { get; init; } = "أهلًا {الاسم}، بخصوص طلبك عند RIGX: ";
-    public string BackInStock { get; init; } = "أهلًا {الاسم}، القطعة اللي طلبتها ({القطعة}) اتوفرت عندنا في RIGX.\n{اللينك}";
+    public string General { get; init; } = "مرحبًا RIGX، لديّ استفسار.";
+    public string Product { get; init; } = "مرحبًا RIGX، أود الاستفسار عن {القطعة} ({الكود}) بسعر {السعر}.\n{اللينك}";
+    public string Build { get; init; } = "مرحبًا RIGX، أود الاستفسار عن التجميعة {القطعة} ({الكود}) بسعر {السعر}.\n{اللينك}";
+    public string Order { get; init; } = "مرحبًا RIGX، بخصوص طلبي رقم {الطلب}.";
+    public string Warranty { get; init; } = "مرحبًا RIGX، لديّ مشكلة في {القطعة} ({الكود}) وعليها ضمان.";
+    public string RequestReply { get; init; } = "مرحبًا {الاسم}، بخصوص طلبك لدى RIGX: ";
+    public string BackInStock { get; init; } = "مرحبًا {الاسم}، القطعة التي طلبتها ({القطعة}) توفرت لدينا في RIGX.\n{اللينك}";
 
     public WhatsAppTemplateSettings Normalize() => new()
     {

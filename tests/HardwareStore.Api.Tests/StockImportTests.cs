@@ -113,7 +113,7 @@ public sealed class StockImportTests(OwnerBootstrapPostgreSqlFixture fixture) : 
         Assert.Equal((2, 1, 3), (result.ValidRows, result.ErrorRows, result.ItemsToCreate));
         Assert.Equal([2, 3, 4], result.Rows.Select(row => row.Row));
         Assert.Equal([2, 0, 1], result.Rows.Select(row => row.ItemsToCreate));
-        Assert.Contains("القسم \"Nope\" مش موجود", result.Rows[1].Errors);
+        Assert.Contains("القسم \"Nope\" غير موجود", result.Rows[1].Errors);
         Assert.Contains("الموديل مطلوب", result.Rows[1].Errors);
         Assert.Empty(await env.ItemsAsync());
         Assert.Equal(0, await env.ImportRecordsAsync());
@@ -176,7 +176,7 @@ public sealed class StockImportTests(OwnerBootstrapPostgreSqlFixture fixture) : 
         using var second = await UploadAsync(env.Client, file, dryRun: false);
 
         Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
-        Assert.Equal("الملف ده اتستورد قبل كده", (await second.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString());
+        Assert.Equal("تم استيراد هذا الملف من قبل.", (await second.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("title").GetString());
         Assert.Single(await env.ItemsAsync());
         Assert.Equal(1, await env.ImportRecordsAsync());
     }

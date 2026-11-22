@@ -20,11 +20,11 @@ public sealed class StockImportService(IDbContextFactory<RetailDbContext> contex
     {
         var rows = Parse(file, lookups);
         if (rows.Any(row => row.Errors.Count > 0))
-            throw new RetailException(400, "في صفوف فيها أخطاء، ومفيش حاجة اتستوردت. صلّح الملف وجرّب تاني.", RowErrors(rows));
+            throw new RetailException(400, "توجد صفوف بها أخطاء ولم يُستورد شيء. صحّح الملف وحاول مرة أخرى.", RowErrors(rows));
         var sha256 = Convert.ToHexStringLower(SHA256.HashData(file.Content));
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         if (await db.StockImports.AnyAsync(import => import.Sha256 == sha256, cancellationToken))
-            throw new RetailException(409, "الملف ده اتستورد قبل كده");
+            throw new RetailException(409, "تم استيراد هذا الملف من قبل.");
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
@@ -57,9 +57,9 @@ public sealed class StockImportService(IDbContextFactory<RetailDbContext> contex
     private static List<StockImportRow> Parse(StockImportFile file, StockImportLookups lookups)
     {
         if (!file.FileName.EndsWith(StockImportRules.FileExtension, StringComparison.OrdinalIgnoreCase))
-            throw new RetailException(400, "الملف لازم يكون Excel بصيغة xlsx");
+            throw new RetailException(400, "يجب أن يكون الملف بصيغة Excel (xlsx).");
         if (file.Content.Length is 0 or > StockImportRules.MaxFileBytes)
-            throw new RetailException(400, "حجم الملف لازم يكون أقل من 2 ميجا");
+            throw new RetailException(400, "يجب أن يكون حجم الملف أقل من 2 ميغابايت.");
         IReadOnlyList<IReadOnlyList<string>> sheet;
         try
         {
@@ -67,20 +67,20 @@ public sealed class StockImportService(IDbContextFactory<RetailDbContext> contex
         }
         catch (XlsxReadException)
         {
-            throw new RetailException(400, "الملف مش ملف Excel (xlsx) سليم");
+            throw new RetailException(400, "الملف ليس ملف Excel (xlsx) سليمًا.");
         }
         var (indexes, missing) = StockImportRules.MapHeader(sheet.Count > 0 ? sheet[0] : []);
         if (missing.Count > 0)
-            throw new RetailException(400, $"الأعمدة دي ناقصة في الصف الأول: {string.Join("، ", missing)}. استخدم القالب.");
+            throw new RetailException(400, $"الأعمدة التالية ناقصة في الصف الأول: {string.Join("، ", missing)}. استخدم القالب.");
         var rows = new List<StockImportRow>();
         for (var index = 1; index < sheet.Count; index++)
             if (sheet[index].Any(cell => cell.Length > 0)) rows.Add(StockImportRules.ParseRow(index + 1, sheet[index], indexes, lookups));
-        if (rows.Count == 0) throw new RetailException(400, "مفيش صفوف بيانات في الملف");
+        if (rows.Count == 0) throw new RetailException(400, "لا توجد صفوف بيانات في الملف.");
         if (rows.Count > StockImportRules.MaxDataRows)
-            throw new RetailException(400, $"الملف فيه صفوف أكتر من {StockImportRules.MaxDataRows}. قسّمه على أكتر من ملف.");
+            throw new RetailException(400, $"الملف يحتوي على أكثر من {StockImportRules.MaxDataRows} صف. قسّمه إلى أكثر من ملف.");
         var itemsToCreate = rows.Sum(row => row.ItemsToCreate);
         if (itemsToCreate > StockImportRules.MaxItems)
-            throw new RetailException(400, $"الملف هيعمل {itemsToCreate} قطعة، والحد {StockImportRules.MaxItems} في المرة. قسّمه على أكتر من ملف.");
+            throw new RetailException(400, $"سينشئ الملف {itemsToCreate} قطعة، والحد الأقصى {StockImportRules.MaxItems} في المرة الواحدة. قسّمه إلى أكثر من ملف.");
         return rows;
     }
 
