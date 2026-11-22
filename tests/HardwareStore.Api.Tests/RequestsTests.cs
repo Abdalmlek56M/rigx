@@ -305,7 +305,7 @@ public sealed class RequestsTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         var reply = await ReadAsync<WhatsAppReplyView>(await client.GetAsync($"{Admin}/{request.Id}/whatsapp"));
 
         Assert.Equal("01012345678", reply.Phone);
-        Assert.Equal("أهلًا Ahmed، بخصوص طلبك عند RIGX: ", reply.Text);
+        Assert.Equal("مرحبًا Ahmed، بخصوص طلبك لدى RIGX: ", reply.Text);
         Assert.Equal($"https://wa.me/201012345678?text={Uri.EscapeDataString(reply.Text)}", reply.Url);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"{Admin}/{Guid.NewGuid()}/whatsapp")).StatusCode);
     }

@@ -122,9 +122,14 @@ public static class BaseCatalogSeeder
         var slugs = BaseCategorySpecs.BySlug.Keys.ToList();
         await db.Categories.Where(category => slugs.Contains(category.Slug)).LoadAsync(cancellationToken);
         var added = 0;
-        foreach (var category in db.Categories.Local.Where(category => slugs.Contains(category.Slug) && category.SpecDefinitions.Count == 0).ToList())
+        foreach (var category in db.Categories.Local.Where(category => slugs.Contains(category.Slug)).ToList())
         {
-            category.SpecDefinitions = CategorySpecSchema.Normalize(BaseCategorySpecs.BySlug[category.Slug]).ToList();
+            // No specs yet: the starter list. The first starter list, untouched: upgraded to today's (the owner's own lists are never changed).
+            var list = category.SpecDefinitions.Count == 0
+                ? BaseCategorySpecs.BySlug[category.Slug]
+                : BaseCategorySpecs.Upgrade(category.Slug, category.SpecDefinitions);
+            if (list is null) continue;
+            category.SpecDefinitions = CategorySpecSchema.Normalize(list).ToList();
             category.UpdatedAtUtc = now;
             if (db.Entry(category).State != EntityState.Added) category.RowVersion++;
             added++;

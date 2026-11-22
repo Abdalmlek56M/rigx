@@ -7,6 +7,7 @@ import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import {
   emptySpecRow,
+  moveSpec,
   specRowValid,
   specRows,
   toSpecDefinitions,
@@ -15,8 +16,8 @@ import {
 } from "./category-rules";
 import { saveCategorySpecs, type Category } from "./categories-api";
 import { isConflict } from "@/lib/api/conflict";
-import { PlusIcon, SaveIcon, TrashIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon, SaveIcon, TrashIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "../kit/Button";
 
 const SPEC_TYPES = ["Choice", "Number", "YesNo", "Text"] as const;
 const inputClass = "h-9 rounded-control border border-input-line bg-surface px-2 text-sm";
@@ -32,6 +33,69 @@ function ReadOnlySpecs({ rows, label, onRetry }: { rows: readonly SpecRow[]; lab
     { key: "compatibility", header: t("compatibility"), cell: (row) => (row.isCompatibility ? "✓" : "") }
   ];
   return <DataTable label={label} columns={columns} state={{ status: "ready", data: rows }} onRetry={onRetry} rowKey={(row) => row.id} empty={t("empty")} />;
+}
+
+/** One editable spec: its name and type on top, options or unit when the type needs them, the two switches, and the technical key tucked away. */
+function SpecCard({ row, first, last, onChange, onMove, onRemove }: {
+  row: SpecRow;
+  first: boolean;
+  last: boolean;
+  onChange: (change: Partial<SpecRow>) => void;
+  onMove: (step: -1 | 1) => void;
+  onRemove: () => void;
+}) {
+  const t = useTranslations("admin.categories.specs");
+  return (
+    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-3">
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex min-w-48 flex-1 flex-col gap-1">
+          <span className="text-xs text-ink-muted">{t("name")}</span>
+          <input value={row.name} onChange={(event) => onChange({ name: event.target.value })} placeholder={t("namePlaceholder")} className={`${inputClass} h-10`} />
+        </label>
+        <label className="flex w-36 flex-col gap-1">
+          <span className="text-xs text-ink-muted">{t("type")}</span>
+          <select value={row.type} onChange={(event) => onChange({ type: event.target.value })} className={`${inputClass} h-10`}>
+            {SPEC_TYPES.map((type) => <option key={type} value={type}>{t(`types.${type}`)}</option>)}
+          </select>
+        </label>
+        <div className="flex gap-1">
+          <IconButton icon={ArrowUpIcon} label={t("moveUp")} disabled={first} onClick={() => onMove(-1)} />
+          <IconButton icon={ArrowDownIcon} label={t("moveDown")} disabled={last} onClick={() => onMove(1)} />
+          <IconButton icon={TrashIcon} label={t("remove")} onClick={onRemove} />
+        </div>
+      </div>
+      {row.type === "Choice" ? (
+        <label className="flex flex-col gap-1">
+          <span className="text-xs text-ink-muted">{t("options")}</span>
+          <input value={row.options} onChange={(event) => onChange({ options: event.target.value })} placeholder={t("optionsHint")} className={`${inputClass} h-10`} />
+        </label>
+      ) : null}
+      {row.type === "Number" ? (
+        <label className="flex w-36 flex-col gap-1">
+          <span className="text-xs text-ink-muted">{t("unit")}</span>
+          <input value={row.unit} onChange={(event) => onChange({ unit: event.target.value })} placeholder={t("unitHint")} className={`${inputClass} h-10`} />
+        </label>
+      ) : null}
+      <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={row.isFilter} onChange={(event) => onChange({ isFilter: event.target.checked })} className={checkClass} />
+          {t("filter")}
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={row.isCompatibility} onChange={(event) => onChange({ isCompatibility: event.target.checked })} className={checkClass} />
+          {t("compatibility")}
+        </label>
+      </div>
+      <details className="text-xs text-ink-muted">
+        <summary className="cursor-pointer">{t("advanced")}</summary>
+        <label className="mt-2 flex w-48 flex-col gap-1">
+          <span>{t("key")}</span>
+          <input dir="ltr" value={row.key} onChange={(event) => onChange({ key: event.target.value })} placeholder={t("keyAuto")} className={`${inputClass} h-10 font-mono`} />
+        </label>
+        <p className="m-0 mt-1">{t("keyHint")}</p>
+      </details>
+    </li>
+  );
 }
 
 /** The category's own specs (editable) below the inherited read-only ones. */
@@ -65,37 +129,6 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
     }, t("saved"));
   }
 
-  const ownColumns: Column<SpecRow>[] = [
-    { key: "key", header: t("key"), cell: (row) => <input aria-label={t("key")} dir="ltr" value={row.key} onChange={(event) => patch(row.id, { key: event.target.value })} className={`${inputClass} w-28 font-mono`} /> },
-    { key: "name", header: t("name"), cell: (row) => <input aria-label={t("name")} value={row.name} onChange={(event) => patch(row.id, { name: event.target.value })} className={`${inputClass} w-36`} /> },
-    {
-      key: "type", header: t("type"), cell: (row) => (
-        <select aria-label={t("type")} value={row.type} onChange={(event) => patch(row.id, { type: event.target.value })} className={`${inputClass} w-28`}>
-          {SPEC_TYPES.map((type) => <option key={type} value={type}>{t(`types.${type}`)}</option>)}
-        </select>
-      )
-    },
-    {
-      key: "options", header: t("options"), cell: (row) => (
-        <input
-          aria-label={t("options")} value={row.options} disabled={row.type !== "Choice"}
-          onChange={(event) => patch(row.id, { options: event.target.value })} placeholder={row.type === "Choice" ? t("optionsHint") : ""}
-          className={`${inputClass} w-40 disabled:opacity-50`}
-        />
-      )
-    },
-    { key: "unit", header: t("unit"), cell: (row) => <input aria-label={t("unit")} value={row.unit} onChange={(event) => patch(row.id, { unit: event.target.value })} className={`${inputClass} w-16`} /> },
-    { key: "filter", header: t("filter"), cell: (row) => <input aria-label={t("filter")} type="checkbox" checked={row.isFilter} onChange={(event) => patch(row.id, { isFilter: event.target.checked })} className={checkClass} /> },
-    { key: "compatibility", header: t("compatibility"), cell: (row) => <input aria-label={t("compatibility")} type="checkbox" checked={row.isCompatibility} onChange={(event) => patch(row.id, { isCompatibility: event.target.checked })} className={checkClass} /> },
-    {
-      key: "remove", header: "", cell: (row) => (
-        <Button size="sm" variant="ghost" icon={TrashIcon} onClick={() => setRows((current) => current.filter((entry) => entry.id !== row.id))}>
-          {t("remove")}
-        </Button>
-      )
-    }
-  ];
-
   return (
     <section className="flex flex-col gap-3 border-t border-line pt-4">
       <div className="flex flex-col gap-0.5">
@@ -117,7 +150,20 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
             void save();
           }}
         >
-          <DataTable label={t("title")} columns={ownColumns} state={{ status: "ready", data: rows }} onRetry={onStale} rowKey={(row) => row.id} empty={t("empty")} />
+          {rows.length === 0 ? <p className="m-0 rounded-card border border-dashed border-line p-4 text-sm text-ink-muted">{t("empty")}</p> : null}
+          <ol className="m-0 flex list-none flex-col gap-2.5 p-0">
+            {rows.map((row, index) => (
+              <SpecCard
+                key={row.id}
+                row={row}
+                first={index === 0}
+                last={index === rows.length - 1}
+                onChange={(change) => patch(row.id, change)}
+                onMove={(step) => setRows((current) => moveSpec(current, row.id, step))}
+                onRemove={() => setRows((current) => current.filter((entry) => entry.id !== row.id))}
+              />
+            ))}
+          </ol>
           <div className="flex flex-wrap gap-2">
             <Button icon={PlusIcon} onClick={() => setRows((current) => [...current, emptySpecRow()])}>{t("add")}</Button>
             <Button type="submit" variant="primary" icon={SaveIcon} loading={submit.busy} disabled={!allValid}>{t("save")}</Button>
@@ -128,7 +174,7 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
       ) : (
         <ReadOnlySpecs rows={rows} label={t("title")} onRetry={onStale} />
       )}
-      <p className="m-0 text-xs text-ink-muted">{t("keyHint")}</p>
+      <p className="m-0 text-xs text-ink-muted">{t("itemNote")}</p>
       <p className="m-0 text-xs text-ink-muted">{t("note")}</p>
     </section>
   );

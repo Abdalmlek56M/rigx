@@ -197,9 +197,25 @@ export function emptySpecRow(): SpecRow {
 
 const SPEC_KEY = /^[a-z][a-z0-9_]{0,39}$/;
 
+/**
+ * Gives every row without a key a generated one (`field_1`, `field_2` ...), so the owner never has to invent a technical key:
+ * the key only has to be unique and stay the same once the spec has item values.
+ */
+export function withKeys(rows: readonly SpecRow[]): SpecRow[] {
+  const taken = new Set(rows.map((row) => row.key.trim().toLowerCase()).filter(Boolean));
+  let next = 1;
+  return rows.map((row) => {
+    if (row.key.trim() !== "") return row;
+    while (taken.has(`field_${next}`)) next++;
+    const key = `field_${next}`;
+    taken.add(key);
+    return { ...row, key };
+  });
+}
+
 /** The row as the API expects it: lower-case key, trimmed text and choice options split on commas (none for other types). */
 export function toSpecDefinitions(rows: readonly SpecRow[]): SpecDefinition[] {
-  return rows.map((row) => ({
+  return withKeys(rows).map((row) => ({
     key: row.key.trim().toLowerCase(),
     name: row.name.trim(),
     type: row.type,
@@ -210,8 +226,19 @@ export function toSpecDefinitions(rows: readonly SpecRow[]): SpecDefinition[] {
   }));
 }
 
-/** One row is ready to save: a valid key, a name, and at least one option for a choice spec. */
+/** One row is ready to save: a name, a valid key when one is written (an empty key is generated), and at least one option for a choice spec. */
 export function specRowValid(row: SpecRow): boolean {
-  return SPEC_KEY.test(row.key.trim().toLowerCase()) && row.name.trim() !== "" &&
+  const key = row.key.trim().toLowerCase();
+  return (key === "" || SPEC_KEY.test(key)) && row.name.trim() !== "" &&
     (row.type !== "Choice" || row.options.split(",").some((option) => option.trim() !== ""));
+}
+
+/** The rows with one moved up (`-1`) or down (`1`); the list's order is the order on the product page. */
+export function moveSpec(rows: readonly SpecRow[], id: string, step: -1 | 1): SpecRow[] {
+  const from = rows.findIndex((row) => row.id === id);
+  const to = from + step;
+  if (from < 0 || to < 0 || to >= rows.length) return [...rows];
+  const moved = [...rows];
+  [moved[from], moved[to]] = [moved[to]!, moved[from]!];
+  return moved;
 }

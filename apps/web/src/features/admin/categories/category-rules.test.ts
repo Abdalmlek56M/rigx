@@ -9,12 +9,14 @@ import {
   emptyCategoryForm,
   flattenTree,
   findPath,
+  moveSpec,
   offeredPrices,
   parentOptions,
   specRowValid,
   specRows,
   toCategoryInput,
-  toSpecDefinitions
+  toSpecDefinitions,
+  withKeys
 } from "./category-rules.ts";
 
 const spec = (key: string, name = key): SpecDefinition => ({ key, name, type: "Text", options: null, unit: null, isFilter: false, isCompatibility: false });
@@ -163,5 +165,28 @@ describe("spec rows", () => {
     assert.equal(specRowValid({ ...base, name: " " }), false);
     assert.equal(specRowValid({ ...base, type: "Choice" }), false);
     assert.equal(specRowValid({ ...base, type: "Choice", options: "AM4" }), true);
+  });
+});
+
+describe("spec rows for the owner", () => {
+  const row = (id: string, key: string, name: string) => ({ id, key, name, type: "Text", options: "", unit: "", isFilter: false, isCompatibility: false });
+
+  it("generates a key for a row that has none and never reuses one", () => {
+    const rows = withKeys([row("a", "field_1", "الأولى"), row("b", "", "الثانية"), row("c", "", "الثالثة")]);
+    assert.deepEqual(rows.map((entry) => entry.key), ["field_1", "field_2", "field_3"]);
+    assert.deepEqual(toSpecDefinitions([row("d", "", "المقاس")]).map((entry) => entry.key), ["field_1"]);
+  });
+
+  it("is valid without a key, but a written key must still be well formed", () => {
+    assert.equal(specRowValid(row("a", "", "المقاس")), true);
+    assert.equal(specRowValid(row("a", "Bad Key", "المقاس")), false);
+  });
+
+  it("moves a row up or down and stops at the ends", () => {
+    const rows = [row("a", "a", "A"), row("b", "b", "B"), row("c", "c", "C")];
+    assert.deepEqual(moveSpec(rows, "b", -1).map((entry) => entry.id), ["b", "a", "c"]);
+    assert.deepEqual(moveSpec(rows, "b", 1).map((entry) => entry.id), ["a", "c", "b"]);
+    assert.deepEqual(moveSpec(rows, "a", -1).map((entry) => entry.id), ["a", "b", "c"]);
+    assert.deepEqual(moveSpec(rows, "c", 1).map((entry) => entry.id), ["a", "b", "c"]);
   });
 });

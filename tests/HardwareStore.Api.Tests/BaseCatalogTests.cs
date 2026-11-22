@@ -61,6 +61,40 @@ public sealed class BaseCatalogPostgreSqlTests(OwnerBootstrapPostgreSqlFixture f
     }
 
     [Fact]
+    public async Task A_store_holding_the_first_starter_specs_untouched_gets_the_richer_list_once()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await using (var owner = database.CreateCatalogContext())
+        {
+            var power = Category("power-supplies", "باورات");
+            power.SpecDefinitions =
+            [
+                new SpecDefinition("power_w", "القدرة", SpecType.Number, Unit: "W"),
+                new SpecDefinition("efficiency", "الشهادة", SpecType.Choice, ["80+", "80+ Gold"], IsFilter: true)
+            ];
+            var cases = Category("cases", "كيس");
+            cases.SpecDefinitions = [new SpecDefinition("form_factor", "مقاس البوردة", SpecType.Choice, ["ATX"], IsFilter: true), new SpecDefinition("color", "اللون", SpecType.Text)];
+            var processors = Category("processors", "معالجات");
+            processors.Code = "CPU"; // the owner has set the builder up, so the builder slots are left alone and row versions show only the specs change
+            owner.Categories.AddRange(power, cases, processors);
+            await owner.SaveChangesAsync();
+        }
+        await using var db = database.CreateCatalogContext();
+
+        await BaseCatalogSeeder.SeedAsync(db, Now);
+        await BaseCatalogSeeder.SeedAsync(db, Now);
+
+        var categories = await db.Categories.AsNoTracking().ToListAsync();
+        var supplies = categories.Single(category => category.Slug == "power-supplies");
+        Assert.Equal(["power_w", "efficiency", "form_factor", "modular", "fan_size", "pcie_connectors"], supplies.SpecDefinitions.Select(spec => spec.Key));
+        Assert.Equal(["80+", "80+ Gold"], supplies.SpecDefinitions.Single(spec => spec.Key == "efficiency").Options);
+        Assert.Equal(2, supplies.RowVersion);
+        var ownCase = categories.Single(category => category.Slug == "cases");
+        Assert.Equal(["form_factor", "color"], ownCase.SpecDefinitions.Select(spec => spec.Key));
+        Assert.Equal(1, ownCase.RowVersion);
+    }
+
+    [Fact]
     public async Task The_seed_keeps_the_owner_categories_and_brands_as_they_are()
     {
         var database = await fixture.CreateDatabaseAsync();
