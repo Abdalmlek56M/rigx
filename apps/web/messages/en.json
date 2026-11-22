@@ -4895,5 +4895,14 @@
       "AlreadyUsed": "You have already used this coupon code.",
       "Other": "This coupon code is not valid."
     }
+  },
+  "quickView": {
+    "title": "Quick view",
+    "open": "Quick view: {item}",
+    "photo": "Photo {number}",
+    "brand": "Brand",
+    "warranty": "Warranty",
+    "failed": "The details could not be loaded. You can open the product page.",
+    "openPage": "Product page"
   }
 }

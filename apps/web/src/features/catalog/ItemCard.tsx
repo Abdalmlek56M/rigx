@@ -5,23 +5,22 @@ import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cardClass } from "@/components/ui/Card";
-import { ButtonLink } from "@/components/ui/Button";
-import { BanIcon, CpuIcon, ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
+import { BanIcon, ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import { productPath } from "@/lib/seo/urls";
-import { AddToCartButton } from "@/features/cart/AddToCartButton";
-import { itemLine } from "@/features/cart/cart-rules";
 import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { defaultOption, isBuildOnly, offeredOptions, priceOf } from "@/features/product/price-options";
-import { NotifyMeButton } from "@/features/requests/NotifyMeButton";
+import { ItemAction } from "./ItemAction";
+import { QuickView } from "./QuickView";
 import { useCatalogPending } from "./use-catalog-pending";
 
 /**
- * One catalog card (catalog grid, home "just arrived"). The photo fills a square frame; the title starts directly under
- * it, at most two lines, and the badge and price share the bottom row so cards in a row line up.
+ * One catalog card (catalog grid, home "just arrived"). The photo fills a square frame with the condition on one corner and the
+ * heart and quick-view icons on the other; the title starts directly under it, at most two lines, and the price and the one
+ * action sit at the bottom so cards in a row line up.
  */
 export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const t = useTranslations("item");
@@ -31,8 +30,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
   const condition = parseCondition(item.condition);
   const soldOut = item.available <= 0;
   const offered = offeredOptions(item.priceOptions);
-  const option = defaultOption(offered);
-  const price = priceOf(item.prices, option);
+  const price = priceOf(item.prices, defaultOption(offered));
   const buildOnly = isBuildOnly(offered);
   const href = productPath(item.slug);
 
@@ -55,7 +53,10 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
           <span className="absolute bottom-3 start-3"><StatusBadge tone="neutral" icon={BanIcon}>{t("soldOutBadge")}</StatusBadge></span>
         ) : null}
       </Link>
-      <FavouriteButton code={item.code} modelName={item.modelName} className="absolute end-3 top-3" />
+      <div className="absolute end-3 top-3 flex flex-col gap-2">
+        <FavouriteButton code={item.code} modelName={item.modelName} />
+        <QuickView item={item} />
+      </div>
       <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3.5">
         <Link href={href} dir="ltr" className="line-clamp-2 min-h-10 text-start text-sm leading-5 font-bold [unicode-bidi:isolate]">{item.modelName}</Link>
         {item.warrantyLabel ? (
@@ -68,13 +69,7 @@ export function ItemCard({ item }: { item: Schemas["StoreItemCard"] }) {
             </span>
             {buildOnly ? <span className="text-xs text-ink-muted">{t("inBuildOnly")}</span> : null}
           </div>
-          {soldOut ? (
-            <NotifyMeButton target={{ itemCode: item.code, modelName: item.modelName }} size="sm" className="w-full" />
-          ) : buildOnly ? (
-            <ButtonLink href={`/builder?parts=${encodeURIComponent(item.code)}`} variant="secondary" size="sm" icon={CpuIcon} className="w-full">{t("buildIt")}</ButtonLink>
-          ) : condition ? (
-            <AddToCartButton line={itemLine({ ...item, condition }, option, price)} size="sm" className="w-full" />
-          ) : null}
+          <ItemAction item={item} />
         </div>
       </div>
     </article>
