@@ -10,6 +10,8 @@ import { formatDate, formatEgp } from "@/lib/format";
 import { orderStatusKey } from "@/features/tracking/tracking-steps";
 import { itemsPreview } from "./account-labels";
 import { fetchOrders, type Order } from "./account-api";
+import { CouponHistory } from "./CouponHistory";
+import { OrderItemsAccordion } from "./OrderItemsAccordion";
 import { EmptyState, LoadBoundary } from "./LoadBoundary";
 import { OrderProgress } from "./OrderProgress";
 import { RowLink } from "./RowAction";
@@ -39,6 +41,7 @@ function OrderCard({ order }: { order: Order }) {
         {shown.join("، ")}
         {more > 0 ? ` ${t("more", { count: more })}` : ""}
       </p>
+      <OrderItemsAccordion order={order} />
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line pt-3">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <b className="tabular-nums">{formatEgp(order.total, locale)}</b>
@@ -72,6 +75,7 @@ export function OrdersList() {
           )
         }
       </LoadBoundary>
+      <CouponHistory />
     </div>
   );
 }

@@ -176,7 +176,8 @@
       "YouTube": "YouTube"
     },
     "phone": "Phone",
-    "email": "Email"
+    "email": "Email",
+    "feedback": "Complaints and suggestions"
   },
   "floatingContact": {
     "label": "Contact us",
@@ -539,12 +540,12 @@
       "metaWithUsage": "{usage}, {count} parts",
       "pricedOn": "Prices as of {date}",
       "cta": "Build yours on the website",
-      "copyImage": "Copy as image",
-      "image": {
-        "copied": "Image copied. Paste it into WhatsApp or any chat.",
-        "saved": "We could not copy it, so the image was saved to your device.",
-        "failed": "We could not make the image. Use Print / save as PDF."
-      }
+      "document": "Price quote",
+      "part": "Category",
+      "item": "Part",
+      "condition": "Condition",
+      "price": "Price",
+      "validity": "Prices as of the pricing date."
     },
     "blueprint": {
       "title": "Case blueprint",
@@ -986,7 +987,10 @@
       "already": "Your rating:",
       "failed": "The rating was not sent. Please try again."
     },
-    "details": "Order details"
+    "details": "Order details",
+    "phone": "Phone number",
+    "expiredTitle": "Order details",
+    "expired": "Some time has passed since this order was delivered, so only its status is shown. Message us on WhatsApp with any question."
   },
   "account": {
     "greeting": "Welcome, {name}",
@@ -997,7 +1001,7 @@
       "favourites": "Favourites",
       "warranties": "Warranties",
       "invoices": "Invoices",
-      "requests": "Service requests",
+      "requests": "My own requests",
       "builds": "My builds",
       "addresses": "Addresses",
       "profile": "Profile and security"
@@ -1007,7 +1011,7 @@
       "order": "Order details",
       "warranties": "My warranties",
       "invoices": "My invoices",
-      "requests": "Service requests",
+      "requests": "My own requests",
       "builds": "Saved builds",
       "addresses": "Addresses",
       "profile": "Profile and security",
@@ -1027,7 +1031,9 @@
       "details": "Details",
       "track": "Track order",
       "more": "and {count} more",
-      "itemCount": "{count, plural, one {One item} other {# items}}"
+      "itemCount": "{count, plural, one {One item} other {# items}}",
+      "showItems": "Show items ({count})",
+      "hideItems": "Hide items"
     },
     "order": {
       "back": "Back to my orders",
@@ -1093,8 +1099,8 @@
       "total": "Total"
     },
     "requests": {
-      "title": "Service requests",
-      "empty": "No service requests yet.",
+      "title": "My own requests",
+      "empty": "No requests yet.",
       "offer": "Offer:",
       "type": {
         "Sell": "Sell",
@@ -1104,7 +1110,9 @@
         "Support": "Support",
         "Contact": "Contact",
         "Service": "Service",
-        "Other": "Request"
+        "Other": "Request",
+        "Complaint": "Complaint",
+        "Suggestion": "Suggestion"
       },
       "status": {
         "New": "Received",
@@ -1118,7 +1126,10 @@
       "typeLabel": "Request type",
       "date": "Request date",
       "item": "Item",
-      "offerLabel": "Offer"
+      "offerLabel": "Offer",
+      "write": "Complaint or suggestion",
+      "subject": "Subject",
+      "reply": "Store reply"
     },
     "builds": {
       "title": "Saved builds",
@@ -1131,7 +1142,8 @@
       "deleteFailed": "It could not be deleted. Please try again.",
       "usage": "Usage",
       "partsLabel": "Parts",
-      "updated": "Last updated"
+      "updated": "Last updated",
+      "views": "Views"
     },
     "addresses": {
       "title": "Addresses",
@@ -1241,6 +1253,11 @@
         "signOutOthers": "Sign out of all other devices",
         "failed": "The action could not be completed. Please try again."
       }
+    },
+    "coupons": {
+      "title": "Coupons used",
+      "saved": "You saved {amount}",
+      "discount": "{amount} off"
     }
   },
   "favourites": {
@@ -1272,7 +1289,8 @@
       "Delivered": "Your order {reference} was delivered",
       "Cancelled": "Your order {reference} was cancelled",
       "Updated": "Your order {reference} was updated"
-    }
+    },
+    "requestReply": "The store replied to your request {code}"
   },
   "warranty": {
     "title": "Your parts warranty",
@@ -1333,7 +1351,13 @@
     "warrantyNote": "The warranty starts on the invoice date and requires the RIGX sticker to stay on the item.",
     "electronic": "Electronic invoice",
     "print": "Print / save PDF",
-    "email": "Email"
+    "email": "Email",
+    "store": "Store details",
+    "name": "Name",
+    "details": "Invoice details",
+    "no": "#",
+    "condition": "Condition",
+    "thanks": "Thank you for choosing RIGX."
   },
   "policies": {
     "title": "Policies",
@@ -1952,7 +1976,9 @@
         "Support": "Support",
         "Contact": "Contact us",
         "Service": "Service",
-        "Other": "Request"
+        "Other": "Request",
+        "Complaint": "Complaint",
+        "Suggestion": "Suggestion"
       },
       "statuses": {
         "All": "All statuses",
@@ -2050,6 +2076,16 @@
         "available": "Code {code} is available since {date}. Message the customer from the back-in-stock list below.",
         "markSent": "Mark as messaged",
         "marked": "Marked as messaged"
+      },
+      "reply": {
+        "title": "Store reply",
+        "label": "Reply text",
+        "send": "Send reply",
+        "update": "Update reply",
+        "saved": "Reply saved",
+        "inAccount": "The customer wrote from an account, so the reply appears in “My own requests” and they get a notification.",
+        "noAccount": "This request came without an account, so the customer will not see the reply in an account. Answer on WhatsApp.",
+        "sentAt": "Last reply: {date}"
       }
     },
     "customers": {
@@ -2088,7 +2124,8 @@
         "orders": "Orders ({count})",
         "warranties": "Warranties ({count})",
         "requests": "Requests ({count})",
-        "notes": "Notes"
+        "notes": "Notes",
+        "coupons": "Coupons ({count})"
       },
       "orders": {
         "empty": "No orders.",
@@ -2159,11 +2196,19 @@
         "invoices": "Invoices",
         "requests": "Requests",
         "builds": "Builds",
-        "empty": "Nothing here."
+        "empty": "Nothing here.",
+        "coupons": "Coupons"
       },
       "failed": "We couldn't load the customer.",
       "retry": "Try again",
-      "staffAccount": "Staff account"
+      "staffAccount": "Staff account",
+      "coupons": {
+        "code": "Coupon",
+        "order": "Order",
+        "date": "Date",
+        "discount": "Discount",
+        "empty": "This customer has not used any coupon."
+      }
     },
     "categories": {
       "title": "Categories",
@@ -5036,7 +5081,11 @@
     "missing": "Some parts of this build are no longer available in the store.",
     "edit": "Edit it in the builder",
     "copied": "Link copied",
-    "visibilityTitle": "Who can see this build?"
+    "visibilityTitle": "Who can see this build?",
+    "save": {
+      "button": "Save to my builds",
+      "failed": "We could not save the build. Please try again."
+    }
   },
   "reactions": {
     "heartAdd": "Add this build to your favourites",
@@ -5044,7 +5093,8 @@
     "likeAdd": "Like this build",
     "likeRemove": "Remove your like",
     "signIn": "Sign in to react to this build",
-    "failed": "We could not save your reaction. Please try again."
+    "failed": "We could not save your reaction. Please try again.",
+    "views": "{count, plural, one {One view} other {# views}}"
   },
   "communityBuilds": {
     "title": "Customer builds",
@@ -5061,5 +5111,51 @@
     "total": "Total",
     "unavailable": "Some parts are currently unavailable.",
     "open": "View the build"
+  },
+  "feedback": {
+    "title": "Complaints and suggestions",
+    "lead": "Your opinion matters. Send us a complaint or a suggestion and we will reply in writing.",
+    "label": "Complaints and suggestions form",
+    "kind": "Type of message",
+    "kinds": {
+      "Complaint": "Complaint",
+      "Suggestion": "Suggestion"
+    },
+    "kindNotes": {
+      "Complaint": "A problem you had with us",
+      "Suggestion": "An idea to improve our service"
+    },
+    "name": "Name",
+    "phone": "Mobile number",
+    "email": "Email (optional)",
+    "subject": "Subject (optional)",
+    "reference": "Order number or item code (optional)",
+    "message": "Your message",
+    "messageHint": "Describe it clearly, at least 10 characters.",
+    "submit": "Send",
+    "errors": {
+      "name": "Enter your name.",
+      "phone": "Enter a valid Egyptian mobile number.",
+      "email": "Enter a valid email address.",
+      "message": "Write a message of at least 10 characters.",
+      "invalid": "We could not accept the details. Check the fields and try again.",
+      "failed": "We could not send your message right now. Please try again in a moment."
+    },
+    "sent": {
+      "title": "We received your message",
+      "Complaint": "Your complaint reached us",
+      "Suggestion": "Your suggestion reached us",
+      "code": "Reference:",
+      "replyInAccount": "We will reply in writing, and the reply will appear in your account under “My own requests”.",
+      "replyByPhone": "We will contact you on the mobile number you entered. Sign in to find our reply in your account.",
+      "open": "Open my own requests",
+      "signIn": "Sign in"
+    }
+  },
+  "documentImage": {
+    "copy": "Copy as image",
+    "copied": "Image copied. Paste it into WhatsApp or any chat.",
+    "saved": "We could not copy it, so the image was saved to your device.",
+    "failed": "We could not make the image. Use Print or save as PDF."
   }
 }

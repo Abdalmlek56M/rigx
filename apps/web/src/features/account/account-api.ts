@@ -18,6 +18,7 @@ export async function fetchOrder(id: string): Promise<Order | null> {
   }
 }
 
+export const fetchCouponUses = () => required(unwrap(api().GET("/api/v1/orders/mine/coupons")));
 export const fetchWarranties = () => required(unwrap(api().GET("/api/v1/warranties/mine")));
 export const fetchInvoices = () => required(unwrap(api().GET("/api/v1/invoices/mine")));
 export const fetchRequests = () => required(unwrap(api().GET("/api/v1/account/requests")));

@@ -19,7 +19,7 @@ internal static class CustomerAccountConfiguration
         model.Entity<CustomerNotification>(entity =>
         {
             entity.ToTable("customer_notifications", table =>
-                table.HasCheckConstraint("ck_customer_notifications_kind", "kind IN ('OrderStatus','BackInStock')"));
+                table.HasCheckConstraint("ck_customer_notifications_kind", "kind IN ('OrderStatus','BackInStock','RequestReply')"));
             entity.HasKey(item => item.Id);
             entity.Property(item => item.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(item => item.UserAccountId).HasColumnName("user_account_id");

@@ -12,7 +12,8 @@ public sealed class AccountRequestService(IDbContextFactory<StorefrontDbContext>
         var rows = await db.CustomerRequests.AsNoTracking().Where(request => request.UserAccountId == userId)
             .OrderByDescending(request => request.CreatedAtUtc).ThenByDescending(request => request.Id).ToListAsync(cancellationToken);
         return rows.Select(request => new MyRequestView(request.Code, request.Type, request.Status, request.CreatedAtUtc, request.ClosedAtUtc,
-            request.ModelName ?? request.ItemCode, CustomerRequestRules.OfferVisibleToCustomer(request.Status) ? request.OfferAmount : null)).ToList();
+            request.ModelName ?? request.ItemCode, CustomerRequestRules.OfferVisibleToCustomer(request.Status) ? request.OfferAmount : null,
+            request.Subject, request.Message, request.Reply, request.RepliedAtUtc)).ToList();
     }
 
     /// <summary>Requests saved on the account, plus the ones sent without signing in from the account's phone.</summary>

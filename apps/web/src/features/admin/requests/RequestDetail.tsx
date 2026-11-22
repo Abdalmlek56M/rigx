@@ -9,6 +9,7 @@ import { useSubmit } from "../kit/use-submit";
 import { RequestActions } from "./RequestActions";
 import { RequestNoteForm } from "./RequestNoteForm";
 import { RequestOfferForm } from "./RequestOfferForm";
+import { RequestReplyForm } from "./RequestReplyForm";
 import { RequestStatusBadge } from "./RequestBadges";
 import { canMarkBackInStockSent, requestTitle, requestTrail, requestTypeKey, type TrailStep } from "./request-labels";
 import { fetchRequest, fetchWhatsAppReply, markBackInStockSent, requestPhotoUrl, type RequestDetail as Detail } from "./requests-api";
@@ -157,6 +158,7 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
       ) : null}
 
       <RequestOfferForm key={`offer-${request.rowVersion}`} request={request} canManage={canManage} onSaved={saved} onStale={reload} />
+      <RequestReplyForm key={`reply-${request.rowVersion}`} request={request} canManage={canManage} onSaved={saved} onStale={reload} />
       <RequestNoteForm key={`note-${request.rowVersion}`} request={request} canManage={canManage} onSaved={saved} onStale={reload} />
       <RequestActions request={request} canManage={canManage} canConvert={canConvert} onSaved={saved} onStale={reload} />
       <BackInStock request={request} onSaved={saved} />

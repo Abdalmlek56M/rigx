@@ -9,11 +9,11 @@ public sealed class CustomerNotification
     public Guid Id { get; set; }
     public Guid UserAccountId { get; set; }
     public required string Kind { get; set; }
-    /// <summary>Order reference (OrderStatus) or item name (BackInStock).</summary>
+    /// <summary>Order reference (OrderStatus), item name (BackInStock) or request code (RequestReply).</summary>
     public required string Subject { get; set; }
     /// <summary>The order status the customer sees (OrderStatus only).</summary>
     public string? Status { get; set; }
-    /// <summary>Order id (OrderStatus) or RX code (BackInStock).</summary>
+    /// <summary>Order id (OrderStatus), RX code (BackInStock) or request code (RequestReply).</summary>
     public required string Target { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset? ReadAtUtc { get; set; }
@@ -23,6 +23,7 @@ public static class CustomerNotificationKind
 {
     public const string OrderStatus = "OrderStatus";
     public const string BackInStock = "BackInStock";
+    public const string RequestReply = "RequestReply";
 }
 
 public static class CustomerNotificationRules

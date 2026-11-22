@@ -33,13 +33,17 @@ public sealed class SavedBuildService(SavedBuildStore store, BuildReactionStore 
     public async Task<SavedBuildSummary> SetVisibilityAsync(string token, Guid userId, BuildVisibility visibility, CancellationToken cancellationToken) =>
         Summary(await store.SetVisibilityAsync(token, userId, visibility, cancellationToken));
 
+    /// <summary>"Save to my builds" (see <see cref="SavedBuildStore.CopyToAccountAsync"/>).</summary>
+    public async Task<SavedBuildSummary> CopyToAccountAsync(string token, Guid userId, CancellationToken cancellationToken) =>
+        Summary(await store.CopyToAccountAsync(token, userId, cancellationToken));
+
     public Task DeleteAsync(string token, Guid userId, CancellationToken cancellationToken) => store.DeleteAsync(token, userId, cancellationToken);
 
     public async Task<IReadOnlyList<SavedBuildSummary>> ListMineAsync(Guid userId, CancellationToken cancellationToken) =>
         (await store.ListMineAsync(userId, cancellationToken)).Select(Summary).ToList();
 
     private static SavedBuildSummary Summary(SavedBuild build) =>
-        new(build.Token, build.Name, build.Usage, build.Visibility, build.Moderation?.Status, build.Parts.Count, build.UpdatedAtUtc);
+        new(build.Token, build.Name, build.Usage, build.Visibility, build.Moderation?.Status, build.Parts.Count, build.UpdatedAtUtc, build.ViewCount);
 
     /// <summary>A conflict may be saved; a part that is not a published item may not.</summary>
     private async Task<(string? Usage, IReadOnlyList<SavedBuildPart> Selection, BuilderEvaluation Evaluation)> ValidateAsync(string? usage,

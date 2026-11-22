@@ -10,8 +10,11 @@ public sealed record CustomerOrderRow(Guid Id, string Reference, DateTimeOffset 
 public sealed record CustomerOrderStats(int OrderCount, decimal TotalSpent, DateTimeOffset? LastOrderAtUtc, string? LeadSource, string? Usage,
     string? Governorate);
 
+/// <summary>One coupon the customer used: the code, what it took off the order, and the order it was used on (newest first in lists).</summary>
+public sealed record CouponUseView(string Code, decimal Discount, Guid OrderId, string Reference, DateTimeOffset UsedAtUtc, string OrderStatus);
+
 public sealed record CustomerSalesView(CustomerOrderStats Stats, IReadOnlyList<CustomerOrderRow> Orders, IReadOnlyList<WarrantyAdminView> Warranties,
-    bool Blacklisted);
+    bool Blacklisted, IReadOnlyList<CouponUseView> CouponUses);
 
 /// <summary>How many records moved to the account that was kept.</summary>
 public sealed record CustomerSalesMoved(int Orders, int Warranties);

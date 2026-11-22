@@ -1,5 +1,5 @@
 /** Request type/status labels and the actions each state allows. Pure, so it is tested. Messages live under `admin.requests`. */
-export const REQUEST_TYPES = ["Sell", "TradeIn", "Upgrade", "NotifyMe", "Support", "Contact", "Service"] as const;
+export const REQUEST_TYPES = ["Sell", "TradeIn", "Upgrade", "NotifyMe", "Support", "Contact", "Service", "Complaint", "Suggestion"] as const;
 export type RequestTypeKey = (typeof REQUEST_TYPES)[number] | "Other";
 
 export const REQUEST_STATUSES = ["New", "Following", "Offered", "Accepted", "Rejected", "Converted", "Closed"] as const;
@@ -56,6 +56,13 @@ export function canClose(status: string): boolean {
 /** A decision is only possible while an offer is on the table. */
 export function canDecide(status: string): boolean {
   return requestStatusKey(status) === "Offered";
+}
+
+const REPLY_TYPES: readonly RequestTypeKey[] = ["Complaint", "Suggestion", "Support", "Contact"];
+
+/** Complaints, suggestions, support and contact messages get a written answer that the customer reads in their account. */
+export function replyAllowed(type: string): boolean {
+  return REPLY_TYPES.includes(requestTypeKey(type));
 }
 
 /** A notify-me request that matched stock and was not messaged yet. */

@@ -77,6 +77,30 @@ public sealed class SavedBuildStore(IDbContextFactory<PcBuilderDbContext> contex
         return build;
     }
 
+    /// <summary>
+    /// "Save to my builds": keeps a copy of a build the account can open (its own, or one shared by link or in the gallery) in the account,
+    /// private, so it can be reopened and edited. A build the account already keeps with the same parts is returned instead of a second copy.
+    /// </summary>
+    public async Task<SavedBuild> CopyToAccountAsync(string token, Guid userId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var source = await db.SavedBuilds.AsNoTracking().Include(entry => entry.Moderation).SingleOrDefaultAsync(entry => entry.Token == token, cancellationToken);
+        if (source is null || !BuildVisibilityRules.CanView(source.Visibility, source.UserAccountId, userId)) throw NotFound();
+        if (source.UserAccountId == userId) return source;
+        var mine = await db.SavedBuilds.AsNoTracking().Include(entry => entry.Moderation).Where(entry => entry.UserAccountId == userId).ToListAsync(cancellationToken);
+        if (mine.FirstOrDefault(entry => entry.Parts.SequenceEqual(source.Parts)) is { } existing) return existing;
+        SavedBuildRules.EnsureRoomForAnother(mine.Count);
+        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        var copy = new SavedBuild
+        {
+            Id = Guid.CreateVersion7(), Token = SavedBuildRules.NewToken(), UserAccountId = userId, Name = source.Name, Usage = source.Usage,
+            Parts = source.Parts.ToList(), Visibility = BuildVisibility.Private, CreatedAtUtc = now, UpdatedAtUtc = now
+        };
+        db.SavedBuilds.Add(copy);
+        await db.SaveChangesAsync(cancellationToken);
+        return copy;
+    }
+
     public async Task DeleteAsync(string token, Guid userId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);

@@ -71,6 +71,6 @@ public sealed class CustomerProfileComposer(
         return new CustomerViewAs(profile!, await addresses.ListAsync(id, cancellationToken),
             await orders.ListMyOrdersAsync(id, cancellationToken), await warranties.ListMineAsync(id, cancellationToken),
             await invoices.ListMineAsync(id, cancellationToken), await requests.ListMineAsync(id, cancellationToken),
-            await builds.ListMineAsync(id, cancellationToken));
+            await builds.ListMineAsync(id, cancellationToken), await orders.ListMyCouponUsesAsync(id, cancellationToken));
     }
 }

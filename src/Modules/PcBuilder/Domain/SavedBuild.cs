@@ -19,6 +19,9 @@ public sealed class SavedBuild
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public long RowVersion { get; set; } = 1;
 
+    /// <summary>Visitors who opened the build (one per visitor per day, see <see cref="BuildViewRules"/>); saved in batches, so a little behind.</summary>
+    public long ViewCount { get; set; }
+
     /// <summary>The admin's decision, once the build has been made public; null for a build that never was.</summary>
     public BuildModeration? Moderation { get; set; }
 }

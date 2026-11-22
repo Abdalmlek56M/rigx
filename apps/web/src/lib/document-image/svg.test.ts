@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { firstFontFamily, fontFaceCss, fontFaceUrl, quoteFileName, wrapInSvg } from "./quote-image-svg.ts";
+import { firstFontFamily, fontFaceCss, fontFaceUrl, imageFileName, wrapInSvg } from "./svg.ts";
 
 describe("firstFontFamily", () => {
   it("takes the first family and drops its quotes", () => {
@@ -37,10 +37,11 @@ describe("wrapInSvg", () => {
   });
 });
 
-describe("quoteFileName", () => {
+describe("imageFileName", () => {
   it("is safe to save and falls back to a plain name", () => {
-    assert.equal(quoteFileName("Gaming PC / 2026"), "rigx-quote-Gaming-PC-2026.png");
-    assert.equal(quoteFileName("جهاز"), "rigx-quote.png");
-    assert.equal(quoteFileName(""), "rigx-quote.png");
+    assert.equal(imageFileName("quote", "Gaming PC / 2026"), "rigx-quote-Gaming-PC-2026.png");
+    assert.equal(imageFileName("quote", "جهاز"), "rigx-quote.png");
+    assert.equal(imageFileName("invoice", "INV-2026-0012"), "rigx-invoice-INV-2026-0012.png");
+    assert.equal(imageFileName("invoice", ""), "rigx-invoice.png");
   });
 });

@@ -1,4 +1,4 @@
-import { firstFontFamily, fontFaceCss, fontFaceUrl, wrapInSvg, type EmbeddedFace } from "./quote-image-svg";
+import { firstFontFamily, fontFaceCss, fontFaceUrl, wrapInSvg, type EmbeddedFace } from "./svg";
 
 export type PngDelivery = "copied" | "saved";
 

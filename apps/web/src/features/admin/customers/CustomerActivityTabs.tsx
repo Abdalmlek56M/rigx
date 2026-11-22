@@ -22,6 +22,7 @@ type Sales = CustomerProfile["sales"];
 type Order = Sales["orders"][number];
 type Warranty = Sales["warranties"][number];
 type Request = CustomerProfile["requests"][number];
+type CouponUse = Sales["couponUses"][number];
 
 const tabButton = "h-10 whitespace-nowrap rounded-control px-3.5 text-[13px]";
 
@@ -67,7 +68,7 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
   const locale = useLocale();
   const [rawTab, setRawTab] = useState("orders");
   const tab = customerTab(rawTab);
-  const { orders, warranties } = profile.sales;
+  const { orders, warranties, couponUses } = profile.sales;
   const requests = profile.requests;
 
   const requestColumns: Column<Request>[] = [
@@ -80,8 +81,8 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
   return (
     <section className="flex min-w-0 flex-col gap-3.5 rounded-card border border-line bg-surface p-5">
       <div role="group" aria-label={t("detailTitle")} className="flex flex-wrap gap-1 rounded-card border border-line bg-surface p-1">
-        {(["orders", "warranties", "requests", "notes"] as const).map((key) => {
-          const count = key === "orders" ? orders.length : key === "warranties" ? warranties.length : key === "requests" ? requests.length : null;
+        {(["orders", "warranties", "coupons", "requests", "notes"] as const).map((key) => {
+          const count = key === "orders" ? orders.length : key === "warranties" ? warranties.length : key === "coupons" ? couponUses.length : key === "requests" ? requests.length : null;
           return (
             <button
               key={key} type="button" aria-pressed={tab === key} onClick={() => setRawTab(key)}
@@ -95,6 +96,7 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
 
       {tab === "orders" ? <OrdersTable orders={orders} onRetry={onRetry} /> : null}
       {tab === "warranties" ? <WarrantiesTable warranties={warranties} onRetry={onRetry} /> : null}
+      {tab === "coupons" ? <CouponUsesTable uses={couponUses} onRetry={onRetry} /> : null}
       {tab === "requests" ? <DataTable label={t("tabs.requests", { count: requests.length })} columns={requestColumns} state={ready(requests)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("requests.empty")} /> : null}
       {tab === "notes" ? <NoteEditor key={`${profile.account.id}-${profile.account.note ?? ""}`} note={profile.account.note} canManage={canManage} save={(note) => saveCustomerNote(profile.account.id, note)} onSaved={onChanged} /> : null}
     </section>
@@ -118,6 +120,21 @@ export function OrdersTable({ orders, onRetry }: { orders: readonly Order[]; onR
     { key: "status", header: t("orders.status"), cell: (row) => <StatusBadge tone={orderTone(row.status)}>{orderStatus(orderStatusKey(row.status))}</StatusBadge> }
   ];
   return <DataTable label={t("tabs.orders", { count: orders.length })} columns={orderColumns} state={ready(orders)} onRetry={onRetry} rowKey={(row) => row.id} empty={t("orders.empty")} />;
+}
+
+/** The coupons a person used: the code, what it took off, the order and when. Shared with "view as customer". */
+export function CouponUsesTable({ uses, onRetry }: { uses: readonly CouponUse[]; onRetry: () => void }) {
+  const t = useTranslations("admin.customers");
+  const orderStatus = useTranslations("orderStatus");
+  const locale = useLocale();
+  const columns: Column<CouponUse>[] = [
+    { key: "code", header: t("coupons.code"), cell: (row) => <span dir="ltr" className="font-mono text-xs font-bold">{row.code}</span> },
+    { key: "order", header: t("coupons.order"), cell: (row) => <span dir="ltr" className="font-mono text-xs text-orange-text">{row.reference}</span> },
+    { key: "date", header: t("coupons.date"), cell: (row) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDateTime(row.usedAtUtc, locale)}</span> },
+    { key: "discount", header: t("coupons.discount"), align: "end", cell: (row) => <span className="whitespace-nowrap font-bold">{formatEgp(row.discount, locale)}</span> },
+    { key: "status", header: t("orders.status"), cell: (row) => <StatusBadge tone={orderTone(row.orderStatus)}>{orderStatus(orderStatusKey(row.orderStatus))}</StatusBadge> }
+  ];
+  return <DataTable label={t("tabs.coupons", { count: uses.length })} columns={columns} state={ready(uses)} onRetry={onRetry} rowKey={(row) => row.orderId} empty={t("coupons.empty")} />;
 }
 
 /** A person's warranties with their end date and state. */

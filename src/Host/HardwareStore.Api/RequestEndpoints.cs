@@ -37,6 +37,7 @@ public static class RequestEndpoints
         admin.MapPost("/{id:guid}/offer", OfferAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/decision", DecideAsync).RequirePermission(Manage);
         admin.MapPut("/{id:guid}/note", SetNoteAsync).RequirePermission(Manage);
+        admin.MapPost("/{id:guid}/reply", ReplyAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/back-in-stock/sent", BackInStockSentAsync).RequirePermission(Manage);
         admin.MapPost("/{id:guid}/convert", ConvertAsync).RequirePermission(Manage);
         return endpoints;
@@ -128,6 +129,15 @@ public static class RequestEndpoints
 
     private static async Task<Ok<CustomerRequestView>> SetNoteAsync(Guid id, RequestNoteRequest request, RequestFollowUpService followUp, CancellationToken ct) =>
         TypedResults.Ok(await followUp.SetNoteAsync(id, request.InternalNote, request.RowVersion, ct));
+
+    /// <summary>Saves the written answer, then tells the customer's bell when the request belongs to an account.</summary>
+    private static async Task<Ok<CustomerRequestView>> ReplyAsync(Guid id, RequestReplyRequest request, RequestFollowUpService followUp,
+        CustomerNotificationService notifications, CancellationToken ct)
+    {
+        var view = await followUp.ReplyAsync(id, request.Reply, request.RowVersion, ct);
+        if (view.UserAccountId is { } accountId) await notifications.AddRequestReplyAsync(accountId, view.Code, ct);
+        return TypedResults.Ok(view);
+    }
 
     private static async Task<Ok<CustomerRequestView>> ConvertAsync(Guid id, RequestConvertRequest request, HttpContext context,
         RequestPurchaseConversion conversion, CancellationToken ct)

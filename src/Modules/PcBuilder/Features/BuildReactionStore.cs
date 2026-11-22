@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Modules.PcBuilder;
 
-/// <summary>What a visitor sees under a build: the two counts and, for a signed-in visitor, which of them are theirs.</summary>
-public sealed record BuildReactionSummary(int Hearts, int Likes, bool Hearted, bool Liked);
+/// <summary>What a visitor sees under a build: the two counts, how many visitors opened it, and for a signed-in visitor which reactions are theirs.</summary>
+public sealed record BuildReactionSummary(int Hearts, int Likes, bool Hearted, bool Liked, long Views);
 
 /// <summary>
 /// Hearts and likes on saved builds. One row per build, account and kind: adding twice or removing what is not there changes nothing,
@@ -59,6 +59,8 @@ public sealed class BuildReactionStore(IDbContextFactory<PcBuilderDbContext> con
         var rows = await db.BuildReactions.AsNoTracking().Where(reaction => buildIds.Contains(reaction.SavedBuildId))
             .GroupBy(reaction => new { reaction.SavedBuildId, reaction.Kind })
             .Select(group => new { group.Key.SavedBuildId, group.Key.Kind, Count = group.Count() }).ToListAsync(cancellationToken);
+        var views = await db.SavedBuilds.AsNoTracking().Where(build => buildIds.Contains(build.Id))
+            .Select(build => new { build.Id, build.ViewCount }).ToDictionaryAsync(build => build.Id, build => build.ViewCount, cancellationToken);
         var mine = viewerId is Guid viewer
             ? await db.BuildReactions.AsNoTracking().Where(reaction => reaction.UserAccountId == viewer && buildIds.Contains(reaction.SavedBuildId))
                 .Select(reaction => new { reaction.SavedBuildId, reaction.Kind }).ToListAsync(cancellationToken)
@@ -67,7 +69,8 @@ public sealed class BuildReactionStore(IDbContextFactory<PcBuilderDbContext> con
             rows.Where(row => row.SavedBuildId == id && row.Kind == BuildReactionKind.Heart).Sum(row => row.Count),
             rows.Where(row => row.SavedBuildId == id && row.Kind == BuildReactionKind.Like).Sum(row => row.Count),
             mine.Any(entry => entry.SavedBuildId == id && entry.Kind == BuildReactionKind.Heart),
-            mine.Any(entry => entry.SavedBuildId == id && entry.Kind == BuildReactionKind.Like)));
+            mine.Any(entry => entry.SavedBuildId == id && entry.Kind == BuildReactionKind.Like),
+            views.GetValueOrDefault(id)));
     }
 
     private static async Task<Guid> ViewableIdAsync(PcBuilderDbContext db, string token, Guid userId, CancellationToken cancellationToken)

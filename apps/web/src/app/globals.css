@@ -1113,6 +1113,31 @@ img.swap-photo {
   }
 }
 
+/* A printed-style document (invoice, quote): always the light "workshop white" palette, whatever theme the visitor uses, so the screen, the PDF and the picture agree. */
+.doc-paper {
+  --paper: #f5f5f2;
+  --surface: #ffffff;
+  --ink: #121418;
+  --ink-muted: #4f535a;
+  --line: #e3e2dd;
+  --carbon: #121418;
+  --on-carbon: #f5f5f2;
+  --orange-text: #b84a12;
+  --error-text: #a3321a;
+  /* The utilities read the --color-* aliases, which are resolved once at the root: say them again here so they follow the palette above. */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-carbon: var(--carbon);
+  --color-on-carbon: var(--on-carbon);
+  --color-orange-text: var(--orange-text);
+  --color-error-text: var(--error-text);
+  background: var(--surface);
+  color: var(--ink);
+}
+
 /* Pages marked data-print-document (the PDF quote), data-print-invoice (the A4 invoice) or data-print-export (the admin PDF export) print alone, on white paper, whatever the theme. */
 @media print {
   .page-glow {
@@ -1146,18 +1171,20 @@ img.swap-photo {
     print-color-adjust: exact;
   }
 
-  [data-quote-frame] {
-    width: 1080px !important;
-    height: 1350px !important;
-  }
-
-  [data-quote-card] {
-    transform: none !important;
-  }
-
   [data-print-invoice] {
     page: invoice;
     print-color-adjust: exact;
+  }
+
+  /* The fixed-size paper loses its on-screen scale in print and takes the page's width. */
+  [data-document-frame] {
+    height: auto !important;
+  }
+
+  [data-document-paper] {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
   }
 
   @page export {

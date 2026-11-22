@@ -67,6 +67,7 @@ export function BuildsList() {
                       {usage ? <InfoField label={t("usage")} value={tUsage(usage)} /> : null}
                       <InfoField label={t("partsLabel")} value={t("parts", { count: build.partCount })} />
                       <InfoField label={t("updated")} value={formatDate(build.updatedAtUtc, locale)} />
+                      {build.visibility !== "Private" ? <InfoField label={t("views")} value={String(build.views)} ltr /> : null}
                     </InfoGrid>
                     <BuildVisibilityControl token={build.token} visibility={parseVisibility(build.visibility)} moderation={build.moderation ?? null} />
                   </Card>

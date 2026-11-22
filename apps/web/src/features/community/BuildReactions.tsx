@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { unwrap } from "@rigx/api-client";
 import { Button } from "@/components/ui/Button";
-import { HeartIcon, ThumbUpIcon } from "@/components/ui/icons";
+import { EyeIcon, HeartIcon, ThumbUpIcon } from "@/components/ui/icons";
 import { loginHref } from "@/features/auth/auth-rules";
 import { useSession } from "@/features/auth/use-session";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -20,7 +20,7 @@ function send(token: string, kind: ReactionKind, remove: boolean): Promise<React
 }
 
 /**
- * A heart (it goes to the favourites) and a like on a shared build, each with its count. A visitor who is not signed in is taken to sign in
+ * A heart (it goes to the favourites) and a like on a shared build, each with its count, and beside them how many visitors opened it. A visitor who is not signed in is taken to sign in
  * first; a failed save flips the button back and says so. The server's answer replaces the counts the screen guessed.
  */
 export function BuildReactions({ token, initial }: { token: string; initial: Reactions }) {
@@ -55,6 +55,13 @@ export function BuildReactions({ token, initial }: { token: string; initial: Rea
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      <span
+        title={t("views", { count: reactions.views })} aria-label={t("views", { count: reactions.views })}
+        className="inline-flex h-9 items-center gap-1.5 rounded-control px-2 text-[13px] font-bold text-ink-muted"
+      >
+        <EyeIcon size={16} />
+        <span dir="ltr" className="font-mono tabular-nums">{reactions.views}</span>
+      </span>
       {buttons.map(({ kind, icon: ReactionIcon, count, on, label }) => (
         <Button
           key={kind}

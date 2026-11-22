@@ -32,8 +32,8 @@ export function wrapInSvg(markup: string, css: string, width: number, height: nu
     `<style>${css}</style><foreignObject x="0" y="0" width="${width}" height="${height}">${markup}</foreignObject></svg>`;
 }
 
-/** The file name of the saved picture: `rigx-quote-<token or date>.png`. */
-export function quoteFileName(label: string): string {
+/** The file name of the saved picture: `rigx-<kind>-<label>.png` (for example `rigx-invoice-INV-2026-0012.png`); a label with no Latin letters or digits is left out. */
+export function imageFileName(kind: string, label: string): string {
   const safe = label.replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
-  return `rigx-quote${safe ? `-${safe}` : ""}.png`;
+  return `rigx-${kind}${safe ? `-${safe}` : ""}.png`;
 }

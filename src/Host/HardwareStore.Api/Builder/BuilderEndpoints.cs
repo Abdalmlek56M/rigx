@@ -1,3 +1,4 @@
+using HardwareStore.Modules.PcBuilder;
 using HardwareStore.Common.Domain.Paging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -19,8 +20,11 @@ public static class BuilderEndpoints
         builder.MapPost("/quote", QuoteAsync);
         builder.MapPost("/saved", SaveAsync).RequireRateLimiting(IdentityRateLimitPolicies.BuilderSave);
         builder.MapGet("/saved/{token}", GetSavedAsync);
+        builder.MapPost("/saved/{token}/views", RecordViewAsync).RequireRateLimiting(IdentityRateLimitPolicies.BuilderView);
         endpoints.MapPut("/api/v1/builder/saved/{token}", UpdateSavedAsync).RequireAuthorization();
         endpoints.MapPut("/api/v1/builder/saved/{token}/visibility", SetVisibilityAsync).RequireAuthorization();
+        endpoints.MapPost("/api/v1/builder/saved/{token}/copy", CopyToAccountAsync).RequireAuthorization()
+            .RequireRateLimiting(IdentityRateLimitPolicies.BuilderSave);
         endpoints.MapDelete("/api/v1/builder/saved/{token}", DeleteSavedAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/account/builds", ListMineAsync).RequireAuthorization();
         return endpoints;
@@ -68,6 +72,23 @@ public static class BuilderEndpoints
         context.Response.Headers.CacheControl = "no-store";
         Guid? userId = context.TryGetUserId(out var id) ? id : null;
         return TypedResults.Ok(await saved.GetAsync(token, userId, ct));
+    }
+
+    /// <summary>The browser tells the API a visitor opened the build; the count is kept in memory (see <c>BuildViewStore</c>), so this answers at once.</summary>
+    private static async Task<NoContent> RecordViewAsync(string token, HttpContext context, BuildViewStore views, CancellationToken ct)
+    {
+        Guid? viewerId = context.TryGetUserId(out var id) ? id : null;
+        var userAgent = context.Request.Headers.UserAgent.ToString();
+        var visitor = BuildViewRules.VisitorKey(viewerId, context.Connection.RemoteIpAddress?.ToString(), userAgent);
+        await views.RecordAsync(token, viewerId, visitor, userAgent, ct);
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<Ok<SavedBuildSummary>> CopyToAccountAsync(string token, HttpContext context, SavedBuildService saved, CancellationToken ct)
+    {
+        var userId = context.RequireUserId();
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(await saved.CopyToAccountAsync(token, userId, ct));
     }
 
     private static async Task<Ok<SavedBuildView>> UpdateSavedAsync(string token, BuilderSaveUpdateRequest request, HttpContext context, SavedBuildService saved,

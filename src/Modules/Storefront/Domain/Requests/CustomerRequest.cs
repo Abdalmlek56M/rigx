@@ -34,6 +34,9 @@ public sealed class CustomerRequest
     public decimal? OfferAmount { get; set; }
     public decimal? ExpectedResale { get; set; }
     public string? InternalNote { get; set; }
+    /// <summary>The store's written answer to a complaint, suggestion, support or contact message; the customer sees it in their account.</summary>
+    public string? Reply { get; set; }
+    public DateTimeOffset? RepliedAtUtc { get; set; }
     /// <summary>Photo upload: only the SHA-256 of the token the customer holds, and when it stops working.</summary>
     public string? PhotoTokenHash { get; set; }
     public DateTimeOffset? PhotoTokenExpiresAtUtc { get; set; }

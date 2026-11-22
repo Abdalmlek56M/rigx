@@ -92,9 +92,12 @@ public sealed record AdminOrderDetailView(OrderView Order, IReadOnlyList<AdminOr
 public sealed record ReturnView(Guid Id, Guid OrderId, Guid OrderItemId, Guid UnitId, decimal RefundAmount, string Reason, string Status, string? InspectionCondition, string? InspectionNotes, Guid? InspectedByUserAccountId, DateTimeOffset? InspectedAtUtc, DateTimeOffset CreatedAtUtc, long RowVersion);
 public sealed record BlacklistView(Guid Id, string? Name, string? PhoneNumber, string? Email, string? AddressText, string Reason, DateTimeOffset CreatedAtUtc);
 
-/// <summary>Public tracking page (/t/{token}): no login, no customer name or phone.</summary>
+/// <summary>
+/// Public tracking page (/t/{token}): no login, no customer name, and the phone only masked (<paramref name="MaskedPhone"/>). When
+/// <paramref name="DetailsHidden"/> (long after delivery, see <see cref="TrackingRules"/>) only the reference, status and timeline are filled.
+/// </summary>
 public sealed record TrackingView(string Reference, string Status, string FulfillmentMethod, IReadOnlyList<TrackingStep> Timeline,
     string? CourierName, string? WaybillNumber, string? Area, IReadOnlyList<TrackingItem> Items, decimal Total,
-    decimal Remaining, decimal UpfrontDue, string? DeliveryTime, bool CanRate, int? SatisfactionScore);
+    decimal Remaining, decimal UpfrontDue, string? DeliveryTime, bool CanRate, int? SatisfactionScore, string? MaskedPhone, bool DetailsHidden);
 public sealed record TrackingStep(string Status, DateTimeOffset At);
 public sealed record TrackingItem(string Name, string? Code, int Quantity);

@@ -2,7 +2,7 @@ import { ApiError, unwrap, type Schemas } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 
-export type RequestType = "Sell" | "TradeIn" | "Upgrade" | "NotifyMe" | "Support" | "Contact" | "Service";
+export type RequestType = "Sell" | "TradeIn" | "Upgrade" | "NotifyMe" | "Support" | "Contact" | "Service" | "Complaint" | "Suggestion";
 export type RequestFields = Partial<Omit<Schemas["CustomerRequestSubmission"], "type" | "website">>;
 
 export type SubmitOutcome =

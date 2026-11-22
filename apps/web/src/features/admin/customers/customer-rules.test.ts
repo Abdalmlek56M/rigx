@@ -6,6 +6,7 @@ describe("customer helpers", () => {
   it("falls back to the first tab for an unknown one", () => {
     assert.equal(customerTab("warranties"), "warranties");
     assert.equal(customerTab("weird"), "orders");
+    assert.equal(customerTab("coupons"), "coupons");
   });
 
   it("names the month and year in the visitor's language", () => {

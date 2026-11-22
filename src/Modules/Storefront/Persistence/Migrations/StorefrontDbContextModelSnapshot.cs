@@ -477,7 +477,7 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
 
                     b.ToTable("customer_notifications", null, t =>
                         {
-                            t.HasCheckConstraint("ck_customer_notifications_kind", "kind IN ('OrderStatus','BackInStock')");
+                            t.HasCheckConstraint("ck_customer_notifications_kind", "kind IN ('OrderStatus','BackInStock','RequestReply')");
                         });
 
                     b.HasAnnotation("Rigx:AuditExcluded", true);
@@ -620,6 +620,15 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("purchase_id");
 
+                    b.Property<DateTimeOffset?>("RepliedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("replied_at_utc");
+
+                    b.Property<string>("Reply")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("reply");
+
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
@@ -691,7 +700,7 @@ namespace HardwareStore.Modules.Storefront.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_customer_requests_status", "status IN ('New','Following','Offered','Accepted','Rejected','Converted','Closed')");
 
-                            t.HasCheckConstraint("ck_customer_requests_type", "type IN ('Sell','TradeIn','Upgrade','NotifyMe','Support','Contact','Service')");
+                            t.HasCheckConstraint("ck_customer_requests_type", "type IN ('Sell','TradeIn','Upgrade','NotifyMe','Support','Contact','Service','Complaint','Suggestion')");
                         });
                 });
 

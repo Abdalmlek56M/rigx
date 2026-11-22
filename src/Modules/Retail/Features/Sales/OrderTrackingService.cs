@@ -10,7 +10,7 @@ public sealed class OrderTrackingService(IDbContextFactory<RetailDbContext> cont
     public async Task<TrackingView> GetAsync(string token, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return ToView(await FindAsync(db, token, tracked: false, cancellationToken));
+        return ToView(await FindAsync(db, token, tracked: false, cancellationToken), timeProvider.GetUtcNow());
     }
 
     /// <summary>One rating (1–5) per order, once it is delivered.</summary>
@@ -24,7 +24,7 @@ public sealed class OrderTrackingService(IDbContextFactory<RetailDbContext> cont
         order.SatisfactionComment = OrderRules.Optional(request.Comment, 500, "Comment");
         order.RatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime();
         await db.SaveChangesAsync(cancellationToken);
-        return ToView(order);
+        return ToView(order, timeProvider.GetUtcNow());
     }
 
     private static async Task<StoreOrder> FindAsync(RetailDbContext db, string token, bool tracked, CancellationToken cancellationToken)
@@ -39,11 +39,18 @@ public sealed class OrderTrackingService(IDbContextFactory<RetailDbContext> cont
     private static bool CanRate(StoreOrder order) =>
         order.SatisfactionScore is null && order.Status is OrderStatus.Delivered or OrderStatus.Completed;
 
-    private static TrackingView ToView(StoreOrder order) =>
-        new(order.Reference, OrderMapping.CustomerStatus(order), order.FulfillmentMethod, OrderMapping.CustomerTimeline(order),
-            order.CourierName, order.WaybillNumber, order.Area,
-            order.Items.Select(item => new TrackingItem(item.Name, item.Code, item.Quantity)).ToList(), order.Total,
-            OrderRules.Remaining(order), OrderRules.UpfrontDue(order), order.DeliveryTime, CanRate(order), order.SatisfactionScore);
+    private static TrackingView ToView(StoreOrder order, DateTimeOffset now)
+    {
+        var timeline = OrderMapping.CustomerTimeline(order);
+        var status = OrderMapping.CustomerStatus(order);
+        var deliveredAt = status == OrderStatus.Delivered ? timeline.LastOrDefault(step => step.Status == OrderStatus.Delivered)?.At : null;
+        if (TrackingRules.DetailsExpired(deliveredAt, now, TrackingRules.DetailsVisibleDays))
+            return new TrackingView(order.Reference, status, order.FulfillmentMethod, timeline, null, null, null, [], 0m, 0m, 0m, null, false,
+                order.SatisfactionScore, null, true);
+        return new TrackingView(order.Reference, status, order.FulfillmentMethod, timeline, order.CourierName, order.WaybillNumber, order.Area,
+            order.Items.Select(item => new TrackingItem(item.Name, item.Code, item.Quantity)).ToList(), order.Total, OrderRules.Remaining(order),
+            OrderRules.UpfrontDue(order), order.DeliveryTime, CanRate(order), order.SatisfactionScore, TrackingRules.MaskPhone(order.PhoneNumber), false);
+    }
 
     private static RetailException NotFound() => new(404, "The order was not found.");
 }

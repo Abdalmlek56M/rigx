@@ -3,7 +3,7 @@ function known<T extends string>(list: readonly T[], value: string): T | null {
   return list.find((item) => item === value) ?? null;
 }
 
-export const REQUEST_TYPES = ["Sell", "TradeIn", "Upgrade", "NotifyMe", "Support", "Contact", "Service"] as const;
+export const REQUEST_TYPES = ["Sell", "TradeIn", "Upgrade", "NotifyMe", "Support", "Contact", "Service", "Complaint", "Suggestion"] as const;
 export type RequestTypeKey = (typeof REQUEST_TYPES)[number] | "Other";
 
 export const REQUEST_STATUSES = ["New", "Following", "Offered", "Accepted", "Rejected", "Converted", "Closed"] as const;

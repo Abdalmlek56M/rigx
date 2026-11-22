@@ -66,7 +66,7 @@ Order matters: we restructure before adding features, so new features land in cl
    - [x] **C** motion and atmosphere (done 22 Nov 2026, see checkpoint 4.11 and `docs/design/storefront-kit.md §6`) (CSS motion, tab indicator, warranty battery, dark-theme glow + circuit canvas, card/image ideas judged, grid/list view, hover swap)
    - [x] **D** builder and shared builds (done 22 Nov 2026, see checkpoint 4.11 and `docs/design/storefront-kit.md §7`) (case blueprint, power bar and advice, wizard, visibility, hearts and likes, approved public gallery, copy as PNG; migration M61)
    - [x] **E1** one badge set, square choice tiles, the case drawing with real parts, page-wide dark glow, theme kept across a language switch (done 22 Nov 2026, see checkpoint 4.11 "Phase E1" and `docs/design/storefront-kit.md §1, §4, §6, §7`). UI only, no migration
-   - [ ] **E2** customers (complaints + suggestions, history, invoice/quote, notifications, emails)
+   - [x] **E2** customers and documents (done 22 Nov 2026, see checkpoint 4.11 "Phase E2" and `docs/design/storefront-kit.md §8`): complaints + suggestions form with admin reply, coupon history in the account and the admin 360, invoice and quote redesign with copy-as-PNG, bell placement, order lines accordion, tracking phone mask + 90-day rule, save a build to my builds, build view counter, email subject and preheader; migration M62 (Storefront and PcBuilder)
    - [ ] **F** admin productivity (command palette, POS, purchase, audit log v3, drag ordering, paste, brand rules)
    - [ ] **G** launch work (deploy, email DNS, Search Console/GA4, offers scheduling, final review)
 

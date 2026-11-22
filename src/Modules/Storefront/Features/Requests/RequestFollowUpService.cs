@@ -34,6 +34,10 @@ public sealed class RequestFollowUpService(
             CustomerRequestRules.SetStatus(request, decision!, now);
         }, cancellationToken);
 
+    /// <summary>Writes the store's answer; the customer reads it in their account (the host adds the bell entry).</summary>
+    public Task<CustomerRequestView> ReplyAsync(Guid id, string? reply, long rowVersion, CancellationToken cancellationToken = default) =>
+        UpdateAsync(id, rowVersion, (request, now) => CustomerRequestRules.ApplyReply(request, reply, now), cancellationToken);
+
     public Task<CustomerRequestView> SetNoteAsync(Guid id, string? note, long rowVersion, CancellationToken cancellationToken = default)
     {
         var clean = CustomerRequestRules.CheckNote(note);

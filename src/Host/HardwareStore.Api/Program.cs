@@ -66,6 +66,7 @@ builder.Services.AddSingleton(OrderLinks.FromConfiguration(builder.Configuration
 builder.Services.AddHostedService<ReservationExpiryJob>();
 builder.Services.AddHostedService<RecurringExpenseJob>();
 builder.Services.AddHostedService<BackInStockJob>();
+builder.Services.AddHostedService<BuildViewFlushJob>();
 builder.Services.AddHostedService<TrashPurgeJob>();
 builder.Services.AddHostedService<BackupJob>();
 builder.Services.AddSingleton<WatermarkReapplyJob>();

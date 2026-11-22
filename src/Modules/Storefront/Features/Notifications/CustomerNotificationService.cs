@@ -36,6 +36,9 @@ public sealed class CustomerNotificationService(IDbContextFactory<StorefrontDbCo
     public Task AddBackInStockAsync(Guid accountId, string itemCode, string itemName, CancellationToken cancellationToken = default) =>
         AddAsync(accountId, CustomerNotificationKind.BackInStock, itemName, null, itemCode, cancellationToken);
 
+    public Task AddRequestReplyAsync(Guid accountId, string requestCode, CancellationToken cancellationToken = default) =>
+        AddAsync(accountId, CustomerNotificationKind.RequestReply, requestCode, null, requestCode, cancellationToken);
+
     /// <summary>Moves a merged account's notifications to the account that was kept; safe to run again.</summary>
     public async Task MoveAsync(Guid sourceId, Guid targetId, CancellationToken cancellationToken = default)
     {

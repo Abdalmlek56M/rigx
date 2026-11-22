@@ -14,4 +14,4 @@ public sealed record CustomerProfile(CustomerAccountView Account, LoginMethodsVi
 /// <summary>Exactly what the customer's own account pages show (read only).</summary>
 public sealed record CustomerViewAs(CurrentIdentityUser Profile, IReadOnlyList<CustomerAddressView> Addresses, IReadOnlyList<CustomerOrderView> Orders,
     IReadOnlyList<WarrantyAccountView> Warranties, IReadOnlyList<InvoiceSummaryView> Invoices, IReadOnlyList<MyRequestView> Requests,
-    IReadOnlyList<SavedBuildSummary> Builds);
+    IReadOnlyList<SavedBuildSummary> Builds, IReadOnlyList<CouponUseView> CouponUses);

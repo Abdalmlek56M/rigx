@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BuildViewBeacon } from "@/features/builder/BuildViewBeacon";
 import { BuildVisibilityControl } from "@/features/builder/BuildVisibilityControl";
 import { SharedBuildParts } from "@/features/builder/SharedBuildParts";
 import { SharedBuildSummary } from "@/features/builder/SharedBuildSummary";
@@ -49,6 +50,7 @@ export default async function SharedBuildPage({ params }: Props) {
 
   return (
     <>
+      {visibility !== "Private" && !build.isOwner ? <BuildViewBeacon token={token} /> : null}
       <PageHeader
         breadcrumb={[{ label: t("home"), href: "/" }, { label: t("builder"), href: "/builder" }, { label: build.name ?? t("untitled") }]}
         breadcrumbLabel={t("breadcrumb")}
@@ -81,6 +83,7 @@ export default async function SharedBuildPage({ params }: Props) {
           specNames={specNameMap(storefront.categoryTree)}
           whatsApp={{ number: whatsAppNumber(storefront.contactLinks), template: storefront.whatsAppTemplates.build }}
           pageUrl={siteUrl(storefront.domain, `/b/${token}`)}
+          canSave={!build.isOwner}
         />
       </div>
     </>

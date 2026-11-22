@@ -12,6 +12,7 @@ public static class CustomerRequestRules
 {
     public const decimal MaxAmount = 10_000_000m;
     public const int MaxNoteLength = 2000;
+    public const int MaxReplyLength = 2000;
 
     public static CustomerRequestDraft CheckSubmission(CustomerRequestSubmission request, DateOnly today)
     {
@@ -37,6 +38,10 @@ public static class CustomerRequestRules
                 : common with { ModelName = model, ItemCode = item, Condition = NotifyMeRules.CheckCondition(request.Condition) },
             CustomerRequestType.Support => common with { Message = LongMessage(message), ItemCode = item },
             CustomerRequestType.Contact => common with { Message = LongMessage(message), Subject = Optional(request.Subject, 200, "Subject") },
+            CustomerRequestType.Complaint or CustomerRequestType.Suggestion => common with
+            {
+                Message = LongMessage(message), Subject = Optional(request.Subject, 200, "Subject"), ItemCode = item
+            },
             _ => common with
             {
                 Message = message, ServiceKind = CheckServiceKind(request.ServiceKind), PreferredDate = CheckDate(request.PreferredDate, today)
@@ -46,6 +51,10 @@ public static class CustomerRequestRules
 
     public static bool OffersAllowed(string type) =>
         type is CustomerRequestType.Sell or CustomerRequestType.TradeIn or CustomerRequestType.Upgrade;
+
+    /// <summary>Types the store answers in writing: the answer shows in the customer's account.</summary>
+    public static bool ReplyAllowed(string type) =>
+        type is CustomerRequestType.Complaint or CustomerRequestType.Suggestion or CustomerRequestType.Support or CustomerRequestType.Contact;
 
     public static bool ConvertAllowed(string type) => type is CustomerRequestType.Sell or CustomerRequestType.TradeIn;
 
@@ -95,6 +104,15 @@ public static class CustomerRequestRules
 
     /// <summary>The customer sees the offered amount while it is on the table or accepted; staff estimates never reach the customer.</summary>
     public static bool OfferVisibleToCustomer(string status) => status is CustomerRequestStatus.Offered or CustomerRequestStatus.Accepted;
+
+    /// <summary>Checks the reply and writes it on the request; the first reply moves a New request to Following. Answering a closed request keeps it closed.</summary>
+    public static void ApplyReply(CustomerRequest request, string? reply, DateTimeOffset now)
+    {
+        if (!ReplyAllowed(request.Type)) throw new StorefrontException(400, "This request type does not take a written reply.");
+        request.Reply = Required(reply, 2, MaxReplyLength, "Reply");
+        request.RepliedAtUtc = now;
+        if (request.Status == CustomerRequestStatus.New) SetStatus(request, CustomerRequestStatus.Following, now);
+    }
 
     public static string? CheckNote(string? note) => Optional(note, MaxNoteLength, "Note");
 

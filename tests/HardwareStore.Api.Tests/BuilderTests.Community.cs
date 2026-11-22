@@ -177,15 +177,15 @@ public sealed partial class BuilderTests
         var liked = await ReactAsync(fan, HttpMethod.Put, build.Token, "Like");
         var byOther = await ReactAsync(other, HttpMethod.Put, build.Token, "Heart");
 
-        Assert.Equal(new BuildReactionSummary(1, 0, true, false), twice);
-        Assert.Equal(new BuildReactionSummary(1, 1, true, true), liked);
-        Assert.Equal(new BuildReactionSummary(2, 1, true, false), byOther);
-        Assert.Equal(new BuildReactionSummary(2, 1, false, false), (await OpenAsync(env.Anonymous, build.Token)).Reactions);
-        Assert.Equal(new BuildReactionSummary(2, 1, true, true), (await OpenAsync(fan, build.Token)).Reactions);
+        Assert.Equal(new BuildReactionSummary(1, 0, true, false, 0), twice);
+        Assert.Equal(new BuildReactionSummary(1, 1, true, true, 0), liked);
+        Assert.Equal(new BuildReactionSummary(2, 1, true, false, 0), byOther);
+        Assert.Equal(new BuildReactionSummary(2, 1, false, false, 0), (await OpenAsync(env.Anonymous, build.Token)).Reactions);
+        Assert.Equal(new BuildReactionSummary(2, 1, true, true, 0), (await OpenAsync(fan, build.Token)).Reactions);
 
         var removed = await ReactAsync(fan, HttpMethod.Delete, build.Token, "Heart");
         var again = await ReactAsync(fan, HttpMethod.Delete, build.Token, "Heart");
-        Assert.Equal(new BuildReactionSummary(1, 1, false, true), removed);
+        Assert.Equal(new BuildReactionSummary(1, 1, false, true, 0), removed);
         Assert.Equal(removed, again);
     }
 
@@ -225,9 +225,9 @@ public sealed partial class BuilderTests
 
         var favourites = await ReadAsync<FavouriteList>(await fan.GetAsync("/api/v1/account/favourites"));
         var card = Assert.Single(favourites.SharedBuilds);
-        Assert.Equal((build.Token, new BuildReactionSummary(1, 1, true, true)), (card.Token, card.Reactions));
-        Assert.Equal(new BuildReactionSummary(1, 1, true, true), Assert.Single((await GalleryAsync(fan)).Items).Reactions);
-        Assert.Equal(new BuildReactionSummary(1, 1, false, false), Assert.Single((await GalleryAsync(env.Anonymous)).Items).Reactions);
+        Assert.Equal((build.Token, new BuildReactionSummary(1, 1, true, true, 0)), (card.Token, card.Reactions));
+        Assert.Equal(new BuildReactionSummary(1, 1, true, true, 0), Assert.Single((await GalleryAsync(fan)).Items).Reactions);
+        Assert.Equal(new BuildReactionSummary(1, 1, false, false, 0), Assert.Single((await GalleryAsync(env.Anonymous)).Items).Reactions);
         Assert.Empty((await ReadAsync<FavouriteList>(await owner.GetAsync("/api/v1/account/favourites"))).SharedBuilds);
 
         await UpdateAsync(owner, await OpenAsync(owner, build.Token), Parts(cpu), BuildVisibility.Private);

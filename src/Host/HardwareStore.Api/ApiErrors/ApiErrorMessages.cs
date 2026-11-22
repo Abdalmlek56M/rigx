@@ -402,6 +402,7 @@ public static class ApiErrorMessages
         ["This purchase is no longer a draft."] = "لم تعد فاتورة الشراء هذه مسودة.",
         ["This request has no waiting back-in-stock message."] = "لا توجد رسالة انتظار «عودة المخزون» لهذا الطلب.",
         ["This request type does not take an offer."] = "لا يقبل هذا النوع من الطلبات عرضًا.",
+        ["This request type does not take a written reply."] = "لا يقبل هذا النوع من الطلبات ردًا مكتوبًا.",
         ["This unit already has a return record."] = "لهذه الوحدة سجل مرتجع بالفعل.",
         ["This unit cannot be returned again."] = "لا يمكن إرجاع هذه الوحدة مرة أخرى.",
         ["Too many verification attempts."] = "محاولات التحقق كثيرة جدًا.",

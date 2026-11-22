@@ -29,7 +29,7 @@ public sealed record BuilderFromBuildView(string Code, string Title, string? Usa
 public sealed record SavedBuildView(string Token, string? Name, string? AuthorName, string? Usage, BuildVisibility Visibility, BuildModerationStatus? Moderation,
     DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long RowVersion, bool IsOwner, BuildReactionSummary Reactions, BuilderEvaluation Evaluation);
 public sealed record SavedBuildSummary(string Token, string? Name, string? Usage, BuildVisibility Visibility, BuildModerationStatus? Moderation, int PartCount,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc, long Views);
 
 public sealed record CommunityBuildPart(string Slot, string ModelName);
 

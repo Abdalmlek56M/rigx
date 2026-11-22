@@ -139,7 +139,7 @@ public static class EmailLayout
         {
             OrderEmailMessage.Confirmed => $"تم تأكيد طلبك {reference}",
             OrderEmailMessage.Shipped => $"تم شحن طلبك {reference}",
-            OrderEmailMessage.Invoiced => $"فاتورة طلبك {(invoice.Length > 0 ? invoice : reference)}",
+            OrderEmailMessage.Invoiced => $"تم تسليم طلبك {reference} وهذه فاتورتك{(invoice.Length > 0 ? $" {invoice}" : "")}",
             OrderEmailMessage.Received => $"تم استلام طلبك {reference}",
             OrderEmailMessage.Unreachable => $"تعذّر التواصل معك بخصوص طلبك {reference}",
             _ => $"تحديث طلبك {reference}"
@@ -166,7 +166,7 @@ public static class EmailLayout
             {secondLinkText}
             RIGX
             """;
-        return new EmailContent(subject, text, Wrap(subject, html));
+        return new EmailContent(subject, text, Wrap(subject, html, lineText));
     }
 
     /// <summary>The ordered lines and the totals as a small table (HTML) and as plain lines (text); nothing when the message carries no summary.</summary>
@@ -249,7 +249,8 @@ public static class EmailLayout
     private static string LinkBlock(string url, string label) =>
         $"""<p style="margin:0 0 14px;"><a href="{E(url)}" style="{Button}">{E(label)}</a></p><p dir="ltr" style="{RawLink}">{E(url)}</p>""";
 
-    private static string Wrap(string subject, string body) => $"""
+    /// <summary><paramref name="preheader"/> is the line mail apps show beside the subject; it is hidden in the message itself.</summary>
+    private static string Wrap(string subject, string body, string? preheader = null) => $"""
         <!doctype html>
         <html dir="rtl" lang="ar">
         <head>
@@ -258,6 +259,7 @@ public static class EmailLayout
         <title>{E(subject)}</title>
         </head>
         <body style="margin:0;padding:0;background:#F4F4F1;font-family:Tahoma,Arial,sans-serif;color:#121317;">
+        {Preheader(preheader)}
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#F4F4F1;">
         <tr><td align="center" style="padding:24px 12px;">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:560px;background:#FFFFFF;border-radius:8px;overflow:hidden;">
@@ -283,6 +285,10 @@ public static class EmailLayout
         <= 10 => $"{count.ToString(CultureInfo.InvariantCulture)} دقائق",
         _ => $"{count.ToString(CultureInfo.InvariantCulture)} دقيقة"
     };
+
+    private static string Preheader(string? text) => string.IsNullOrWhiteSpace(text)
+        ? ""
+        : $"""<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all;">{E(Line(text))}</div>""";
 
     private static string E(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
 

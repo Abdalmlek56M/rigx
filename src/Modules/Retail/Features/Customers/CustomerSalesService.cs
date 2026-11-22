@@ -35,11 +35,13 @@ public sealed class CustomerSalesService(IDbContextFactory<RetailDbContext> cont
             {
                 Row = new CustomerOrderRow(order.Id, order.Reference, order.CreatedAtUtc, order.Status, order.Total, order.PaidAmount, order.Channel,
                     order.UserAccountId == accountId),
-                Facts = Facts(order)
+                Facts = Facts(order), order.CouponCode, order.CouponDiscount
             }).ToListAsync(cancellationToken);
         return new CustomerSalesView(CustomerStatsRules.Summarize(rows.Select(row => row.Facts)), rows.Select(row => row.Row).ToList(),
             await warranties.ListForCustomerAsync(accountId, phoneKey, includeSerial, cancellationToken),
-            await blacklist.MatchesContactAsync(phoneKey, email, cancellationToken));
+            await blacklist.MatchesContactAsync(phoneKey, email, cancellationToken),
+            [.. rows.Select(row => CouponUses.Of(row.Row.Id, row.Row.Reference, row.Row.CreatedAtUtc, row.Row.Status, row.CouponCode, row.CouponDiscount))
+                .OfType<CouponUseView>()]);
     }
 
     /// <summary>Moves a merged account's orders and warranties to the account that was kept; safe to run again.</summary>

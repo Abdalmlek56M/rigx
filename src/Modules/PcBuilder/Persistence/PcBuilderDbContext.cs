@@ -33,6 +33,7 @@ public sealed class PcBuilderDbContext(DbContextOptions<PcBuilderDbContext> opti
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone");
             e.Property(x => x.RowVersion).HasColumnName("row_version").HasDefaultValue(1L).IsConcurrencyToken();
+            e.Property(x => x.ViewCount).HasColumnName("view_count").HasDefaultValue(0L);
             e.HasIndex(x => x.Token).IsUnique().HasDatabaseName("ux_saved_builds_token");
             e.HasIndex(x => x.UserAccountId).HasDatabaseName("ix_saved_builds_user_account_id");
             e.HasIndex(x => x.Visibility).HasDatabaseName("ix_saved_builds_visibility");

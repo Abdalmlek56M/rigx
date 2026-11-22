@@ -8,6 +8,7 @@ import {
   canOffer,
   convertAllowed,
   offersAllowed,
+  replyAllowed,
   requestStatusKey,
   requestTitle,
   requestTrail,
@@ -93,5 +94,16 @@ describe("request trail", () => {
   it("has no trail for requests without an offer", () => {
     assert.equal(requestTrail("NotifyMe", "New"), null);
     assert.equal(requestTrail("Contact", "New"), null);
+  });
+});
+
+describe("written replies", () => {
+  it("are for complaints, suggestions, support and contact messages only", () => {
+    for (const type of ["Complaint", "Suggestion", "Support", "Contact"]) assert.equal(replyAllowed(type), true, type);
+    for (const type of ["Sell", "TradeIn", "Upgrade", "NotifyMe", "Service", "Weird"]) assert.equal(replyAllowed(type), false, type);
+  });
+  it("know the two new types", () => {
+    assert.equal(requestTypeKey("Complaint"), "Complaint");
+    assert.equal(requestTypeKey("Suggestion"), "Suggestion");
   });
 });

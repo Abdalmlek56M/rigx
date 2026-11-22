@@ -238,6 +238,13 @@ public static partial class RetailEndpoints
         return TypedResults.Ok(await orders.ListMyOrdersAsync(accountId, ct));
     }
 
+    private static async Task<Ok<IReadOnlyList<CouponUseView>>> ListMyCouponUsesAsync(HttpContext context, OrderService orders, CancellationToken ct)
+    {
+        var accountId = context.RequireUserId();
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(await orders.ListMyCouponUsesAsync(accountId, ct));
+    }
+
     private static async Task<Ok<CustomerOrderView>> GetMyOrderAsync(Guid id, HttpContext context, OrderService orders, CancellationToken ct)
     {
         var accountId = context.RequireUserId();

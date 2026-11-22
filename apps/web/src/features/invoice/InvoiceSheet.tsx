@@ -1,7 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import type { Schemas } from "@rigx/api-client";
-import { cardClass } from "@/components/ui/Card";
 import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { Logo } from "@/components/ui/Logo";
 import { invoiceKindKey, paymentMethodKey } from "@/features/account/account-labels";
@@ -13,10 +12,16 @@ import { isVoid, totalsRows } from "./invoice-lines";
 
 type Invoice = Schemas["InvoiceView"];
 
+/** The paper's fixed design width; `DocumentFrame` scales it to the screen and the PNG is made at this size. */
+export const INVOICE_WIDTH = 860;
+
+const BOX = "flex flex-col gap-3 rounded-card border border-line p-4";
+const BOX_TITLE = "m-0 border-b border-line pb-2 text-xs font-bold text-ink-muted";
+
 async function TotalRow({ label, amount, strong = false }: { label: string; amount: number; strong?: boolean }) {
   const locale = await getLocale();
   return (
-    <div className={`flex justify-between gap-6 ${strong ? "border-t border-ink pt-2 text-base font-bold" : ""}`}>
+    <div className={strong ? "flex justify-between gap-6 rounded-control bg-carbon px-3 py-2.5 text-base font-bold text-on-carbon" : "flex justify-between gap-6 px-3"}>
       <dt>{label}</dt>
       <dd className="m-0 whitespace-nowrap tabular-nums">{formatEgp(amount, locale)}</dd>
     </div>
@@ -27,7 +32,7 @@ async function Totals({ invoice }: { invoice: Invoice }) {
   const t = await getTranslations("invoice");
   const show = totalsRows(invoice);
   return (
-    <dl className="m-0 ms-auto flex w-full max-w-[320px] flex-col gap-1.5 text-sm">
+    <dl className="m-0 flex w-[320px] shrink-0 flex-col gap-2 text-sm">
       <TotalRow label={t("subtotal")} amount={invoice.linesTotal} />
       {show.discount ? <TotalRow label={t("discount")} amount={invoice.discount} /> : null}
       {invoice.fulfillmentMethod === "Delivery" ? <TotalRow label={t("delivery")} amount={invoice.deliveryFee} /> : null}
@@ -39,7 +44,11 @@ async function Totals({ invoice }: { invoice: Invoice }) {
   );
 }
 
-/** The printable invoice: branding, customer, lines, totals, warranty QR, a watermark and a "void" stamp for a cancelled order. */
+/**
+ * The invoice as an official store document: a graphite header with the logo, the invoice title, number and date; boxes for the store, the
+ * customer and the order; the lines with each part's condition (new or used) and warranty; the totals; the warranty QR; the terms. Always a
+ * light paper (`doc-paper`), whatever theme the visitor uses, and always the same layout (`DocumentFrame` scales it).
+ */
 export async function InvoiceSheet({ document, storefront }: { document: Schemas["InvoiceDocument"]; storefront: StorefrontData }) {
   const { invoice, branding } = document;
   const t = await getTranslations("invoice");
@@ -52,66 +61,83 @@ export async function InvoiceSheet({ document, storefront }: { document: Schemas
   const address = invoice.address
     ? [invoice.address.governorate, invoice.address.area, invoice.address.street, invoice.address.building, invoice.address.landmark].filter(Boolean).join(" › ")
     : "";
-  const phoneLine = [...new Set(phones)].join(" · ");
+  const phoneLine = [...new Set(phones)].join(" ، ");
 
   return (
-    <article data-print-invoice className={cardClass({ padding: "none", className: "relative isolate overflow-hidden p-6 md:p-10 print:rounded-none print:border-0 print:p-0" })}>
+    <article data-print-invoice className="doc-paper relative isolate overflow-hidden rounded-card border border-line bg-surface text-ink print:rounded-none print:border-0">
       {branding.showBackgroundLogo ? (
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 flex select-none items-center justify-center overflow-hidden">
           <span dir="ltr" className="-rotate-[28deg] whitespace-nowrap text-[96px] font-bold uppercase tracking-widest text-ink opacity-[0.045] [print-color-adjust:exact]">{branding.storeName}</span>
         </span>
       ) : null}
       {isVoid(invoice.status) ? (
-        <span className="pointer-events-none absolute end-10 top-24 -rotate-12 select-none rounded-lg border-[5px] border-error px-6 py-1 text-5xl font-bold text-error-text opacity-80 [print-color-adjust:exact]">{t("void")}</span>
+        <span className="pointer-events-none absolute end-10 top-40 -rotate-12 select-none rounded-lg border-[5px] border-error px-6 py-1 text-5xl font-bold text-error-text opacity-80 [print-color-adjust:exact]">{t("void")}</span>
       ) : null}
 
-      <header className="grid gap-6 border-b-2 border-ink pb-5 md:grid-cols-2 md:items-start">
-        <div className="flex min-w-0 flex-col gap-3">
-          <Logo width={140} />
-          <span className="sr-only">{branding.storeName}</span>
-          <InfoGrid columns={1} className="gap-y-2">
-            <InfoField label={t("address")} value={branding.pickupAddress} />
-            <InfoField label={t("phone")} ltr value={phoneLine} />
-            <InfoField label={t("email")} ltr value={storefront.email} />
-          </InfoGrid>
+      <header className="flex items-center justify-between gap-6 bg-carbon px-8 py-6 text-on-carbon [print-color-adjust:exact]">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <Logo width={150} />
+          <span className="text-xs opacity-80">{branding.storeName}</span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-end">
-          <span className="text-2xl font-bold">{t("title")}</span>
-          {kind ? <span className="text-sm text-ink-muted">{t(`kind.${kind}`)}</span> : null}
-          <span dir="ltr" className="font-mono text-lg font-semibold tabular-nums">{invoice.number}</span>
-          <span className="text-sm text-ink-muted">{formatDateTimeFull(invoice.issuedAtUtc, locale)}</span>
+          <span className="text-3xl font-bold">{t("title")}</span>
+          {kind ? <span className="text-sm opacity-80">{t(`kind.${kind}`)}</span> : null}
         </div>
       </header>
 
-      <InfoGrid columns={3} className="break-inside-avoid gap-x-6 gap-y-4 py-5">
-        <InfoField label={t("customer")} value={invoice.customerName} />
-        <InfoField label={t("phone")} ltr value={invoice.phoneNumber} />
-        <InfoField label={t("order")} ltr value={invoice.orderReference} />
-        <InfoField label={t("fulfillment.label")} value={invoice.fulfillmentMethod === "Pickup" ? t("fulfillment.Pickup") : t("fulfillment.Delivery")} />
-        {method ? <InfoField label={t("payment")} value={methods(method)} /> : null}
-        {invoice.sellerName ? <InfoField label={t("seller")} value={invoice.sellerName} /> : null}
-        {address ? <InfoField label={t("address")} value={address} wide /> : null}
-      </InfoGrid>
+      <div className="flex flex-col gap-5 p-8">
+        <div className="grid grid-cols-3 gap-4">
+          <section className={BOX}>
+            <h2 className={BOX_TITLE}>{t("store")}</h2>
+            <InfoGrid columns={1} className="gap-y-2">
+              <InfoField label={t("address")} value={branding.pickupAddress} />
+              <InfoField label={t("phone")} ltr value={phoneLine} />
+              <InfoField label={t("email")} ltr value={storefront.email} />
+            </InfoGrid>
+          </section>
+          <section className={BOX}>
+            <h2 className={BOX_TITLE}>{t("customer")}</h2>
+            <InfoGrid columns={1} className="gap-y-2">
+              <InfoField label={t("name")} value={invoice.customerName} />
+              <InfoField label={t("phone")} ltr value={invoice.phoneNumber} />
+              {address ? <InfoField label={t("address")} value={address} /> : null}
+            </InfoGrid>
+          </section>
+          <section className={BOX}>
+            <h2 className={BOX_TITLE}>{t("details")}</h2>
+            <InfoGrid columns={1} className="gap-y-2">
+              <InfoField label={t("number")} ltr value={invoice.number} />
+              <InfoField label={t("date")} value={formatDateTimeFull(invoice.issuedAtUtc, locale)} />
+              <InfoField label={t("order")} ltr value={invoice.orderReference} />
+              <InfoField label={t("fulfillment.label")} value={invoice.fulfillmentMethod === "Pickup" ? t("fulfillment.Pickup") : t("fulfillment.Delivery")} />
+              {method ? <InfoField label={t("payment")} value={methods(method)} /> : null}
+              {invoice.sellerName ? <InfoField label={t("seller")} value={invoice.sellerName} /> : null}
+            </InfoGrid>
+          </section>
+        </div>
 
-      <InvoiceLines lines={invoice.lines} />
-      <div className="mt-5 flex flex-col-reverse gap-6 break-inside-avoid md:flex-row md:items-start md:justify-between">
-        {qr ? (
-          <div className="flex items-start gap-3 break-inside-avoid">
-            <div aria-hidden="true" className="size-24 shrink-0 [&>svg]:size-full [print-color-adjust:exact]" dangerouslySetInnerHTML={{ __html: qr }} />
-            <div className="flex max-w-[260px] flex-col gap-1 text-xs text-ink-muted">
-              <b className="text-sm text-ink">{t("warranty")}</b>
-              <span>{t("qrNote")}</span>
-              <span>{t("warrantyNote")}</span>
+        <InvoiceLines lines={invoice.lines} />
+
+        <div className="flex items-start justify-between gap-6 break-inside-avoid">
+          {qr ? (
+            <div className="flex items-start gap-3 break-inside-avoid">
+              <div aria-hidden="true" className="size-24 shrink-0 [&>svg]:size-full [print-color-adjust:exact]" dangerouslySetInnerHTML={{ __html: qr }} />
+              <div className="flex max-w-[260px] flex-col gap-1 text-xs text-ink-muted">
+                <b className="text-sm text-ink">{t("warranty")}</b>
+                <span>{t("qrNote")}</span>
+                <span>{t("warrantyNote")}</span>
+              </div>
             </div>
-          </div>
-        ) : <span />}
-        <Totals invoice={invoice} />
-      </div>
+          ) : <span />}
+          <Totals invoice={invoice} />
+        </div>
 
-      <footer className="mt-8 flex flex-col gap-1 border-t border-line pt-3 text-xs text-ink-muted">
-        {branding.termsLine ? <span>{branding.termsLine}</span> : null}
-        <span>{t("electronic")}</span>
-      </footer>
+        <footer className="flex flex-col gap-1 border-t border-line pt-3 text-xs text-ink-muted">
+          {branding.termsLine ? <span>{branding.termsLine}</span> : null}
+          <span>{t("thanks")}</span>
+          <span>{t("electronic")}</span>
+        </footer>
+      </div>
     </article>
   );
 }

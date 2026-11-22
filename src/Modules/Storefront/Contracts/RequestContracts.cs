@@ -19,7 +19,7 @@ public sealed record CustomerRequestView(Guid Id, string Code, string Type, stri
     string? OwnedFor, string? ItemCode, string? ServiceKind, DateOnly? PreferredDate, decimal? OfferAmount, decimal? ExpectedResale,
     string? InternalNote, Guid? PurchaseId, string? PurchaseCode, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc,
     DateTimeOffset? ClosedAtUtc, long RowVersion, string? AvailableItemCode, DateTimeOffset? AvailableAtUtc, DateTimeOffset? NotifiedAtUtc,
-    int PhotoCount, string? Condition);
+    int PhotoCount, string? Condition, string? Reply, DateTimeOffset? RepliedAtUtc);
 
 public sealed record CustomerRequestListItem(Guid Id, string Code, string Type, string Status, string Name, string Phone,
     string? Governorate, string? ModelName, string? ItemCode, string? ServiceKind, decimal? OfferAmount, DateTimeOffset CreatedAtUtc);
@@ -36,6 +36,8 @@ public sealed record RequestOfferRequest(decimal OfferAmount, decimal? ExpectedR
 
 public sealed record RequestDecisionRequest(string? Decision, long RowVersion);
 
+public sealed record RequestReplyRequest(string? Reply, long RowVersion);
+
 public sealed record RequestNoteRequest(string? InternalNote, long RowVersion);
 
 public sealed record RequestConvertRequest(long RowVersion);
@@ -46,6 +48,9 @@ public sealed record WhatsAppReplyView(string Phone, string Text, string Url);
 /// <summary>A request in the customer 360 view (staff).</summary>
 public sealed record CustomerRequestSummary(Guid Id, string Code, string Type, string Status, DateTimeOffset CreatedAtUtc);
 
-/// <summary>What the customer sees about their own request: no internal note, no expected resale; the offer only once it was made.</summary>
+/// <summary>
+/// What the customer sees about their own request: no internal note, no expected resale; the offer only once it was made.
+/// <paramref name="Message"/> and <paramref name="Reply"/> are the customer's text and the store's written answer (complaints, suggestions).
+/// </summary>
 public sealed record MyRequestView(string Code, string Type, string Status, DateTimeOffset CreatedAtUtc, DateTimeOffset? ClosedAtUtc,
-    string? Item, decimal? OfferAmount);
+    string? Item, decimal? OfferAmount, string? Subject, string? Message, string? Reply, DateTimeOffset? RepliedAtUtc);

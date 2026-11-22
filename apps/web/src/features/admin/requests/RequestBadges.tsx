@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StatusTone } from "@/components/ui/status-badge-rules";
-import { requestStatusKey, requestTypeKey, type RequestStatusKey } from "./request-labels";
+import { REQUEST_TYPES, requestStatusKey, requestTypeKey, type RequestStatusKey } from "./request-labels";
 
 const STATUS_TONES: Record<RequestStatusKey, StatusTone> = {
   New: "warning",
@@ -37,7 +37,7 @@ export function RequestTabs({ active, counts, onChange }: {
   const labels = useTranslations("admin.requests.types");
   const tabs: { value: string; label: string; count: number }[] = [
     { value: "", label: t("types.All"), count: Object.values(counts).reduce((sum, value) => sum + value, 0) },
-    ...(["Sell", "TradeIn", "Upgrade", "NotifyMe", "Support", "Contact", "Service"] as const).map((type) => ({
+    ...(REQUEST_TYPES).map((type) => ({
       value: type,
       label: labels(type),
       count: counts[type] ?? 0

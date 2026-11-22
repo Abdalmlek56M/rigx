@@ -100,6 +100,20 @@ export function ViewAsDialog({ id, onClose }: { id: string; onClose: () => void 
             )}
           </Section>
 
+          <Section title={sections("coupons")}>
+            {state.data.couponUses.length === 0 ? <Empty /> : (
+              <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
+                {state.data.couponUses.map((use) => (
+                  <li key={use.orderId} className="flex flex-wrap items-center justify-between gap-2">
+                    <span dir="ltr" className="font-mono text-xs font-bold">{use.code}</span>
+                    <span dir="ltr" className="font-mono text-xs text-orange-text">{use.reference}</span>
+                    <b className="whitespace-nowrap">{formatEgp(use.discount, locale)}</b>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+
           <Section title={sections("requests")}>
             {state.data.requests.length === 0 ? <Empty /> : (
               <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">

@@ -309,4 +309,64 @@ public sealed class RequestsTests(OwnerBootstrapPostgreSqlFixture fixture) : ICl
         Assert.Equal($"https://wa.me/201012345678?text={Uri.EscapeDataString(reply.Text)}", reply.Url);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"{Admin}/{Guid.NewGuid()}/whatsapp")).StatusCode);
     }
+
+    [Fact]
+    public async Task A_complaint_gets_a_written_reply_that_the_customer_reads_in_the_account_and_in_the_bell()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "owner", "Requests.View", "Requests.Manage");
+        await CreateUserAsync(database, "customer");
+        await using var factory = CreateFactory(database.ConnectionString);
+        using var customer = await SignedInAsync(factory, "customer");
+        using var staff = await SignedInAsync(factory, "owner");
+        var sell = await SeedAsync(factory, SellSubmission());
+        using var sent = await TestSignIn.PostJsonAsync(customer, "/api/v1/requests",
+            new { type = "Complaint", name = "Ahmed", phone = "01012345678", subject = "Late order", message = "My order arrived three days late.", itemCode = "ORD-1001" });
+        var code = (await ReadAsync<CustomerRequestReceipt>(sent, HttpStatusCode.Accepted)).Code!;
+        var complaint = (await ReadAsync<CustomerRequestPage>(await staff.GetAsync($"{Admin}?type=Complaint"))).Items.Single();
+        var view = await ReadAsync<CustomerRequestView>(await staff.GetAsync($"{Admin}/{complaint.Id}"));
+
+        var tooShort = await SendAsync(staff, HttpMethod.Post, view.Id, "reply", new { reply = "x", rowVersion = view.RowVersion });
+        var wrongType = await SendAsync(staff, HttpMethod.Post, sell.Id, "reply", new { reply = "We will call you.", rowVersion = sell.RowVersion });
+        var replied = await ReadAsync<CustomerRequestView>(
+            await SendAsync(staff, HttpMethod.Post, view.Id, "reply", new { reply = " We are sorry, the courier is checking it. ", rowVersion = view.RowVersion }));
+        var stale = await SendAsync(staff, HttpMethod.Post, view.Id, "reply", new { reply = "Again", rowVersion = view.RowVersion });
+
+        Assert.Equal((CustomerRequestType.Complaint, CustomerRequestStatus.New, "ORD-1001"), (view.Type, view.Status, view.ItemCode));
+        Assert.Equal(HttpStatusCode.BadRequest, tooShort.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, wrongType.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        Assert.Equal(("We are sorry, the courier is checking it.", CustomerRequestStatus.Following), (replied.Reply, replied.Status));
+        Assert.NotNull(replied.RepliedAtUtc);
+        var mine = Assert.Single(await ReadAsync<List<MyRequestView>>(await customer.GetAsync("/api/v1/account/requests")));
+        Assert.Equal((code, "Late order", "My order arrived three days late.", replied.Reply), (mine.Code, mine.Subject, mine.Message, mine.Reply));
+        var bell = await ReadAsync<CustomerNotificationFeed>(await customer.GetAsync("/api/v1/account/notifications"));
+        var entry = Assert.Single(bell.Items);
+        Assert.Equal((CustomerNotificationKind.RequestReply, code, 1), (entry.Kind, entry.Target, bell.UnreadCount));
+    }
+
+    [Fact]
+    public async Task A_suggestion_from_a_visitor_without_an_account_is_stored_and_a_reply_raises_no_bell_entry()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        await CreateUserAsync(database, "owner", "Requests.View", "Requests.Manage");
+        await using var factory = CreateFactory(database.ConnectionString);
+        using var staff = await SignedInAsync(factory, "owner");
+        using var anonymous = factory.CreatePreflightedClient(new() { HandleCookies = true });
+
+        using var sent = await TestSignIn.PostJsonAsync(anonymous, "/api/v1/requests",
+            new { type = "Suggestion", name = "Mona", phone = "01099998888", message = "Please add a store in Alexandria." });
+        using var tooShort = await TestSignIn.PostJsonAsync(anonymous, "/api/v1/requests", new { type = "Suggestion", name = "Mona", phone = "01099998888", message = "Hi" });
+        var suggestion = (await ReadAsync<CustomerRequestPage>(await staff.GetAsync($"{Admin}?type=Suggestion"))).Items.Single();
+        var view = await ReadAsync<CustomerRequestView>(await staff.GetAsync($"{Admin}/{suggestion.Id}"));
+        var replied = await ReadAsync<CustomerRequestView>(
+            await SendAsync(staff, HttpMethod.Post, view.Id, "reply", new { reply = "Thank you, we will consider it.", rowVersion = view.RowVersion }));
+
+        Assert.Equal(HttpStatusCode.Accepted, sent.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, tooShort.StatusCode);
+        Assert.Null(view.UserAccountId);
+        Assert.Equal("Thank you, we will consider it.", replied.Reply);
+        await using var db = database.CreateStorefrontContext();
+        Assert.Empty(await db.CustomerNotifications.ToListAsync());
+    }
 }

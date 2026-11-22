@@ -10,7 +10,9 @@ public static class CustomerRequestType
     public const string Support = "Support";
     public const string Contact = "Contact";
     public const string Service = "Service";
-    public static readonly IReadOnlyList<string> All = [Sell, TradeIn, Upgrade, NotifyMe, Support, Contact, Service];
+    public const string Complaint = "Complaint";
+    public const string Suggestion = "Suggestion";
+    public static readonly IReadOnlyList<string> All = [Sell, TradeIn, Upgrade, NotifyMe, Support, Contact, Service, Complaint, Suggestion];
 }
 
 public static class CustomerRequestStatus

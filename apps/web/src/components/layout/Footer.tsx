@@ -35,7 +35,8 @@ export async function Footer({ storefront }: { storefront: StorefrontData }) {
   const help = [
     ...policies.map((slug) => ({ href: `/policies/${slug}`, label: tp(slug) })),
     { href: "/warranty", label: t("warrantyLookup") },
-    { href: "/faq", label: t("faq") }
+    { href: "/faq", label: t("faq") },
+    { href: "/feedback", label: t("feedback") }
   ];
 
   return (

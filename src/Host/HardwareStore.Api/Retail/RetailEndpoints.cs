@@ -116,6 +116,7 @@ public static partial class RetailEndpoints
         endpoints.MapGet("/api/v1/track/{token}", GetTrackingAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
         endpoints.MapPost("/api/v1/track/{token}/rating", RateOrderAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.OrderTracking);
         endpoints.MapGet("/api/v1/orders/mine", ListMyOrdersAsync).RequireAuthorization();
+        endpoints.MapGet("/api/v1/orders/mine/coupons", ListMyCouponUsesAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/orders/mine/{id:guid}", GetMyOrderAsync).RequireAuthorization();
         endpoints.MapGet("/api/v1/warranty/lookup", LookupWarrantyAsync).AllowAnonymous().RequireRateLimiting(IdentityRateLimitPolicies.WarrantyLookup);
         endpoints.MapGet("/api/v1/warranties/mine", ListMyWarrantiesAsync).RequireAuthorization();

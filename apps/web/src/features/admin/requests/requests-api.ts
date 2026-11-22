@@ -34,6 +34,9 @@ export const decideRequest = (id: string, decision: "Accepted" | "Rejected", row
 export const saveRequestNote = (id: string, internalNote: string, rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/requests/{id}/note", { params: { path: { id } }, body: { internalNote, rowVersion } })));
 
+export const saveRequestReply = (id: string, reply: string, rowVersion: number) =>
+  required(unwrap(api().POST("/api/v1/admin/requests/{id}/reply", { params: { path: { id } }, body: { reply, rowVersion } })));
+
 export const convertRequest = (id: string, rowVersion: number) =>
   required(unwrap(api().POST("/api/v1/admin/requests/{id}/convert", { params: { path: { id } }, body: { rowVersion } })));
 

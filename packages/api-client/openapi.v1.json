@@ -1048,6 +1048,51 @@
         ]
       }
     },
+    "/api/v1/builder/saved/{token}/copy": {
+      "post": {
+        "tags": [
+          "builder"
+        ],
+        "description": "Signed-in user.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedBuildSummary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/account/builds": {
       "get": {
         "tags": [
@@ -1521,6 +1566,44 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/CustomerOrderView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/orders/mine/coupons": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "description": "Signed-in user.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CouponUseView"
                   }
                 }
               }
@@ -2889,6 +2972,62 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RequestNoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerRequestView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/requests/{id}/reply": {
+      "post": {
+        "tags": [
+          "admin/requests"
+        ],
+        "description": "Permission: \u0060Requests.Manage\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestReplyRequest"
               }
             }
           },
@@ -7403,6 +7542,38 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/builder/saved/{token}/views": {
+      "post": {
+        "tags": [
+          "builder"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           },
           "default": {
             "description": "Error (ProblemDetails).",
@@ -18216,7 +18387,8 @@
           "hearts",
           "likes",
           "hearted",
-          "liked"
+          "liked",
+          "views"
         ],
         "type": "object",
         "properties": {
@@ -18233,6 +18405,10 @@
           },
           "liked": {
             "type": "boolean"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -19209,6 +19385,40 @@
             "type": "integer",
             "format": "int64",
             "default": 0
+          }
+        }
+      },
+      "CouponUseView": {
+        "required": [
+          "code",
+          "discount",
+          "orderId",
+          "reference",
+          "usedAtUtc",
+          "orderStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "usedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderStatus": {
+            "type": "string"
           }
         }
       },
@@ -20725,7 +20935,9 @@
           "availableAtUtc",
           "notifiedAtUtc",
           "photoCount",
-          "condition"
+          "condition",
+          "reply",
+          "repliedAtUtc"
         ],
         "type": "object",
         "properties": {
@@ -20903,6 +21115,19 @@
               "null",
               "string"
             ]
+          },
+          "reply": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "repliedAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -20911,7 +21136,8 @@
           "stats",
           "orders",
           "warranties",
-          "blacklisted"
+          "blacklisted",
+          "couponUses"
         ],
         "type": "object",
         "properties": {
@@ -20932,6 +21158,12 @@
           },
           "blacklisted": {
             "type": "boolean"
+          },
+          "couponUses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CouponUseView"
+            }
           }
         }
       },
@@ -20943,7 +21175,8 @@
           "warranties",
           "invoices",
           "requests",
-          "builds"
+          "builds",
+          "couponUses"
         ],
         "type": "object",
         "properties": {
@@ -20984,6 +21217,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SavedBuildSummary"
+            }
+          },
+          "couponUses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CouponUseView"
             }
           }
         }
@@ -23079,7 +23318,11 @@
           "createdAtUtc",
           "closedAtUtc",
           "item",
-          "offerAmount"
+          "offerAmount",
+          "subject",
+          "message",
+          "reply",
+          "repliedAtUtc"
         ],
         "type": "object",
         "properties": {
@@ -23115,6 +23358,31 @@
               "number"
             ],
             "format": "double"
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reply": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "repliedAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -27890,6 +28158,25 @@
           }
         }
       },
+      "RequestReplyRequest": {
+        "required": [
+          "reply",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "reply": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rowVersion": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "RequestStatusRequest": {
         "required": [
           "status",
@@ -28292,7 +28579,8 @@
           "visibility",
           "moderation",
           "partCount",
-          "updatedAtUtc"
+          "updatedAtUtc",
+          "views"
         ],
         "type": "object",
         "properties": {
@@ -28331,6 +28619,10 @@
           "updatedAtUtc": {
             "type": "string",
             "format": "date-time"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -30344,7 +30636,9 @@
           "upfrontDue",
           "deliveryTime",
           "canRate",
-          "satisfactionScore"
+          "satisfactionScore",
+          "maskedPhone",
+          "detailsHidden"
         ],
         "type": "object",
         "properties": {
@@ -30414,6 +30708,15 @@
               "integer"
             ],
             "format": "int32"
+          },
+          "maskedPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "detailsHidden": {
+            "type": "boolean"
           }
         }
       },

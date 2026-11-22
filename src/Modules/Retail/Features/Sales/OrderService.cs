@@ -73,6 +73,18 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         return rows.Select(OrderMapping.ToCustomerView).ToList();
     }
 
+    /// <summary>The coupons the account used, newest first (a cancelled order keeps its entry, marked by its status).</summary>
+    public async Task<IReadOnlyList<CouponUseView>> ListMyCouponUsesAsync(Guid userAccountId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.Orders.AsNoTracking()
+            .Where(order => order.UserAccountId == userAccountId && order.CouponCode != null).OrderByDescending(order => order.CreatedAtUtc)
+            .Select(order => new { order.Id, order.Reference, order.CreatedAtUtc, order.Status, order.CouponCode, order.CouponDiscount })
+            .ToListAsync(cancellationToken);
+        return [.. rows.Select(row => CouponUses.Of(row.Id, row.Reference, row.CreatedAtUtc, row.Status, row.CouponCode, row.CouponDiscount))
+            .OfType<CouponUseView>()];
+    }
+
     public async Task<CustomerOrderView> GetMyOrderAsync(Guid id, Guid userAccountId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);

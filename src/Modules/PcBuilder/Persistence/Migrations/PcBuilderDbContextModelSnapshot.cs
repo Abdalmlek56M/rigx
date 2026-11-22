@@ -129,6 +129,12 @@ namespace HardwareStore.Modules.PcBuilder.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_account_id");
 
+                    b.Property<long>("ViewCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasColumnName("view_count");
+
                     b.Property<string>("Visibility")
                         .IsRequired()
                         .HasMaxLength(16)

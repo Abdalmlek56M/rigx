@@ -10,6 +10,7 @@ import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "@/features/cart/cart-context";
 import { BuildFacts } from "./BuildFacts";
+import { SaveBuildButton } from "./SaveBuildButton";
 import { cartLinesOf, partsSummaryText } from "./builder-summary";
 
 interface SharedBuildSummaryProps {
@@ -20,10 +21,12 @@ interface SharedBuildSummaryProps {
   whatsApp: { number: string | null; template: string };
   /** The public link of this page for the WhatsApp message ("" when the store has no domain set). */
   pageUrl: string;
+  /** False for the build's own owner: it is already in their account. */
+  canSave: boolean;
 }
 
 /** The total, the compatibility check and what a visitor can do with someone else's build: order it, change it, ask about it, copy it. */
-export function SharedBuildSummary({ token, evaluation, slotNames, specNames, whatsApp, pageUrl }: SharedBuildSummaryProps) {
+export function SharedBuildSummary({ token, evaluation, slotNames, specNames, whatsApp, pageUrl, canSave }: SharedBuildSummaryProps) {
   const t = useTranslations("builder.summary");
   const ta = useTranslations("builder.actions");
   const ts = useTranslations("sharedBuild");
@@ -62,6 +65,7 @@ export function SharedBuildSummary({ token, evaluation, slotNames, specNames, wh
         {ta("addAll")}
       </Button>
       {!evaluation.canOrder ? <span className="text-xs leading-6 text-orange-text">{ta("cannotOrder")}</span> : null}
+      {canSave ? <SaveBuildButton token={token} /> : null}
       <ButtonLink href={`/builder?saved=${encodeURIComponent(token)}`} variant="secondary" icon={PencilIcon} className="w-full">{ts("edit")}</ButtonLink>
       {whatsApp.number ? (
         <WhatsAppButton href={whatsAppUrl(whatsApp.number, message)} variant="outline" className="w-full">{ta("whatsApp")}</WhatsAppButton>

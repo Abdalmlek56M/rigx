@@ -7,17 +7,19 @@ import { HEADER_ICON_BUTTON } from "@/components/layout/nav-links";
 import { Button, IconButton } from "@/components/ui/Button";
 import { CountBadge } from "@/components/ui/CountBadge";
 import { cardClass } from "@/components/ui/Card";
-import { BellIcon, CheckIcon, RefreshIcon } from "@/components/ui/icons";
+import { BellIcon, BoxIcon, CheckIcon, InboxIcon, RefreshIcon, TruckIcon } from "@/components/ui/icons";
 import { useSession } from "@/features/auth/use-session";
 import { Link } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { formatDateTime } from "@/lib/format";
 import { useDismiss } from "@/lib/hooks/use-dismiss";
-import { notificationHref, notificationText, unreadBadge } from "./notification-rules";
+import { notificationHref, notificationIconKey, notificationText, unreadBadge, type NotificationIconKey } from "./notification-rules";
 
 type Feed = Schemas["CustomerNotificationFeed"];
 type Entry = Schemas["CustomerNotificationView"];
+
+const ENTRY_ICONS = { order: TruckIcon, stock: BoxIcon, reply: InboxIcon, other: BellIcon } as const satisfies Record<NotificationIconKey, unknown>;
 
 const fetchFeed = () => required(unwrap(browserApi().GET("/api/v1/account/notifications")));
 
@@ -28,8 +30,9 @@ export function NotificationBell() {
 }
 
 /**
- * Bell with the unread count; the panel lists the newest entries (order status changes, back-in-stock). Opening an entry
- * marks it read. Read when the page loads and again each time the panel opens (no polling).
+ * Bell with the unread count; the panel lists the newest entries (order status changes, back-in-stock, the store's replies). Opening an
+ * entry marks it read. Read when the page loads and again each time the panel opens (no polling). On a phone the panel is as wide as
+ * the screen (less its gutters) instead of hanging off the bell; from `sm` it hangs under the bell, on its end side.
  */
 function Bell() {
   const t = useTranslations("notifications");
@@ -82,9 +85,9 @@ function Bell() {
         ) : null}
       </button>
       {open ? (
-        <div className={`absolute end-0 top-full z-50 mt-2 flex w-[min(360px,calc(100vw-32px))] flex-col ${cardClass({ padding: "none" })} text-ink shadow-soft`}>
+        <div className={`absolute end-0 top-full z-50 mt-2 flex w-[360px] flex-col max-sm:fixed max-sm:inset-x-3 max-sm:top-auto max-sm:w-auto ${cardClass({ padding: "none" })} text-ink shadow-soft`}>
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-            <h2 className="m-0 type-section-title">{t("title")}</h2>
+            <h2 className="m-0 flex items-center gap-2 type-section-title"><BellIcon size={18} />{t("title")}</h2>
             {unread > 0 ? (
               <IconButton icon={CheckIcon} label={t("markAll")} variant="ghost" size="sm" onClick={() => void markAllRead()} />
             ) : null}
@@ -116,19 +119,23 @@ function Entries({ feed, failed, onOpen, onRetry }: { feed: Feed | null; failed:
       {feed.items.map((entry) => {
         const text = notificationText(entry);
         const href = notificationHref(entry);
+        const EntryIcon = ENTRY_ICONS[notificationIconKey(entry)];
         const body = (
           <>
-            <span aria-hidden="true" className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${entry.read ? "bg-transparent" : "bg-orange"}`} />
-            <span className="flex min-w-0 flex-col gap-0.5">
+            <span aria-hidden="true" className={`flex size-9 shrink-0 items-center justify-center rounded-full ${entry.read ? "bg-paper text-ink-muted" : "bg-orange text-on-orange"}`}>
+              <EntryIcon size={17} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span dir="auto" className={`text-sm leading-snug [unicode-bidi:plaintext] ${entry.read ? "text-ink-muted" : "font-bold"}`}>
                 {entry.read ? null : <span className="sr-only">{t("unread")} </span>}
                 {t(text.key, text.values)}
               </span>
               <span className="text-xs text-ink-muted">{formatDateTime(entry.createdAtUtc, locale)}</span>
             </span>
+            {entry.read ? null : <span aria-hidden="true" className="mt-3 size-2 shrink-0 rounded-full bg-orange" />}
           </>
         );
-        const row = "flex w-full items-start gap-2.5 rounded-control px-2.5 py-2.5 text-start";
+        const row = "flex w-full items-start gap-3 rounded-control px-2.5 py-2.5 text-start";
         return (
           <li key={entry.id}>
             {href ? (

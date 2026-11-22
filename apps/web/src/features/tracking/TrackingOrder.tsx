@@ -10,7 +10,10 @@ import { RatingForm } from "./RatingForm";
 import { TrackingTimeline } from "./TrackingTimeline";
 import { orderStatusKey, trackingSteps } from "./tracking-steps";
 
-/** What the tracking link shows: status, timeline, delivery details, items and the rating. */
+/**
+ * What the tracking link shows: status, timeline, delivery details (the phone only masked), items and the rating. Long after delivery the API
+ * sends `detailsHidden` and the page keeps only the status and the timeline.
+ */
 export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["TrackingView"]; token: string; whatsApp: OrderWhatsApp }) {
   const t = useTranslations("tracking");
   const locale = useLocale();
@@ -31,8 +34,16 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
         <TrackingTimeline steps={trackingSteps(view.status, view.fulfillmentMethod, view.timeline)} />
       </Card>
 
+      {view.detailsHidden ? (
+        <Card title={t("expiredTitle")} icon={InfoIcon} padding="md" className="gap-3">
+          <p className="m-0 text-sm leading-7 text-ink-muted">{t("expired")}</p>
+          <OrderWhatsAppLink whatsApp={whatsApp} reference={view.reference} label={t("ask")} variant="solid" className="self-start" />
+        </Card>
+      ) : (
+        <>
       <Card title={t("details")} icon={InfoIcon} padding="md" className="gap-3">
         <InfoGrid columns={2} className="gap-y-3">
+          {view.maskedPhone ? <InfoField label={t("phone")} ltr value={view.maskedPhone} /> : null}
           {view.courierName ? <InfoField label={t("courier")} value={view.courierName} /> : null}
           {view.waybillNumber ? <InfoField label={t("waybill")} ltr value={view.waybillNumber} /> : null}
           {view.area ? <InfoField label={t("address")} value={view.area} wide /> : null}
@@ -57,6 +68,8 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
       </Card>
 
       <RatingForm token={token} canRate={view.canRate} score={view.satisfactionScore} />
+        </>
+      )}
       <p className="m-0 text-center text-xs text-ink-muted">{t("privateNote")}</p>
     </div>
   );

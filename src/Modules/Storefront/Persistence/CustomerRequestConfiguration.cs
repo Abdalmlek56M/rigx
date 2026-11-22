@@ -15,7 +15,7 @@ internal static class CustomerRequestConfiguration
             entity.ToTable("customer_requests", table =>
             {
                 table.HasCheckConstraint("ck_customer_requests_type",
-                    "type IN ('Sell','TradeIn','Upgrade','NotifyMe','Support','Contact','Service')");
+                    "type IN ('Sell','TradeIn','Upgrade','NotifyMe','Support','Contact','Service','Complaint','Suggestion')");
                 table.HasCheckConstraint("ck_customer_requests_status",
                     "status IN ('New','Following','Offered','Accepted','Rejected','Converted','Closed')");
                 table.HasCheckConstraint("ck_customer_requests_service_kind",
@@ -49,6 +49,8 @@ internal static class CustomerRequestConfiguration
             entity.Property(item => item.OfferAmount).HasColumnName("offer_amount").HasColumnType("numeric(12,2)");
             entity.Property(item => item.ExpectedResale).HasColumnName("expected_resale").HasColumnType("numeric(12,2)");
             entity.Property(item => item.InternalNote).HasColumnName("internal_note").HasMaxLength(CustomerRequestRules.MaxNoteLength);
+            entity.Property(item => item.Reply).HasColumnName("reply").HasMaxLength(CustomerRequestRules.MaxReplyLength);
+            entity.Property(item => item.RepliedAtUtc).HasColumnName("replied_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.PhotoTokenHash).HasColumnName("photo_token_hash").HasMaxLength(64).AuditMasked();
             entity.Property(item => item.PhotoTokenExpiresAtUtc).HasColumnName("photo_token_expires_at_utc").HasColumnType("timestamp with time zone");
             entity.Property(item => item.Photos).HasColumnName("photos").HasColumnType("text[]").HasDefaultValueSql("'{}'::text[]").IsRequired();

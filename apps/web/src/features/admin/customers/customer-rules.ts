@@ -1,5 +1,5 @@
 /** Small pure helpers for the customer screens. Messages live under `admin.customers`. */
-export const CUSTOMER_TABS = ["orders", "warranties", "requests", "notes"] as const;
+export const CUSTOMER_TABS = ["orders", "warranties", "coupons", "requests", "notes"] as const;
 export type CustomerTab = (typeof CUSTOMER_TABS)[number];
 
 export function customerTab(value: string): CustomerTab {

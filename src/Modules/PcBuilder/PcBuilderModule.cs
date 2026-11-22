@@ -16,6 +16,8 @@ public static class PcBuilderRegistration
         services.AddAuditedDbContextFactory<PcBuilderDbContext>(connectionString);
         services.AddScoped<SavedBuildStore>();
         services.AddScoped<BuildReactionStore>();
+        services.AddSingleton<BuildViewCounter>();
+        services.AddScoped<BuildViewStore>();
         services.AddScoped<CommunityBuildStore>();
         services.AddScoped<IDataResetSource, PcBuilderDataReset>();
         return services;
