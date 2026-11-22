@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { loginHref } from "@/features/auth/auth-rules";
 import { signOut } from "@/features/auth/session-store";
@@ -24,9 +24,16 @@ export function AccountShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const activeLink = useRef<HTMLAnchorElement | null>(null);
+
   useEffect(() => {
     if (session.status === "signedOut") router.replace(loginHref(pathname));
   }, [session.status, router, pathname]);
+
+  // On a phone the tabs scroll sideways: bring the current page's tab into view.
+  useEffect(() => {
+    activeLink.current?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [pathname, session.status]);
 
   async function leave() {
     await signOut();
@@ -49,7 +56,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
             const NavIcon = NAV_ICONS[item.key];
             return (
               <Link
-                key={item.href} href={item.href} aria-current={active ? "page" : undefined}
+                key={item.href} href={item.href} aria-current={active ? "page" : undefined} ref={active ? activeLink : undefined}
                 className={`flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-3 text-sm font-bold transition-colors ${active ? "surface-strong" : "text-ink hover:bg-paper"}`}
               >
                 <NavIcon size={18} />

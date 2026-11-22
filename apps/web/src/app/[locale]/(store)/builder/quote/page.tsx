@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { QuoteSheet } from "@/features/builder/QuoteSheet";
 import { parseBuilderParams } from "@/features/builder/builder-state";
 import { loadSlots } from "@/features/builder/load-slots";
+import { localizeSlots } from "@/features/builder/slot-names";
 import { routing } from "@/i18n/routing";
 import { loadStorefront } from "@/lib/storefront";
 
@@ -27,8 +28,9 @@ export default async function QuotePage({ params, searchParams }: Props) {
   const { parts, saved } = parseBuilderParams(await searchParams);
   if (parts.length === 0 && !saved) notFound();
 
-  const [slots, storefront] = await Promise.all([loadSlots(), loadStorefront()]);
-  const slotNames = Object.fromEntries((slots ?? []).map((entry) => [entry.slot, entry.name]));
+  const [rawSlots, storefront] = await Promise.all([loadSlots(), loadStorefront()]);
+  const slots = localizeSlots(rawSlots ?? [], storefront.categoryTree, locale);
+  const slotNames = Object.fromEntries(slots.map((entry) => [entry.slot, entry.name]));
 
   return <QuoteSheet parts={parts} saved={saved} slotNames={slotNames} domain={storefront.domain ?? ""} />;
 }

@@ -7,6 +7,7 @@ import { QuickStart } from "@/features/builder/QuickStart";
 import { parseBuilderParams } from "@/features/builder/builder-state";
 import { specNameMap } from "@/features/builder/issue-text";
 import { loadSlots } from "@/features/builder/load-slots";
+import { localizeSlots } from "@/features/builder/slot-names";
 import { loadBuilds } from "@/features/builds/load-builds";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CpuIcon } from "@/components/ui/icons";
@@ -34,7 +35,8 @@ export default async function BuilderPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("builder");
   const start = parseBuilderParams(await searchParams);
-  const [slots, builds, storefront] = await Promise.all([loadSlots(), loadBuilds({ usage: null, budget: null }), loadStorefront()]);
+  const [rawSlots, builds, storefront] = await Promise.all([loadSlots(), loadBuilds({ usage: null, budget: null }), loadStorefront()]);
+  const slots = rawSlots ? localizeSlots(rawSlots, storefront.categoryTree, locale) : null;
 
   return (
     <>
