@@ -4,7 +4,7 @@ import { ApiError } from "@rigx/api-client";
 import { fieldKey, isStepUpRequired, stepUpHeaders, toFormErrors } from "./form-errors.ts";
 import { pagerView } from "./paging.ts";
 import { ariaSort, formatSort, nextSort, parseSort } from "./table-sort.ts";
-import { dropToast, MAX_TOASTS, pushToast } from "./toast-queue.ts";
+import { dropToast, MAX_TOASTS, pushToast, TOAST_MS, toastDuration, UNDO_MS } from "./toast-queue.ts";
 import { pageNumber, readFilters, writeFilters } from "./url-filters.ts";
 
 describe("pagerView", () => {
@@ -102,6 +102,14 @@ describe("toast queue", () => {
     assert.deepEqual(list.map((item) => item.id), [2, 3, 4]);
     list = dropToast(list, 3);
     assert.deepEqual(list.map((item) => item.id), [2, 4]);
+  });
+
+  it("keeps a toast with an undo button on screen longer than a plain one", () => {
+    const [plain, undoable] = [{ id: 1, message: "Saved", tone: "success" as const }, { id: 2, message: "Deleted", tone: "success" as const, action: { label: "Undo", run: () => undefined } }];
+    assert.equal(toastDuration(plain), TOAST_MS);
+    assert.equal(toastDuration(undoable), UNDO_MS);
+    assert.ok(UNDO_MS > TOAST_MS);
+    assert.equal(pushToast([], undoable)[0]?.action?.label, "Undo");
   });
 
   it("keeps the detail line and the info tone", () => {

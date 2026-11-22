@@ -175,6 +175,33 @@ export function lineQuantity(line: LineForm): number {
   return Number.isInteger(quantity) && quantity >= 1 ? quantity : 0;
 }
 
+/** What one piece earns if it sells at the typed price: in pounds, and as a share of that price (the dashboard's definition of a margin). */
+export interface LineMargin {
+  amount: number;
+  percent: number;
+}
+
+/** The margin shown beside the cost and the price while they are typed; `null` until both are numbers and the price is above zero. */
+export function lineMargin(line: Pick<LineForm, "unitCost" | "price">): LineMargin | null {
+  const cost = parseAmount(line.unitCost);
+  const price = parseAmount(line.price);
+  if (cost === null || price === null || !Number.isFinite(cost) || !Number.isFinite(price) || price <= 0) return null;
+  const amount = Math.round((price - cost) * 100) / 100;
+  return { amount, percent: Math.round(((price - cost) / price) * 1000) / 10 };
+}
+
+const serialKey = (serial: string): string => serial.replace(/\s+/g, "").toLowerCase();
+
+/** The keys of the lines whose serial number is also typed on another line (a scanner that fired twice); case and spaces do not matter. */
+export function repeatedSerialLines(lines: readonly Pick<LineForm, "key" | "serialNumber">[]): ReadonlySet<string> {
+  const seen = new Map<string, string[]>();
+  for (const line of lines) {
+    const key = serialKey(line.serialNumber);
+    if (key !== "") seen.set(key, [...(seen.get(key) ?? []), line.key]);
+  }
+  return new Set([...seen.values()].filter((keys) => keys.length > 1).flat());
+}
+
 export const lineTotal = (line: LineForm): number => lineQuantity(line) * (parseAmount(line.unitCost) || 0);
 
 /** total = Σ quantity × unit cost. */

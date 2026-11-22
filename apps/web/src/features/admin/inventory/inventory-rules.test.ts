@@ -4,7 +4,7 @@ import type { Category } from "../categories/categories-api.ts";
 import type { Partner } from "../expenses/expenses-api.ts";
 import type { StockItem, StockUnit } from "./inventory-api.ts";
 import {
-  categoryPath, expectedProfit, groupByBuild, itemCost, itemFormValid, itemPartner, pickedIds, stockState, toItemForm, toUpdateRequest, triState, unitPercent, unitStatusKey
+  categoryPath, expectedProfit, groupByBuild, itemCost, itemFormValid, itemPartner, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, triState, unitPercent, unitStatusKey
 } from "./inventory-rules.ts";
 
 const unit = (patch: Partial<StockUnit>): StockUnit => ({
@@ -120,5 +120,18 @@ describe("stock grouped by build", () => {
     const rows = rowsOf([item([inBuild], { id: "cpu" }), item([inBuild, unit({})], { id: "lot" })], ["b1"]);
     assert.deepEqual(rows.map((row) => row.key), ["build-b1", "lot"]);
     assert.equal(rows[0]?.kind === "build" ? rows[0].open : true, false);
+  });
+});
+
+describe("stock age", () => {
+  it("flags an item that sat longer than the limits and keeps the limits in one place", () => {
+    assert.deepEqual(STOCK_AGE_DAYS, { slow: 15, stale: 30 });
+    assert.equal(stockAge(15, 2), "fresh");
+    assert.equal(stockAge(16, 2), "slow");
+    assert.equal(stockAge(30, 2), "slow");
+    assert.equal(stockAge(31, 2), "stale");
+  });
+  it("never flags an item with nothing available", () => {
+    assert.equal(stockAge(90, 0), "fresh");
   });
 });

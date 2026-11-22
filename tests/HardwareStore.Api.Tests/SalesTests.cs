@@ -955,4 +955,22 @@ public sealed class SalesPostgreSqlTests(OwnerBootstrapPostgreSqlFixture fixture
         Assert.Empty(await retail.Pos.SearchCustomersAsync("01234567890"));
         Assert.Equal(400, await RetailSales.StatusCodeAsync(() => retail.Pos.SearchCustomersAsync("12")));
     }
+
+    [Fact]
+    public async Task Pos_warns_about_a_blacklisted_customer_in_the_search_and_in_the_preview()
+    {
+        var (retail, _, _) = await StartAsync();
+        var item = await retail.ReceiveItemAsync(new ReceiptLine("Flag GPU", "New", 4, 100m, 500m));
+        await retail.PosAsync(Sale([StockLine(item.Id)], phone: "01008880000"));
+        await retail.PosAsync(Sale([StockLine(item.Id)], phone: "01009990000"));
+        await retail.Blacklist.AddAsync(new BlacklistRequest(null, "Bad Buyer", "0100 888 0000", null, null, "No-show"), Actor);
+
+        Assert.True(Assert.Single(await retail.Pos.SearchCustomersAsync("0100 888")).IsBlacklisted);
+        Assert.False(Assert.Single(await retail.Pos.SearchCustomersAsync("0100 999")).IsBlacklisted);
+
+        // A typed number is checked too, in any spelling, even when the customer never bought here.
+        Assert.True((await retail.Pos.PreviewAsync(Sale([StockLine(item.Id)], phone: "+20 100 888 0000"), PosUnlimited, includeCosts: false)).CustomerBlacklisted);
+        Assert.False((await retail.Pos.PreviewAsync(Sale([StockLine(item.Id)], phone: "01009990000"), PosUnlimited, includeCosts: false)).CustomerBlacklisted);
+        Assert.False((await retail.Pos.PreviewAsync(Sale([StockLine(item.Id)]) with { Customer = null }, PosUnlimited, includeCosts: false)).CustomerBlacklisted);
+    }
 }

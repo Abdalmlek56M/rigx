@@ -8,6 +8,7 @@ import { Dialog } from "../kit/Dialog";
 import { FormMessage } from "../kit/PageHeader";
 import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
+import { useUndoDelete } from "../system/use-undo-delete";
 import {
   addToBlacklist,
   removeFromBlacklist,
@@ -70,6 +71,7 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
   const t = useTranslations("admin.customers.account");
   const blacklistT = useTranslations("admin.customers.blacklist");
   const toast = useToast();
+  const undoDelete = useUndoDelete();
   const submit = useSubmit();
   const [unlinking, setUnlinking] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -77,10 +79,12 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
   const [removing, setRemoving] = useState(false);
   if (!canManage && !canApprove) return null;
 
-  async function run(action: () => Promise<unknown>, success: string) {
+  /** `undo`: the entry the action moved to the trash, so its toast can offer to bring it back. */
+  async function run(action: () => Promise<unknown>, success: string, undo?: { kind: string; id: string }) {
     try {
       await action();
-      toast(success);
+      if (undo) undoDelete({ ...undo, message: success, onRestored: onChanged });
+      else toast(success);
       onChanged();
     } catch {
       toast(blacklistT("failed"), "error");
@@ -138,7 +142,7 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
         onClose={() => setRemoving(false)}
         onConfirm={async () => {
           if (!blacklist) return;
-          await run(() => removeFromBlacklist(blacklist.id), blacklistT("removed"));
+          await run(() => removeFromBlacklist(blacklist.id), blacklistT("removed"), { kind: "blacklist", id: blacklist.id });
         }}
       />
       {adding ? <BlacklistDialog profile={profile} onClose={() => setAdding(false)} onSaved={onChanged} /> : null}

@@ -3,6 +3,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { ChevronDownIcon, ChevronStartIcon, EyeIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
@@ -13,7 +15,7 @@ import { buttonClass, buttonIconSize, IconButton } from "../kit/Button";
 import type { Column } from "../kit/DataTable";
 import { usePermissions } from "../use-permissions";
 import type { StockItem } from "./inventory-api";
-import { categoryPath, expectedProfit, itemCost, itemPartner, stockState, type StockRow } from "./inventory-rules";
+import { categoryPath, expectedProfit, itemCost, itemPartner, stockAge, stockState, type StockAge, type StockRow } from "./inventory-rules";
 
 interface ColumnsInput {
   tree: readonly Category[];
@@ -23,6 +25,9 @@ interface ColumnsInput {
   /** Opens or closes the parts of a build. */
   onToggleBuild: (id: string) => void;
 }
+
+/** The badge tone of an item's time in stock; a fresh item shows plain text. */
+const AGE_TONES: Record<Exclude<StockAge, "fresh">, StatusTone> = { slow: "warning", stale: "danger" };
 
 const asCondition = (condition: string) => (condition === "New" ? "New" : "Used");
 
@@ -127,7 +132,16 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
       header: t("columns.visibility"),
       cell: forItem((item) => <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>)
     },
-    { key: "days", header: t("columns.days"), align: "end", cell: forItem((item) => <span className="whitespace-nowrap">{t("days", { count: item.daysInStock })}</span>) }
+    {
+      key: "days",
+      header: t("columns.days"),
+      align: "end",
+      cell: forItem((item) => {
+        const age = stockAge(item.daysInStock, item.availableCount);
+        const text = t("days", { count: item.daysInStock });
+        return age === "fresh" ? <span className="whitespace-nowrap">{text}</span> : <StatusBadge tone={AGE_TONES[age]}>{text}</StatusBadge>;
+      })
+    }
   );
   return columns;
 }

@@ -1437,7 +1437,10 @@
         "light": "Light",
         "dark": "Dark",
         "profile": "Profile",
-        "signOut": "Sign out"
+        "signOut": "Sign out",
+        "density": "Table density",
+        "comfortable": "Comfortable",
+        "compact": "Compact"
       },
       "roles": {
         "Owner": "Owner",
@@ -1522,7 +1525,12 @@
       },
       "toasts": {
         "region": "Notifications",
-        "close": "Close notification"
+        "close": "Close notification",
+        "undo": "Undo"
+      },
+      "undo": {
+        "restored": "Restored.",
+        "failed": "Could not restore."
       }
     },
     "dashboard": {
@@ -2753,7 +2761,9 @@
         "new": "New customer",
         "newHint": "They will be registered with the sale.",
         "orders": "{count, plural, one {# order} other {# orders}}",
-        "failed": "Could not search right now."
+        "failed": "Could not search right now.",
+        "blacklisted": "Blacklisted customer",
+        "blacklistedHint": "Confirm the sale only after it is paid in full."
       },
       "fulfillment": {
         "title": "Handover",
@@ -2796,7 +2806,8 @@
         "calculating": "Calculating…",
         "previewFailed": "Could not update the summary: {message}",
         "couponLabel": "Coupon (optional)",
-        "couponDiscount": "Coupon discount ({code})"
+        "couponDiscount": "Coupon discount ({code})",
+        "blacklisted": "This customer is blacklisted: confirm the sale only after it is paid in full."
       },
       "errors": {
         "lines": "Add at least one item or build.",
@@ -2827,6 +2838,17 @@
         "deliver": "Hand over and print the invoice",
         "delivered": "Handed over; the invoice is ready",
         "savedToast": "Sale recorded"
+      },
+      "shortcuts": {
+        "title": "Keyboard shortcuts",
+        "actions": {
+          "focusItems": "Search for an item",
+          "focusCustomer": "Search for a customer",
+          "confirm": "Confirm the sale",
+          "savePending": "Save as a pending order",
+          "help": "Show this list"
+        },
+        "scanHint": "Type or scan an item code, then press Enter to add the item at once."
       }
     },
     "inventory": {
@@ -3171,7 +3193,10 @@
         "copyFrom": "Copies {code}'s data",
         "copied": "Data copied from {code}. {count, plural, one {Its photo is} other {Its # photos are}} copied to every piece on receiving.",
         "copiedSaved": "The original item's photos are copied to every piece on receiving.",
-        "dropPhotos": "Without the photos"
+        "dropPhotos": "Without the photos",
+        "serialRepeated": "This serial number is also on another line.",
+        "margin": "Profit margin",
+        "marginPercent": "{percent}%"
       },
       "payment": {
         "payFromCash": "Take the paid amount from the cash accounts",
@@ -5046,6 +5071,32 @@
       },
       "untitled": "Unnamed build",
       "anonymous": "Customer"
+    },
+    "palette": {
+      "open": "Search and commands",
+      "title": "Quick search",
+      "placeholder": "Find a page, order, customer or item",
+      "empty": "Nothing matches.",
+      "searching": "Searching…",
+      "failed": "Some records could not be searched.",
+      "hintMove": "Arrow keys move between results",
+      "hintOpen": "Enter opens, Esc closes",
+      "groups": {
+        "action": "Quick actions",
+        "page": "Pages",
+        "order": "Orders",
+        "customer": "Customers",
+        "item": "Items",
+        "purchase": "Purchases"
+      },
+      "actions": {
+        "newSale": "New sale at the counter",
+        "newPurchase": "New purchase",
+        "newOrders": "New orders",
+        "newRequests": "New customer requests",
+        "toggleTheme": "Switch between light and dark",
+        "toggleDensity": "Switch table density"
+      }
     }
   },
   "coupon": {

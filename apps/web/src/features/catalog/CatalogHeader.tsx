@@ -42,7 +42,7 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
       lead={t("subtitle")}
       below={<HelpLink href="/#recommend">{t("recommendLink")}</HelpLink>}
       actions={
-        <div role="group" aria-label={t("conditionGroup")} className="grid grid-cols-3 gap-2">
+        <div role="group" aria-label={t("conditionGroup")} className="flex flex-wrap gap-1.5">
           {tabs.map((tab) => (
             <ChoiceLinkTile
               key={tab.label}
@@ -51,7 +51,8 @@ export async function CatalogHeader({ state, tree, category, title, counts }: Ca
               label={tab.label}
               badge={tab.count > 0 ? <span className="rounded-full bg-paper px-1.5 font-mono text-xs font-normal text-ink-muted">{tab.count}</span> : undefined}
               selected={state.condition === tab.condition}
-              className="min-w-24"
+              compact
+              className="flex-auto md:min-w-24"
             />
           ))}
         </div>

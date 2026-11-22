@@ -26068,6 +26068,10 @@
           "orderCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "isBlacklisted": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -26182,6 +26186,10 @@
                 "$ref": "#/components/schemas/CouponCheckView"
               }
             ]
+          },
+          "customerBlacklisted": {
+            "type": "boolean",
+            "default": false
           }
         }
       },

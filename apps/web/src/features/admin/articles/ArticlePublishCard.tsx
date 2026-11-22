@@ -8,6 +8,7 @@ import { FormMessage } from "../kit/PageHeader";
 import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
+import { useUndoDelete } from "../system/use-undo-delete";
 import { deleteArticle, publishArticle, unpublishArticle, type ArticleDetail, type ArticleRevision, type Article } from "./articles-api";
 import { ArticleStatusBadge } from "./ArticleStatusBadge";
 import { isConflict } from "@/lib/api/conflict";
@@ -26,6 +27,7 @@ export function ArticlePublishCard({ detail, revisions, onSaved, onDeleted, onSt
   const locale = useLocale();
   const submit = useSubmit();
   const toast = useToast();
+  const undoDelete = useUndoDelete();
   const [unpublishing, setUnpublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const article = detail.article;
@@ -95,7 +97,7 @@ export function ArticlePublishCard({ detail, revisions, onSaved, onDeleted, onSt
         open={deleting} title={t("delete")} body={t("deleteBody")} confirmLabel={t("delete")} danger
         onClose={() => setDeleting(false)}
         onConfirm={async () => {
-          try { await deleteArticle(article.id); toast(t("deleted")); onDeleted(); }
+          try { await deleteArticle(article.id); undoDelete({ kind: "article", id: article.id, message: t("deleted"), onRestored: onDeleted }); onDeleted(); }
           catch (error) { toast(toFormErrors(error, t("failed")).general ?? t("failed"), "error"); throw error; }
         }}
       />

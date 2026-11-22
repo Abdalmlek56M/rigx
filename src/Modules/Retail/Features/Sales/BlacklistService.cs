@@ -73,7 +73,7 @@ public sealed class BlacklistService(IDbContextFactory<RetailDbContext> contextF
         return await AnyMatchAsync(db, phone, OrderRules.Email(email), null, cancellationToken);
     }
 
-    private static Task<bool> AnyMatchAsync(RetailDbContext db, string? phone, string? email, string? addressKey, CancellationToken cancellationToken) =>
+    internal static Task<bool> AnyMatchAsync(RetailDbContext db, string? phone, string? email, string? addressKey, CancellationToken cancellationToken) =>
         db.Blacklist.AnyAsync(entry => (phone != null && entry.PhoneNumber == phone) ||
             (email != null && entry.Email == email) ||
             (addressKey != null && entry.AddressKey == addressKey), cancellationToken);

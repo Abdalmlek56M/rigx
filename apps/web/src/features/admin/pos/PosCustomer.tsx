@@ -2,13 +2,14 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TextField } from "@/components/ui/TextField";
 import { FormSection } from "@/features/checkout/form-parts";
 import { SearchBox } from "../kit/FilterBar";
 import { usePosError, type SetForm } from "./pos-parts";
 import { searchCustomers, type PosCustomer as FoundCustomer } from "./pos-api";
 import { customerSearchReady, posPhone, posPhoneValid, type PosField, type PosForm } from "./pos-rules";
-import { CheckIcon, PlusIcon, UserIcon } from "@/components/ui/icons";
+import { BanIcon, CheckIcon, PlusIcon, UserIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
 interface PosCustomerProps {
@@ -23,8 +24,8 @@ type Search = { status: "idle" | "busy" | "failed" } | { status: "done"; custome
 /** What the typed phone is: a past buyer's number, a new one, or not checked yet. */
 type PhoneCheck = { phone: string; status: "busy" | "failed" } | { phone: string; status: "done"; customer: FoundCustomer | null };
 
-function Notice({ tone, icon, children, action }: { tone: "known" | "new" | "offer"; icon: ReactNode; children: ReactNode; action?: ReactNode }) {
-  const colors = tone === "known" ? "border-success/40 bg-success/10" : tone === "new" ? "border-line bg-paper" : "border-orange/40 bg-orange-soft";
+function Notice({ tone, icon, children, action }: { tone: "known" | "new" | "offer" | "blocked"; icon: ReactNode; children: ReactNode; action?: ReactNode }) {
+  const colors = tone === "known" ? "border-success/40 bg-success/10" : tone === "new" ? "border-line bg-paper" : tone === "blocked" ? "border-error/50 bg-error/10" : "border-orange/40 bg-orange-soft";
   return (
     <div role="status" className={`flex flex-wrap items-center justify-between gap-3 rounded-control border px-3.5 py-2.5 text-sm ${colors}`}>
       <span className="flex min-w-0 items-center gap-2.5">
@@ -86,7 +87,7 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
   return (
     <FormSection title={t("title")} hint={t("hint")}>
       <div className="flex flex-col gap-2">
-        <SearchBox key={searchKey} label={t("search")} value="" onChange={find} />
+        <SearchBox key={searchKey} label={t("search")} value="" onChange={find} focusKey="pos-customer" />
         {search.status === "busy" ? <p role="status" className="m-0 text-sm text-ink-muted">{t("finding")}</p> : null}
         {search.status === "failed" ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
         {search.status === "done" && search.customers.length === 0 ? <p role="status" className="m-0 text-sm text-ink-muted">{t("noMatch")}</p> : null}
@@ -97,7 +98,10 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
                 <span className="flex min-w-0 items-center gap-2.5">
                   <span className="text-ink-muted"><UserIcon size={18} /></span>
                   <span className="flex min-w-0 flex-col">
-                    <b className="truncate">{customer.name}</b>
+                    <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+                      <b className="truncate">{customer.name}</b>
+                      {customer.isBlacklisted ? <StatusBadge tone="danger" icon={BanIcon}>{t("blacklisted")}</StatusBadge> : null}
+                    </span>
                     <span className="text-xs text-ink-muted"><span dir="ltr">{customer.phone}</span> · {orders(customer)}</span>
                   </span>
                 </span>
@@ -108,7 +112,13 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
         ) : null}
       </div>
 
-      {known && used === phone ? (
+      {known?.isBlacklisted ? (
+        // The warning comes first, whatever else is known about the customer: the sale is confirmed only once it is paid in full.
+        <Notice tone="blocked" icon={<span className="text-error-text"><BanIcon size={18} /></span>}>
+          <b className="block">{t("blacklisted")}</b>
+          <span className="text-ink-muted">{t("blacklistedHint")}</span>
+        </Notice>
+      ) : known && used === phone ? (
         <Notice tone="known" icon={<span className="text-success"><CheckIcon size={18} /></span>}>
           <b>{t("registered")}</b> · {t("registeredHint", { orders: orders(known) })}
         </Notice>

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { useToast } from "../kit/Toast";
+import { useUndoDelete } from "../system/use-undo-delete";
 import { blacklistTitle, maskPhone } from "./blacklist-labels";
 import { fetchBlacklist, removeFromBlacklist, type BlacklistEntry } from "./orders-api";
 import { RefreshIcon, TrashIcon } from "@/components/ui/icons";
@@ -14,6 +15,7 @@ import { Button } from "../kit/Button";
 export function BlacklistPanel({ reloadKey, canManage, onChanged }: { reloadKey: number; canManage: boolean; onChanged: () => void }) {
   const t = useTranslations("admin.orders.blacklist");
   const toast = useToast();
+  const undoDelete = useUndoDelete();
   // A new key is a new load: the list reads again after an entry was added on an order.
   const { state, reload } = useLoad(useCallback(() => fetchBlacklist().then((entries) => ({ key: reloadKey, entries })), [reloadKey]));
   const [removing, setRemoving] = useState<BlacklistEntry | null>(null);
@@ -53,7 +55,7 @@ export function BlacklistPanel({ reloadKey, canManage, onChanged }: { reloadKey:
           if (!removing) return;
           try {
             await removeFromBlacklist(removing.id);
-            toast(t("removed"));
+            undoDelete({ kind: "blacklist", id: removing.id, message: t("removed"), onRestored: onChanged });
             onChanged();
           } catch (error) {
             toast(t("removeFailed"), "error");

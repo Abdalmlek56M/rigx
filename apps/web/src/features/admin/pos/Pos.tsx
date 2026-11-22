@@ -15,11 +15,13 @@ import { PosDelivery, type Governorate } from "./PosDelivery";
 import { PosPayments } from "./PosPayments";
 import { PosPicker } from "./PosPicker";
 import { PosSold } from "./PosSold";
+import { PosShortcutsDialog } from "./PosShortcutsDialog";
 import { PosSummary } from "./PosSummary";
+import { isTypingTarget, posShortcut } from "./pos-shortcuts";
 import type { SetForm } from "./pos-parts";
 import { addToCart, EMPTY_POS_FORM, sendableLines, toSaleRequest, validateSale, withCustomer, type CartLine, type PosForm } from "./pos-rules";
-import { ClockIcon } from "@/components/ui/icons";
-import { buttonClass, buttonIconSize } from "../kit/Button";
+import { ClockIcon, KeyboardIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize, IconButton } from "../kit/Button";
 
 const PREVIEW_DELAY_MS = 400;
 
@@ -43,6 +45,7 @@ export function Pos({ leadSources, governorates }: PosProps) {
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [attempted, setAttempted] = useState(false);
   const [sold, setSold] = useState<Order | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const set: SetForm = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const priced = sendableLines(cart).length > 0;
@@ -83,6 +86,23 @@ export function Pos({ leadSources, governorates }: PosProps) {
     }, t("sold.savedToast"));
   }
 
+  // Keyboard shortcuts of the counter; the handler is replaced on every render, so it always sees the current cart and form.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const shortcut = posShortcut(event, isTypingTarget(event.target));
+      if (!shortcut || sold) return;
+      event.preventDefault();
+      if (shortcut === "help") setHelpOpen(true);
+      else if (shortcut === "focusItems" || shortcut === "focusCustomer") {
+        const field = document.querySelector<HTMLInputElement>(`[data-focus="${shortcut === "focusItems" ? "pos-items" : "pos-customer"}"]`);
+        field?.focus();
+        field?.select();
+      } else if (cart.length > 0 && !submit.busy) sell(shortcut === "confirm");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   function reset() {
     setCart([]);
     setForm(EMPTY_POS_FORM);
@@ -94,7 +114,16 @@ export function Pos({ leadSources, governorates }: PosProps) {
 
   return (
     <>
-      <PageHeader title={t("title")} actions={<Link href="/admin/orders?channel=Store" className={buttonClass()}><ClockIcon size={buttonIconSize()} />{t("recent")}</Link>} />
+      <PageHeader
+        title={t("title")}
+        actions={(
+          <>
+            <IconButton icon={KeyboardIcon} label={t("shortcuts.title")} variant="secondary" aria-haspopup="dialog" onClick={() => setHelpOpen(true)} />
+            <Link href="/admin/orders?channel=Store" className={buttonClass()}><ClockIcon size={buttonIconSize()} />{t("recent")}</Link>
+          </>
+        )}
+      />
+      <PosShortcutsDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
       {sold ? <PosSold order={sold} canDeliver={has("Sales.ApproveOrder")} onNewSale={reset} /> : (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex min-w-0 flex-col gap-5">

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { ModalSheet } from "@/components/ui/ModalSheet";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
@@ -9,7 +10,6 @@ import { usePermissions } from "../use-permissions";
 import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
-import { useReveal } from "../kit/use-reveal";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { BlacklistPanel } from "./BlacklistPanel";
 import { OrderDetail } from "./OrderDetail";
@@ -30,7 +30,7 @@ function ReservationCell({ order }: { order: Order }) {
   return <span className="text-ink-muted">{t("none")}</span>;
 }
 
-/** ADM-Orders: the order list with status tabs, the selected order below it, and the blacklist. */
+/** ADM-Orders: the order list with status tabs, the selected order in a drawer over the list (the list keeps its place), and the blacklist. */
 export function Orders() {
   const t = useTranslations("admin.orders");
   const locale = useLocale();
@@ -39,7 +39,6 @@ export function Orders() {
   const { state, reload } = useLoad(useCallback(() => fetchOrders(values.status), [values.status]));
   // Bumped when the blacklist changes: the open order and the panel read it again.
   const [blacklistVersion, setBlacklistVersion] = useState(0);
-  const detailRef = useReveal<HTMLDivElement>(values.id || null);
 
   const tableState: Load<readonly Order[]> = useMemo(
     () => (state.status === "ready" ? { status: "ready", data: filterOrders(state.data, values) } : state),
@@ -109,14 +108,14 @@ export function Orders() {
       </FilterBar>
       <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(order) => order.id} empty={t("empty")} />
       {state.status === "ready" && state.data.length >= LIST_LIMIT ? <p className="m-0 text-sm text-ink-muted">{t("newestOnly", { count: LIST_LIMIT })}</p> : null}
-      <div ref={detailRef} className="scroll-mt-20 empty:hidden">
-        {values.id ? (
+      <ModalSheet open={values.id !== ""} onClose={() => set({ id: "" })} label={t("detail.heading")} edge="end" fullHeight wide>
+        <div className="h-full overflow-y-auto overscroll-contain bg-paper p-4 md:p-5">
           <OrderDetail
             key={`${values.id}-${blacklistVersion}`} id={values.id} onClose={() => set({ id: "" })}
             onChanged={reload} onBlacklistChanged={blacklistChanged}
           />
-        ) : null}
-      </div>
+        </div>
+      </ModalSheet>
       {has("Sales.ViewCustomerContact") ? <BlacklistPanel reloadKey={blacklistVersion} onChanged={blacklistChanged} canManage={has("Sales.ApproveOrder")} /> : null}
     </>
   );

@@ -120,6 +120,17 @@ export function buildLine(pick: BuildPick): BuildLine {
   return { kind: "build", key: `build:${pick.code}`, pick, mode: "whole", salePrice: money(pick.salePrice), parts };
 }
 
+/**
+ * What Enter adds from the item search: the item whose code is exactly what was typed (a scanned or typed code), or the only item found;
+ * `null` when there are several candidates (the cashier picks one) or none.
+ */
+export function soleMatch(items: readonly ItemPick[], query: string): ItemPick | null {
+  const code = query.trim().toLowerCase();
+  const exact = items.filter((pick) => pick.code.toLowerCase() === code);
+  if (exact.length === 1) return exact[0] ?? null;
+  return items.length === 1 ? items[0] ?? null : null;
+}
+
 /** Adds a pick, or one more piece of an item already in the cart (up to what is available); a build is added once. */
 export function addToCart(cart: readonly CartLine[], line: CartLine): CartLine[] {
   const existing = cart.find((entry) => entry.key === line.key);

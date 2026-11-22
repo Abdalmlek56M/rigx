@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import { setTheme, useTheme, type Theme } from "@/components/layout/use-theme";
-import { ChevronDownIcon, LogoutIcon, MoonIcon, SunIcon, UserIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, GridIcon, ListIcon, LogoutIcon, MoonIcon, SunIcon, UserIcon } from "@/components/ui/icons";
 import type { SessionUser } from "@/features/auth/session-store";
 import { Link } from "@/i18n/navigation";
+import { useDensity } from "./kit/use-density";
 
 const KNOWN_ROLES = ["Owner"] as const;
 type KnownRole = (typeof KNOWN_ROLES)[number];
@@ -30,6 +31,7 @@ interface AdminUserMenuProps {
 export function AdminUserMenu({ user, onSignOut, onNavigate }: AdminUserMenuProps) {
   const t = useTranslations("admin.shell");
   const theme = useTheme();
+  const [density, setDensity] = useDensity(user.username);
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -149,6 +151,18 @@ export function AdminUserMenu({ user, onSignOut, onNavigate }: AdminUserMenuProp
               </button>
               <button type="button" role="menuitemradio" aria-checked={theme === "dark"} onClick={() => chooseTheme("dark")} className={CHOICE}>
                 <MoonIcon size={16} /> {t("menu.dark")}
+              </button>
+            </div>
+          </div>
+
+          <div role="group" aria-label={t("menu.density")} className="flex flex-col gap-1 px-1 pt-1">
+            <span aria-hidden="true" className="px-1 text-[11px] font-bold text-ink-muted">{t("menu.density")}</span>
+            <div className="grid grid-cols-2 gap-1">
+              <button type="button" role="menuitemradio" aria-checked={density === "comfortable"} onClick={() => setDensity("comfortable")} className={CHOICE}>
+                <GridIcon size={16} /> {t("menu.comfortable")}
+              </button>
+              <button type="button" role="menuitemradio" aria-checked={density === "compact"} onClick={() => setDensity("compact")} className={CHOICE}>
+                <ListIcon size={16} /> {t("menu.compact")}
               </button>
             </div>
           </div>

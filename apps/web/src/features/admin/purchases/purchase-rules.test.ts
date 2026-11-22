@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import type { Purchase } from "./purchases-api.ts";
 import {
   dropPhotoCopy, emptyLine, emptyPurchase, lineFromItem, pickModel, toLineRequest, typeModel, isDraft, isOverpaid, kindKey, lineQuantity,
-  lineDisplayName, missingFields, purchaseFromView, purchaseTotal, remainingAmount, sellerFormValid, statusKey,
+  lineDisplayName, lineMargin, missingFields, repeatedSerialLines, purchaseFromView, purchaseTotal, remainingAmount, sellerFormValid, statusKey,
   toPurchaseRequest, toSellerRequest, emptySeller, looksLikePhone, sellerQuery, withMethod, type LineForm, type PurchaseForm
 } from "./purchase-rules.ts";
 
@@ -193,5 +193,28 @@ describe("copying an existing item", () => {
     const copied = lineFromItem(item, "k9");
     assert.deepEqual([copied.key, copied.modelName, copied.categoryId, copied.copyPhotosFromItemId], ["k9", "RTX 4060 8GB", "gpu", "i1"]);
     assert.deepEqual([copied.price, copied.unitCost, copied.serialNumber], ["", "", ""]);
+  });
+});
+
+describe("line margin", () => {
+  it("is the price minus the cost, in pounds and as a share of the price", () => {
+    assert.deepEqual(lineMargin({ unitCost: "1000", price: "1500" }), { amount: 500, percent: 33.3 });
+    assert.deepEqual(lineMargin({ unitCost: "2000", price: "1500" }), { amount: -500, percent: -33.3 });
+  });
+  it("waits for both figures and a price above zero", () => {
+    assert.equal(lineMargin({ unitCost: "", price: "1500" }), null);
+    assert.equal(lineMargin({ unitCost: "1000", price: "" }), null);
+    assert.equal(lineMargin({ unitCost: "1000", price: "0" }), null);
+    assert.equal(lineMargin({ unitCost: "abc", price: "10" }), null);
+  });
+});
+
+describe("repeated serial numbers", () => {
+  it("flags the lines that share a serial, ignoring case and spaces", () => {
+    const lines = [line({ key: "a", serialNumber: "SN 100" }), line({ key: "b", serialNumber: "sn100" }), line({ key: "c", serialNumber: "SN-200" }), line({ key: "d", serialNumber: "" }), line({ key: "e", serialNumber: "" })];
+    assert.deepEqual([...repeatedSerialLines(lines)].sort(), ["a", "b"]);
+  });
+  it("flags nothing when every serial is different or empty", () => {
+    assert.equal(repeatedSerialLines([line({ key: "a", serialNumber: "1" }), line({ key: "b", serialNumber: "2" })]).size, 0);
   });
 });

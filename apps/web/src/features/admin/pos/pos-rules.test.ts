@@ -11,6 +11,7 @@ import {
   paidTotal,
   paymentState,
   posPhone,
+  soleMatch,
   toBuildPick,
   toItemPick,
   toSaleRequest,
@@ -157,7 +158,7 @@ describe("POS customer", () => {
   it("takes the picked customer's phone and fills only the empty fields", () => {
     const form: PosForm = { ...EMPTY_POS_FORM, name: "Mona A.", phone: "0100", governorate: "" };
     const next = withCustomer(form, {
-      name: "Mona Adel", phone: "01007771234", phoneHasWhatsApp: false, email: "mona@example.com", orderCount: 2,
+      name: "Mona Adel", phone: "01007771234", phoneHasWhatsApp: false, email: "mona@example.com", orderCount: 2, isBlacklisted: false,
       address: { governorate: "CAIRO", area: "Nasr City", street: "Abbas", building: null, landmark: null }
     });
     assert.deepEqual(
@@ -173,5 +174,19 @@ describe("POS payment state", () => {
     assert.deepEqual(paymentState(1000, 400.5), { kind: "due", amount: 599.5 });
     assert.deepEqual(paymentState(1000, 1000), { kind: "settled" });
     assert.deepEqual(paymentState(1000, 1200), { kind: "over", amount: 200 });
+  });
+});
+
+describe("soleMatch", () => {
+  const pick = (code: string): ItemPick => ({ ...item, code });
+  it("takes the item whose code is exactly what was typed, even among several", () => {
+    assert.equal(soleMatch([pick("RX-10"), pick("RX-1")], " rx-1 ")?.code, "RX-1");
+  });
+  it("takes the only item found", () => {
+    assert.equal(soleMatch([pick("RX-7")], "gpu")?.code, "RX-7");
+  });
+  it("adds nothing when several items could be meant or none was found", () => {
+    assert.equal(soleMatch([pick("RX-1"), pick("RX-2")], "rx"), null);
+    assert.equal(soleMatch([], "rx"), null);
   });
 });

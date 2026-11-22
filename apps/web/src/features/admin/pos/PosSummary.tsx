@@ -5,7 +5,7 @@ import { useCouponProblemText } from "@/lib/coupon-problem-text";
 import { formatEgp } from "@/lib/format";
 import { FormMessage } from "../kit/PageHeader";
 import type { PosPreview } from "./pos-api";
-import { CheckIcon, ClockIcon } from "@/components/ui/icons";
+import { BanIcon, CheckIcon, ClockIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
 interface PosSummaryProps {
@@ -64,6 +64,12 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
         />
         {coupon?.problem ? <span role="alert" className="text-xs font-normal text-error-text">{problemText(coupon.problem)}</span> : null}
       </label>
+      {preview?.customerBlacklisted ? (
+        <p role="alert" className="m-0 flex items-start gap-2 rounded-control border border-error/50 bg-error/10 px-3 py-2 text-sm font-bold text-error-text">
+          <span className="mt-0.5"><BanIcon size={16} /></span>
+          {t("blacklisted")}
+        </p>
+      ) : null}
       {preview && preview.warnings.length > 0 ? (
         <div role="status" className="flex flex-col gap-1 rounded-control bg-orange/15 px-3 py-2 text-sm">
           <b>{t("warnings")}</b>

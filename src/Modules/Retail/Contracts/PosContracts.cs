@@ -16,8 +16,9 @@ public sealed record PosPolicy(decimal MaxDiscountPercent, bool UnlimitedDiscoun
 public sealed record PosPreview(IReadOnlyList<PosPreviewLine> Lines, decimal LinesTotal, decimal Discount, decimal Subtotal,
     decimal DeliveryFee, decimal Total, decimal? CostTotal, decimal? Profit, IReadOnlyList<string> Warnings,
     IReadOnlyList<PosReturningPart> ReturningToStock, IReadOnlyList<PartnerSharePreview>? PartnerShares = null,
-    CouponCheckView? Coupon = null);
+    CouponCheckView? Coupon = null, bool CustomerBlacklisted = false);
 public sealed record PosPreviewLine(string Name, string? Code, int Quantity, decimal ShownPrice, decimal SalePrice, decimal? Cost, bool BelowCost);
 /// <summary>Parts of a split build that go back to stock when the sale is confirmed.</summary>
 public sealed record PosReturningPart(Guid UnitId, string Name, string Code);
-public sealed record PosCustomerView(string Name, string Phone, bool PhoneHasWhatsApp, string? Email, OrderAddress? Address, int OrderCount);
+/// <summary>A past buyer for the counter; <c>IsBlacklisted</c> lets the cashier be warned without the right to read the blacklist.</summary>
+public sealed record PosCustomerView(string Name, string Phone, bool PhoneHasWhatsApp, string? Email, OrderAddress? Address, int OrderCount, bool IsBlacklisted = false);

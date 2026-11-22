@@ -1,15 +1,17 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
-import { AlertIcon, CheckIcon, CloseIcon, InfoIcon } from "@/components/ui/icons";
-import { IconButton } from "./Button";
-import { dropToast, pushToast, TOAST_MS, type ToastItem, type ToastTone } from "./toast-queue";
+import { AlertIcon, CheckIcon, CloseIcon, InfoIcon, UndoIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "./Button";
+import { dropToast, pushToast, toastDuration, type ToastItem, type ToastTone } from "./toast-queue";
 
 type ShowToast = (message: string, tone?: ToastTone, detail?: string) => void;
+/** A success toast with an "undo" button: `onUndo` runs when it is pressed (and the toast leaves). */
+type ShowUndoToast = (message: string, onUndo: () => void | Promise<void>) => void;
 
-const ToastContext = createContext<ShowToast | null>(null);
+const ToastContext = createContext<{ show: ShowToast; undo: ShowUndoToast } | null>(null);
 
 const TONES: Record<ToastTone, { role: "status" | "alert"; icon: typeof CheckIcon; color: string }> = {
   success: { role: "status", icon: CheckIcon, color: "text-success" },
@@ -17,7 +19,7 @@ const TONES: Record<ToastTone, { role: "status" | "alert"; icon: typeof CheckIco
   info: { role: "status", icon: InfoIcon, color: "text-orange-text" }
 };
 
-/** One toast: enters, waits five seconds (paused while hovered or focused), then leaves. */
+/** One toast: enters, waits five seconds (eight with an undo button; paused while hovered or focused), then leaves. */
 function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
   const t = useTranslations("admin.kit");
   const tone = TONES[toast.tone];
@@ -26,7 +28,8 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
   const [paused, setPaused] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const startedAt = useRef(0);
-  const left = useRef(TOAST_MS);
+  const duration = toastDuration(toast);
+  const left = useRef(duration);
   const bar = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -51,12 +54,12 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
     const element = bar.current;
     if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const animation = element.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
-      duration: TOAST_MS,
+      duration,
       easing: "linear",
       fill: "forwards"
     });
     return () => animation.cancel();
-  }, []);
+  }, [duration]);
 
   useEffect(() => {
     const element = bar.current;
@@ -88,6 +91,17 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <p className="m-0 text-sm font-bold">{toast.message}</p>
         {toast.detail ? <p className="m-0 text-xs text-ink-muted">{toast.detail}</p> : null}
+        {toast.action ? (
+          <Button
+            size="sm" variant="secondary" icon={UndoIcon} className="mt-1.5 self-start"
+            onClick={() => {
+              toast.action?.run();
+              setLeaving(true);
+            }}
+          >
+            {toast.action.label}
+          </Button>
+        ) : null}
         <span aria-hidden="true" className="mt-2 h-0.5 overflow-hidden rounded-full bg-line">
           <span ref={bar} className="block h-full origin-left bg-current rtl:origin-right motion-reduce:hidden" />
         </span>
@@ -97,7 +111,32 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
   );
 }
 
-/** Success, error and info toasts after an admin action; at most three, bottom-start, five seconds each. */
+/**
+ * The toast stack. It lives in the browser's top layer (a manual popover) and is shown again when a toast arrives, so a toast is
+ * seen above an open drawer or dialog instead of behind its backdrop.
+ */
+function ToastRegion({ toasts, onClose }: { toasts: readonly ToastItem[]; onClose: (id: number) => void }) {
+  const t = useTranslations("admin.kit");
+  const region = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const element = region.current;
+    if (!element || typeof element.showPopover !== "function") return;
+    if (element.matches(":popover-open")) element.hidePopover();
+    element.showPopover();
+  }, [toasts]);
+
+  return (
+    <section
+      ref={region} popover="manual" aria-label={t("toasts.region")}
+      className="pointer-events-none fixed inset-auto bottom-4 start-4 z-50 m-0 flex w-[min(380px,calc(100vw-2rem))] flex-col gap-2 overflow-visible border-0 bg-transparent p-0"
+    >
+      {toasts.map((toast) => <ToastCard key={toast.id} toast={toast} onClose={() => onClose(toast.id)} />)}
+    </section>
+  );
+}
+
+/** Success, error and info toasts after an admin action; at most three, bottom-start, five seconds each (eight with an undo button). */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const t = useTranslations("admin.kit");
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -108,23 +147,33 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((list) => pushToast(list, { id, message, tone, detail }));
   }, []);
 
+  const undo = useCallback<ShowUndoToast>((message, onUndo) => {
+    const id = ++nextId.current;
+    setToasts((list) => pushToast(list, { id, message, tone: "success", action: { label: t("toasts.undo"), run: () => void onUndo() } }));
+  }, [t]);
+
   const close = useCallback((id: number) => setToasts((list) => dropToast(list, id)), []);
+  const value = useMemo(() => ({ show, undo }), [show, undo]);
 
   return (
-    <ToastContext.Provider value={show}>
+    <ToastContext.Provider value={value}>
       {children}
-      {toasts.length > 0 && typeof document !== "undefined" ? createPortal(
-        <section aria-label={t("toasts.region")} className="pointer-events-none fixed bottom-4 start-4 z-50 flex w-[min(380px,calc(100vw-2rem))] flex-col gap-2">
-          {toasts.map((toast) => <ToastCard key={toast.id} toast={toast} onClose={() => close(toast.id)} />)}
-        </section>,
-        document.body
-      ) : null}
+      {toasts.length > 0 && typeof document !== "undefined" ? createPortal(<ToastRegion toasts={toasts} onClose={close} />, document.body) : null}
     </ToastContext.Provider>
   );
 }
 
+function useToastContext() {
+  const context = useContext(ToastContext);
+  if (!context) throw new Error("The toast hooks need the admin ToastProvider.");
+  return context;
+}
+
 export function useToast(): ShowToast {
-  const show = useContext(ToastContext);
-  if (!show) throw new Error("useToast needs the admin ToastProvider.");
-  return show;
+  return useToastContext().show;
+}
+
+/** For an action that can be taken back: the toast carries an "undo" button that runs the callback. */
+export function useUndoToast(): ShowUndoToast {
+  return useToastContext().undo;
 }

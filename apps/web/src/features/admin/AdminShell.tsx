@@ -2,7 +2,8 @@
 
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { MenuIcon } from "@/components/ui/icons";
+import { setTheme, useTheme } from "@/components/layout/use-theme";
+import { MenuIcon, SearchIcon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { loginHref } from "@/features/auth/auth-rules";
@@ -13,7 +14,11 @@ import { ADMIN_HOME, areaFor, canOpen, firstAreaHref, isStaff, visibleNav } from
 import { AdminSidebar } from "./AdminSidebar";
 import { useAdminBadges } from "./badges/use-admin-badges";
 import { ConfirmDialog } from "./kit/ConfirmDialog";
+import { nextDensity } from "./kit/density-rules";
 import { ToastProvider } from "./kit/Toast";
+import { useDensity } from "./kit/use-density";
+import { CommandPalette } from "./palette/CommandPalette";
+import { isPaletteShortcut, type PaletteCommand } from "./palette/palette-rules";
 
 function Blank() {
   return <div aria-hidden="true" className="min-h-dvh bg-paper" />;
@@ -38,11 +43,14 @@ function Forbidden({ withStoreLink }: { withStoreLink: boolean }) {
  */
 export function AdminShell({ children }: { children: ReactNode }) {
   const t = useTranslations("admin.shell");
+  const tPalette = useTranslations("admin.palette");
   const session = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const theme = useTheme();
 
   const user = session.status === "signedIn" ? session.user : null;
   const permissions = user?.permissions ?? [];
@@ -51,6 +59,18 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const sawBadges = permissions.includes("Sales.ViewOrders") || permissions.includes("Requests.View");
   const badges = useAdminBadges(user && sawBadges ? user.username : null, area?.key ?? null);
   const landing = user && pathname === ADMIN_HOME && !allowed ? firstAreaHref(permissions) : null;
+  const [density, setDensity] = useDensity(user?.username ?? "");
+
+  // Ctrl+K opens and closes the command palette from anywhere in the admin.
+  useEffect(() => {
+    const toggle = (event: KeyboardEvent) => {
+      if (!isPaletteShortcut(event)) return;
+      event.preventDefault();
+      setPaletteOpen((open) => !open);
+    };
+    window.addEventListener("keydown", toggle);
+    return () => window.removeEventListener("keydown", toggle);
+  }, []);
 
   useEffect(() => {
     if (session.status === "signedOut") router.replace(loginHref(pathname));
@@ -59,6 +79,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (landing) router.replace(landing);
   }, [landing, router]);
+
+  function runCommand(command: PaletteCommand) {
+    if (command === "toggleTheme") setTheme(theme === "dark" ? "light" : "dark");
+    else setDensity(nextDensity(density));
+  }
 
   async function leave() {
     await signOut();
@@ -72,6 +97,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const groups = visibleNav(permissions);
   const closeMenu = () => setMenuOpen(false);
+  const openPalette = () => {
+    closeMenu();
+    setPaletteOpen(true);
+  };
 
   return (
     <ToastProvider>
@@ -83,9 +112,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
         onConfirm={leave}
         onClose={() => setConfirmingLeave(false)}
       />
-      <div className="flex min-h-dvh bg-paper">
+      <CommandPalette open={paletteOpen} permissions={permissions} onClose={() => setPaletteOpen(false)} onCommand={runCommand} />
+      <div data-density={density} className="flex min-h-dvh bg-paper [--row-py:0.625rem] data-[density=compact]:[--row-py:0.25rem]">
         <div className="sticky top-0 hidden h-dvh w-60 shrink-0 md:block">
-          <AdminSidebar user={user} groups={groups} active={area} badges={badges} onSignOut={() => setConfirmingLeave(true)} />
+          <AdminSidebar user={user} groups={groups} active={area} badges={badges} onSignOut={() => setConfirmingLeave(true)} onOpenPalette={openPalette} />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -94,10 +124,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <MenuIcon />
             </button>
             <Link href="/admin" aria-label={t("home")} className="text-on-carbon"><Logo width={88} /></Link>
-            <span className="w-11" />
+            <button type="button" onClick={openPalette} aria-label={tPalette("open")} aria-haspopup="dialog" className="flex h-11 w-11 items-center justify-center text-on-carbon">
+              <SearchIcon />
+            </button>
           </header>
           <ModalSheet open={menuOpen} onClose={closeMenu} label={t("navLabel")} edge="start" fullHeight>
-            <AdminSidebar user={user} groups={groups} active={area} badges={badges} onNavigate={closeMenu} onSignOut={() => setConfirmingLeave(true)} />
+            <AdminSidebar user={user} groups={groups} active={area} badges={badges} onNavigate={closeMenu} onSignOut={() => setConfirmingLeave(true)} onOpenPalette={openPalette} />
           </ModalSheet>
 
           <main className="flex min-w-0 flex-1 flex-col gap-[18px] px-4 pb-10 pt-6 md:px-7">

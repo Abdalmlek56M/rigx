@@ -1,25 +1,14 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import {
-  BankIcon, BoxIcon, CartIcon, CaseIcon, ClockIcon, DatabaseIcon, DocumentIcon, FolderIcon, GearIcon, GridIcon, HandshakeIcon, HelpIcon,
-  InboxIcon, KeyIcon, RegisterIcon, ShieldIcon, StorageIcon, TagIcon, TicketIcon, TruckIcon, UsersIcon, WalletIcon
-} from "@/components/ui/icons";
+import { CartIcon, SearchIcon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
 import type { SessionUser } from "@/features/auth/session-store";
 import { Link, usePathname } from "@/i18n/navigation";
-import type { AdminArea, AdminAreaKey, AdminGroup } from "./admin-nav";
+import type { AdminArea, AdminGroup } from "./admin-nav";
+import { AREA_ICONS } from "./admin-nav-icons";
 import { AdminUserMenu } from "./AdminUserMenu";
 import { badgeLabel, BADGE_AREAS, isBadgeArea, type BadgeCounts } from "./badges/badge-rules";
-
-const AREA_ICONS: Record<AdminAreaKey, typeof GridIcon> = {
-  dashboard: GridIcon, pos: RegisterIcon, orders: BoxIcon, customers: UsersIcon, offers: TagIcon, coupons: TicketIcon,
-  inventory: StorageIcon, builds: CaseIcon, purchases: TruckIcon, stockImport: DocumentIcon, categories: FolderIcon, brands: ShieldIcon,
-  partners: HandshakeIcon, expenses: WalletIcon, accounts: BankIcon,
-  requests: InboxIcon,
-  articles: DocumentIcon, faq: HelpIcon, policies: DocumentIcon, customerBuilds: CaseIcon,
-  users: KeyIcon, audit: ClockIcon, system: DatabaseIcon, settings: GearIcon
-};
 
 /** A quiet control on the dark sidebar (store link, language). */
 const SIDEBAR_CHIP =
@@ -34,11 +23,14 @@ interface AdminSidebarProps {
   badges: BadgeCounts;
   onNavigate?: () => void;
   onSignOut: () => void;
+  /** Opens the command palette (the sidebar button; Ctrl+K does the same). */
+  onOpenPalette: () => void;
 }
 
 /** The dark admin sidebar: logo and store link, one link per area the user may open, and the user menu at the bottom. */
-export function AdminSidebar({ user, groups, active, badges, onNavigate, onSignOut }: AdminSidebarProps) {
+export function AdminSidebar({ user, groups, active, badges, onNavigate, onSignOut, onOpenPalette }: AdminSidebarProps) {
   const t = useTranslations("admin");
+  const tPalette = useTranslations("admin.palette");
   const tLocale = useTranslations("locale");
   const pathname = usePathname();
   const otherLocale = useLocale() === "ar" ? "en" : "ar";
@@ -63,6 +55,17 @@ export function AdminSidebar({ user, groups, active, badges, onNavigate, onSignO
         >
           {tLocale("switchLabel")}
         </Link>
+      </div>
+
+      <div className="px-2 pb-2">
+        <button
+          type="button" onClick={onOpenPalette} aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"
+          className={`${SIDEBAR_CHIP} w-full gap-2 px-3 text-footer-text`}
+        >
+          <SearchIcon size={16} />
+          <span className="min-w-0 flex-1 text-start font-normal">{tPalette("open")}</span>
+          <kbd dir="ltr" className="rounded-sm border border-footer-line px-1.5 font-mono text-[11px] font-normal">Ctrl K</kbd>
+        </button>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto [scrollbar-color:var(--color-footer-line)_transparent] [scrollbar-width:thin]">

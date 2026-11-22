@@ -7,6 +7,7 @@ import { FormMessage } from "../kit/PageHeader";
 import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
+import { useUndoDelete } from "../system/use-undo-delete";
 import { deleteFaq, publishFaq, unpublishFaq, type Faq } from "./faq-api";
 import { faqStatusKey, type FaqStatusKey } from "./faq-rules";
 import { isConflict } from "@/lib/api/conflict";
@@ -33,6 +34,7 @@ export function FaqActions({ faq, onSaved, onDeleted, onStale }: {
   const t = useTranslations("admin.faq.actions");
   const submit = useSubmit();
   const toast = useToast();
+  const undoDelete = useUndoDelete();
   const [unpublishing, setUnpublishing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -77,7 +79,7 @@ export function FaqActions({ faq, onSaved, onDeleted, onStale }: {
         onConfirm={async () => {
           try {
             await deleteFaq(faq.id);
-            toast(t("deleted"));
+            undoDelete({ kind: "faq", id: faq.id, message: t("deleted"), onRestored: onDeleted });
             onDeleted();
           } catch (error) {
             toast(toFormErrors(error, t("failed")).general ?? t("failed"), "error");

@@ -10,8 +10,9 @@ import { BoxIcon, CheckIcon, CloseIcon, FilterIcon, GearIcon, GridIcon, TagIcon,
 import { Button } from "@/components/ui/Button";
 import { FIELD_BASE } from "@/components/ui/field-class";
 
-const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] transition-colors duration-150 hover:bg-paper motion-reduce:transition-none";
-const fieldset = "m-0 flex flex-col gap-1 border-0 p-0";
+// Rows keep a 40 px touch height in the phone drawer and tighten to 32 px in the desktop sidebar.
+const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] transition-colors duration-150 hover:bg-paper motion-reduce:transition-none lg:min-h-8";
+const fieldset = "m-0 flex flex-col gap-0.5 border-0 p-0";
 const numberInput = `${FIELD_BASE} h-11 px-2.5`;
 
 interface FilterPanelProps {
@@ -28,7 +29,7 @@ interface FilterPanelProps {
 /** A filter group's title: a small orange icon and the name, so each group is recognised at a glance. */
 function Legend({ icon: Icon, children }: { icon: typeof GridIcon; children: ReactNode }) {
   return (
-    <legend className="mb-2 flex items-center gap-2 text-sm font-bold">
+    <legend className="mb-1 flex items-center gap-2 text-sm font-bold">
       <span aria-hidden="true" className="text-orange-text"><Icon size={16} /></span>
       {children}
     </legend>
@@ -37,7 +38,7 @@ function Legend({ icon: Icon, children }: { icon: typeof GridIcon; children: Rea
 
 function CategoryList({ nodes, state, openIds, locale }: { nodes: CategoryNode[]; state: CatalogState; openIds: ReadonlySet<string>; locale: string }) {
   return (
-    <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-sm">
+    <ul className="m-0 flex list-none flex-col p-0 text-sm">
       {nodes.map((node) => {
         const selected = state.category === node.slug;
         return (
@@ -45,7 +46,7 @@ function CategoryList({ nodes, state, openIds, locale }: { nodes: CategoryNode[]
             <Link
               href={catalogHref(state, { category: selected ? null : node.slug })}
               aria-current={selected ? "true" : undefined}
-              className={`flex min-h-10 items-center rounded-control px-2 hover:bg-paper ${openIds.has(node.id) ? "font-bold" : ""} ${selected ? "bg-paper" : ""}`}
+              className={`flex min-h-10 items-center rounded-control px-2 hover:bg-paper lg:min-h-8 ${openIds.has(node.id) ? "font-bold" : ""} ${selected ? "bg-paper" : ""}`}
             >
               {localizedName(node, locale)}
             </Link>
@@ -86,8 +87,8 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
   ] as const;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex min-h-9 items-center justify-between gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex min-h-9 flex-wrap items-center gap-x-3 gap-y-1">
         <span className="flex items-center gap-2 text-[17px] font-bold">
           <span aria-hidden="true" className="text-orange-text"><FilterIcon size={18} /></span>
           {t("title")}
@@ -95,7 +96,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
         {active ? (
           <Link
             href="/products"
-            className="press inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-xs font-medium transition-colors hover:border-orange/50 hover:text-orange-text"
+            className="press inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-xs font-medium transition-colors hover:border-orange/50 hover:text-orange-text"
           >
             <CloseIcon size={14} />
             {t("clearAll")}
@@ -113,7 +114,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
       {brands.length > 0 ? (
         <fieldset className={fieldset}>
           <Legend icon={TagIcon}>{t("brand")}</Legend>
-          <ul className="m-0 flex max-h-60 list-none flex-col gap-0.5 overflow-y-auto overscroll-contain p-0">
+          <ul className="m-0 flex max-h-60 list-none flex-col overflow-y-auto overscroll-contain p-0">
             {brands.map((brand) => {
               const selected = state.brand === brand.slug;
               return (
@@ -138,7 +139,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
         return (
           <fieldset key={spec.key} className={fieldset}>
             <Legend icon={GearIcon}>{spec.name}</Legend>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               {spec.options.map((option) => {
                 const selected = state.specs[spec.key] === option;
                 return (
@@ -147,7 +148,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
                     href={catalogHref(state, { specs: selected ? rest : { ...rest, [spec.key]: option } })}
                     aria-current={selected ? "true" : undefined}
                     dir="ltr"
-                    className={`flex h-10 items-center rounded-control px-3 font-mono text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "surface-strong" : "border border-input-line bg-surface hover:bg-paper"}`}
+                    className={`flex h-10 items-center rounded-control px-3 font-mono lg:h-8 text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "surface-strong" : "border border-input-line bg-surface hover:bg-paper"}`}
                   >
                     {option}
                   </Link>
@@ -171,7 +172,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
             <label htmlFor={`${idPrefix}-max`} className="sr-only">{t("max")}</label>
             <input id={`${idPrefix}-max`} name="max" type="number" min={0} inputMode="numeric" placeholder={t("max")} defaultValue={state.max ?? ""} className={numberInput} />
           </div>
-          <Button type="submit" variant="secondary" size="sm" className="mt-1 w-full">{t("apply")}</Button>
+          <Button type="submit" variant="secondary" size="sm" className="mt-0.5 w-full">{t("apply")}</Button>
         </fieldset>
       </form>
 
@@ -186,7 +187,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
                   key={stock.value}
                   href={catalogHref(state, { stock: stock.value })}
                   aria-current={selected ? "true" : undefined}
-                  className={`flex h-10 flex-1 items-center justify-center rounded-control text-[13px] transition-colors duration-150 motion-reduce:transition-none ${selected ? "surface-strong font-bold" : "hover:bg-surface"}`}
+                  className={`flex h-10 flex-1 items-center justify-center rounded-control text-[13px] lg:h-8 transition-colors duration-150 motion-reduce:transition-none ${selected ? "surface-strong font-bold" : "hover:bg-surface"}`}
                 >
                   {stock.label}
                 </Link>

@@ -174,3 +174,16 @@ export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItem
 export function unitPercent(partnerId: string, percentText: string): number | null {
   return partnerId ? parseAmount(percentText) : null;
 }
+
+/** How long an item may sit in stock before the list flags it, in days. The one place to change the limits. */
+export const STOCK_AGE_DAYS = { slow: 15, stale: 30 } as const;
+
+export type StockAge = "fresh" | "slow" | "stale";
+
+/** Past the first limit an item is slow (orange), past the second stale (red); an item with nothing available is never flagged. */
+export function stockAge(daysInStock: number, availableCount: number): StockAge {
+  if (availableCount <= 0) return "fresh";
+  if (daysInStock > STOCK_AGE_DAYS.stale) return "stale";
+  if (daysInStock > STOCK_AGE_DAYS.slow) return "slow";
+  return "fresh";
+}

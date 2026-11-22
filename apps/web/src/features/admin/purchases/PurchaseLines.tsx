@@ -6,7 +6,7 @@ import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { PurchaseLineCard } from "./PurchaseLineCard";
-import { dropPhotoCopy, emptyLine, type LineForm, type MissingField } from "./purchase-rules";
+import { dropPhotoCopy, emptyLine, repeatedSerialLines, type LineForm, type MissingField } from "./purchase-rules";
 import { PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
@@ -32,6 +32,8 @@ export function PurchaseLines({ lines, minLines, tree, brands, partners, warrant
   onBrandCreated?: (brand: Brand) => void;
 }) {
   const t = useTranslations("admin.purchases.lines");
+  const [scanKey, setScanKey] = useState<string | null>(null);
+  const repeated = repeatedSerialLines(lines);
   const [openKeys, setOpenKeys] = useState<ReadonlySet<string>>(
     () => new Set(revealKey ? [revealKey] : lines.map((line) => line.key))
   );
@@ -43,14 +45,21 @@ export function PurchaseLines({ lines, minLines, tree, brands, partners, warrant
     setOpenKeys((current) => (next.length > 3 ? new Set([line.key]) : new Set([...current, line.key])));
   }
 
-  function duplicate(index: number) {
+  /** Repeats a line right after itself (same model and prices, no serial) and returns the copy's key. */
+  function duplicate(index: number): string | null {
     const source = lines[index];
-    if (!source) return;
+    if (!source) return null;
     const copy = dropPhotoCopy({ ...source, key: newLineKey(), serialNumber: "" });
     const next = [...lines];
     next.splice(index + 1, 0, copy);
     onChange(next);
     setOpenKeys((current) => new Set([...current, copy.key]));
+    return copy.key;
+  }
+
+  /** A scanner ends each serial with Enter: a scanned serial repeats the line below it and moves to its serial field for the next one. */
+  function scanNext(index: number) {
+    if (lines[index]?.serialNumber.trim()) setScanKey(duplicate(index));
   }
 
   function remove(key: string) {
@@ -70,7 +79,7 @@ export function PurchaseLines({ lines, minLines, tree, brands, partners, warrant
           <PurchaseLineCard
             key={line.key} line={line} index={index} tree={tree} brands={brands} partners={partners} warrantyLabels={warrantyLabels} errors={errors}
             missingFields={missing.filter((entry) => entry.line === index).map((entry) => entry.field)}
-            submitted={submitted} open={openKeys.has(line.key)}
+            submitted={submitted} open={openKeys.has(line.key)} serialRepeated={repeated.has(line.key)} focusSerial={line.key === scanKey}
             onToggle={() => setOpenKeys((current) => {
               const next = new Set(current);
               if (next.has(line.key)) next.delete(line.key);
@@ -79,7 +88,8 @@ export function PurchaseLines({ lines, minLines, tree, brands, partners, warrant
             })}
             onChange={(next) => onChange(lines.map((entry) => (entry.key === line.key ? next : entry)))}
             onRemove={lines.length > 1 ? () => remove(line.key) : null}
-            onDuplicate={() => duplicate(index)}
+            onDuplicate={() => void duplicate(index)}
+            onScanNext={() => scanNext(index)}
             onBrandCreated={onBrandCreated}
           />
         ))}

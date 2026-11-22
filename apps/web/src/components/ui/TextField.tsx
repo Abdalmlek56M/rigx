@@ -27,13 +27,17 @@ interface TextFieldProps {
   step?: string;
   /** The server's length limit, so the field cannot go past it. */
   maxLength?: number;
+  /** Enter in the field does this instead of its default (a barcode scanner ends a scan with Enter). */
+  onEnter?: () => void;
+  /** Takes the focus when the field appears (the next line of a scanned list). */
+  autoFocus?: boolean;
 }
 
 /**
  * A labelled text input; `error` is announced and linked to the input. A number field is a text input with a number keypad, so digits typed
  * on an Arabic keyboard are accepted (as Western digits) instead of being silently ignored.
  */
-export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength }: TextFieldProps) {
+export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength, onEnter, autoFocus }: TextFieldProps) {
   const errorId = `${name}-error`;
   const numeric = type === "number";
   return (
@@ -50,7 +54,13 @@ export function TextField({ label, labelEnd, name, value, onChange, type = "text
         step={numeric ? undefined : step}
         maxLength={maxLength}
         autoComplete={autoComplete}
+        autoFocus={autoFocus}
         placeholder={placeholder}
+        onKeyDown={onEnter ? (event) => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          onEnter();
+        } : undefined}
         dir={ltr ? "ltr" : dir}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}

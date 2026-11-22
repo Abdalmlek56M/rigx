@@ -92,6 +92,13 @@ public static class OrderRules
         return email;
     }
 
+    /// <summary>The normalised email, or null when none was given or it is not valid (see <see cref="Email"/>).</summary>
+    public static string? TryEmail(string? value)
+    {
+        try { return Email(value); }
+        catch (RetailException) { return null; }
+    }
+
     public static string Fulfillment(string? value) => value?.Trim() switch
     {
         OrderFulfillment.Delivery => OrderFulfillment.Delivery,

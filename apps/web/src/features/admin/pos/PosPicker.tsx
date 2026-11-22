@@ -10,7 +10,7 @@ import { ChipRadio, FormSection } from "@/features/checkout/form-parts";
 import { usePermissions } from "../use-permissions";
 import { SearchBox } from "../kit/FilterBar";
 import { listBuilds, searchItems } from "./pos-api";
-import { buildLine, itemLine, shownPrice, type BuildPick, type CartLine, type ItemPick } from "./pos-rules";
+import { buildLine, itemLine, shownPrice, soleMatch, type BuildPick, type CartLine, type ItemPick } from "./pos-rules";
 import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
@@ -108,12 +108,26 @@ function Status<T>({ state, reload, isEmpty, children }: StatusProps<T>) {
   return <ul className="m-0 flex max-h-96 list-none flex-col gap-2 overflow-y-auto p-0">{children(state.data)}</ul>;
 }
 
-/** "بتبيع إيه؟": search the stock items or pick a build, and add it to the cart. */
+/** "ماذا تبيع؟": search the stock items or pick a build, and add it to the cart. Enter on a typed or scanned code adds that item at once. */
 export function PosPicker({ onAdd }: { onAdd: (line: CartLine) => void }) {
   const t = useTranslations("admin.pos.picker");
+  const { has } = usePermissions();
+  const fullInventory = has("Inventory.View");
   const [kind, setKind] = useState<Kind>("item");
   // `?q=` opens the picker already searching (the inventory page's "Sell" action passes the item code).
   const [query, setQuery] = useState(useSearchParams().get("q") ?? "");
+
+  async function addFromCode(text: string): Promise<boolean> {
+    if (kind !== "item" || text === "") return false;
+    try {
+      const only = soleMatch(await searchItems(text, fullInventory), text);
+      if (!only) return false;
+      onAdd(itemLine(only));
+      return true;
+    } catch {
+      return false;
+    }
+  }
   return (
     <FormSection title={t("title")}>
       <div role="radiogroup" aria-label={t("title")} className="flex flex-wrap gap-2">
@@ -121,7 +135,7 @@ export function PosPicker({ onAdd }: { onAdd: (line: CartLine) => void }) {
           <ChipRadio key={value} name="pos-kind" label={t(`kinds.${value}`)} selected={kind === value} onSelect={() => setKind(value)} />
         ))}
       </div>
-      <SearchBox label={t("search")} value={query} onChange={setQuery} />
+      <SearchBox label={t("search")} value={query} onChange={setQuery} focusKey="pos-items" onEnter={addFromCode} />
       {kind === "item" ? <ItemResults query={query} onAdd={onAdd} /> : <BuildResults query={query} onAdd={onAdd} />}
     </FormSection>
   );

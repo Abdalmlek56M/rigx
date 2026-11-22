@@ -68,7 +68,8 @@ export function AccountShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div className="min-w-0">{user ? children : <SkeletonRows rows={3} />}</div>
+        {/* Next scrolls the first element of a new account page into view; the margin keeps it below the sticky header (129 px on a phone, 79 px from md). */}
+        <div className="min-w-0 *:scroll-mt-36 md:*:scroll-mt-24">{user ? children : <SkeletonRows rows={3} />}</div>
       </div>
     </section>
   );

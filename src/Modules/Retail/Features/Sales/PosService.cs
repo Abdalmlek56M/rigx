@@ -41,7 +41,8 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
         var costTotal = lines.Sum(line => line.Cost ?? 0m);
         return new PosPreview(lines, linesTotal, staffDiscount, subtotal, fee, subtotal + fee, includeCosts ? costTotal : null,
             includeCosts ? subtotal - costTotal : null, warnings, await ReturningPartsAsync(db, items, cancellationToken),
-            includeCosts ? await PartnerSharesAsync(db, financed, cancellationToken) : null, coupon);
+            includeCosts ? await PartnerSharesAsync(db, financed, cancellationToken) : null, coupon,
+            await BlacklistService.AnyMatchAsync(db, OrderRules.TryPhone(request.Customer?.Phone), OrderRules.TryEmail(request.Customer?.Email), null, cancellationToken));
     }
 
     public async Task<OrderView> SellAsync(PosSaleRequest request, PosPolicy policy, Guid actorId, CancellationToken cancellationToken = default)
@@ -112,12 +113,14 @@ public sealed class PosService(IDbContextFactory<RetailDbContext> contextFactory
             .ToListAsync(cancellationToken);
         var orders = await db.Orders.AsNoTracking().Where(order => phones.Contains(order.PhoneNumber))
             .OrderByDescending(order => order.CreatedAtUtc).ToListAsync(cancellationToken);
-        return orders.GroupBy(order => order.PhoneNumber).Select(group =>
+        var customers = new List<PosCustomerView>();
+        foreach (var group in orders.GroupBy(order => order.PhoneNumber))
         {
             var latest = group.First();
-            return new PosCustomerView(latest.CustomerName, latest.PhoneNumber, latest.PhoneHasWhatsApp, latest.CustomerEmail,
-                OrderMapping.AddressOf(latest), group.Count());
-        }).ToList();
+            customers.Add(new PosCustomerView(latest.CustomerName, latest.PhoneNumber, latest.PhoneHasWhatsApp, latest.CustomerEmail,
+                OrderMapping.AddressOf(latest), group.Count(), await BlacklistService.MatchesAsync(db, latest, cancellationToken)));
+        }
+        return customers;
     }
 
     /// <summary>

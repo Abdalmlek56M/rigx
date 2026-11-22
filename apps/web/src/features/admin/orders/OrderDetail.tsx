@@ -66,7 +66,7 @@ function Tracking({ token }: { token: string }) {
   );
 }
 
-/** The selected order: sections in the main column, and the actions in cards beside them (under them on phones). */
+/** The selected order, as the content of the order drawer: warnings, then the action cards (status, payment, shipping), then the facts, then the extras. */
 export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id: string; onClose: () => void; onChanged: () => void; onBlacklistChanged: () => void }) {
   const t = useTranslations("admin.orders");
   const locale = useLocale();
@@ -129,48 +129,41 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
         <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="flex min-w-0 flex-col gap-4">
-          {order.isBlacklisted ? <p role="status" className="m-0 rounded-control border border-error px-3 py-2 text-sm font-bold text-error-text">{t("detail.blacklistWarning")}</p> : null}
-          {order.reservationExpiredAtUtc ? <p role="status" className="m-0 rounded-control border border-orange px-3 py-2 text-sm font-bold text-orange-text">{t("detail.reservationExpired")}</p> : null}
-          <OrderItems order={order} />
-          <OrderUnits units={state.data.units} />
-          <OrderCustomer order={order} governorates={state.data.governorates} />
-          <OrderDelivery order={order} />
-          <OrderMoney order={order} />
-          <OrderTimeline order={order} />
+      {order.isBlacklisted ? <p role="status" className="m-0 rounded-control border border-error px-3 py-2 text-sm font-bold text-error-text">{t("detail.blacklistWarning")}</p> : null}
+      {order.reservationExpiredAtUtc ? <p role="status" className="m-0 rounded-control border border-orange px-3 py-2 text-sm font-bold text-orange-text">{t("detail.reservationExpired")}</p> : null}
+      <SectionCard title={t("statusCard.title")} icon={CheckIcon}>
+        <Trail order={order} />
+        <OrderStatusActions {...actionProps} />
+      </SectionCard>
+      {payment ? (
+        <SectionCard title={t("payment.title")} icon={WalletIcon}>
+          <OrderPaymentActions key={`payment-${formKey}`} {...actionProps} />
+        </SectionCard>
+      ) : null}
+      {fulfillment ? (
+        <SectionCard title={t("fulfillmentCard.title")} icon={TruckIcon}>
+          <OrderFulfillmentActions key={`fulfillment-${formKey}`} {...actionProps} />
+        </SectionCard>
+      ) : null}
+      <OrderItems order={order} />
+      <OrderUnits units={state.data.units} />
+      <OrderCustomer order={order} governorates={state.data.governorates} />
+      <OrderDelivery order={order} />
+      <OrderMoney order={order} />
+      <OrderTimeline order={order} />
+      <SectionCard title={t("moreCard.title")} icon={GearIcon}>
+        <div className="flex flex-wrap items-center gap-2">
+          {whatsApp ? (
+            <a href={whatsAppUrl(whatsApp)} target="_blank" rel="noreferrer" className={buttonClass({ variant: "primary" })}>
+              <WhatsAppIcon size={buttonIconSize()} />
+              {t("actions.whatsapp")}
+            </a>
+          ) : null}
+          <OrderUnreachableAction {...actionProps} />
         </div>
-
-        <aside className="flex min-w-0 flex-col gap-4">
-          <SectionCard title={t("statusCard.title")} icon={CheckIcon}>
-            <Trail order={order} />
-            <OrderStatusActions {...actionProps} />
-          </SectionCard>
-          {payment ? (
-            <SectionCard title={t("payment.title")} icon={WalletIcon}>
-              <OrderPaymentActions key={`payment-${formKey}`} {...actionProps} />
-            </SectionCard>
-          ) : null}
-          {fulfillment ? (
-            <SectionCard title={t("fulfillmentCard.title")} icon={TruckIcon}>
-              <OrderFulfillmentActions key={`fulfillment-${formKey}`} {...actionProps} />
-            </SectionCard>
-          ) : null}
-          <SectionCard title={t("moreCard.title")} icon={GearIcon}>
-            <div className="flex flex-wrap items-center gap-2">
-              {whatsApp ? (
-                <a href={whatsAppUrl(whatsApp)} target="_blank" rel="noreferrer" className={buttonClass({ variant: "primary" })}>
-                  <WhatsAppIcon size={buttonIconSize()} />
-                  {t("actions.whatsapp")}
-                </a>
-              ) : null}
-              <OrderUnreachableAction {...actionProps} />
-            </div>
-            <OrderBlacklistAction order={order} onAdded={onBlacklistChanged} />
-            <Tracking token={order.trackingToken} />
-          </SectionCard>
-        </aside>
-      </div>
+        <OrderBlacklistAction order={order} onAdded={onBlacklistChanged} />
+        <Tracking token={order.trackingToken} />
+      </SectionCard>
     </div>
   );
 }

@@ -16,14 +16,14 @@ import { SpecFields } from "../stock/SpecFields";
 import { WarrantyField } from "../stock/WarrantyField";
 import { offeredPrices } from "../categories/category-rules";
 import { ModelInput } from "./ModelInput";
-import { dropPhotoCopy, lineDisplayName, lineTotal, pickModel, typeModel, type LineForm } from "./purchase-rules";
+import { dropPhotoCopy, lineDisplayName, lineMargin, lineTotal, pickModel, typeModel, type LineForm } from "./purchase-rules";
 import { ChevronDownIcon, CloseIcon, CopyIcon, TrashIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 
 /** One purchased line, collapsible: its title, total and a red dot when something is still needed. */
-export function PurchaseLineCard({ line, index, tree, brands, partners, warrantyLabels, errors, missingFields, submitted, open, onToggle, onChange, onRemove, onDuplicate, onBrandCreated }: {
+export function PurchaseLineCard({ line, index, tree, brands, partners, warrantyLabels, errors, missingFields, submitted, open, serialRepeated, focusSerial, onToggle, onChange, onRemove, onDuplicate, onScanNext, onBrandCreated }: {
   line: LineForm;
   index: number;
   tree: readonly Category[];
@@ -35,10 +35,16 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
   missingFields: readonly string[];
   submitted: boolean;
   open: boolean;
+  /** The serial number is also typed on another line. */
+  serialRepeated: boolean;
+  /** The serial field takes the focus when the card appears (the line a scan just opened). */
+  focusSerial: boolean;
   onToggle: () => void;
   onChange: (line: LineForm) => void;
   onRemove: (() => void) | null;
   onDuplicate: () => void;
+  /** Enter in the serial field (a scanner's last key): the next line opens for the next scan. */
+  onScanNext: () => void;
   onBrandCreated?: (brand: Brand) => void;
 }) {
   const t = useTranslations("admin.purchases.lines");
@@ -53,6 +59,7 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
   const title = lineDisplayName(line, tree, t("lineTitle", { number: index + 1 }));
   const missing = missingFields.length > 0;
   const prices = offeredPrices(tree, line.categoryId || null);
+  const margin = lineMargin(line);
 
   return (
     <li className={`flex flex-col gap-3 rounded-control border bg-paper p-3 ${missing ? "border-error/40" : "border-line"}`}>
@@ -95,9 +102,21 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
                 options={[{ value: "Used", label: t("used") }, { value: "New", label: t("new") }]}
               />
               {isUsed ? null : <TextField label={t("quantity")} name={field("quantity")} type="number" ltr value={line.quantity} onChange={(quantity) => set({ quantity })} error={errorFor("quantity")} />}
-              {isUsed ? <TextField label={t("serial")} name={field("serialNumber")} ltr value={line.serialNumber} onChange={(serialNumber) => set({ serialNumber })} error={errorFor("serialNumber")} /> : null}
+              {isUsed ? (
+                <TextField
+                  label={t("serial")} name={field("serialNumber")} ltr value={line.serialNumber} onChange={(serialNumber) => set({ serialNumber })}
+                  error={errorFor("serialNumber") ?? (serialRepeated ? t("serialRepeated") : undefined)} onEnter={onScanNext} autoFocus={focusSerial}
+                />
+              ) : null}
               <TextField label={t("unitCost")} name={field("unitCost")} type="number" ltr value={line.unitCost} onChange={(unitCost) => set({ unitCost })} error={errorFor("unitCost")} />
               <TextField label={t("price")} name={field("price")} type="number" ltr value={line.price} onChange={(price) => set({ price })} error={errorFor("price")} />
+              {margin ? (
+                <p aria-live="polite" className="m-0 flex flex-wrap items-baseline gap-x-2 self-end rounded-control bg-surface px-3 py-2 text-sm sm:col-span-2 xl:col-span-1">
+                  <span className="text-ink-muted">{t("margin")}</span>
+                  <b dir="ltr" className={margin.amount < 0 ? "text-error-text" : ""}>{formatEgp(margin.amount, locale)}</b>
+                  <span dir="ltr" className={`text-xs ${margin.amount < 0 ? "text-error-text" : "text-ink-muted"}`}>{t("marginPercent", { percent: margin.percent })}</span>
+                </p>
+              ) : null}
               {prices.withBoard ? <TextField label={t("withBoardExtra")} name={field("withBoardExtra")} type="number" ltr value={line.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={errorFor("withBoardExtra")} /> : null}
               {prices.alone ? <TextField label={t("aloneExtra")} name={field("aloneExtra")} type="number" ltr value={line.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={errorFor("aloneExtra")} /> : null}
               {prices.withBoard || prices.alone ? <p className="m-0 self-start text-xs font-normal text-ink-muted sm:col-span-2 xl:col-span-3">{t("priceHint")}</p> : null}

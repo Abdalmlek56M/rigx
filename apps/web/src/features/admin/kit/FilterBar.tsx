@@ -8,10 +8,17 @@ interface SearchBoxProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  /** A name a screen can find the input by (`data-focus`), for a keyboard shortcut that jumps to it. */
+  focusKey?: string;
+  /**
+   * Enter reports the text at once (without waiting for the pause). Returning true means the text was used (an item was added from a
+   * scanned code): the box then empties and keeps the focus.
+   */
+  onEnter?: (text: string) => Promise<boolean> | boolean;
 }
 
 /** A search input that reports after the person stops typing (one request, not one per key). */
-export function SearchBox({ label, value, onChange }: SearchBoxProps) {
+export function SearchBox({ label, value, onChange, focusKey, onEnter }: SearchBoxProps) {
   const [text, setText] = useState(value);
   const timer = useRef<number | undefined>(undefined);
 
@@ -23,10 +30,26 @@ export function SearchBox({ label, value, onChange }: SearchBoxProps) {
     timer.current = window.setTimeout(() => onChange(next.trim()), SEARCH_DELAY_MS);
   }
 
+  async function enter() {
+    window.clearTimeout(timer.current);
+    const typed = text.trim();
+    onChange(typed);
+    if (onEnter && (await onEnter(typed))) {
+      setText("");
+      onChange("");
+    }
+  }
+
   return (
     <input
-      type="search" aria-label={label} placeholder={label} value={text}
+      type="search" aria-label={label} placeholder={label} value={text} data-focus={focusKey}
       onChange={(event) => type(event.target.value)}
+      onKeyDown={onEnter ? (event) => {
+        // Ctrl+Enter is a screen shortcut (confirm the sale), not a search.
+        if (event.key !== "Enter" || event.ctrlKey || event.metaKey) return;
+        event.preventDefault();
+        void enter();
+      } : undefined}
       className="h-11 w-full min-w-0 rounded-control border border-input-line bg-surface px-3 text-sm md:w-72"
     />
   );
