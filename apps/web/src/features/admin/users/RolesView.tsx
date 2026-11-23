@@ -8,7 +8,7 @@ import { FilterBar } from "../kit/FilterBar";
 import { useReveal } from "../kit/use-reveal";
 import { RoleEditor } from "./RoleEditor";
 import { useRoleLabel } from "./use-role-label";
-import type { UserSet, UserValues } from "./user-rules.ts";
+import { builtInRole, type UserSet, type UserValues } from "./user-rules.ts";
 import { fetchRoles, type StaffRole } from "./users-api";
 import { PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
@@ -35,7 +35,7 @@ export function RolesView({ values, set }: { values: UserValues; set: UserSet })
         </button>
       )
     },
-    { key: "code", header: t("columns.code"), cell: (role) => <span dir="ltr" className="font-mono text-xs">{role.code}</span> },
+    { key: "code", header: t("columns.code"), cell: (role) => (builtInRole(role.code) ? null : <span dir="ltr" className="font-mono text-xs">{role.code}</span>) },
     { key: "users", header: t("columns.users"), align: "end", cell: (role) => <span className="font-bold">{role.userCount}</span> },
     { key: "permissions", header: t("columns.permissions"), align: "end", cell: (role) => <span className="font-bold">{role.permissionCodes.length}</span> }
   ];

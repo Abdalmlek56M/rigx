@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatEgp, joinValues } from "@/lib/format";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
+import { DateField } from "../kit/DateField";
 import { TextField } from "@/components/ui/TextField";
 import { FormMessage } from "../kit/PageHeader";
 import { useToast } from "../kit/Toast";
@@ -12,11 +13,12 @@ import { useSubmit } from "../kit/use-submit";
 import { ExpenseTypeDialog } from "./ExpenseTypeDialog";
 import { createExpense, uploadExpenseReceipt, type Expense, type ExpenseType, type MoneyAccount, type Partner } from "./expenses-api";
 import { emptyExpenseForm, expenseValid, toExpenseCreate, type ExpenseForm as Form } from "./expense-rules";
-import { CloseIcon, PlusIcon, SaveIcon } from "@/components/ui/icons";
+import { PlusIcon, SaveIcon } from "@/components/ui/icons";
 import { cardClass } from "@/components/ui/Card";
-import { Button, IconButton } from "../kit/Button";
-import { PasteImageButton } from "../kit/PasteImageButton";
-import { useImagePaste } from "../kit/use-image-paste";
+import { Button } from "../kit/Button";
+import { ImageDropPicker } from "../kit/ImageDropPicker";
+
+const NEW_EXPENSE_HASH = "#new-expense";
 
 /** The daily expense form: amount, type, note, who paid and an optional receipt photo. */
 export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, onCreated, onTypesChanged }: {
@@ -32,7 +34,6 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
   const locale = useLocale();
   const submit = useSubmit();
   const toast = useToast();
-  const input = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<Form>(() => emptyExpenseForm(today));
   const [file, setFile] = useState<File | null>(null);
   const [newType, setNewType] = useState(false);
@@ -44,12 +45,14 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
     ...partners.filter((partner) => partner.isActive).map((partner) => ({ value: `partner:${partner.id}`, label: t("partnerMoney", { name: partner.name }) }))
   ];
 
-  function clearReceipt() {
-    setFile(null);
-    if (input.current) input.current.value = "";
-  }
+  const section = useRef<HTMLElement>(null);
 
-  const paste = useImagePaste(setFile);
+  // The dashboard's "quick expense" arrives on `#new-expense`: the form comes into view and the amount takes the focus.
+  useEffect(() => {
+    if (window.location.hash !== NEW_EXPENSE_HASH) return;
+    section.current?.scrollIntoView({ block: "center" });
+    section.current?.querySelector<HTMLInputElement>("input[name=amount]")?.focus({ preventScroll: true });
+  }, []);
 
   async function save() {
     if (!expenseValid(form)) return;
@@ -64,13 +67,12 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
       }
       setForm(emptyExpenseForm(today));
       setFile(null);
-      if (input.current) input.current.value = "";
       onCreated(created);
     }, t("saved"));
   }
 
   return (
-    <section className={cardClass({ className: "gap-3" })}>
+    <section ref={section} id={NEW_EXPENSE_HASH.slice(1)} className={cardClass({ className: "gap-3 scroll-mt-24" })}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
         <Button icon={PlusIcon} onClick={() => setNewType(true)}>{t("newType")}</Button>
@@ -84,7 +86,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField label={t("amount")} name="amount" type="number" ltr value={form.amount} onChange={(amount) => set({ amount })} error={submit.errors.fields.amount} />
-          <TextField label={t("date")} name="expenseDate" type="date" ltr max={today} value={form.date} onChange={(date) => set({ date })} error={submit.errors.fields.expenseDate} />
+          <DateField label={t("date")} name="expenseDate" max={today} value={form.date} onChange={(date) => set({ date })} error={submit.errors.fields.expenseDate} />
           <SelectField
             label={t("category")} name="category" value={form.category} onChange={(category) => set({ category })}
             options={[{ value: "", label: t("pickCategory") }, ...activeTypes.map((type) => ({ value: type.name, label: type.name }))]}
@@ -93,26 +95,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
           {canSeeVaults ? <SelectField label={t("paidFrom")} name="paidFrom" value={form.paidFrom} onChange={(paidFrom) => set({ paidFrom })} options={payerOptions} /> : null}
         </div>
         <TextAreaField label={t("note")} name="note" value={form.note} onChange={(note) => set({ note })} rows={2} maxLength={1000} hint={t("noteHint")} />
-        <div className="flex flex-col gap-1.5 rounded-control focus-visible:outline-2 focus-visible:outline-orange" {...paste}>
-          <label className="flex flex-col gap-1.5 text-[13px] font-bold">
-            {t("receipt")}
-            <input
-              ref={input} type="file" accept="image/jpeg,image/png,image/webp"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              className="text-sm font-normal file:me-3 file:h-10 file:rounded-control file:border file:border-input-line file:bg-surface file:px-3 file:font-bold"
-            />
-          </label>
-          <div className="flex flex-wrap items-center gap-2">
-            <PasteImageButton onImage={setFile} />
-            {file ? (
-              <span className="flex min-w-0 items-center gap-1 text-sm">
-                <span dir="ltr" className="min-w-0 truncate">{file.name}</span>
-                <IconButton icon={CloseIcon} label={t("receiptClear")} size="sm" onClick={clearReceipt} />
-              </span>
-            ) : null}
-          </div>
-          <span className="text-xs text-ink-muted">{t("receiptHint")}</span>
-        </div>
+        <ImageDropPicker label={t("receipt")} hint={t("receiptHint")} file={file} onFile={setFile} />
         <FormMessage message={submit.errors.general} />
         <Button type="submit" variant="primary" icon={SaveIcon} className="self-start" loading={submit.busy} disabled={!expenseValid(form)}>{t("save")}</Button>
         {submit.dialog}

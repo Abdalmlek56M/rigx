@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  canDelete, couponForm, couponStatus, couponTotals, couponValid, EMPTY_COUPON_FORM, endsBeforeStart, normalizeCode, sortCoupons, toCouponInput
+  canDelete, couponForm, couponStatus, couponTotals, couponValid, EMPTY_COUPON_FORM, endsBeforeStart, generateCouponCode, normalizeCode, sortCoupons, toCouponInput
 } from "./coupon-rules.ts";
 import type { Coupon } from "./coupons-api.ts";
 
@@ -16,6 +16,29 @@ describe("normalizeCode", () => {
   it("upper-cases and drops what a code cannot hold", () => {
     assert.equal(normalizeCode("ahmed 10!-x"), "AHMED10-X");
     assert.equal(normalizeCode("a".repeat(40)).length, 30);
+  });
+});
+
+describe("generateCouponCode", () => {
+  /** A random source that walks through fixed values, so a run is repeatable. */
+  const sequence = (...values: number[]) => { let index = 0; return () => values[index++ % values.length] ?? 0; };
+
+  it("makes a short code of letters and digits that cannot be mixed up", () => {
+    const code = generateCouponCode([], sequence(0, 0.2, 0.4, 0.6, 0.8, 0.99));
+    assert.match(code ?? "", /^[A-HJ-NP-Z2-9]{6}$/);
+    assert.equal(normalizeCode(code ?? ""), code);
+  });
+
+  it("never returns a code that already exists, in any case", () => {
+    const first = generateCouponCode([], sequence(0));
+    assert.equal(first, "AAAAAA");
+    const next = generateCouponCode(["aaaaaa"], sequence(0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5));
+    assert.notEqual(next, "AAAAAA");
+    assert.ok(next);
+  });
+
+  it("gives up with null when every try collides", () => {
+    assert.equal(generateCouponCode(["AAAAAA"], sequence(0)), null);
   });
 });
 

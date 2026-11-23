@@ -15,6 +15,7 @@ import { useToast } from "../kit/Toast";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
+import { QuickEditSheet } from "./QuickEditSheet";
 import { fetchStockItems, setItemsHidden, type StockItem } from "./inventory-api";
 import { groupByBuild, pickedIds, triState, type StockRow } from "./inventory-rules";
 import { useInventoryColumns } from "./use-inventory-columns";
@@ -33,6 +34,8 @@ export function Inventory() {
   const canSeePartners = has("Finance.ViewReports");
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [quickEdit, setQuickEdit] = useState<StockItem | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
 
   const lookups = useLoad(useCallback(async () => {
@@ -70,8 +73,25 @@ export function Inventory() {
       const next = new Set(current);
       if (!next.delete(id)) next.add(id);
       return next;
-    })
+    }),
+    onQuickEdit: setQuickEdit,
+    onToggleHidden: (item) => void toggleHidden(item),
+    busyId: togglingId
   });
+
+  /** The shortcut of one row: hide or show this item in the store with one press. */
+  async function toggleHidden(item: StockItem) {
+    setTogglingId(item.id);
+    try {
+      await setItemsHidden([item.id], !item.isHidden);
+      toast(t(item.isHidden ? "bulk.shownDone" : "bulk.hiddenDone", { count: 1 }));
+      reload();
+    } catch {
+      toast(t("bulk.failed"), "error");
+    } finally {
+      setTogglingId(null);
+    }
+  }
 
   async function setHidden(hidden: boolean) {
     setBusy(true);
@@ -128,6 +148,7 @@ export function Inventory() {
         <Pager info={{ page: state.data.page, pageSize: state.data.pageSize, total: state.data.total }} onPage={(next) => set({ page: String(next) })} />
       ) : null}
       <p className="m-0 text-sm text-ink-muted">{t("hiddenNote")}</p>
+      <QuickEditSheet item={quickEdit} tree={tree} onClose={() => setQuickEdit(null)} onChanged={reload} />
     </>
   );
 }

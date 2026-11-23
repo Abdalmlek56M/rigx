@@ -170,9 +170,16 @@ export interface DiffRow {
   after: AuditValue;
 }
 
-/** Each field that holds something: added (no value before), removed (none after) or changed; changed rows first. */
+/** Fields the database keeps for itself (stamps, row versions, derived search keys, token hashes): the log keeps them, the screen does not list them. */
+const TECHNICAL_FIELDS: ReadonlySet<string> = new Set([
+  "CreatedAtUtc", "UpdatedAtUtc", "RowVersion", "ModelKey", "AddressKey", "NormalizedEmail", "NormalizedUsername",
+  "AuthorizationVersion", "RbacRevision", "PhotoTokenHash", "TokenHash"
+]);
+
+/** Each field that holds something (and is not a technical one): added (no value before), removed (none after) or changed; changed rows first. */
 export function diffRows(changes: readonly { field: string; before?: unknown; after?: unknown }[]): DiffRow[] {
   const rows = changes.flatMap((change): DiffRow[] => {
+    if (TECHNICAL_FIELDS.has(change.field)) return [];
     const before = auditValue(change.before);
     const after = auditValue(change.after);
     if (before.kind === "empty" && after.kind === "empty") return [];

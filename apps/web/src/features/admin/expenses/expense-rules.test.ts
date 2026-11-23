@@ -4,7 +4,6 @@ import {
   emptyExpenseForm,
   expenseLink,
   expensePeriodRange,
-  expenseSplits,
   expenseValid,
   parseExpensePeriod,
   paidFrom,
@@ -49,14 +48,7 @@ describe("expense form", () => {
   });
 });
 
-describe("expense splits and links", () => {
-  it("gives each type its share and a bar against the largest", () => {
-    assert.deepEqual(expenseSplits([{ type: "A", amount: 300, count: 1 }, { type: "B", amount: 100, count: 2 }]), [
-      { type: "A", amount: 300, count: 1, percent: 75, width: 100 },
-      { type: "B", amount: 100, count: 2, percent: 25, width: (100 / 300) * 100 }
-    ]);
-    assert.deepEqual(expenseSplits([]), []);
-  });
+describe("expense links", () => {
 
   it("names the one link an expense has, order first", () => {
     assert.equal(expenseLink({ orderId: "o", unitId: "u", assemblyId: "b" }), "order");

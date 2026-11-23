@@ -2,7 +2,7 @@ import type { HTMLInputTypeAttribute, ReactNode } from "react";
 import { latinNumber } from "@/lib/digits";
 import { fieldClass } from "./field-class";
 
-interface TextFieldProps {
+export interface TextFieldProps {
   label: string;
   /** A small pill or note shown at the end of the label (for example "اختياري"). */
   labelEnd?: ReactNode;
@@ -29,6 +29,8 @@ interface TextFieldProps {
   maxLength?: number;
   /** Enter in the field does this instead of its default (a barcode scanner ends a scan with Enter). */
   onEnter?: () => void;
+  /** The language of the value (a date field shows its parts in it where the browser allows). */
+  lang?: string;
   /** Takes the focus when the field appears (the next line of a scanned list). */
   autoFocus?: boolean;
 }
@@ -37,7 +39,7 @@ interface TextFieldProps {
  * A labelled text input; `error` is announced and linked to the input. A number field is a text input with a number keypad, so digits typed
  * on an Arabic keyboard are accepted (as Western digits) instead of being silently ignored.
  */
-export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength, onEnter, autoFocus }: TextFieldProps) {
+export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength, onEnter, autoFocus, lang }: TextFieldProps) {
   const errorId = `${name}-error`;
   const numeric = type === "number";
   return (
@@ -55,6 +57,7 @@ export function TextField({ label, labelEnd, name, value, onChange, type = "text
         maxLength={maxLength}
         autoComplete={autoComplete}
         autoFocus={autoFocus}
+        lang={lang}
         placeholder={placeholder}
         onKeyDown={onEnter ? (event) => {
           if (event.key !== "Enter") return;

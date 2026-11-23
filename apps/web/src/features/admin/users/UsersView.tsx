@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { DataTable, type Column } from "../kit/DataTable";
@@ -11,6 +10,7 @@ import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { InviteUserDialog } from "./InviteUserDialog";
 import { useBuiltInRoleLabel } from "./use-role-label";
+import { UserStatusBadge } from "./UserStatusBadge";
 import { ACTIVE_FILTERS, activeFilter, roleNames, type UserSet, type UserValues } from "./user-rules.ts";
 import { fetchRoles, fetchUsers, type StaffUser } from "./users-api";
 import { PencilIcon, PlusIcon } from "@/components/ui/icons";
@@ -48,7 +48,7 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
     },
     {
       key: "active", header: t("columns.status"), width: "10%", cell: (user) => (
-        <StatusBadge tone={user.isActive ? "neutral" : "danger"}>{user.isActive ? t("status.active") : t("status.inactive")}</StatusBadge>
+        <UserStatusBadge isActive={user.isActive} />
       )
     },
     {

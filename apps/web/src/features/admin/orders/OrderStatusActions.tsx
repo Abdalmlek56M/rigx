@@ -46,7 +46,7 @@ export function OrderStatusActions(props: OrderActionProps) {
           }}
         >
           <TextField label={t("noteLabel")} name="notes" value={note} onChange={setNote} error={submit.errors.fields.notes} />
-          <Button type="submit" variant="primary" icon={ArrowEndIcon} loading={submit.busy} disabled={block !== null}>
+          <Button type="submit" variant="primary" icon={ArrowEndIcon} className="w-full" loading={submit.busy} disabled={block !== null}>
             {t(`next.${forward}`)}
           </Button>
           {block ? <p className="m-0 text-xs text-error-text">{t(`blocks.${block}`, { amount: formatEgp(order.upfrontDue, locale) })}</p> : null}

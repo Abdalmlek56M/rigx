@@ -4,6 +4,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { CloseIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
@@ -15,9 +17,9 @@ import { BlacklistPanel } from "./BlacklistPanel";
 import { OrderDetail } from "./OrderDetail";
 import { OrderStatusBadge, OrderTabs, PaymentStatusBadge } from "./OrderBadges";
 import { fetchOrders, type Order } from "./orders-api";
-import { filterOrders, orderContent, ORDER_CHANNELS, reservationState } from "./order-rules";
+import { filterOrders, matchesOrderTodo, orderContent, orderTodoKey, ORDER_CHANNELS, reservationState } from "./order-rules";
 
-const FILTERS = { status: "", channel: "", q: "", id: "" };
+const FILTERS = { status: "", channel: "", q: "", id: "", todo: "" };
 
 /** The API returns the newest orders only, up to this many. */
 const LIST_LIMIT = 300;
@@ -40,9 +42,10 @@ export function Orders() {
   // Bumped when the blacklist changes: the open order and the panel read it again.
   const [blacklistVersion, setBlacklistVersion] = useState(0);
 
+  const todo = orderTodoKey(values.todo);
   const tableState: Load<readonly Order[]> = useMemo(
-    () => (state.status === "ready" ? { status: "ready", data: filterOrders(state.data, values) } : state),
-    [state, values]
+    () => (state.status === "ready" ? { status: "ready", data: filterOrders(state.data, values).filter((order) => matchesOrderTodo(order, todo)) } : state),
+    [state, values, todo]
   );
   const blacklistChanged = () => {
     setBlacklistVersion((version) => version + 1);
@@ -98,7 +101,13 @@ export function Orders() {
   return (
     <>
       <PageHeader title={t("title")} />
-      <OrderTabs active={values.status} onChange={(status) => set({ status, id: "" })} />
+      <OrderTabs active={values.status} onChange={(status) => set({ status, id: "", todo: "" })} />
+      {todo ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge tone="warning">{t(`todo.${todo}`)}</StatusBadge>
+          <Button size="sm" variant="ghost" icon={CloseIcon} onClick={() => set({ todo: "" })}>{t("todo.clear")}</Button>
+        </div>
+      ) : null}
       <FilterBar>
         <SearchBox label={t("search")} value={values.q} onChange={(q) => set({ q })} />
         <FilterSelect

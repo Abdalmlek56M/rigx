@@ -8,6 +8,7 @@ import { formatDate, formatDateTime, formatEgp, listSeparator } from "@/lib/form
 import { initials } from "@/features/account/profile-rules";
 import { usePermissions } from "../use-permissions";
 import { isCustomerOnly } from "./user-rules.ts";
+import { UserStatusBadge } from "./UserStatusBadge";
 import type { StaffProfile } from "./users-api";
 
 function Row({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
@@ -22,7 +23,6 @@ function Row({ label, value, mono = false }: { label: string; value: string; mon
 /** Who the staff member is: contact, roles, status, sign-in activity, what they bought and their customer record. */
 export function StaffProfileCard({ profile, roleNames }: { profile: StaffProfile; roleNames: readonly string[] }) {
   const t = useTranslations("admin.users.profile");
-  const status = useTranslations("admin.users.status");
   const locale = useLocale();
   const { has } = usePermissions();
   const { user, account, sales, linkedCustomers } = profile;
@@ -39,7 +39,7 @@ export function StaffProfileCard({ profile, roleNames }: { profile: StaffProfile
         <span className="flex min-w-0 flex-col gap-1">
           <b className="text-lg [overflow-wrap:anywhere]">{user.fullName}</b>
           <span className="flex flex-wrap gap-1.5">
-            <StatusBadge tone={user.isActive ? "success" : "danger"}>{user.isActive ? status("active") : status("inactive")}</StatusBadge>
+            <UserStatusBadge isActive={user.isActive} />
             {roleNames.map((name) => <StatusBadge key={name} tone="neutral">{name}</StatusBadge>)}
           </span>
         </span>

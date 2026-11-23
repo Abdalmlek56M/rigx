@@ -20,7 +20,7 @@ import { SectionCard } from "../kit/SectionCard";
 import { usePermissions } from "../use-permissions";
 import { fetchOrder, type Order } from "./orders-api";
 import { OrderUnreachableAction } from "./OrderUnreachableAction";
-import { canSetPaymentStatus, canTakePayment, canWaivePayment, hasShipping, holdsReservation, orderTrail, orderWhatsAppNumber } from "./order-rules";
+import { canSetPaymentStatus, canTakePayment, canWaivePayment, hasShipping, holdsReservation, nextStatus, orderTrail, orderWhatsAppNumber } from "./order-rules";
 import { CheckIcon, CloseIcon, CopyIcon, ExternalIcon, GearIcon, RefreshIcon, TruckIcon, WalletIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { cardClass } from "@/components/ui/Card";
 import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
@@ -29,13 +29,15 @@ function Trail({ order }: { order: Order }) {
   const t = useTranslations("admin.orders");
   const steps = orderTrail(order);
   const current = steps.findIndex((step) => step === order.status);
+  // The step the forward button leads to: its tile is drawn with an orange edge, so the strip and the button read as one thing.
+  const next = nextStatus(order);
   if (order.status === "Cancelled") return <p role="status" className="m-0 rounded-control bg-error px-3 py-2 text-sm font-bold text-surface">{t("detail.cancelled")}</p>;
   return (
     <ol aria-label={t("detail.trailLabel")} className="m-0 flex list-none flex-wrap gap-1.5 p-0">
       {steps.map((step, index) => (
         <li
           key={step} aria-current={index === current ? "step" : undefined}
-          className={`min-w-20 flex-1 rounded-control px-1 py-2 text-center text-xs font-bold ${index === current ? "bg-carbon text-on-carbon" : index < current ? "bg-orange/15 text-orange-text" : "bg-paper text-ink-muted"}`}
+          className={`min-w-20 flex-1 rounded-control border-2 px-1 py-2 text-center text-xs font-bold ${index === current ? "border-carbon bg-carbon text-on-carbon" : step === next ? "border-orange bg-orange/10 text-orange-text" : index < current ? "border-transparent bg-orange/15 text-orange-text" : "border-transparent bg-paper text-ink-muted"}`}
         >
           {t(`statuses.${step}`)}
         </li>
@@ -58,13 +60,10 @@ function Tracking({ token }: { token: string }) {
     }
   }
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="m-0 text-sm font-bold">{t("title")}</h3>
-      <div className="flex flex-wrap gap-2">
-        <Link href={`/t/${token}`} target="_blank" className={buttonClass()}><ExternalIcon size={buttonIconSize()} />{t("open")}</Link>
-        <Button icon={copied ? CheckIcon : CopyIcon} onClick={() => void copy()}>{copied ? t("copied") : t("copy")}</Button>
-      </div>
-    </div>
+    <>
+      <Button icon={copied ? CheckIcon : CopyIcon} onClick={() => void copy()}>{copied ? t("copied") : t("copy")}</Button>
+      <Link href={`/t/${token}`} target="_blank" className={buttonClass()}><ExternalIcon size={buttonIconSize()} />{t("open")}</Link>
+    </>
   );
 }
 
@@ -161,10 +160,10 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
               {t("actions.whatsapp")}
             </a>
           ) : null}
+          <Tracking token={order.trackingToken} />
           <OrderUnreachableAction {...actionProps} />
         </div>
         <OrderBlacklistAction order={order} onAdded={onBlacklistChanged} />
-        <Tracking token={order.trackingToken} />
       </SectionCard>
     </div>
   );

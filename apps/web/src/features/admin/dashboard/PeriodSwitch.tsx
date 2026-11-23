@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { PERIODS, type Period } from "./dashboard-rules";
 import { CheckIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
+import { DateField } from "../kit/DateField";
 
 interface PeriodSwitchProps {
   period: Period;
@@ -42,14 +43,8 @@ export function PeriodSwitch({ period, from, to, onChange }: PeriodSwitchProps) 
             if (draftValid) onChange({ period, ...draft });
           }}
         >
-          <label className="flex flex-col gap-1 text-xs font-bold">
-            {t("from")}
-            <input type="date" value={draft.from} max={draft.to || undefined} onChange={(event) => setDraft({ ...draft, from: event.target.value })} className="h-11 rounded-control border border-input-line bg-surface px-2 text-sm" />
-          </label>
-          <label className="flex flex-col gap-1 text-xs font-bold">
-            {t("to")}
-            <input type="date" value={draft.to} min={draft.from || undefined} onChange={(event) => setDraft({ ...draft, to: event.target.value })} className="h-11 rounded-control border border-input-line bg-surface px-2 text-sm" />
-          </label>
+          <div className="w-40"><DateField label={t("from")} name="periodFrom" max={draft.to || undefined} value={draft.from} onChange={(from) => setDraft({ ...draft, from })} /></div>
+          <div className="w-40"><DateField label={t("to")} name="periodTo" min={draft.from || undefined} value={draft.to} onChange={(to) => setDraft({ ...draft, to })} /></div>
           <Button type="submit" variant="primary" icon={CheckIcon} disabled={!draftValid}>{t("apply")}</Button>
         </form>
       ) : null}

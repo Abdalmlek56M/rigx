@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDateTime } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { TextField } from "@/components/ui/TextField";
+import { DateField } from "../kit/DateField";
 import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { Pager } from "../kit/Pager";
@@ -66,15 +66,15 @@ export function SecurityView({ values, set }: { values: AuditValues; set: AuditS
       <FilterBar>
         <SearchBox label={t("filters.eventType")} value={values.eventType} onChange={(eventType) => set({ eventType, entry: "" })} />
         <FilterSelect
-          label={t("filters.outcome")} value={values.outcome} onChange={(outcome) => set({ outcome, entry: "" })}
+          titled label={t("filters.outcome")} value={values.outcome} onChange={(outcome) => set({ outcome, entry: "" })}
           options={[
             { value: "", label: t("filters.all") },
             ...AUDIT_OUTCOMES.map((outcome) => ({ value: outcome, label: t(`outcomes.${outcome}`) }))
           ]}
         />
         <SearchBox label={t("filters.search")} value={values.search} onChange={(search) => set({ search, entry: "" })} />
-        <div className="w-36"><TextField label={t("filters.from")} name="from" type="date" ltr value={values.from} onChange={(from) => set({ from, entry: "" })} /></div>
-        <div className="w-36"><TextField label={t("filters.to")} name="to" type="date" ltr value={values.to} onChange={(to) => set({ to, entry: "" })} /></div>
+        <div className="w-36"><DateField label={t("filters.from")} name="from" value={values.from} onChange={(from) => set({ from, entry: "" })} /></div>
+        <div className="w-36"><DateField label={t("filters.to")} name="to" value={values.to} onChange={(to) => set({ to, entry: "" })} /></div>
       </FilterBar>
       <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(event) => event.id} empty={t("empty")} />
       {state.status === "ready" ? (

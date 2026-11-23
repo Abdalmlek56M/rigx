@@ -18,7 +18,7 @@ export function AuditScreen() {
       <PageHeader title={t("title")} />
       <FilterBar>
         <FilterSelect
-          label={t("viewLabel")} value={view} onChange={(next) => set({ view: auditView(next), entry: "" })}
+          titled label={t("viewLabel")} value={view} onChange={(next) => set({ view: auditView(next), entry: "" })}
           options={AUDIT_VIEWS.map((entry) => ({ value: entry, label: t(`views.${entry}`) }))}
         />
       </FilterBar>

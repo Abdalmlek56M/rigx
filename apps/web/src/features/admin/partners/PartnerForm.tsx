@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
+import { DateField } from "../kit/DateField";
 import { TextField } from "@/components/ui/TextField";
 import { isConflict } from "@/lib/api/conflict";
 import { formMessage } from "../form-message";
@@ -57,7 +58,7 @@ export function PartnerForm({ partner, today, canEdit, onSaved, onStale, onCance
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField label={t("name")} name="name" value={form.name} onChange={(name) => set({ name })} error={error("name")} />
           <TextField label={t("phone")} name="phone" type="tel" ltr value={form.phone} onChange={(phone) => set({ phone })} error={error("phone")} />
-          <TextField label={t("joinDate")} name="joinDate" type="date" ltr value={form.joinDate} onChange={(joinDate) => set({ joinDate })} error={error("joinDate")} />
+          <DateField label={t("joinDate")} name="joinDate" value={form.joinDate} onChange={(joinDate) => set({ joinDate })} error={error("joinDate")} />
           <TextField label={t("defaultPercent")} name="defaultPercent" type="number" ltr value={form.defaultPercent} onChange={(defaultPercent) => set({ defaultPercent })} error={error("defaultPercent")} />
         </div>
         <SelectField

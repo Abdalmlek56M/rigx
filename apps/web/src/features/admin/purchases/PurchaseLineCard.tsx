@@ -79,7 +79,7 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
         <span className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-ink-muted">{t("lineTotal")}</span>
           <span className="font-bold">{formatEgp(lineTotal(line), locale)}</span>
-          <Button size="sm" variant="ghost" icon={CopyIcon} onClick={onDuplicate}>{t("duplicate")}</Button>
+          <Button size="sm" icon={CopyIcon} onClick={onDuplicate}>{t("duplicate")}</Button>
           {onRemove ? <Button size="sm" variant="danger" icon={TrashIcon} onClick={onRemove}>{t("remove")}</Button> : null}
         </span>
       </div>

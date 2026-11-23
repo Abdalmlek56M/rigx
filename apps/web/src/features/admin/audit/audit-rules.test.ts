@@ -83,6 +83,18 @@ describe("audit change values", () => {
     );
   });
 
+  it("leaves out the technical fields the database keeps for itself", () => {
+    assert.deepEqual(
+      diffRows([
+        { field: "CreatedAtUtc", before: null, after: "2026-11-23T10:00:00Z" },
+        { field: "RowVersion", before: 1, after: 2 },
+        { field: "ModelKey", before: "rtx3060", after: "rtx3060ti" },
+        { field: "ModelName", before: "RTX 3060", after: "RTX 3060 Ti" }
+      ]).map((row) => row.field),
+      ["ModelName"]
+    );
+  });
+
   it("names the record from its best title field, never from an id", () => {
     assert.equal(entryTitle([{ field: "Price", before: 1, after: 2 }, { field: "Name", before: "قديم", after: "RTX 3060" }]), "RTX 3060");
     assert.equal(entryTitle([{ field: "Code", before: "A-1", after: null }]), "A-1");

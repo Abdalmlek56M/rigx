@@ -69,17 +69,25 @@ export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & {
     </span>
   );
 
+  const addButtons = (
+    <>
+      <Button size="sm" icon={BoxIcon} onClick={() => setPanel({ kind: "stock" })}>{t("addFromStock")}</Button>
+      <Button size="sm" icon={PlusIcon} onClick={() => setPanel({ kind: "new" })}>{t("addNew")}</Button>
+    </>
+  );
+
   return (
     <SectionCard
       title={t("title", { count: build.units.length })}
-      actions={canEdit ? (
-        <>
-          <Button size="sm" icon={BoxIcon} onClick={() => setPanel({ kind: "stock" })}>{t("addFromStock")}</Button>
-          <Button size="sm" icon={PlusIcon} onClick={() => setPanel({ kind: "new" })}>{t("addNew")}</Button>
-        </>
-      ) : null}
+      actions={canEdit && build.units.length > 0 ? addButtons : null}
     >
-      {build.units.length === 0 ? <p className="m-0 py-8 text-center text-sm font-bold text-ink-muted">{t("empty")}</p> : (
+      {build.units.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 py-8 text-center">
+          <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-full bg-paper text-ink-muted"><BoxIcon size={22} /></span>
+          <p className="m-0 text-sm font-bold text-ink-muted">{t("empty")}</p>
+          {canEdit ? <div className="flex flex-wrap justify-center gap-2">{addButtons}</div> : null}
+        </div>
+      ) : (
         <>
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full table-fixed border-collapse text-sm">

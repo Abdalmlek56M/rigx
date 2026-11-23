@@ -76,6 +76,10 @@ describe("design kit rules", () => {
     assert.deepEqual(withoutPaste, []);
   });
 
+  it("asks for every admin date through DateField, so each date field has the same language and layout", () => {
+    assert.deepEqual(violations((line) => line.includes("type=\"date\""), (name) => name === "features/admin/kit/DateField.tsx" || !name.startsWith("features/admin/")), []);
+  });
+
   it("paints the case drawing only with the page tokens, never a hard-coded colour", () => {
     const css = readFileSync(join(SRC, "app", "blueprint.css"), "utf8");
     assert.deepEqual(css.match(/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/g) ?? [], []);

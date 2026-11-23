@@ -11,6 +11,8 @@ import {
   orderWhatsAppNumber,
   eventPaymentAmount,
   filterOrders,
+  matchesOrderTodo,
+  orderTodoKey,
   nextStatus,
   nextStatusBlock,
   orderAddressText,
@@ -103,6 +105,30 @@ describe("reservation", () => {
     assert.equal(reservationHoursValid("0"), false);
     assert.equal(reservationHoursValid("721"), false);
     assert.equal(reservationHoursValid("1.5"), false);
+  });
+});
+
+describe("the dashboard's to-do lists", () => {
+  it("lists orders on their way with money still due, as the dashboard counts them", () => {
+    const todo = "awaitingPayment";
+    assert.equal(matchesOrderTodo(order({ status: "Confirmed", paymentStatus: "Unpaid" }), todo), true);
+    assert.equal(matchesOrderTodo(order({ status: "Delivered", paymentStatus: "PendingVerification" }), todo), true);
+    assert.equal(matchesOrderTodo(order({ status: "New", paymentStatus: "Unpaid" }), todo), false);
+    assert.equal(matchesOrderTodo(order({ status: "Confirmed", paymentStatus: "Paid" }), todo), false);
+    assert.equal(matchesOrderTodo(order({ status: "Completed", paymentStatus: "Unpaid" }), todo), false);
+  });
+
+  it("lists ended reservations of orders that have not left the store", () => {
+    const todo = "expiredReservations";
+    assert.equal(matchesOrderTodo(order({ status: "Confirmed", reservationExpiredAtUtc: "2026-11-20T10:00:00Z" }), todo), true);
+    assert.equal(matchesOrderTodo(order({ status: "Confirmed" }), todo), false);
+    assert.equal(matchesOrderTodo(order({ status: "Cancelled", reservationExpiredAtUtc: "2026-11-20T10:00:00Z" }), todo), false);
+  });
+
+  it("keeps every order when no list is chosen and ignores an unknown name", () => {
+    assert.equal(matchesOrderTodo(order(), ""), true);
+    assert.equal(orderTodoKey("nonsense"), "");
+    assert.equal(orderTodoKey("awaitingPayment"), "awaitingPayment");
   });
 });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
@@ -114,8 +114,11 @@ export function PosPicker({ onAdd }: { onAdd: (line: CartLine) => void }) {
   const { has } = usePermissions();
   const fullInventory = has("Inventory.View");
   const [kind, setKind] = useState<Kind>("item");
-  // `?q=` opens the picker already searching (the inventory page's "Sell" action passes the item code).
-  const [query, setQuery] = useState(useSearchParams().get("q") ?? "");
+  // `?q=` opens the picker already searching; `?add=` (the inventory's "add to the till" actions) adds that item's code at once.
+  const params = useSearchParams();
+  const [query, setQuery] = useState(params.get("q") ?? "");
+  const addCode = params.get("add");
+  const added = useRef(false);
 
   async function addFromCode(text: string): Promise<boolean> {
     if (kind !== "item" || text === "") return false;
@@ -128,6 +131,16 @@ export function PosPicker({ onAdd }: { onAdd: (line: CartLine) => void }) {
       return false;
     }
   }
+  useEffect(() => {
+    if (!addCode || added.current) return;
+    added.current = true;
+    void addFromCode(addCode).then((done) => {
+      if (!done) setQuery(addCode);
+    });
+    // Only the code the page was opened with matters, once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addCode]);
+
   return (
     <FormSection title={t("title")}>
       <div role="radiogroup" aria-label={t("title")} className="flex flex-wrap gap-2">

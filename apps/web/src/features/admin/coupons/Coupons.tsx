@@ -10,10 +10,9 @@ import { Button } from "../kit/Button";
 import { DataTable, type Column } from "../kit/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StatusTone } from "@/components/ui/status-badge-rules";
-import { cardClass } from "@/components/ui/Card";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
-import { useReveal } from "../kit/use-reveal";
+import { EditSheet } from "../kit/EditSheet";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { CouponForm } from "./CouponForm";
 import { couponStatus, couponTotals, sortCoupons, type CouponStatus } from "./coupon-rules";
@@ -41,8 +40,9 @@ export function Coupons() {
   const money = has("Finance.ViewReports");
   const activeId = creating ? null : values.id || null;
   const selected = coupons.find((coupon) => coupon.id === activeId) ?? null;
-  const panelRef = useReveal<HTMLElement>(creating ? "new" : values.id || null);
   const totals = couponTotals(coupons);
+  const takenCodes = useMemo(() => coupons.map((coupon) => coupon.code), [coupons]);
+  const closeSheet = () => { setCreating(false); set({ id: "" }); };
 
   const discount = useCallback((coupon: Coupon) => (
     coupon.discountKind === "Amount" ? (
@@ -108,16 +108,13 @@ export function Coupons() {
               ) : null}
             </>
           )}
-          <section ref={panelRef} className={cardClass({ className: "scroll-mt-20 gap-3" })}>
-            <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
+          <EditSheet open={creating || selected !== null} title={creating ? t("newTitle") : t("editTitle")} onClose={closeSheet}>
             {creating ? (
-              <CouponForm key="new" coupon={null} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => setCreating(false)} />
+              <CouponForm key="new" coupon={null} takenCodes={takenCodes} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={closeSheet} />
             ) : selected ? (
-              <CouponForm key={`${selected.id}-${selected.rowVersion}`} coupon={selected} onSaved={(saved) => { set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => set({ id: "" })} onDeleted={() => { set({ id: "" }); reload(); }} />
-            ) : (
-              <p className="m-0 text-sm text-ink-muted">{t("pickHint")}</p>
-            )}
-          </section>
+              <CouponForm key={`${selected.id}-${selected.rowVersion}`} coupon={selected} takenCodes={takenCodes} onSaved={(saved) => { set({ id: saved.id }); reload(); }} onStale={reload} onCancel={closeSheet} onDeleted={() => { set({ id: "" }); reload(); }} />
+            ) : null}
+          </EditSheet>
         </>
       )}
     </>

@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
-import { TextField } from "@/components/ui/TextField";
+import { DateField } from "../kit/DateField";
 import { useLoad } from "@/lib/hooks/use-load";
 import { StatementSheet } from "./StatementSheet";
 import { fetchStatement } from "./partners-api";
@@ -39,8 +39,8 @@ export function PartnerStatement({ partnerId, today, movements }: { partnerId: s
           else setApplied(draft);
         }}
       >
-        <TextField label={t("from")} name="statementFrom" type="date" ltr value={draft.from} onChange={(from) => setDraft((current) => ({ ...current, from }))} />
-        <TextField label={t("to")} name="statementTo" type="date" ltr value={draft.to} onChange={(to) => setDraft((current) => ({ ...current, to }))} />
+        <DateField label={t("from")} name="statementFrom" value={draft.from} onChange={(from) => setDraft((current) => ({ ...current, from }))} />
+        <DateField label={t("to")} name="statementTo" value={draft.to} onChange={(to) => setDraft((current) => ({ ...current, to }))} />
         <Button type="submit" icon={EyeIcon} disabled={!statementRangeValid(draft)}>{t("show")}</Button>
         <Button variant="primary" icon={PrinterIcon} disabled={state.status !== "ready"} onClick={() => window.print()}>{t("print")}</Button>
       </form>

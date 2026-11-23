@@ -14,6 +14,21 @@ export function normalizeCode(raw: string): string {
   return raw.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, CODE_MAX);
 }
 
+/** Letters and digits that are not mistaken for each other (no I, O, 0 or 1). */
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const GENERATED_LENGTH = 6;
+const GENERATE_TRIES = 20;
+
+/** A short readable code that is not one of `taken` (compared without case); `null` when twenty tries all collided. */
+export function generateCouponCode(taken: readonly string[], random: () => number = Math.random): string | null {
+  const used = new Set(taken.map((code) => code.toUpperCase()));
+  for (let attempt = 0; attempt < GENERATE_TRIES; attempt++) {
+    const code = Array.from({ length: GENERATED_LENGTH }, () => CODE_ALPHABET[Math.floor(random() * CODE_ALPHABET.length)]).join("");
+    if (!used.has(code)) return code;
+  }
+  return null;
+}
+
 export interface CouponForm {
   code: string;
   sourceName: string;

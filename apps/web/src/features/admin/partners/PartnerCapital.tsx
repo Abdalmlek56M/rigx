@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { DateField } from "../kit/DateField";
 import { TextField } from "@/components/ui/TextField";
 import { SelectField } from "@/components/ui/SelectField";
 import { formatDate, formatEgp } from "@/lib/format";
@@ -75,7 +76,7 @@ export function PartnerCapital({ partnerId, today, accounts, canPost, onChanged 
               label={t("kind")} name="capitalKind" value={form.kind} onChange={(kind) => set({ kind })} error={errors.kind}
               options={CAPITAL_KINDS.map((kind) => ({ value: kind, label: t(`kinds.${kind}`) }))}
             />
-            <TextField label={t("date")} name="capitalDate" type="date" ltr value={form.date} onChange={(date) => set({ date })} error={errors.entryDate} />
+            <DateField label={t("date")} name="capitalDate" value={form.date} onChange={(date) => set({ date })} error={errors.entryDate} />
             <MoneyFields form={form} accounts={accounts} prefix="capital" errors={errors} onChange={(patch) => set(patch)} />
             <TextField label={t("note")} name="capitalNote" value={form.note} onChange={(note) => set({ note })} error={errors.note} />
           </div>

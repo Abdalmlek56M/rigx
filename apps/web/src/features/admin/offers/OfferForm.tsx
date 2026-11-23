@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate, formatEgp, listSeparator } from "@/lib/format";
 import { TextAreaField } from "@/components/ui/TextAreaField";
+import { DateField } from "../kit/DateField";
 import { TextField } from "@/components/ui/TextField";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
@@ -86,8 +87,8 @@ export function OfferForm({ offer, products, today, onSaved, onStale, onCancel, 
             <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={submit.errors.fields.titleEn} required />
             <TextAreaField label={t("fields.descriptionAr")} name="descriptionAr" dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} rows={2} error={submit.errors.fields.descriptionAr} />
             <TextAreaField label={t("fields.descriptionEn")} name="descriptionEn" dir="ltr" value={form.descriptionEn} onChange={(descriptionEn) => set({ descriptionEn })} rows={2} error={submit.errors.fields.descriptionEn} />
-            <TextField label={t("fields.startDate")} name="startDate" type="date" ltr value={form.startDate} onChange={(startDate) => set({ startDate })} error={submit.errors.fields.startsAtUtc} required />
-            <TextField label={t("fields.endDate")} name="endDate" type="date" ltr value={form.endDate} onChange={(endDate) => set({ endDate })} error={submit.errors.fields.endsAtUtc ?? (endsBeforeStart(form) ? t("endBeforeStart") : undefined)} />
+            <DateField label={t("fields.startDate")} name="startDate" value={form.startDate} onChange={(startDate) => set({ startDate })} error={submit.errors.fields.startsAtUtc} required />
+            <DateField label={t("fields.endDate")} name="endDate" value={form.endDate} onChange={(endDate) => set({ endDate })} error={submit.errors.fields.endsAtUtc ?? (endsBeforeStart(form) ? t("endBeforeStart") : undefined)} />
             <TextField label={t("fields.priority")} name="priority" type="number" ltr value={form.priority} onChange={(priority) => set({ priority })} error={submit.errors.fields.priority} />
           </div>
           <p className="m-0 text-xs text-ink-muted">{t("datesHint")}</p>

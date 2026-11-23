@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
-import { TextField } from "@/components/ui/TextField";
+import { DateField } from "../kit/DateField";
 import { formatDateTime, listSeparator } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
@@ -42,7 +42,7 @@ function AddRestriction({ userId, onAdded }: { userId: string; onAdded: () => vo
         options={RESTRICTION_TYPES.map((type) => ({ value: type, label: t(`types.${type}`) }))}
       />
       {form.type === "Suspension" ? (
-        <TextField label={t("until")} name="expiresAtUtc" type="date" ltr value={form.until} onChange={(until) => setForm({ ...form, until })} error={submit.errors.fields.expiresAtUtc} />
+        <DateField label={t("until")} name="expiresAtUtc" value={form.until} onChange={(until) => setForm({ ...form, until })} error={submit.errors.fields.expiresAtUtc} />
       ) : null}
       <TextAreaField label={t("reason")} name="reason" value={form.reason} onChange={(reason) => setForm({ ...form, reason })} error={submit.errors.fields.reason} maxLength={1000} />
       <FormMessage message={submit.errors.general} />

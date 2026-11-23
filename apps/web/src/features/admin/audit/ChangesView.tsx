@@ -32,15 +32,15 @@ export function ChangesView({ values, set }: { values: AuditValues; set: AuditSe
     <>
       <FilterBar>
         <FilterSelect
-          label={t("filters.module")} value={values.module} onChange={(module) => set({ module })}
+          titled label={t("filters.module")} value={values.module} onChange={(module) => set({ module })}
           options={[{ value: "", label: t("filters.all") }, ...options.modules.map((module) => ({ value: module, label: labels.module(module) }))]}
         />
         <FilterSelect
-          label={t("filters.entity")} value={values.entity} onChange={(entity) => set({ entity })}
+          titled label={t("filters.entity")} value={values.entity} onChange={(entity) => set({ entity })}
           options={[{ value: "", label: t("filters.all") }, ...options.entities.map((entity) => ({ value: entity, label: labels.entity(entity) }))]}
         />
         <FilterSelect
-          label={t("filters.action")} value={values.action} onChange={(action) => set({ action })}
+          titled label={t("filters.action")} value={values.action} onChange={(action) => set({ action })}
           options={[{ value: "", label: t("filters.all") }, ...options.actions.map((action) => ({ value: action, label: labels.action(action) }))]}
         />
       </FilterBar>

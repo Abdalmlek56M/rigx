@@ -16,7 +16,7 @@ import { cairoToday, parsePeriod, periodRange, type DateRange, type Period } fro
 import { KpiCards } from "./KpiCards";
 import { PeriodSwitch } from "./PeriodSwitch";
 import { SalesChart } from "./SalesChart";
-import { BoxIcon, RegisterIcon } from "@/components/ui/icons";
+import { BoxIcon, RegisterIcon, WalletIcon } from "@/components/ui/icons";
 import { buttonClass, buttonIconSize } from "../kit/Button";
 
 const FILTERS = { period: "month", from: "", to: "" };
@@ -90,6 +90,7 @@ export function Dashboard() {
         actions={
           <>
             {has("Purchasing.ReceiveGoods") ? <Link href="/admin/purchases" className={buttonClass()}><BoxIcon size={buttonIconSize()} />{t("receive")}</Link> : null}
+            {has("Finance.ManageExpenses") ? <Link href="/admin/expenses#new-expense" className={buttonClass()}><WalletIcon size={buttonIconSize()} />{t("quickExpense")}</Link> : null}
             {has("Sales.CreatePOS") ? <Link href="/admin/pos" className={buttonClass({ variant: "primary" })}><RegisterIcon size={buttonIconSize()} />{t("newSale")}</Link> : null}
           </>
         }

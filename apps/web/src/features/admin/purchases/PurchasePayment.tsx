@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
+import { DateField } from "../kit/DateField";
 import { TextField } from "@/components/ui/TextField";
 import { cardClass } from "@/components/ui/Card";
 import { formatEgp } from "@/lib/format";
@@ -45,7 +46,7 @@ export function PurchasePayment({ form, errors, missing, submitted, onChange }: 
         />
         {hasMoney(form.paymentMethod) ? <TextField label={t("paid")} name="paidAmount" type="number" ltr value={form.paidAmount} onChange={(paidAmount) => set({ paidAmount })} error={errorFor("paidAmount")} /> : null}
         {hasTradeIn(form.paymentMethod) ? <TextField label={t("tradeInValue")} name="tradeInValue" type="number" ltr value={form.tradeInValue} onChange={(tradeInValue) => set({ tradeInValue })} error={errorFor("tradeInValue")} /> : null}
-        <TextField label={t("date")} name="purchaseDate" type="date" ltr value={form.purchaseDate} onChange={(purchaseDate) => set({ purchaseDate })} error={errors.purchaseDate} />
+        <DateField label={t("date")} name="purchaseDate" value={form.purchaseDate} onChange={(purchaseDate) => set({ purchaseDate })} error={errors.purchaseDate} />
       </div>
       {hasMoney(form.paymentMethod) ? (
         <label className="flex items-start gap-2 rounded-control border border-line bg-paper p-3 text-sm">

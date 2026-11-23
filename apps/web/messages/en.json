@@ -1431,6 +1431,42 @@
         "InstaPay": "InstaPay",
         "Wallet": "E-wallet",
         "BankTransfer": "Bank account"
+      },
+      "transfer": {
+        "open": "Transfer between accounts",
+        "title": "Transfer between accounts",
+        "hint": "Moves an amount from one account to another. It is not an expense or an income, and it shows in both statements as a transfer.",
+        "pick": "Choose an account",
+        "from": "From account",
+        "to": "To account",
+        "amount": "Amount (EGP)",
+        "date": "Date",
+        "note": "Note (optional)",
+        "save": "Make the transfer",
+        "done": "The transfer was made."
+      },
+      "statement": {
+        "open": "Statement of {name}",
+        "title": "Statement of {name}",
+        "hint": "The newest movements on this account. Negative amounts left the account.",
+        "date": "Date",
+        "source": "Kind",
+        "note": "Note",
+        "amount": "Amount",
+        "none": "—",
+        "empty": "This account has no movements yet.",
+        "sources": {
+          "Sale": "Sale",
+          "Refund": "Refund",
+          "Purchase": "Purchase",
+          "Expense": "Expense",
+          "PartnerPayout": "Partner payout",
+          "CapitalDeposit": "Capital deposit",
+          "CapitalWithdrawal": "Capital withdrawal",
+          "TransferIn": "Transfer in",
+          "TransferOut": "Transfer out",
+          "other": "Other movement"
+        }
       }
     },
     "shell": {
@@ -1547,6 +1583,13 @@
         "hint": "You can also paste a picture from the clipboard: click here, then press Ctrl+V.",
         "empty": "There is no picture on the clipboard.",
         "denied": "The clipboard could not be read. Allow the site to read it, or click this box and press Ctrl+V."
+      },
+      "close": "Close",
+      "picker": {
+        "choose": "Choose a picture",
+        "change": "Change the picture",
+        "clear": "Remove the picture",
+        "dropHint": "You can also drag the picture here, or paste it with Ctrl+V."
       }
     },
     "dashboard": {
@@ -1613,7 +1656,7 @@
       },
       "categories": {
         "title": "Top categories",
-        "none": "No category",
+        "none": "Custom parts / other",
         "salesMargin": "{sales}, margin {margin}%"
       },
       "condition": {
@@ -1662,7 +1705,8 @@
         "account": "Account",
         "balance": "Balance",
         "empty": "No accounts."
-      }
+      },
+      "quickExpense": "Quick expense"
     },
     "orders": {
       "title": "Orders",
@@ -1802,9 +1846,8 @@
           "empty": "No payments yet."
         },
         "tracking": {
-          "title": "Customer tracking link",
-          "open": "Open",
-          "copy": "Copy",
+          "open": "Open the tracking page",
+          "copy": "Copy tracking link",
           "copied": "Copied"
         },
         "timeline": {
@@ -1971,6 +2014,11 @@
       },
       "moreCard": {
         "title": "Order tools"
+      },
+      "todo": {
+        "awaitingPayment": "Orders waiting for payment",
+        "expiredReservations": "Expired reservations",
+        "clear": "Clear filter"
       }
     },
     "requests": {
@@ -2439,8 +2487,6 @@
       "new": "New offer",
       "newTitle": "New offer",
       "editTitle": "Edit the offer",
-      "pick": "An offer from the list",
-      "pickHint": "Pick an offer or create a new one.",
       "empty": "No offers yet.",
       "failed": "We couldn't load the offers.",
       "retry": "Try again",
@@ -2549,7 +2595,9 @@
       },
       "splits": {
         "title": "How it splits",
-        "empty": "No expenses in this period."
+        "empty": "No expenses in this period.",
+        "total": "Total",
+        "other": "Other types"
       },
       "receipt": {
         "open": "View",
@@ -2573,8 +2621,7 @@
         "newType": "+ New type",
         "save": "Add",
         "saved": "Expense added",
-        "receiptFailed": "The expense was saved but the receipt didn't upload.",
-        "receiptClear": "Remove the picture"
+        "receiptFailed": "The expense was saved but the receipt didn't upload."
       },
       "types": {
         "title": "Expense types",
@@ -2883,8 +2930,6 @@
       "search": "Search by code or model",
       "none": "—",
       "pickRow": "Select {code}",
-      "open": "View and manage {code}",
-      "openTip": "View / manage",
       "newPurchase": "Buy and receive",
       "newBuild": "New build",
       "hidden": "Hidden",
@@ -2907,7 +2952,7 @@
         "status": "Status",
         "visibility": "Visibility",
         "days": "In stock",
-        "open": "Manage"
+        "shortcuts": "Shortcuts"
       },
       "state": {
         "available": "Available",
@@ -3060,6 +3105,21 @@
         "no": "No",
         "notSet": "Not set",
         "old": "Specs typed freely before; they will not be saved. Type them into the fields above:"
+      },
+      "shortcuts": {
+        "edit": "Quick edit",
+        "hide": "Hide from the store",
+        "show": "Show in the store",
+        "sell": "Add to the point of sale",
+        "preview": "Preview in the store"
+      },
+      "quick": {
+        "title": "Edit item",
+        "close": "Close",
+        "loading": "Loading",
+        "failed": "Could not load the edit details.",
+        "retry": "Try again",
+        "fullPage": "Open the full item page"
       }
     },
     "purchases": {
@@ -3377,7 +3437,7 @@
         "remove": "Remove",
         "addFromStock": "Add a part from stock",
         "addNew": "Add a new part (not in stock)",
-        "empty": "No parts yet.",
+        "empty": "This build has no parts yet. Add a part from stock or create a new one.",
         "hint": "A partner percent in orange was changed for this part only. Remove asks whether the part goes back to stock or to another build."
       },
       "partDialog": {
@@ -3512,7 +3572,7 @@
         "defaultPercent": "Share of the profit %",
         "basis": "Paid from",
         "bases": {
-          "FinancedParts": "The parts they financed",
+          "FinancedParts": "Only on the parts they financed",
           "WholeShop": "The whole shop's profit",
           "other": "Unknown"
         },
@@ -5024,8 +5084,6 @@
       "new": "New coupon",
       "newTitle": "New coupon",
       "editTitle": "Edit coupon",
-      "pick": "A coupon from the list",
-      "pickHint": "Pick a coupon from the list or create a new one.",
       "empty": "No coupons yet.",
       "failed": "Could not load the coupons.",
       "retry": "Try again",
@@ -5088,7 +5146,8 @@
         "minOrderTotal": "Must be above zero.",
         "maxUses": "Must be a whole number above zero.",
         "endsAtUtc": "The end date must be after the start."
-      }
+      },
+      "generate": "Generate a code"
     },
     "customerBuilds": {
       "title": "Customer builds",

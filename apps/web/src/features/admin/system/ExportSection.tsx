@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { DownloadIcon, PrinterIcon } from "@/components/ui/icons";
 import { SelectField } from "@/components/ui/SelectField";
-import { TextField } from "@/components/ui/TextField";
+import { DateField } from "../kit/DateField";
 import { Button } from "../kit/Button";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
@@ -55,8 +55,8 @@ export function ExportSection({ datasets }: { datasets: readonly ExportDataset[]
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SelectField label={t("dataset")} name="dataset" value={dataset} onChange={setDataset} options={datasets.map((name) => ({ value: name, label: t(`datasets.${name}`) }))} />
           <SelectField label={t("format")} name="format" value={format} onChange={setFormat} options={EXPORT_CHOICES.map((name) => ({ value: name, label: t(`formats.${name}`) }))} />
-          <TextField label={t("from")} name="from" type="date" ltr value={from} onChange={setFrom} error={submit.errors.fields.from} />
-          <TextField label={t("to")} name="to" type="date" ltr value={to} onChange={setTo} error={submit.errors.fields.to} />
+          <DateField label={t("from")} name="from" value={from} onChange={setFrom} error={submit.errors.fields.from} />
+          <DateField label={t("to")} name="to" value={to} onChange={setTo} error={submit.errors.fields.to} />
         </div>
         {badRange ? <FormMessage message={t("badRange")} /> : null}
         {dataset === "customers" ? <p className="m-0 text-xs text-ink-muted">{t("stepUpNote")}</p> : null}

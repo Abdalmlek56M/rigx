@@ -1,5 +1,5 @@
-/** Expenses: the period switch, the form ⇄ API mapping, the split bars and the linked kind. Pure, so it is tested. */
-import { periodRange, withShares, type DateRange } from "../dashboard/dashboard-rules.ts";
+/** Expenses: the period switch, the form ⇄ API mapping and the linked kind. Pure, so it is tested. */
+import { periodRange, type DateRange } from "../dashboard/dashboard-rules.ts";
 import type { Expense, ExpenseCreateRequest } from "./expenses-api";
 
 export const EXPENSE_PERIODS = ["month", "lastMonth", "year", "custom"] as const;
@@ -51,21 +51,6 @@ export function toExpenseCreate(form: ExpenseForm): ExpenseCreateRequest {
     assemblyId: null,
     ...paidFrom(form)
   };
-}
-
-export interface SplitRow {
-  type: string;
-  amount: number;
-  count: number;
-  percent: number;
-  width: number;
-}
-
-/** The "how it splits" rows: share of the total and a bar against the biggest type. */
-export function expenseSplits(rows: readonly { type: string; amount: number; count: number }[]): SplitRow[] {
-  return withShares(rows, (row) => row.amount).map((row) => ({
-    type: row.type, amount: row.amount, count: row.count, percent: row.percent, width: row.width
-  }));
 }
 
 export type ExpenseLink = "order" | "unit" | "build" | null;

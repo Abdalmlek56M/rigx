@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@rigx/api-client";
-import { BanIcon, SaveIcon } from "@/components/ui/icons";
+import { BanIcon, RefreshIcon, SaveIcon } from "@/components/ui/icons";
 import { SelectField } from "@/components/ui/SelectField";
+import { DateField } from "../kit/DateField";
 import { TextField } from "@/components/ui/TextField";
 import { isConflict } from "@/lib/api/conflict";
 import { Button } from "../kit/Button";
@@ -14,7 +15,7 @@ import { FormMessage } from "../kit/PageHeader";
 import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
 import {
-  canDelete, couponForm, couponValid, DISCOUNT_KINDS, EMPTY_COUPON_FORM, endsBeforeStart, normalizeCode, toCouponInput, type CouponForm as Form
+  canDelete, couponForm, couponValid, DISCOUNT_KINDS, EMPTY_COUPON_FORM, endsBeforeStart, generateCouponCode, normalizeCode, toCouponInput, type CouponForm as Form
 } from "./coupon-rules";
 import { createCoupon, deleteCoupon, updateCoupon, type Coupon } from "./coupons-api";
 
@@ -26,8 +27,10 @@ const CheckRow = ({ label, checked, onChange }: { label: string; checked: boolea
 );
 
 /** The coupon form: code, source, discount, limits, dates and on/off; plus delete (unused code) or turn off (used code). */
-export function CouponForm({ coupon, onSaved, onStale, onCancel, onDeleted }: {
+export function CouponForm({ coupon, takenCodes, onSaved, onStale, onCancel, onDeleted }: {
   coupon: Coupon | null;
+  /** The codes that already exist, so a generated code is a new one. */
+  takenCodes: readonly string[];
   onSaved: (coupon: Coupon) => void;
   onStale: () => void;
   onCancel: () => void;
@@ -72,15 +75,18 @@ export function CouponForm({ coupon, onSaved, onStale, onCancel, onDeleted }: {
   return (
     <form className="flex flex-col gap-4" onSubmit={(event) => { event.preventDefault(); void save(); }}>
       <div className="grid gap-3 sm:grid-cols-2">
-        <TextField label={t("fields.code")} name="code" ltr value={form.code} onChange={(code) => set({ code: normalizeCode(code) })} error={fieldError("code")} maxLength={30} required />
+        <TextField
+          label={t("fields.code")} name="code" ltr value={form.code}
+          labelEnd={coupon ? undefined : <Button size="sm" variant="ghost" icon={RefreshIcon} onClick={() => set({ code: generateCouponCode(takenCodes) ?? form.code })}>{t("generate")}</Button>} onChange={(code) => set({ code: normalizeCode(code) })} error={fieldError("code")} maxLength={30} required
+        />
         <TextField label={t("fields.sourceName")} name="sourceName" value={form.sourceName} onChange={(sourceName) => set({ sourceName })} error={fieldError("sourceName")} placeholder={t("sourcePlaceholder")} required />
         <SelectField label={t("fields.discountKind")} name="discountKind" value={form.kind} onChange={(kind) => set({ kind })} options={DISCOUNT_KINDS.map((kind) => ({ value: kind, label: t(`kinds.${kind}`) }))} error={fieldError("discountKind")} />
         <TextField label={percent ? t("fields.percent") : t("fields.amount")} name="discountValue" type="number" ltr min="0" step={percent ? "1" : "0.01"} value={form.value} onChange={(value) => set({ value })} error={fieldError("discountValue")} required />
         {percent ? <TextField label={t("fields.maxDiscount")} name="maxDiscount" type="number" ltr min="0" step="0.01" value={form.maxDiscount} onChange={(maxDiscount) => set({ maxDiscount })} error={fieldError("maxDiscount")} /> : null}
         <TextField label={t("fields.minOrderTotal")} name="minOrderTotal" type="number" ltr min="0" step="0.01" value={form.minOrderTotal} onChange={(minOrderTotal) => set({ minOrderTotal })} error={fieldError("minOrderTotal")} />
         <TextField label={t("fields.maxUses")} name="maxUses" type="number" ltr min="1" step="1" value={form.maxUses} onChange={(maxUses) => set({ maxUses })} error={fieldError("maxUses")} />
-        <TextField label={t("fields.startDate")} name="startDate" type="date" ltr value={form.startDate} onChange={(startDate) => set({ startDate })} />
-        <TextField label={t("fields.endDate")} name="endDate" type="date" ltr value={form.endDate} onChange={(endDate) => set({ endDate })} error={endsBeforeStart(form) ? t("endBeforeStart") : fieldError("endsAtUtc")} />
+        <DateField label={t("fields.startDate")} name="startDate" value={form.startDate} onChange={(startDate) => set({ startDate })} />
+        <DateField label={t("fields.endDate")} name="endDate" value={form.endDate} onChange={(endDate) => set({ endDate })} error={endsBeforeStart(form) ? t("endBeforeStart") : fieldError("endsAtUtc")} />
       </div>
       <p className="m-0 text-xs text-ink-muted">{t("hint")}</p>
       <div className="flex flex-wrap gap-x-6 gap-y-2">

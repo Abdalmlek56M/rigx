@@ -64,11 +64,13 @@ interface FilterSelectProps<V extends string> {
   value: V;
   onChange: (value: V) => void;
   options: readonly { value: V; label: string }[];
+  /** Shows the label as a small title above the dropdown (a bar of several dropdowns that would otherwise read as unnamed boxes). */
+  titled?: boolean;
 }
 
 /** A compact dropdown for the filter bar (the label is read by screen readers, the first option says "all"). */
-export function FilterSelect<V extends string>({ label, value, onChange, options }: FilterSelectProps<V>) {
-  return (
+export function FilterSelect<V extends string>({ label, value, onChange, options, titled = false }: FilterSelectProps<V>) {
+  const select = (
     <select
       aria-label={label} value={value}
       onChange={(event) => {
@@ -80,6 +82,12 @@ export function FilterSelect<V extends string>({ label, value, onChange, options
       {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select>
   );
+  return titled ? (
+    <label className="flex flex-col gap-1">
+      <span className="type-label font-bold">{label}</span>
+      {select}
+    </label>
+  ) : select;
 }
 
 /** One row above a table: search and filters at the start, extra actions (export, add) at the end; wraps on phones. */

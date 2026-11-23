@@ -5,15 +5,16 @@ import type { ReactNode } from "react";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StatusTone } from "@/components/ui/status-badge-rules";
-import { ChevronDownIcon, ChevronStartIcon, EyeIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, ChevronStartIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import type { Category } from "../categories/categories-api";
 import type { Partner } from "../expenses/expenses-api";
 import { BuildStatusBadge } from "../builds/BuildStatusBadge";
-import { buttonClass, buttonIconSize, IconButton } from "../kit/Button";
+import { IconButton } from "../kit/Button";
 import type { Column } from "../kit/DataTable";
 import { usePermissions } from "../use-permissions";
+import { InventoryShortcuts } from "./InventoryShortcuts";
 import type { StockItem } from "./inventory-api";
 import { categoryPath, expectedProfit, itemCost, itemPartner, stockAge, stockState, type StockAge, type StockRow } from "./inventory-rules";
 
@@ -24,6 +25,10 @@ interface ColumnsInput {
   onToggle: (id: string) => void;
   /** Opens or closes the parts of a build. */
   onToggleBuild: (id: string) => void;
+  onQuickEdit: (item: StockItem) => void;
+  onToggleHidden: (item: StockItem) => void;
+  /** The item whose visibility is being changed right now. */
+  busyId: string | null;
 }
 
 /** The badge tone of an item's time in stock; a fresh item shows plain text. */
@@ -32,7 +37,7 @@ const AGE_TONES: Record<Exclude<StockAge, "fresh">, StatusTone> = { slow: "warni
 const asCondition = (condition: string) => (condition === "New" ? "New" : "Used");
 
 /** The inventory list columns; cost, profit and partner appear only for staff who may see them, and only when the API sent the values. */
-export function useInventoryColumns({ tree, partners, selected, onToggle, onToggleBuild }: ColumnsInput): Column<StockRow>[] {
+export function useInventoryColumns({ tree, partners, selected, onToggle, onToggleBuild, onQuickEdit, onToggleHidden, busyId }: ColumnsInput): Column<StockRow>[] {
   const t = useTranslations("admin.inventory");
   const locale = useLocale();
   const { has } = usePermissions();
@@ -54,18 +59,6 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
       ))
     },
     {
-      key: "open",
-      header: t("columns.open"),
-      cell: forItem((item) => (
-        <Link
-          href={`/admin/inventory/${item.id}`} aria-label={t("open", { code: item.code })} data-tip={t("openTip")}
-          className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}
-        >
-          <EyeIcon size={buttonIconSize("sm")} />
-        </Link>
-      ))
-    },
-    {
       key: "code",
       header: t("columns.code"),
       cell: (row) => row.kind === "build" ? (
@@ -73,7 +66,9 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
           {row.build.code}
         </Link>
       ) : (
-        <span dir="ltr" className={`inline-block min-h-8 whitespace-nowrap font-mono text-[13px] font-bold `}>{row.item.code}</span>
+        <Link href={`/admin/inventory/${row.item.id}`} dir="ltr" className="inline-block min-h-8 whitespace-nowrap font-mono text-[13px] font-bold text-orange-text hover:underline">
+          {row.item.code}
+        </Link>
       )
     },
     {
@@ -89,7 +84,17 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
           <span dir="auto" className="max-w-52 truncate font-bold [unicode-bidi:isolate]">{row.build.name}</span>
           <span className="whitespace-nowrap text-xs text-ink-muted">{t("build.parts", { count: row.count })}</span>
         </span>
-      ) : <span dir="auto" className={`block max-w-56 truncate [unicode-bidi:isolate] ${row.underBuild ? "ms-5" : ""}`}>{row.item.modelName}</span>
+      ) : (
+        <Link href={`/admin/inventory/${row.item.id}`} dir="auto" className={`block max-w-56 truncate font-bold hover:text-orange-text hover:underline [unicode-bidi:isolate] ${row.underBuild ? "ms-5" : ""}`}>
+          {row.item.modelName}
+        </Link>
+      )
+    },
+    {
+      key: "shortcuts",
+      header: t("columns.shortcuts"),
+      phoneFull: true,
+      cell: forItem((item) => <InventoryShortcuts item={item} onQuickEdit={onQuickEdit} onToggleHidden={onToggleHidden} busy={busyId === item.id} />)
     },
     { key: "category", header: t("columns.category"), cell: forItem((item) => <span className="whitespace-nowrap text-xs text-ink-muted">{categoryPath(tree, item.categoryId) || t("none")}</span>) },
     { key: "condition", header: t("columns.condition"), cell: forItem((item) => <ConditionBadge condition={asCondition(item.condition)} />) },

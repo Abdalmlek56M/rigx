@@ -7,6 +7,8 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { DataTable, type Column } from "../kit/DataTable";
+import { DonutChart } from "../kit/DonutChart";
+import { donutSlices } from "../kit/donut-rules";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
 import { cairoToday } from "../dashboard/dashboard-rules";
@@ -24,7 +26,7 @@ import {
   fetchRecurringExpenses,
   type Expense
 } from "./expenses-api";
-import { expenseLink, expensePeriodRange, expenseSplits, parseExpensePeriod } from "./expense-rules";
+import { expenseLink, expensePeriodRange, parseExpensePeriod } from "./expense-rules";
 import { EyeIcon } from "@/components/ui/icons";
 import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
@@ -69,6 +71,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
   const accountsById = new Map(accounts.map((account) => [account.id, account.name]));
   const partnersById = new Map(partners.map((partner) => [partner.id, partner.name]));
   const change = summary.changePercent;
+  const slices = donutSlices(summary.byType.map((row) => ({ key: row.type, label: row.type, value: row.amount })), t("splits.other"));
   const linkLabels = { order: t("links.order"), unit: t("links.unit"), build: t("links.build") };
 
   function paidFrom(expense: Expense): string {
@@ -109,17 +112,21 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: expenses }} onRetry={reload} rowKey={(expense) => expense.id} empty={t("empty")} />
         <section className={cardClass({ className: "gap-3" })}>
-          <h2 className="m-0 text-[17px] font-bold">{t("splits.title")}</h2>
-          {summary.byType.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("splits.empty")}</p> : (
-            <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
-              {expenseSplits(summary.byType).map((row) => (
-                <li key={row.type} className="grid grid-cols-[100px_minmax(0,1fr)_90px] items-center gap-2 text-[13px]">
-                  <span className="truncate">{row.type}</span>
-                  <span aria-hidden="true" className="h-2.5 overflow-hidden rounded-full bg-line"><span className="block h-full rounded-full bg-carbon" style={{ width: `${row.width}%` }} /></span>
-                  <span className="whitespace-nowrap text-end text-xs text-ink-muted">{formatEgp(row.amount, locale)}</span>
-                </li>
-              ))}
-            </ul>
+          <h2 className="m-0 type-section-title">{t("splits.title")}</h2>
+          {slices.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("splits.empty")}</p> : (
+            <div className="flex flex-col items-center gap-4">
+              <DonutChart slices={slices} centerTop={t("splits.total")} centerBottom={formatEgp(summary.total, locale)} />
+              <ul className="m-0 flex w-full min-w-0 list-none flex-col gap-2 p-0 text-[13px]">
+                {slices.map((slice) => (
+                  <li key={slice.key} className="flex items-center gap-2">
+                    <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: slice.color }} />
+                    <span dir="auto" className="min-w-0 flex-1 truncate [unicode-bidi:isolate]">{slice.label}</span>
+                    <span dir="ltr" className="whitespace-nowrap text-xs text-ink-muted">{slice.percent}%</span>
+                    <span className="whitespace-nowrap font-bold">{formatEgp(slice.value, locale)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       </div>

@@ -11,11 +11,17 @@ import { usePermissions } from "../use-permissions";
 import type { CustomerProfile, ShippingRates } from "./customers-api";
 import { governorateName, monthYear } from "./customer-rules";
 
-function Row({ label, value, mono = false, wrap = false }: { label: string; value: string; mono?: boolean; wrap?: boolean }) {
+/** A label and its value side by side; `long` puts the value under its label across the full width on one line, cut with the whole text in its tip (an email). */
+function Row({ label, value, mono = false, long = false }: { label: string; value: string; mono?: boolean; long?: boolean }) {
   return (
-    <div className="flex justify-between gap-4 text-sm">
+    <div className={long ? "flex flex-col gap-0.5 text-sm" : "flex justify-between gap-4 text-sm"}>
       <dt className="shrink-0 text-ink-muted">{label}</dt>
-      <dd dir={mono ? "ltr" : "auto"} className={`m-0 min-w-0 text-end ${mono ? "font-mono text-[13px]" : ""} ${wrap ? "break-all" : ""}`}>{value}</dd>
+      <dd
+        dir={mono ? "ltr" : "auto"} title={long ? value : undefined}
+        className={`m-0 min-w-0 ${long ? "truncate text-start" : "text-end"} ${mono ? "font-mono text-[13px]" : ""}`}
+      >
+        {value}
+      </dd>
     </div>
   );
 }
@@ -43,7 +49,7 @@ export function CustomerProfileCard({ profile, rates }: { profile: CustomerProfi
       </div>
 
       <dl className="m-0 flex flex-col gap-2.5">
-        <Row label={t("email")} value={account.email} mono wrap />
+        <Row label={t("email")} value={account.email} mono long />
         <Row label={t("columns.phone")} value={account.phone ?? t("none")} mono />
         {governorate ? <Row label={t("governorate")} value={governorate} /> : null}
       </dl>

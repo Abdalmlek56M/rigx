@@ -93,6 +93,24 @@ export function canSetPaymentStatus(order: OrderState): boolean {
   return order.status !== "Cancelled" && order.paymentStatus !== "Waived" && order.paymentStatus !== "Paid" && order.remaining > 0;
 }
 
+/** The dashboard's "needs you today" lists that are a view of the orders list: money still due on an order on its way, and reservations that ended. */
+export const ORDER_TODOS = ["awaitingPayment", "expiredReservations"] as const;
+export type OrderTodo = (typeof ORDER_TODOS)[number];
+
+export function orderTodoKey(value: string): OrderTodo | "" {
+  return ORDER_TODOS.find((todo) => todo === value) ?? "";
+}
+
+const ON_THE_WAY: readonly string[] = ["Confirmed", "Preparing", "Shipped", "Delivered"];
+const FINISHED: readonly string[] = ["Cancelled", "Completed", "Delivered"];
+
+/** The same two counts the dashboard shows (the API's `DashboardShopState.TodoAsync`), so a link from there lists exactly those orders. */
+export function matchesOrderTodo(order: Pick<Order, "status" | "paymentStatus" | "reservationExpiredAtUtc">, todo: OrderTodo | ""): boolean {
+  if (todo === "awaitingPayment") return ON_THE_WAY.includes(order.status) && (order.paymentStatus === "Unpaid" || order.paymentStatus === "PendingVerification");
+  if (todo === "expiredReservations") return Boolean(order.reservationExpiredAtUtc) && !FINISHED.includes(order.status);
+  return true;
+}
+
 /** Stock is held only while the order waits to leave the store. */
 export const holdsReservation = (order: Pick<Order, "status">) => order.status === "Confirmed" || order.status === "Preparing";
 

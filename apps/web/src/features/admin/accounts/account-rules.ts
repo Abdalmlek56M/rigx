@@ -1,5 +1,5 @@
 /** Money accounts (cash drawer, InstaPay, wallet, bank): the form, its request and the total. Pure, so it is tested. */
-import type { MoneyAccount, MoneyAccountRequest } from "./accounts-api";
+import type { MoneyAccount, MoneyAccountRequest, MoneyTransferRequest } from "./accounts-api";
 
 export const ACCOUNT_KINDS = ["Cash", "InstaPay", "Wallet", "BankTransfer"] as const;
 export type AccountKind = (typeof ACCOUNT_KINDS)[number];
@@ -36,6 +36,33 @@ export function accountRequest(form: AccountForm, rowVersion: number | null): Mo
 }
 
 export const accountFormValid = (form: AccountForm) => form.name.trim() !== "";
+
+export interface TransferForm {
+  from: string;
+  to: string;
+  amount: string;
+  date: string;
+  note: string;
+}
+
+export const emptyTransferForm = (today: string): TransferForm => ({ from: "", to: "", amount: "", date: today, note: "" });
+
+/** Two different accounts, an amount above zero with at most two decimals, and a date. */
+export function transferValid(form: TransferForm): boolean {
+  const amount = Number(form.amount);
+  return form.from !== "" && form.to !== "" && form.from !== form.to && form.amount.trim() !== ""
+    && Number.isFinite(amount) && amount > 0 && Math.round(amount * 100) === amount * 100 && form.date !== "";
+}
+
+export function transferRequest(form: TransferForm): MoneyTransferRequest {
+  return { fromAccountId: form.from, toAccountId: form.to, amount: Number(form.amount), date: form.date, note: form.note.trim() || null };
+}
+
+const MOVEMENT_SOURCES = ["Sale", "Refund", "Purchase", "Expense", "PartnerPayout", "CapitalDeposit", "CapitalWithdrawal", "TransferIn", "TransferOut"] as const;
+export type MovementSource = (typeof MOVEMENT_SOURCES)[number];
+
+/** The message key of what produced a movement; a source this screen does not know reads as "other". */
+export const movementSourceKey = (source: string): MovementSource | "other" => MOVEMENT_SOURCES.find((known) => known === source) ?? "other";
 
 /** The balance of the accounts that are in use (a switched-off account is left out). */
 export const activeBalance = (accounts: readonly Pick<MoneyAccount, "balance" | "isActive">[]) =>

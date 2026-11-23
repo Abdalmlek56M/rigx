@@ -33,7 +33,7 @@ export function StockItemActions({ item, onChanged }: { item: StockItem; onChang
   return (
     <div className="flex flex-wrap items-center gap-2">
       {has("Sales.CreatePOS") ? (
-        <Link href={`/admin/pos?q=${encodeURIComponent(item.code)}`} className={buttonClass({ variant: "primary" })}>
+        <Link href={`/admin/pos?add=${encodeURIComponent(item.code)}`} className={buttonClass({ variant: "primary" })}>
           <CartIcon size={buttonIconSize()} />{t("sell")}
         </Link>
       ) : null}

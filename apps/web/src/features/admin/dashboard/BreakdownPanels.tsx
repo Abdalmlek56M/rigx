@@ -21,8 +21,8 @@ export function TodoPanel({ todo, newRequests }: { todo: DashboardData["todo"]; 
   const t = useTranslations("admin.dashboard.todo");
   const rows = [
     { key: "newOrders", count: todo.newOrders, href: "/admin/orders?status=New" },
-    { key: "awaitingPayment", count: todo.awaitingPayment, href: "/admin/orders" },
-    { key: "expiredReservations", count: todo.expiredReservations, href: "/admin/orders" },
+    { key: "awaitingPayment", count: todo.awaitingPayment, href: "/admin/orders?todo=awaitingPayment" },
+    { key: "expiredReservations", count: todo.expiredReservations, href: "/admin/orders?todo=expiredReservations" },
     { key: "pendingReturns", count: todo.pendingReturns, href: "/admin/orders" },
     { key: "newRequests", count: newRequests, href: "/admin/requests?status=New" },
     { key: "recurringExpensesDue", count: todo.recurringExpensesDue, href: "/admin/expenses" }

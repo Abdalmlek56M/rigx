@@ -1,4 +1,4 @@
-import { toggle } from "./user-rules.ts";
+import { builtInRole, toggle } from "./user-rules.ts";
 import { useRoleLabel } from "./use-role-label";
 import type { StaffRole } from "./users-api";
 
@@ -21,7 +21,7 @@ export function RoleCheckboxes({ roles, selected, onChange, disabled = false }: 
             />
             <span className="flex min-w-0 flex-col">
               <span className="font-bold">{label(role)}</span>
-              <span dir="ltr" className="font-mono text-[11px] text-ink-muted">{role.code}</span>
+              {builtInRole(role.code) ? null : <span dir="ltr" className="font-mono text-[11px] text-ink-muted">{role.code}</span>}
             </span>
           </label>
         </li>

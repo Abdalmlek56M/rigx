@@ -9,13 +9,12 @@ import { DataTable, type Column } from "../kit/DataTable";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
-import { useReveal } from "../kit/use-reveal";
+import { EditSheet } from "../kit/EditSheet";
 import { OfferStatusBadge } from "./OfferActions";
 import { OfferForm } from "./OfferForm";
 import { offerDiscount } from "./offer-rules";
 import { fetchOffers, fetchProducts, type Offer } from "./offers-api";
 import { PlusIcon } from "@/components/ui/icons";
-import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 const FILTERS = { id: "" };
@@ -34,8 +33,8 @@ export function Offers() {
   const data = state.status === "ready" ? state.data : { offers: [], products: [] };
   const activeId = creating ? null : values.id || null;
   const selected = data.offers.find((offer) => offer.id === activeId) ?? null;
-  const panelRef = useReveal<HTMLElement>(creating ? "new" : values.id || null);
   const today = cairoToday(new Date());
+  const closeSheet = () => { setCreating(false); set({ id: "" }); };
 
   function discount(offer: Offer): string {
     const range = offerDiscount(offer.items);
@@ -81,16 +80,13 @@ export function Offers() {
           {state.status === "loading" ? <LoadingCard className="h-48" /> : (
             <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: data.offers }} onRetry={reload} rowKey={(offer) => offer.id} empty={t("empty")} />
           )}
-          <section ref={panelRef} className={cardClass({ className: "scroll-mt-20 gap-3" })}>
-            <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
+          <EditSheet open={creating || selected !== null} title={creating ? t("newTitle") : t("editTitle")} onClose={closeSheet}>
             {creating ? (
-              <OfferForm key="new" offer={null} products={data.products} today={today} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => setCreating(false)} onReload={reload} />
+              <OfferForm key="new" offer={null} products={data.products} today={today} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={closeSheet} onReload={reload} />
             ) : selected ? (
-              <OfferForm key={`${selected.id}-${selected.rowVersion}`} offer={selected} products={data.products} today={today} onSaved={(saved) => { set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => set({ id: "" })} onReload={reload} />
-            ) : (
-              <p className="m-0 text-sm text-ink-muted">{t("pickHint")}</p>
-            )}
-          </section>
+              <OfferForm key={`${selected.id}-${selected.rowVersion}`} offer={selected} products={data.products} today={today} onSaved={(saved) => { set({ id: saved.id }); reload(); }} onStale={reload} onCancel={closeSheet} onReload={reload} />
+            ) : null}
+          </EditSheet>
         </>
       )}
     </>
