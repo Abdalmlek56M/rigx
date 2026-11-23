@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  MAX_PARTS, SHARE_NAME_MAX, builderPath, cleanShareName, parseBuilderParams, parsePartsParam, partsOf, partsParam, quotePath, removeCode,
-  replaceInSlot, sharedBuildUrl
+  SHARE_NAME_MAX, builderPath, cleanShareName, clearSlot, parseBuilderParams, parsePartsParam, partsOf, partsParam, pickInSlot, quantityCeiling,
+  quotePath, removeCode, setQuantity, sharedBuildUrl, slotHasRoom, unitsIn
 } from "./builder-state.ts";
+import { MAX_PARTS } from "./slot-limits.ts";
 
 describe("parsePartsParam", () => {
   it("reads codes with optional quantities", () => {
@@ -21,7 +22,8 @@ describe("parsePartsParam", () => {
       { code: "RX-4", quantity: 1 },
       { code: "RX-5", quantity: 1 }
     ]);
-    assert.equal(parsePartsParam("RX-1:4")[0]?.quantity, 4);
+    assert.equal(parsePartsParam("RX-1:6")[0]?.quantity, 6);
+    assert.equal(parsePartsParam("RX-1:7")[0]?.quantity, 1);
     assert.equal(parsePartsParam("RX-1:2.7")[0]?.quantity, 2);
   });
   it("keeps at most MAX_PARTS", () => {
@@ -86,20 +88,53 @@ describe("partsOf", () => {
   });
 });
 
-describe("replaceInSlot / removeCode", () => {
-  const slotOf = new Map([["RX-1", "CPU"], ["RX-2", "GPU"], ["RX-3", "CPU"]]);
-  const parts = [{ code: "RX-1", quantity: 1 }, { code: "RX-2", quantity: 1 }];
-  it("replaces what the slot held", () => {
-    assert.deepEqual(replaceInSlot(parts, slotOf, "CPU", "RX-3"), [{ code: "RX-2", quantity: 1 }, { code: "RX-3", quantity: 1 }]);
+describe("choosing in a slot", () => {
+  const slotOf = new Map([["RX-1", "CPU"], ["RX-2", "GPU"], ["RX-3", "CPU"], ["RX-4", "SSD"], ["RX-5", "SSD"], ["RX-6", "SSD"], ["RX-7", "SSD"], ["RX-8", "FAN"], ["RX-9", "FAN"], ["RX-10", "RAM"], ["RX-11", "RAM"]]);
+  const one = (code: string, quantity = 1) => ({ code, quantity });
+
+  it("replaces what a one-model slot held, with quantity 1", () => {
+    assert.deepEqual(pickInSlot([one("RX-1"), one("RX-2")], slotOf, "CPU", "RX-3"), [one("RX-2"), one("RX-3")]);
   });
-  it("empties a slot with null", () => {
-    assert.deepEqual(replaceInSlot(parts, slotOf, "CPU", null), [{ code: "RX-2", quantity: 1 }]);
+  it("leaves a chosen one-model part alone, quantity included", () => {
+    assert.deepEqual(pickInSlot([one("RX-2", 3)], slotOf, "GPU", "RX-2"), [one("RX-2", 3)]);
   });
-  it("does not duplicate a code already chosen and resets its quantity", () => {
-    assert.deepEqual(replaceInSlot([{ code: "RX-2", quantity: 3 }], slotOf, "GPU", "RX-2"), [{ code: "RX-2", quantity: 1 }]);
+  it("keeps the quantity of memory and fans when another model replaces them", () => {
+    assert.deepEqual(pickInSlot([one("RX-8", 4)], slotOf, "FAN", "RX-9"), [one("RX-9", 4)]);
+    assert.deepEqual(pickInSlot([one("RX-10", 2)], slotOf, "RAM", "RX-11"), [one("RX-11", 2)]);
+  });
+  it("adds drives one at a time, up to three pieces, and a chosen drive is taken out by choosing it again", () => {
+    let parts = pickInSlot([], slotOf, "SSD", "RX-4");
+    parts = pickInSlot(parts, slotOf, "SSD", "RX-5");
+    parts = pickInSlot(parts, slotOf, "SSD", "RX-6");
+    assert.deepEqual(parts, [one("RX-4"), one("RX-5"), one("RX-6")]);
+    assert.equal(slotHasRoom(parts, slotOf, "SSD"), false);
+    assert.deepEqual(pickInSlot(parts, slotOf, "SSD", "RX-7"), parts);
+    assert.deepEqual(pickInSlot(parts, slotOf, "SSD", "RX-5"), [one("RX-4"), one("RX-6")]);
+  });
+  it("counts the pieces of a slot by quantity", () => {
+    const parts = [one("RX-4", 2), one("RX-5"), one("RX-2")];
+    assert.equal(unitsIn(parts, slotOf, "SSD"), 3);
+    assert.equal(slotHasRoom(parts, slotOf, "SSD"), false);
+    assert.equal(slotHasRoom(parts, slotOf, "GPU"), true);
+  });
+  it("empties a slot of every part in it", () => {
+    assert.deepEqual(clearSlot([one("RX-1"), one("RX-4"), one("RX-5"), one("RX-2")], slotOf, "SSD"), [one("RX-1"), one("RX-2")]);
+  });
+  it("sets a quantity between one and what the slot has room for", () => {
+    assert.deepEqual(setQuantity([one("RX-8")], slotOf, "FAN", "RX-8", 6), [one("RX-8", 6)]);
+    assert.deepEqual(setQuantity([one("RX-8")], slotOf, "FAN", "RX-8", 9), [one("RX-8", 6)]);
+    assert.deepEqual(setQuantity([one("RX-8", 3)], slotOf, "FAN", "RX-8", 0), [one("RX-8")]);
+    assert.deepEqual(setQuantity([one("RX-10")], slotOf, "RAM", "RX-10", 5), [one("RX-10", 4)]);
+    assert.deepEqual(setQuantity([one("RX-4"), one("RX-5")], slotOf, "SSD", "RX-4", 3), [one("RX-4", 2), one("RX-5")]);
+  });
+  it("tells the ceiling of one part", () => {
+    assert.equal(quantityCeiling([one("RX-8")], slotOf, "FAN", "RX-8"), 6);
+    assert.equal(quantityCeiling([one("RX-10")], slotOf, "RAM", "RX-10"), 4);
+    assert.equal(quantityCeiling([one("RX-4"), one("RX-5", 2)], slotOf, "SSD", "RX-4"), 1);
   });
   it("removes a code", () => {
-    assert.deepEqual(removeCode(parts, "RX-1"), [{ code: "RX-2", quantity: 1 }]);
+    const parts = [one("RX-1"), one("RX-2")];
+    assert.deepEqual(removeCode(parts, "RX-1"), [one("RX-2")]);
     assert.deepEqual(removeCode(parts, "RX-99"), parts);
   });
 });

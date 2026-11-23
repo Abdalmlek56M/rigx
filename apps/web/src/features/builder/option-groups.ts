@@ -3,8 +3,8 @@ import { parseCondition, type Condition } from "../../lib/condition.ts";
 
 type Option = Schemas["BuilderOptionView"];
 
-/** Why a choice cannot be picked: no copy left, or it clashes with the parts already chosen. */
-export type ChoiceBlock = "unavailable" | "incompatible";
+/** Why a choice cannot be picked: no copy left, it clashes with the parts already chosen, or its slot (storage) already holds all it can. */
+export type ChoiceBlock = "unavailable" | "incompatible" | "full";
 
 export interface Choice {
   code: string;
@@ -26,11 +26,11 @@ export interface OptionGroup {
   used: Choice | null;
 }
 
-function toChoice(option: Option, selectedCodes: ReadonlySet<string>, inBuildPrice: boolean): Choice | null {
+function toChoice(option: Option, selectedCodes: ReadonlySet<string>, inBuildPrice: boolean, slotFull: boolean): Choice | null {
   const condition = parseCondition(option.item.condition);
   if (!condition) return null;
   const selected = selectedCodes.has(option.item.code);
-  const block: ChoiceBlock | null = selected ? null : !option.isAvailable ? "unavailable" : !option.isCompatible ? "incompatible" : null;
+  const block: ChoiceBlock | null = selected ? null : slotFull ? "full" : !option.isAvailable ? "unavailable" : !option.isCompatible ? "incompatible" : null;
   return {
     code: option.item.code,
     condition,
@@ -48,11 +48,11 @@ function better(candidate: Choice, current: Choice): boolean {
   return rank(candidate) !== rank(current) ? rank(candidate) < rank(current) : candidate.price < current.price;
 }
 
-/** Groups the API's options (one per stock item) by model, in the order models first appear. */
-export function groupOptions(options: readonly Option[], selectedCodes: ReadonlySet<string>, inBuildPrice: boolean): OptionGroup[] {
+/** Groups the API's options (one per stock item) by model, in the order models first appear; `slotFull` locks every choice that is not already chosen. */
+export function groupOptions(options: readonly Option[], selectedCodes: ReadonlySet<string>, inBuildPrice: boolean, slotFull = false): OptionGroup[] {
   const groups = new Map<string, OptionGroup>();
   for (const option of options) {
-    const choice = toChoice(option, selectedCodes, inBuildPrice);
+    const choice = toChoice(option, selectedCodes, inBuildPrice, slotFull);
     if (!choice) continue;
     const key = option.item.modelName.trim().toLowerCase();
     const group = groups.get(key) ?? { key, modelName: option.item.modelName, thumbnailStorageKey: null, new: null, used: null };

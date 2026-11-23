@@ -14,6 +14,7 @@ import { OptionPanel } from "./OptionPanel";
 import { SlotList, type SlotInfo } from "./SlotList";
 import { SummaryPanel } from "./SummaryPanel";
 import { partsParam, type BuilderParams } from "./builder-state";
+import { slotIsFull, takesSeveralParts } from "./slot-limits";
 import { useBuilder } from "./use-builder";
 
 interface BuilderAppProps {
@@ -89,10 +90,10 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
           </div>
         </Card>
       ) : null}
-      <div className="grid items-start gap-5 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
+      <div className="grid items-start gap-5 lg:grid-cols-[300px_minmax(0,1fr)_340px] xl:grid-cols-[340px_minmax(0,1fr)_340px]">
         <div className="flex flex-col gap-4">
           <CaseBlueprint slots={slots} parts={b.evaluation.parts} issues={b.evaluation.issues} active={active} onSelect={selectSlot} />
-          <SlotList slots={slots} parts={b.evaluation.parts} active={active} onSelect={selectSlot} onClear={b.clear} />
+          <SlotList slots={slots} parts={b.evaluation.parts} active={active} onSelect={selectSlot} onClear={b.clear} onRemove={b.remove} onQuantity={b.changeQuantity} />
         </div>
         <div ref={panel} className="scroll-mt-4">
           <OptionPanel
@@ -102,11 +103,13 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
             partsKey={partsParam(b.parts)}
             selectedCodes={new Set(b.parts.map((part) => part.code))}
             filledSlots={filled}
+            slotFull={slotIsFull(active, b.evaluation.parts.filter((part) => part.slot === active))}
             slotNames={slotNames}
             specNames={specNames}
             onPick={(code) => {
               b.pick(active, code);
-              setChosenSlot(nextEmpty([...filled, active]) ?? active);
+              // Storage keeps the focus so a second drive is one more tap; every other slot moves on to the next empty one.
+              setChosenSlot(takesSeveralParts(active) ? active : (nextEmpty([...filled, active]) ?? active));
             }}
           />
         </div>

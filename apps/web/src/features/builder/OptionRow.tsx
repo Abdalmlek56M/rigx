@@ -64,7 +64,7 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
               key={choice.code}
               icon={conditionIcon(choice.condition)}
               label={tc(choice.condition)}
-              note={choice.block === "unavailable" ? t("unavailable") : choice.block === "incompatible" ? t("incompatible") : formatEgp(choice.price, locale)}
+              note={choice.block === "unavailable" ? t("unavailable") : choice.block === "incompatible" ? t("incompatible") : choice.block === "full" ? t("full") : formatEgp(choice.price, locale)}
               selected={choice.selected}
               disabled={choice.block !== null}
               onSelect={() => onPick(choice.code)}

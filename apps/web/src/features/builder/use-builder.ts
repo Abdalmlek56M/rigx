@@ -5,7 +5,7 @@ import { unwrap, type Schemas } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { EMPTY_EVALUATION, type Evaluation } from "./builder-summary";
-import { builderPath, cleanShareName, parsePartsParam, partsOf, partsParam, removeCode, replaceInSlot, type BuilderParams, type PartInput } from "./builder-state";
+import { builderPath, cleanShareName, clearSlot, parsePartsParam, partsOf, partsParam, pickInSlot, removeCode, setQuantity, type BuilderParams, type PartInput } from "./builder-state";
 import { DEFAULT_VISIBILITY, type Visibility } from "./build-visibility";
 import { createShareLink, type ShareLink } from "./share-link";
 
@@ -82,10 +82,15 @@ export function useBuilder(start: BuilderParams) {
 
   const pick = useCallback((slot: string, code: string) => {
     knownSlots.current.set(code, slot);
-    setParts((current) => replaceInSlot(current, knownSlots.current, slot, code));
+    setParts((current) => pickInSlot(current, knownSlots.current, slot, code));
   }, []);
 
-  const clear = useCallback((slot: string) => setParts((current) => replaceInSlot(current, knownSlots.current, slot, null)), []);
+  const clear = useCallback((slot: string) => setParts((current) => clearSlot(current, knownSlots.current, slot)), []);
+
+  const changeQuantity = useCallback(
+    (slot: string, code: string, quantity: number) => setParts((current) => setQuantity(current, knownSlots.current, slot, code, quantity)),
+    []
+  );
 
   const remove = useCallback((code: string) => setParts((current) => removeCode(current, code)), []);
 
@@ -116,6 +121,7 @@ export function useBuilder(start: BuilderParams) {
     shareFailed: shareFailedKey === shareKey,
     pick,
     clear,
+    changeQuantity,
     remove,
     copyLink,
     path: builderPath(parts)

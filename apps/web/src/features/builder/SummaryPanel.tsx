@@ -34,7 +34,7 @@ export function SummaryPanel({ evaluation, checking, checkFailed, slotCount, slo
     >
       <div className="flex items-center justify-between gap-3">
         <span className="text-lg font-bold">{t("title")}</span>
-        <span dir="ltr" className="font-mono text-[13px] text-ink-muted">{evaluation.parts.length} / {slotCount}</span>
+        <span dir="ltr" className="font-mono text-[13px] text-ink-muted">{new Set(evaluation.parts.map((part) => part.slot)).size} / {slotCount}</span>
         <span className="ms-auto text-xl font-bold lg:hidden">{formatEgp(evaluation.total, locale)}</span>
         <Button
           type="button"

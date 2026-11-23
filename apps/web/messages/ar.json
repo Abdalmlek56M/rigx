@@ -469,7 +469,13 @@
     "slots": {
       "choosing": "جارٍ الاختيار…",
       "empty": "لم تُختر بعد",
-      "remove": "إزالة {slot}"
+      "remove": "إزالة {slot}",
+      "units": "{count} من {max} وحدات",
+      "quantity": "الكمية",
+      "quantityOf": "كمية {slot}",
+      "decrease": "إنقاص كمية {slot}",
+      "increase": "زيادة كمية {slot}",
+      "removeModel": "إزالة {model}"
     },
     "options": {
       "title": "اختر {slot}",
@@ -482,7 +488,9 @@
       "more": "اعرض أكتر",
       "conditionGroup": "جديد أو مستعمل: {model}",
       "unavailable": "غير متوفر",
-      "incompatible": "غير متوافق"
+      "incompatible": "غير متوافق",
+      "full": "اكتمل العدد",
+      "hintSeveral": "يمكنك إضافة حتى {max} قطع في هذا القسم. اختر القطعة المختارة مرة أخرى لإزالتها."
     },
     "issues": {
       "conflict": "تعارض",
@@ -551,7 +559,9 @@
       "title": "مخطط الجهاز",
       "label": "{count} من {total} قطع مختارة",
       "partEmpty": "{slot}: لم تُختر بعد",
-      "partFilled": "{slot}: {model}"
+      "partFilled": "{slot}: {model}",
+      "legendOn": "مختارة",
+      "legendOff": "غير مختارة"
     },
     "power": {
       "label": "الاستهلاك المتوقع",

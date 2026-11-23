@@ -11,6 +11,7 @@ import { localeDirection, routing } from "@/i18n/routing";
 import { openGraphBase } from "@/lib/seo/page-seo";
 import { siteOrigin } from "@/lib/seo/urls";
 import "../globals.css";
+import "../blueprint.css";
 
 const sans = IBM_Plex_Sans_Arabic({
   subsets: ["arabic", "latin"],

@@ -103,3 +103,25 @@ describe("powerFillPercent", () => {
     assert.equal(powerFillPercent(powerAdvice({ powerEstimateWatts: 300, psuCapacityWatts: null })), 0);
   });
 });
+
+describe("several drives and fans in one build (4.11 P2)", () => {
+  const rig: Parts = [
+    part("CPU", "Ryzen", "New", 1, "RX-1", 1000),
+    part("SSD", "NVMe 500", "New", 1, "RX-2", 300),
+    part("SSD", "NVMe 1TB", "Used", 1, "RX-3", 350),
+    part("FAN", "120mm", "New", 4, "RX-4", 50)
+  ];
+  it("makes one cart line per drive and one for the fans with their quantity, at the evaluation's price option", () => {
+    const lines = cartLinesOf({ ...EMPTY_EVALUATION, parts: rig, priceOption: "InBuild" });
+    assert.deepEqual(lines.map((line) => [line.code, line.quantity, line.unitPrice, line.priceOption]), [
+      ["RX-1", 1, 1000, "InBuild"], ["RX-2", 1, 300, "InBuild"], ["RX-3", 1, 350, "InBuild"], ["RX-4", 4, 50, "InBuild"]
+    ]);
+  });
+  it("counts the new and used pieces by quantity", () => {
+    assert.deepEqual(conditionCounts(rig), { New: 6, Used: 1 });
+  });
+  it("lists every drive on its own line with the fan quantity in the WhatsApp text", () => {
+    const text = partsSummaryText(rig, { CPU: "معالج", SSD: "تخزين", FAN: "مروحة" }, (condition) => (condition === "New" ? "جديد" : "مستعمل"));
+    assert.equal(text, "معالج: Ryzen (جديد)\nتخزين: NVMe 500 (جديد)\nتخزين: NVMe 1TB (مستعمل)\nمروحة: 120mm (جديد) ×4");
+  });
+});

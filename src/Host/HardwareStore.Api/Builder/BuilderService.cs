@@ -31,12 +31,17 @@ public sealed class BuilderService(BuilderCatalogLoader catalogs, BuilderItemSer
         var categoryIds = catalog.CategoryIdsOf(slot);
         if (categoryIds.Count == 0) return new PagedResult<BuilderOptionView>([], 1, OptionPageSize, 0);
         var (found, _) = await ResolveAsync(catalog, parts, cancellationToken);
-        var others = found.Select(entry => entry.Part).Where(part => part.Slot != slot).ToList();
-        var baseline = BuilderRules.Evaluate(others, catalog.CompatibilityKeys).Issues;
+        // A slot that takes one model is replaced by the option; a slot that takes several (storage) keeps what is already in it.
+        var replaces = BuilderSlot.LimitOf(slot).MaxParts == 1;
+        var chosen = found.Select(entry => entry.Part).Where(part => !replaces || part.Slot != slot).ToList();
+        // A replacement keeps the quantity of the part it replaces (three fans stay three), so its power and limits are judged at that quantity.
+        var quantity = replaces ? found.Select(entry => entry.Part).FirstOrDefault(part => part.Slot == slot)?.Quantity ?? 1 : 1;
+        var baseline = BuilderRules.Evaluate(chosen, catalog.CompatibilityKeys).Issues;
         var list = await items.ListOptionsAsync(categoryIds, condition, search, page, OptionPageSize, cancellationToken);
         var options = list.Items.Select(item =>
         {
-            var check = BuilderRules.Evaluate([.. others, new BuilderPart(slot, item.Code, 1, item.Specs)], catalog.CompatibilityKeys);
+            var others = chosen.Where(part => part.Code != item.Code).ToList();
+            var check = BuilderRules.Evaluate([.. others, new BuilderPart(slot, item.Code, quantity, item.Specs)], catalog.CompatibilityKeys);
             var issues = check.Issues.Where(issue => IsCausedBy(issue, slot, baseline)).ToList();
             return new BuilderOptionView(item, issues, !issues.Any(issue => issue.Level == BuilderIssueLevel.Conflict), item.Available > 0);
         }).ToList();
@@ -49,19 +54,21 @@ public sealed class BuilderService(BuilderCatalogLoader catalogs, BuilderItemSer
         var catalog = await catalogs.LoadAsync(cancellationToken);
         var match = await items.MatchBuildAsync(code, cancellationToken);
         var unmatched = new List<UnmatchedPartView>();
-        var codeBySlot = new Dictionary<string, string>();
+        var heldBySlot = new Dictionary<string, List<(string Code, int Quantity)>>();
         var quantities = new Dictionary<string, int>();
         foreach (var part in match.Parts)
         {
-            var slot = part.Match is null ? null : catalog.SlotOf(part.Match.CategoryId);
-            if (part.Match is null || slot is null || (codeBySlot.TryGetValue(slot, out var holder) && holder != part.Match.Code)
-                || quantities.GetValueOrDefault(part.Match.Code) >= BuilderRules.MaxQuantity)
+            var found = part.Match;
+            var slot = found is null ? null : catalog.SlotOf(found.CategoryId);
+            var held = slot is null ? [] : heldBySlot.TryGetValue(slot, out var list) ? list : heldBySlot[slot] = [];
+            if (found is null || slot is null || !BuilderRules.Fits(slot, held, found.Code))
             {
                 unmatched.Add(new UnmatchedPartView(part.ModelName, part.Condition));
                 continue;
             }
-            codeBySlot[slot] = part.Match.Code;
-            quantities[part.Match.Code] = quantities.GetValueOrDefault(part.Match.Code) + 1;
+            quantities[found.Code] = quantities.GetValueOrDefault(found.Code) + 1;
+            held.RemoveAll(entry => entry.Code == found.Code);
+            held.Add((found.Code, quantities[found.Code]));
         }
         var evaluation = await EvaluateAsync(catalog, quantities.Select(entry => new BuilderPartInput(entry.Key, entry.Value)).ToList(), cancellationToken);
         return new BuilderFromBuildView(match.Code, match.Title, match.Usage, evaluation, unmatched);

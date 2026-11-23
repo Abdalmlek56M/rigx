@@ -24,6 +24,8 @@ type Outcome =
 const CONFLICT = 409;
 const DESIGN_WIDTH = 1080;
 const DESIGN_HEIGHT = 1350;
+/** More lines than this (up to 11 with several drives and fans) make the rows tighter, so the whole table still fits the 1350 px sheet. */
+const DENSE_LINES = 8;
 
 /** Prices a build into a quote: from explicit parts or from a saved build (its name and usage carry over). */
 async function loadQuote(parts: PartInput[], saved: string | null): Promise<Outcome> {
@@ -83,6 +85,7 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
   const count = quote.lines.reduce((sum, line) => sum + line.quantity, 0);
   const meta = usage ? t("metaWithUsage", { usage: tu(usage), count }) : t("meta", { count });
   const modelAlign = locale === "ar" ? "text-right" : "text-left";
+  const dense = quote.lines.length > DENSE_LINES;
 
   return (
     <div data-print-document className="mx-auto flex max-w-[1080px] flex-col gap-4 px-4 py-8 md:py-12 print:max-w-none print:p-0">
@@ -121,7 +124,7 @@ export function QuoteSheet({ parts, saved, slotNames, domain }: QuoteSheetProps)
                 const condition = parseCondition(line.condition);
                 const slot = line.code ? outcome.slotByCode.get(line.code) : undefined;
                 return (
-                  <li key={`${line.code}-${line.name}`} className="grid grid-cols-[170px_1fr_120px_170px] items-center gap-[18px] border-b border-line px-3 py-[18px]">
+                  <li key={`${line.code}-${line.name}`} className={`grid grid-cols-[170px_1fr_120px_170px] items-center gap-[18px] border-b border-line px-3 ${dense ? "py-3" : "py-[18px]"}`}>
                     <span className="text-xl text-ink-muted">{slot ? (slotNames[slot] ?? slot) : ""}</span>
                     <span dir="ltr" className={`text-2xl font-bold [unicode-bidi:isolate] ${modelAlign}`}>
                       {line.name}{line.quantity > 1 ? ` ×${line.quantity}` : ""}

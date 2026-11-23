@@ -11,6 +11,7 @@ import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { OptionRow } from "./OptionRow";
 import { groupOptions } from "./option-groups";
 import { showsInBuildPrice } from "./builder-summary";
+import { slotLimit, takesSeveralParts } from "./slot-limits";
 import { useOptions } from "./use-options";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { conditionIcon } from "@/components/ui/condition-icon";
@@ -25,20 +26,22 @@ interface OptionPanelProps {
   selectedCodes: ReadonlySet<string>;
   /** Slots that already have a part, for the price shown on each choice. */
   filledSlots: readonly string[];
+  /** A slot that takes several models (storage) holds all it can: nothing more can be added. */
+  slotFull: boolean;
   slotNames: Readonly<Record<string, string>>;
   specNames: Readonly<Record<string, string>>;
   onPick: (code: string) => void;
 }
 
 /** The active slot's options: condition tabs, search, models with their جديد / مستعمل choices, and "more". */
-export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlots, slotNames, specNames, onPick }: OptionPanelProps) {
+export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlots, slotFull, slotNames, specNames, onPick }: OptionPanelProps) {
   const t = useTranslations("builder.options");
   const tc = useTranslations("common.condition");
   const [condition, setCondition] = useState<Condition | null>(null);
   const [search, setSearch] = useState("");
   const query = useDebouncedValue(search.trim(), SEARCH_DELAY_MS);
   const { options, loading, failed, hasMore, more } = useOptions(slot, partsKey, condition, query);
-  const groups = groupOptions(options, selectedCodes, showsInBuildPrice(filledSlots.filter((entry) => entry !== slot), slot));
+  const groups = groupOptions(options, selectedCodes, showsInBuildPrice(filledSlots.filter((entry) => entry !== slot), slot), slotFull);
   const tabs: { value: Condition | null; label: string }[] = [{ value: null, label: t("all") }, ...CONDITIONS.map((value) => ({ value, label: tc(value) }))];
 
   return (
@@ -48,7 +51,7 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
           <ChoiceTile key={tab.label} icon={conditionIcon(tab.value)} label={tab.label} selected={condition === tab.value} onSelect={() => setCondition(tab.value)} />
         ))}
       </div>
-      <span className="rounded-control bg-success/10 px-3 py-2 text-xs text-success">{t("hint")}</span>
+      <span className="rounded-control bg-success/10 px-3 py-2 text-xs text-success">{takesSeveralParts(slot) ? t("hintSeveral", { max: slotLimit(slot).units }) : t("hint")}</span>
       <input
         type="search"
         value={search}

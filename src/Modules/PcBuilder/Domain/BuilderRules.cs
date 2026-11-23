@@ -19,14 +19,33 @@ public static class BuilderSlot
     public const string Psu = "PSU";
     public const string Case = "CASE";
     public const string Cooler = "COOL";
+    /// <summary>Case fans (front, top, rear). The slot exists only when the owner makes a "show in builder" category with this code.</summary>
+    public const string Fan = "FAN";
 
     /// <summary>Display order of the slots.</summary>
-    public static readonly IReadOnlyList<string> All = [Cpu, Board, Ram, Gpu, Storage, Psu, Case, Cooler];
+    public static readonly IReadOnlyList<string> All = [Cpu, Board, Ram, Gpu, Storage, Psu, Case, Cooler, Fan];
+
+    /// <summary>Most parts a build can have: the sum of every slot's part limit.</summary>
+    public static int MaxParts => All.Sum(slot => LimitOf(slot).MaxParts);
+
+    /// <summary>
+    /// What a slot takes (owner decision, 23 Nov 2026): storage up to three devices, fans one model in a quantity up to six, every other slot
+    /// one model in a quantity up to four (memory sticks).
+    /// </summary>
+    public static SlotLimit LimitOf(string slot) => slot switch
+    {
+        Storage => new SlotLimit(3, 3),
+        Fan => new SlotLimit(1, 6),
+        _ => new SlotLimit(1, 4)
+    };
 
     public static string Parse(string? value) =>
         All.FirstOrDefault(slot => string.Equals(slot, value?.Trim(), StringComparison.OrdinalIgnoreCase))
         ?? throw new PcBuilderException(400, "Unknown builder slot.");
 }
+
+/// <summary><paramref name="MaxParts"/> different models and <paramref name="MaxUnits"/> pieces in all (the quantities added up).</summary>
+public sealed record SlotLimit(int MaxParts, int MaxUnits);
 
 /// <summary>Spec keys the builder reads by convention (defined per category in the spec schema).</summary>
 public static class BuilderSpecKey
@@ -69,13 +88,14 @@ public sealed record BuilderCheck(IReadOnlyList<BuilderIssue> Issues, decimal? P
 /// <summary>Builder rules (roadmap 2.13): selection limits, compatibility from category specs, power estimate, build price.</summary>
 public static class BuilderRules
 {
-    public const int MaxQuantity = 4;
+    /// <summary>The largest quantity any part can carry (fans); a slot's own limit (<see cref="BuilderSlot.LimitOf"/>) is checked once the slots are known.</summary>
+    public const int MaxQuantity = 6;
     /// <summary>Above this share of the power supply's output the build gets a warning; above 100 % it is a conflict.</summary>
     public const decimal PowerWarningShare = 0.8m;
 
     private static readonly char[] ListSeparators = [',', '/', '|'];
 
-    /// <summary>Each RX code once, quantity 1–4, at most one part per slot. The slot comes from the item's category.</summary>
+    /// <summary>Each RX code once, quantity 1–6, no more parts than the slots take together. The slot comes from the item's category.</summary>
     public static IReadOnlyList<(string Code, int Quantity)> NormalizeSelection(IReadOnlyList<(string? Code, int Quantity)>? selection)
     {
         var parts = new List<(string Code, int Quantity)>();
@@ -87,18 +107,32 @@ public static class BuilderRules
             if (parts.Any(part => part.Code == code)) throw new PcBuilderException(400, "A part is listed twice.");
             parts.Add((code, quantity));
         }
-        if (parts.Count > BuilderSlot.All.Count) throw new PcBuilderException(400, $"A build has at most {BuilderSlot.All.Count} parts.");
+        if (parts.Count > BuilderSlot.MaxParts) throw new PcBuilderException(400, $"A build has at most {BuilderSlot.MaxParts} parts.");
         return parts;
     }
 
-    /// <summary>Every part must belong to a builder slot, one part per slot; returns the parts in slot order.</summary>
+    /// <summary>Whether one more unit of <paramref name="code"/> fits a slot that already holds <paramref name="held"/> (codes with quantities).</summary>
+    public static bool Fits(string slot, IReadOnlyList<(string Code, int Quantity)> held, string code)
+    {
+        var limit = BuilderSlot.LimitOf(slot);
+        return held.Sum(part => part.Quantity) < limit.MaxUnits && (held.Count < limit.MaxParts || held.Any(part => part.Code == code));
+    }
+
+    /// <summary>
+    /// Every part must belong to a builder slot and each slot keeps to its limit (<see cref="BuilderSlot.LimitOf"/>: models and pieces);
+    /// returns the parts in slot order, the parts of one slot by code so the same build is always the same list.
+    /// </summary>
     public static IReadOnlyList<BuilderPart> InSlotOrder(IReadOnlyList<BuilderPart> parts)
     {
         if (parts.Any(part => !BuilderSlot.All.Contains(part.Slot)))
             throw new PcBuilderException(400, "A part is not in a builder category.");
-        if (parts.GroupBy(part => part.Slot).Any(group => group.Count() > 1))
-            throw new PcBuilderException(400, "Each slot takes one part.");
-        return parts.OrderBy(part => IndexOf(part.Slot)).ToList();
+        foreach (var group in parts.GroupBy(part => part.Slot))
+        {
+            var limit = BuilderSlot.LimitOf(group.Key);
+            if (group.Count() > limit.MaxParts) throw new PcBuilderException(400, $"This slot takes at most {limit.MaxParts} different parts.");
+            if (group.Sum(part => part.Quantity) > limit.MaxUnits) throw new PcBuilderException(400, $"This slot takes at most {limit.MaxUnits} pieces.");
+        }
+        return parts.OrderBy(part => IndexOf(part.Slot)).ThenBy(part => part.Code, StringComparer.Ordinal).ToList();
     }
 
     /// <summary>The in-build price applies when the build has a processor and a motherboard (owner decision, 13 Nov 2026).</summary>
@@ -118,6 +152,8 @@ public static class BuilderRules
         for (var first = 0; first < parts.Count; first++)
             for (var second = first + 1; second < parts.Count; second++)
             {
+                // Two parts of one slot (two drives) are never compared: they only have to fit the others.
+                if (parts[first].Slot == parts[second].Slot) continue;
                 CompareValues(parts[first], parts[second], compatibilityKeys, issues);
                 CompareLimits(parts[first], parts[second], compatibilityKeys, issues);
                 CompareLimits(parts[second], parts[first], compatibilityKeys, issues);

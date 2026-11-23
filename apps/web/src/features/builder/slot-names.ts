@@ -9,8 +9,8 @@ export interface RawSlot extends SlotInfo {
 
 /** A slot holds one part, so its name is the singular ("معالج", not the category's "المعالجات"): the builder reads "اختر معالج", never "اختر المعالجات". */
 const SLOT_NAMES: Readonly<Record<"ar" | "en", Readonly<Record<string, string>>>> = {
-  ar: { CPU: "معالج", BOARD: "بوردة", RAM: "رامات", GPU: "كرت شاشة", SSD: "تخزين", PSU: "باور سبلاي", COOL: "تبريد", CASE: "كيسة" },
-  en: { CPU: "Processor", BOARD: "Motherboard", RAM: "Memory", GPU: "Graphics card", SSD: "Storage", PSU: "Power supply", COOL: "Cooling", CASE: "Case" }
+  ar: { CPU: "معالج", BOARD: "بوردة", RAM: "رامات", GPU: "كرت شاشة", SSD: "تخزين", PSU: "باور سبلاي", COOL: "تبريد", CASE: "كيسة", FAN: "مروحة" },
+  en: { CPU: "Processor", BOARD: "Motherboard", RAM: "Memory", GPU: "Graphics card", SSD: "Storage", PSU: "Power supply", COOL: "Cooling", CASE: "Case", FAN: "Fan" }
 };
 
 /** The slots with a singular name in the visitor's language; a slot the store added later falls back to its category's name. */

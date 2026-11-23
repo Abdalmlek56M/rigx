@@ -60,6 +60,13 @@ describe("groupOptions", () => {
     assert.equal(groups[1]?.new?.block, "incompatible");
     assert.deepEqual([groups[2]?.new?.selected, groups[2]?.new?.block], [true, null]);
   });
+  it("locks every choice that is not chosen once the slot is full (storage), and keeps the chosen ones open to be removed", () => {
+    const list = options([{ code: "RX-1" }, { code: "RX-2", model: "B" }, { code: "RX-3", model: "C", available: false }]);
+    const groups = groupOptions(list, new Set(["RX-1"]), false, true);
+    assert.deepEqual(groups.map((group) => group.new?.block), [null, "full", "full"]);
+    assert.equal(groups[0]?.new?.selected, true);
+    assert.deepEqual(groupOptions(list, new Set(["RX-1"]), false).map((group) => group.new?.block), [null, null, "unavailable"]);
+  });
   it("prefers the selected unit, then pickable, then incompatible, then unavailable, then cheaper", () => {
     const pick = (specs: Spec[], selected: string[] = []) => groupOptions(options(specs), new Set(selected), false)[0]?.new?.code;
     assert.equal(pick([{ code: "RX-1", available: false }, { code: "RX-2", compatible: false }]), "RX-2");

@@ -75,4 +75,9 @@ describe("design kit rules", () => {
     const withoutPaste = uploads.filter((file) => !file.lines.some((line) => /PasteImageButton|useImagePaste/.test(line))).map((file) => file.name);
     assert.deepEqual(withoutPaste, []);
   });
+
+  it("paints the case drawing only with the page tokens, never a hard-coded colour", () => {
+    const css = readFileSync(join(SRC, "app", "blueprint.css"), "utf8");
+    assert.deepEqual(css.match(/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/g) ?? [], []);
+  });
 });

@@ -1,13 +1,11 @@
 import type { Schemas } from "@rigx/api-client";
+import { MAX_PARTS, MAX_QUANTITY, slotLimit, takesQuantity, takesSeveralParts } from "./slot-limits.ts";
 
 /** One chosen part as the builder's API takes it. */
 export interface PartInput {
   code: string;
   quantity: number;
 }
-
-export const MAX_PARTS = 8;
-export const MAX_QUANTITY = 4;
 
 const ITEM_CODE = /^RX-\d{1,9}$/;
 const BUILD_CODE = /^BLD-\d{1,9}$/;
@@ -88,10 +86,49 @@ export function partsOf(evaluation: Pick<Schemas["BuilderEvaluation"], "parts">)
   return evaluation.parts.map((part) => ({ code: part.item.code, quantity: part.quantity }));
 }
 
-/** Puts `code` in `slot` (`null` empties it): any part already in that slot goes. `slotOf` says which slot each code is in. */
-export function replaceInSlot(parts: readonly PartInput[], slotOf: ReadonlyMap<string, string>, slot: string, code: string | null): PartInput[] {
-  const kept = parts.filter((part) => slotOf.get(part.code) !== slot && part.code !== code);
-  return code ? [...kept, { code, quantity: 1 }] : kept;
+/** The slot each code is in, as far as the builder has seen it. */
+export type SlotOf = ReadonlyMap<string, string>;
+
+const inSlot = (parts: readonly PartInput[], slotOf: SlotOf, slot: string) => parts.filter((part) => slotOf.get(part.code) === slot);
+
+/** Pieces held in a slot: the quantities added up (three fans are three, two drives are two). */
+export const unitsIn = (parts: readonly PartInput[], slotOf: SlotOf, slot: string): number =>
+  inSlot(parts, slotOf, slot).reduce((sum, part) => sum + part.quantity, 0);
+
+/** Whether another model can still be chosen in `slot`: a slot that takes one model is always open (a choice replaces it), storage until it holds three pieces. */
+export const slotHasRoom = (parts: readonly PartInput[], slotOf: SlotOf, slot: string): boolean =>
+  !takesSeveralParts(slot) || unitsIn(parts, slotOf, slot) < slotLimit(slot).units;
+
+/**
+ * Choosing `code` in `slot`. A slot with one model swaps it (memory and fans keep their quantity); storage adds a drive until it is full,
+ * and choosing a drive that is already there takes it out again.
+ */
+export function pickInSlot(parts: readonly PartInput[], slotOf: SlotOf, slot: string, code: string): PartInput[] {
+  const held = inSlot(parts, slotOf, slot);
+  if (takesSeveralParts(slot)) {
+    if (held.some((part) => part.code === code)) return removeCode(parts, code);
+    return slotHasRoom(parts, slotOf, slot) ? [...parts, { code, quantity: 1 }] : [...parts];
+  }
+  if (held.some((part) => part.code === code)) return [...parts];
+  const quantity = takesQuantity(slot) ? (held[0]?.quantity ?? 1) : 1;
+  return [...parts.filter((part) => slotOf.get(part.code) !== slot && part.code !== code), { code, quantity }];
+}
+
+/** Empties a slot: every part in it goes. */
+export function clearSlot(parts: readonly PartInput[], slotOf: SlotOf, slot: string): PartInput[] {
+  return parts.filter((part) => slotOf.get(part.code) !== slot);
+}
+
+/** The most pieces of `code` its slot can take now: the slot's limit less what its other parts hold. */
+export function quantityCeiling(parts: readonly PartInput[], slotOf: SlotOf, slot: string, code: string): number {
+  const others = unitsIn(parts.filter((part) => part.code !== code), slotOf, slot);
+  return Math.min(MAX_QUANTITY, slotLimit(slot).units - others);
+}
+
+/** Sets how many of `code` (memory sticks, fans), kept between 1 and what its slot has room for. */
+export function setQuantity(parts: readonly PartInput[], slotOf: SlotOf, slot: string, code: string, quantity: number): PartInput[] {
+  const next = Math.max(1, Math.min(Math.floor(quantity), quantityCeiling(parts, slotOf, slot, code)));
+  return parts.map((part) => (part.code === code ? { code, quantity: next } : part));
 }
 
 export function removeCode(parts: readonly PartInput[], code: string): PartInput[] {

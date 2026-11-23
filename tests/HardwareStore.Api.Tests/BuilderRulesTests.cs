@@ -12,17 +12,20 @@ public sealed class BuilderRulesTests
     private static BuilderPart Part(string slot, int quantity = 1, params (string Key, string Value)[] specs) =>
         new(slot, $"RX-{slot}", quantity, specs.ToDictionary(spec => spec.Key, spec => spec.Value));
 
+    private static BuilderPart Another(string slot, string code, int quantity = 1, params (string Key, string Value)[] specs) =>
+        new(slot, code, quantity, specs.ToDictionary(spec => spec.Key, spec => spec.Value));
+
     private static void AssertBuilderStatus(int expected, Action action) =>
         Assert.Equal(expected, Assert.Throws<PcBuilderException>(action).StatusCode);
 
     // ---------------------------------------------------------------- selection
 
     [Fact]
-    public void A_selection_is_normalized_to_unique_rx_codes_with_quantity_one_to_four()
+    public void A_selection_is_normalized_to_unique_rx_codes_with_quantity_one_to_six()
     {
-        var parts = BuilderRules.NormalizeSelection([("rx 12", 1), ("RX-0034", 4)]);
+        var parts = BuilderRules.NormalizeSelection([("rx 12", 1), ("RX-0034", 6)]);
 
-        Assert.Equal([("RX-0012", 1), ("RX-0034", 4)], parts);
+        Assert.Equal([("RX-0012", 1), ("RX-0034", 6)], parts);
         Assert.Empty(BuilderRules.NormalizeSelection(null));
     }
 
@@ -31,28 +34,62 @@ public sealed class BuilderRulesTests
     [InlineData("nonsense", 1)]
     [InlineData(null, 1)]
     [InlineData("RX-0001", 0)]
-    [InlineData("RX-0001", 5)]
+    [InlineData("RX-0001", 7)]
     public void A_bad_code_or_quantity_is_a_bad_request(string? code, int quantity) =>
         AssertBuilderStatus(400, () => BuilderRules.NormalizeSelection([(code, quantity)]));
 
     [Fact]
-    public void A_part_listed_twice_or_more_than_eight_parts_is_a_bad_request()
+    public void A_part_listed_twice_or_more_parts_than_the_slots_take_together_is_a_bad_request()
     {
         AssertBuilderStatus(400, () => BuilderRules.NormalizeSelection([("RX-0001", 1), ("rx1", 2)]));
-        var nine = Enumerable.Range(1, 9).Select(number => ((string?)$"RX-{number:0000}", 1)).ToList();
-        AssertBuilderStatus(400, () => BuilderRules.NormalizeSelection(nine));
-        Assert.Equal(8, BuilderRules.NormalizeSelection(nine.Take(8).ToList()).Count);
+        Assert.Equal(11, BuilderSlot.MaxParts);
+        var tooMany = Enumerable.Range(1, 12).Select(number => ((string?)$"RX-{number:0000}", 1)).ToList();
+        AssertBuilderStatus(400, () => BuilderRules.NormalizeSelection(tooMany));
+        Assert.Equal(11, BuilderRules.NormalizeSelection(tooMany.Take(11).ToList()).Count);
     }
 
     [Fact]
-    public void Parts_come_back_in_slot_order_and_each_needs_exactly_one_slot()
+    public void Parts_come_back_in_slot_order_and_each_part_needs_a_builder_slot()
     {
         var ordered = BuilderRules.InSlotOrder([Part(BuilderSlot.Psu), Part(BuilderSlot.Board), Part(BuilderSlot.Cpu)]);
 
         Assert.Equal([BuilderSlot.Cpu, BuilderSlot.Board, BuilderSlot.Psu], ordered.Select(part => part.Slot));
         AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([Part(string.Empty)]));
-        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder(
-            [Part(BuilderSlot.Cpu), new BuilderPart(BuilderSlot.Cpu, "RX-0099", 1, new Dictionary<string, string>())]));
+    }
+
+    [Fact]
+    public void A_slot_with_one_model_refuses_a_second_model_and_a_quantity_over_four_while_memory_takes_up_to_four_sticks()
+    {
+        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([Part(BuilderSlot.Cpu), Another(BuilderSlot.Cpu, "RX-0099")]));
+        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([Part(BuilderSlot.Ram, 5)]));
+        Assert.Equal(4, BuilderRules.InSlotOrder([Part(BuilderSlot.Ram, 4)])[0].Quantity);
+    }
+
+    [Fact]
+    public void Storage_takes_up_to_three_devices_in_all_and_fans_up_to_six_of_one_model()
+    {
+        var drives = new[] { Another(BuilderSlot.Storage, "RX-0030"), Another(BuilderSlot.Storage, "RX-0010"), Another(BuilderSlot.Storage, "RX-0020") };
+
+        var ordered = BuilderRules.InSlotOrder(drives);
+        Assert.Equal(["RX-0010", "RX-0020", "RX-0030"], ordered.Select(part => part.Code));
+        Assert.Equal(3, BuilderRules.InSlotOrder([Another(BuilderSlot.Storage, "RX-0010", 2), Another(BuilderSlot.Storage, "RX-0020")]).Sum(part => part.Quantity));
+        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([.. drives, Another(BuilderSlot.Storage, "RX-0040")]));
+        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([Another(BuilderSlot.Storage, "RX-0010", 2), Another(BuilderSlot.Storage, "RX-0020", 2)]));
+        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([Another(BuilderSlot.Storage, "RX-0010", 4)]));
+        Assert.Equal(6, BuilderRules.InSlotOrder([Part(BuilderSlot.Fan, 6)])[0].Quantity);
+        AssertBuilderStatus(400, () => BuilderRules.InSlotOrder([Part(BuilderSlot.Fan, 1), Another(BuilderSlot.Fan, "RX-0099")]));
+    }
+
+    [Fact]
+    public void One_more_unit_fits_a_slot_until_its_pieces_or_its_models_run_out()
+    {
+        Assert.True(BuilderRules.Fits(BuilderSlot.Storage, [], "RX-0001"));
+        Assert.True(BuilderRules.Fits(BuilderSlot.Storage, [("RX-0001", 1), ("RX-0002", 1)], "RX-0003"));
+        Assert.False(BuilderRules.Fits(BuilderSlot.Storage, [("RX-0001", 2), ("RX-0002", 1)], "RX-0001"));
+        Assert.True(BuilderRules.Fits(BuilderSlot.Fan, [("RX-0001", 5)], "RX-0001"));
+        Assert.False(BuilderRules.Fits(BuilderSlot.Fan, [("RX-0001", 6)], "RX-0001"));
+        Assert.False(BuilderRules.Fits(BuilderSlot.Fan, [("RX-0001", 2)], "RX-0002"));
+        Assert.False(BuilderRules.Fits(BuilderSlot.Cpu, [("RX-0001", 1)], "RX-0002"));
     }
 
     [Fact]
@@ -105,6 +142,21 @@ public sealed class BuilderRulesTests
         Assert.Empty(fits.Issues);
     }
 
+    [Fact]
+    public void Two_parts_of_one_slot_are_never_compared_with_each_other_but_each_is_checked_against_the_others()
+    {
+        var keys = new HashSet<string> { "interface", "socket" };
+        var drives = BuilderRules.Evaluate(
+            [Another(BuilderSlot.Storage, "RX-0010", 1, ("interface", "SATA")), Another(BuilderSlot.Storage, "RX-0020", 1, ("interface", "NVMe"))], keys);
+        var againstBoard = BuilderRules.Evaluate(
+            [Part(BuilderSlot.Board, 1, ("interface", "NVMe")), Another(BuilderSlot.Storage, "RX-0010", 1, ("interface", "NVMe")),
+             Another(BuilderSlot.Storage, "RX-0020", 1, ("interface", "SATA"))], keys);
+
+        Assert.Empty(drives.Issues);
+        var issue = Assert.Single(againstBoard.Issues);
+        Assert.Equal((BuilderIssueCode.SpecMismatch, BuilderSlot.Storage, BuilderSlot.Board), (issue.Code, issue.Slot, issue.OtherSlot));
+    }
+
     // ---------------------------------------------------------------- power
 
     private static BuilderCheck Power(decimal psuWatts) => BuilderRules.Evaluate(
@@ -121,6 +173,21 @@ public sealed class BuilderRulesTests
         var check = Power(400m);
 
         Assert.Equal((320m, 400m), (check.PowerEstimateWatts, check.PsuCapacityWatts));
+    }
+
+    [Fact]
+    public void Every_drive_and_every_fan_adds_its_watts_times_its_quantity()
+    {
+        var check = BuilderRules.Evaluate(
+        [
+            Part(BuilderSlot.Cpu, 1, ("power_w", "100")),
+            Another(BuilderSlot.Storage, "RX-0010", 2, ("power_w", "5")),
+            Another(BuilderSlot.Storage, "RX-0020", 1, ("power_w", "8")),
+            Part(BuilderSlot.Fan, 4, ("power_w", "3")),
+            Part(BuilderSlot.Psu, 1, ("power_w", "200"))
+        ], Socket);
+
+        Assert.Equal((130m, 200m), (check.PowerEstimateWatts, check.PsuCapacityWatts));
     }
 
     [Fact]

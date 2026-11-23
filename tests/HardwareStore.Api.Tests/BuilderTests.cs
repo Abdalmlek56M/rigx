@@ -70,6 +70,21 @@ public sealed partial class BuilderTests(OwnerBootstrapPostgreSqlFixture fixture
             return category.Id;
         }
 
+        /// <summary>
+        /// Gives an optional slot (storage, fans) its builder category: the slot exists in the store only once it does. The store already has
+        /// a storage category that is not in the builder; it is switched on, a fan category is made.
+        /// </summary>
+        public async Task AddSlotAsync(string code)
+        {
+            using var scope = Factory.Services.CreateScope();
+            var taxonomy = scope.ServiceProvider.GetRequiredService<TaxonomyService>();
+            var existing = (await taxonomy.GetCategoriesAsync()).FirstOrDefault(category => category.Code == code);
+            Categories[code] = existing is null
+                ? await CategoryAsync(code, [Power])
+                : (await taxonomy.SaveCategoryAsync(existing.Id, new CategoryInput(existing.Name, existing.Slug, existing.ParentId, existing.Description,
+                    existing.IconStorageKey, existing.SortOrder, true, existing.RowVersion, code, existing.ShowInMenu, ShowInBuilder: true))).Id;
+        }
+
         public Guid CategoryId(string code) => code switch { "CPU" => CpuCategory, "BOARD" => BoardCategory, _ => Categories[code] };
 
         /// <summary>A published item in the slot's category; price is the in-build price, alone is 20% higher.</summary>

@@ -469,7 +469,13 @@
     "slots": {
       "choosing": "Choosing now…",
       "empty": "Not chosen yet",
-      "remove": "Remove {slot}"
+      "remove": "Remove {slot}",
+      "units": "{count} of {max}",
+      "quantity": "Quantity",
+      "quantityOf": "{slot} quantity",
+      "decrease": "Decrease {slot} quantity",
+      "increase": "Increase {slot} quantity",
+      "removeModel": "Remove {model}"
     },
     "options": {
       "title": "Choose {slot}",
@@ -482,7 +488,9 @@
       "more": "Show more",
       "conditionGroup": "New or used: {model}",
       "unavailable": "Unavailable",
-      "incompatible": "Not compatible"
+      "incompatible": "Not compatible",
+      "full": "Full",
+      "hintSeveral": "You can add up to {max} parts here. Choose a chosen part again to remove it."
     },
     "issues": {
       "conflict": "Conflict",
@@ -551,7 +559,9 @@
       "title": "Case blueprint",
       "label": "{count} of {total} parts chosen",
       "partEmpty": "{slot}: not chosen yet",
-      "partFilled": "{slot}: {model}"
+      "partFilled": "{slot}: {model}",
+      "legendOn": "Chosen",
+      "legendOff": "Not chosen"
     },
     "power": {
       "label": "Estimated power",
