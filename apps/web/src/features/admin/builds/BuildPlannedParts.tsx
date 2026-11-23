@@ -16,6 +16,7 @@ import {
 } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { BoxIcon, PlusIcon, SaveIcon, TrashIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 let rowCounter = 0;
@@ -40,7 +41,7 @@ export function BuildPlannedParts({ canEdit, lookups, ...action }: BuildActionPr
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
         {rows.length > 0 ? (

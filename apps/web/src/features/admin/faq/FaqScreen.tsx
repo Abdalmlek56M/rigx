@@ -7,6 +7,7 @@ import { flattenTree } from "../categories/category-rules";
 import { fetchCategories } from "../categories/categories-api";
 import { DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect } from "../kit/FilterBar";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { useReveal } from "../kit/use-reveal";
@@ -14,7 +15,8 @@ import { fetchFaqs, type Faq } from "./faq-api";
 import { FaqStatusBadge } from "./FaqActions";
 import { FaqForm } from "./FaqForm";
 import { FAQ_SCOPES, faqScopeKey } from "./faq-rules";
-import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { PlusIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 const FILTERS = { scope: "", id: "" };
@@ -82,16 +84,13 @@ export function FaqScreen() {
         />
       </FilterBar>
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
-          {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
+          {state.status === "loading" ? <LoadingCard className="h-64" /> : (
             <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: data.faqs }} onRetry={reload} rowKey={(faq) => faq.id} empty={t("empty")} />
           )}
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+          <section ref={panelRef} className={cardClass({ className: "scroll-mt-20 gap-3" })}>
             <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
             {creating ? (
               <FaqForm key="new" faq={null} categories={data.categories} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onDeleted={() => reload()} onStale={reload} onCancel={() => setCreating(false)} />

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { setTheme, useTheme } from "@/components/layout/use-theme";
+import { cardClass } from "@/components/ui/Card";
 import { MenuIcon, SearchIcon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/Logo";
 import { ModalSheet } from "@/components/ui/ModalSheet";
@@ -13,6 +14,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { ADMIN_HOME, areaFor, canOpen, firstAreaHref, isStaff, visibleNav } from "./admin-nav";
 import { AdminSidebar } from "./AdminSidebar";
 import { useAdminBadges } from "./badges/use-admin-badges";
+import { useCollapsedGroups } from "./use-collapsed-groups";
 import { ConfirmDialog } from "./kit/ConfirmDialog";
 import { nextDensity } from "./kit/density-rules";
 import { ToastProvider } from "./kit/Toast";
@@ -28,7 +30,7 @@ function Blank() {
 function Forbidden({ withStoreLink }: { withStoreLink: boolean }) {
   const t = useTranslations("admin.shell.forbidden");
   return (
-    <section role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-8">
+    <section role="alert" className={cardClass({ padding: "lg", className: "items-start gap-3" })}>
       <h1 className="m-0 text-2xl font-bold">{t("title")}</h1>
       <p className="m-0 text-ink-muted">{t("body")}</p>
       {withStoreLink ? <Link href="/" className="font-bold text-orange-text underline hover:text-orange-text-hover">{t("store")}</Link> : null}
@@ -60,6 +62,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const badges = useAdminBadges(user && sawBadges ? user.username : null, area?.key ?? null);
   const landing = user && pathname === ADMIN_HOME && !allowed ? firstAreaHref(permissions) : null;
   const [density, setDensity] = useDensity(user?.username ?? "");
+  const [collapsed, toggleGroup] = useCollapsedGroups(user?.username ?? "");
 
   // Ctrl+K opens and closes the command palette from anywhere in the admin.
   useEffect(() => {
@@ -115,7 +118,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <CommandPalette open={paletteOpen} permissions={permissions} onClose={() => setPaletteOpen(false)} onCommand={runCommand} />
       <div data-density={density} className="flex min-h-dvh bg-paper [--row-py:0.625rem] data-[density=compact]:[--row-py:0.25rem]">
         <div className="sticky top-0 hidden h-dvh w-60 shrink-0 md:block">
-          <AdminSidebar user={user} groups={groups} active={area} badges={badges} onSignOut={() => setConfirmingLeave(true)} onOpenPalette={openPalette} />
+          <AdminSidebar user={user} groups={groups} active={area} badges={badges} collapsed={collapsed} onToggleGroup={toggleGroup} onSignOut={() => setConfirmingLeave(true)} onOpenPalette={openPalette} />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -129,7 +132,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </button>
           </header>
           <ModalSheet open={menuOpen} onClose={closeMenu} label={t("navLabel")} edge="start" fullHeight>
-            <AdminSidebar user={user} groups={groups} active={area} badges={badges} onNavigate={closeMenu} onSignOut={() => setConfirmingLeave(true)} onOpenPalette={openPalette} />
+            <AdminSidebar user={user} groups={groups} active={area} badges={badges} collapsed={collapsed} onToggleGroup={toggleGroup} onNavigate={closeMenu} onSignOut={() => setConfirmingLeave(true)} onOpenPalette={openPalette} />
           </ModalSheet>
 
           <main className="flex min-w-0 flex-1 flex-col gap-[18px] px-4 pb-10 pt-6 md:px-7">

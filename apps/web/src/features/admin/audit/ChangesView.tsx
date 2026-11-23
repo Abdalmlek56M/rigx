@@ -4,9 +4,8 @@ import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatMonthYear } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
-import { RefreshIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
 import { FilterBar, FilterSelect } from "../kit/FilterBar";
+import { EmptyPanel, ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { DaySheet } from "./DaySheet";
 import { MonthSection } from "./MonthSection";
 import { fetchAuditFilters, fetchMonths } from "./audit-api";
@@ -46,14 +45,11 @@ export function ChangesView({ values, set }: { values: AuditValues; set: AuditSe
         />
       </FilterBar>
       <div className="flex min-w-0 flex-col gap-4">
-        {months.state.status === "loading" ? <div aria-hidden="true" className="h-40 animate-pulse rounded-card border border-line bg-surface" /> : null}
+        {months.state.status === "loading" ? <LoadingCard className="h-40" /> : null}
         {months.state.status === "error" ? (
-          <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
-            <p className="m-0 font-bold">{t("failed")}</p>
-            <Button variant="primary" icon={RefreshIcon} onClick={months.reload}>{t("retry")}</Button>
-          </div>
+          <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={months.reload} />
         ) : null}
-        {list && list.length === 0 ? <p className="m-0 rounded-card border border-line bg-surface p-5 text-sm text-ink-muted">{t("empty")}</p> : null}
+        {list && list.length === 0 ? <EmptyPanel message={t("empty")} /> : null}
         {list?.map(({ month, count }) => (
           <MonthSection
             key={month} month={month} count={count} title={formatMonthYear(`${month}-15T12:00:00Z`, locale)}

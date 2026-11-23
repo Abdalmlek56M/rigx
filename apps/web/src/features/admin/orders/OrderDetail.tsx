@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, getPathname } from "@/i18n/navigation";
 import { whatsAppUrl } from "@/lib/contact";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, joinValues } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { OrderStatusBadge, PaymentStatusBadge } from "./OrderBadges";
 import { OrderItems, OrderTimeline, OrderUnits } from "./OrderBody";
@@ -15,12 +15,14 @@ import { OrderPaymentActions } from "./OrderPaymentActions";
 import { OrderStatusActions } from "./OrderStatusActions";
 import { fetchShippingRates } from "../customers/customers-api";
 import { fetchMoneyAccounts } from "../expenses/expenses-api";
+import { LoadingCard } from "../kit/LoadState";
 import { SectionCard } from "../kit/SectionCard";
 import { usePermissions } from "../use-permissions";
 import { fetchOrder, type Order } from "./orders-api";
 import { OrderUnreachableAction } from "./OrderUnreachableAction";
 import { canSetPaymentStatus, canTakePayment, canWaivePayment, hasShipping, holdsReservation, orderTrail, orderWhatsAppNumber } from "./order-rules";
 import { CheckIcon, CloseIcon, CopyIcon, ExternalIcon, GearIcon, RefreshIcon, TruckIcon, WalletIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
 
 function Trail({ order }: { order: Order }) {
@@ -82,11 +84,11 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
   const [updated, setUpdated] = useState<Order | null>(null);
 
   if (state.status === "loading") {
-    return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
+    return <LoadingCard className="h-64" label={t("loading")} />;
   }
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
+      <div role="alert" className={cardClass({ className: "items-start gap-3" })}>
         <p className="m-0 font-bold">{t("detail.failed")}</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("detail.retry")}</Button>
@@ -124,7 +126,7 @@ export function OrderDetail({ id, onClose, onChanged, onBlacklistChanged }: { id
           </h2>
           <OrderStatusBadge status={order.status} />
           <PaymentStatusBadge status={order.paymentStatus} />
-          <span className="text-xs text-ink-muted">{t(`channels.${order.channel === "Store" ? "Store" : "Online"}`)} · {t("detail.created", { date: formatDateTime(order.createdAtUtc, locale) })}</span>
+          <span className="text-xs text-ink-muted">{joinValues([t(`channels.${order.channel === "Store" ? "Store" : "Online"}`), t("detail.created", { date: formatDateTime(order.createdAtUtc, locale) })], locale)}</span>
         </div>
         <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, joinValues } from "@/lib/format";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
@@ -13,6 +13,7 @@ import { ExpenseTypeDialog } from "./ExpenseTypeDialog";
 import { createExpense, uploadExpenseReceipt, type Expense, type ExpenseType, type MoneyAccount, type Partner } from "./expenses-api";
 import { emptyExpenseForm, expenseValid, toExpenseCreate, type ExpenseForm as Form } from "./expense-rules";
 import { CloseIcon, PlusIcon, SaveIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, IconButton } from "../kit/Button";
 import { PasteImageButton } from "../kit/PasteImageButton";
 import { useImagePaste } from "../kit/use-image-paste";
@@ -39,7 +40,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
   const activeTypes = types.filter((type) => type.isActive);
   const payerOptions = [
     { value: "", label: t("defaultAccount") },
-    ...accounts.map((account) => ({ value: `account:${account.id}`, label: `${account.name} · ${formatEgp(account.balance, locale)}` })),
+    ...accounts.map((account) => ({ value: `account:${account.id}`, label: joinValues([account.name, formatEgp(account.balance, locale)], locale) })),
     ...partners.filter((partner) => partner.isActive).map((partner) => ({ value: `partner:${partner.id}`, label: t("partnerMoney", { name: partner.name }) }))
   ];
 
@@ -69,7 +70,7 @@ export function ExpenseForm({ types, accounts, partners, canSeeVaults, today, on
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
         <Button icon={PlusIcon} onClick={() => setNewType(true)}>{t("newType")}</Button>

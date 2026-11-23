@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useLoad } from "@/lib/hooks/use-load";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { usePermissions } from "../use-permissions";
 import { CustomerAccountActions } from "./CustomerAccountActions";
@@ -12,7 +13,7 @@ import { CustomerProfileCard } from "./CustomerProfileCard";
 import { blacklistEntry } from "./customer-rules";
 import { fetchBlacklist, fetchCustomer, fetchShippingRates } from "./customers-api";
 import { ViewAsDialog } from "./ViewAsDialog";
-import { ArrowBackIcon, EyeIcon, RefreshIcon } from "@/components/ui/icons";
+import { ArrowBackIcon, EyeIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** ADM-Customer 360 view: the account, its actions and the customer's orders, warranties, requests and note. */
@@ -33,13 +34,10 @@ export function CustomerDetail({ id }: { id: string }) {
   }, [id, canViewBlacklist]);
   const { state, reload } = useLoad(load);
 
-  if (state.status === "loading") return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
+  if (state.status === "loading") return <LoadingCard className="h-64" label={t("loading")} />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-        <p className="m-0 font-bold">{t("failed")}</p>
-        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-      </div>
+      <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
     );
   }
 

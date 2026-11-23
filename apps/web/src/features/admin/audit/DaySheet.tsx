@@ -4,10 +4,11 @@ import { useCallback, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate, formatWeekday } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
-import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
+import { CloseIcon } from "@/components/ui/icons";
 import { ModalSheet } from "@/components/ui/ModalSheet";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Button, IconButton } from "../kit/Button";
+import { IconButton } from "../kit/Button";
+import { EmptyPanel, ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
 import { AuditEntryDetail } from "./AuditEntryDetail";
@@ -58,14 +59,11 @@ function DayContent({ values, set, onClose }: { values: AuditValues; set: AuditS
         </div>
         <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>
-      {entries.state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : null}
+      {entries.state.status === "loading" ? <LoadingCard className="h-64" /> : null}
       {entries.state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={entries.reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={entries.reload} />
       ) : null}
-      {items && items.length === 0 ? <p className="m-0 rounded-card border border-line bg-surface p-5 text-sm text-ink-muted">{t("empty")}</p> : null}
+      {items && items.length === 0 ? <EmptyPanel message={t("empty")} /> : null}
       {groups.map(({ group, entries: rows }) => (
         <div key={group} className="overflow-hidden rounded-card border border-line bg-surface">
           <h3 className="m-0 border-b border-line bg-paper px-4 py-2 text-[13px] font-bold text-ink-muted">{t(`groups.${group}`)}</h3>

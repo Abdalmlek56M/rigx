@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { HelpIcon } from "@/components/ui/icons";
 import { categoryHref } from "@/components/layout/nav-links";
+import { BrandMark } from "@/features/catalog/BrandMark";
 import { Gallery } from "@/features/product/Gallery";
 import { ProductInfoBoxes } from "@/features/product/ProductInfoBoxes";
 import { PurchasePanel } from "@/features/product/PurchasePanel";
@@ -99,7 +100,7 @@ export default async function ProductPage({ params }: Props) {
         breadcrumbLabel={t("breadcrumb")}
         title={item.modelName}
         titleDir="ltr"
-        eyebrow={brand?.name}
+        eyebrow={brand ? <><BrandMark logoStorageKey={brand.logoStorageKey} /><span dir="ltr">{brand.name}</span></> : undefined}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <ConditionBadge condition={condition} />

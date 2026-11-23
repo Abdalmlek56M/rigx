@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, listSeparator } from "@/lib/format";
 import type { Category } from "../categories/categories-api";
 import { formMessage } from "../form-message";
 import { categoryPath } from "../inventory/inventory-rules";
@@ -77,7 +77,7 @@ export function ReplacePartDialog({ part, tree, onClose, ...action }: BuildActio
               <li key={unit.unitId} className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-line bg-paper p-2.5 text-sm">
                 <span className="flex min-w-0 flex-col">
                   <span dir="auto" className="font-bold [unicode-bidi:isolate]">{unit.name}</span>
-                  <span className="text-xs text-ink-muted"><span dir="ltr" className="font-mono">{unit.stockItemCode}</span> · {formatEgp(unit.partPrice, locale)}</span>
+                  <span className="text-xs text-ink-muted"><span dir="ltr" className="font-mono">{unit.stockItemCode}</span>{listSeparator(locale)}{formatEgp(unit.partPrice, locale)}</span>
                 </span>
                 <button
                   type="button" aria-pressed={pickedId === unit.unitId} onClick={() => setPickedId(unit.unitId)}

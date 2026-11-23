@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDate } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
@@ -15,8 +16,8 @@ import { cairoToday, parsePeriod, periodRange, type DateRange, type Period } fro
 import { KpiCards } from "./KpiCards";
 import { PeriodSwitch } from "./PeriodSwitch";
 import { SalesChart } from "./SalesChart";
-import { BoxIcon, RefreshIcon, RegisterIcon } from "@/components/ui/icons";
-import { Button, buttonClass, buttonIconSize } from "../kit/Button";
+import { BoxIcon, RegisterIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 const FILTERS = { period: "month", from: "", to: "" };
 
@@ -24,9 +25,9 @@ function Skeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }, (_, index) => <div key={index} className="h-[104px] animate-pulse rounded-card border border-line bg-surface" />)}
+        {Array.from({ length: 6 }, (_, index) => <LoadingCard key={index} className="h-[104px]" />)}
       </div>
-      <div className="h-80 animate-pulse rounded-card border border-line bg-surface" />
+      <LoadingCard className="h-80" />
     </div>
   );
 }
@@ -40,10 +41,7 @@ function Content({ from, to }: DateRange) {
   if (state.status === "loading") return <div role="status" aria-label={t("loading")}><Skeleton /></div>;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-        <p className="m-0 font-bold">{t("failed")}</p>
-        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-      </div>
+      <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
     );
   }
 

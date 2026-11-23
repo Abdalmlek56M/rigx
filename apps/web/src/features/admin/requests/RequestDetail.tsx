@@ -2,9 +2,10 @@
 
 import { useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatDateTime, formatEgp } from "@/lib/format";
+import { formatDateTime, formatEgp, joinValues } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
+import { LoadingCard } from "../kit/LoadState";
 import { useSubmit } from "../kit/use-submit";
 import { RequestActions } from "./RequestActions";
 import { RequestNoteForm } from "./RequestNoteForm";
@@ -14,6 +15,7 @@ import { RequestStatusBadge } from "./RequestBadges";
 import { canMarkBackInStockSent, requestTitle, requestTrail, requestTypeKey, type TrailStep } from "./request-labels";
 import { fetchRequest, fetchWhatsAppReply, markBackInStockSent, requestPhotoUrl, type RequestDetail as Detail } from "./requests-api";
 import { CheckIcon, CloseIcon, RefreshIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, IconButton, buttonClass, buttonIconSize } from "../kit/Button";
 
 function Field({ label, value, mono = false }: { label: string; value: string | null; mono?: boolean }) {
@@ -87,11 +89,11 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
   };
 
   if (state.status === "loading") {
-    return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
+    return <LoadingCard className="h-64" label={t("loading")} />;
   }
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
+      <div role="alert" className={cardClass({ className: "items-start gap-3" })}>
         <p className="m-0 font-bold">{t("detail.failed")}</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("detail.retry")}</Button>
@@ -107,7 +109,7 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
   const typeLabel = requestTypeKey(request.type);
 
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-4" })}>
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h2 className="m-0 text-[17px] font-bold">{t("detail.heading", { type: t(`types.${typeLabel}`) })}</h2>
@@ -127,7 +129,7 @@ export function RequestDetail({ id, onClose, onChanged }: { id: string; onClose:
         <Field label={t("detail.partType")} value={request.partType} />
         <Field label={t("detail.service")} value={request.serviceKind} />
         <Field label={t("detail.preferredDate")} value={request.preferredDate} mono />
-        <Field label={t("detail.customer")} value={`${request.name} · ${request.phone}`} />
+        <Field label={t("detail.customer")} value={joinValues([request.name, request.phone], locale)} />
         <Field label={t("detail.email")} value={request.email} mono />
         <Field label={t("detail.governorate")} value={request.governorate} />
         <Field label={t("detail.source")} value={request.source} />

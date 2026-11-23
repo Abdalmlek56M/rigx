@@ -13,6 +13,7 @@ import { deleteArticle, publishArticle, unpublishArticle, type ArticleDetail, ty
 import { ArticleStatusBadge } from "./ArticleStatusBadge";
 import { isConflict } from "@/lib/api/conflict";
 import { TrashIcon, UndoIcon, UploadIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** Publishing, revisions, the products the body shows and delete. */
@@ -44,7 +45,7 @@ export function ArticlePublishCard({ detail, revisions, onSaved, onDeleted, onSt
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <div className="flex flex-wrap items-center gap-2">
         <ArticleStatusBadge status={article.status} publishedAtUtc={article.publishedAtUtc} />

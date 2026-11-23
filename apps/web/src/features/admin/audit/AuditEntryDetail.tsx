@@ -11,10 +11,12 @@ import { AuditField as Row } from "./AuditField";
 import { AuditRestore } from "./AuditRestore";
 import { useAuditLabels } from "./use-audit-labels";
 import { usePermissions } from "../use-permissions";
-import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
-import { Button, IconButton } from "../kit/Button";
+import { CloseIcon } from "@/components/ui/icons";
+import { IconButton } from "../kit/Button";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StatusTone } from "@/components/ui/status-badge-rules";
+import { cardClass } from "@/components/ui/Card";
 
 /** One data-change entry: who, when and from which device, then each field before → after with additions and removals marked. */
 export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onClose: () => void; onRestored: () => void }) {
@@ -25,13 +27,10 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
   const { state, reload } = useLoad(load);
   const { has } = usePermissions();
   const linkedNames = useMemo(() => new Map(Object.entries(state.status === "ready" ? state.data.linkedNames : {})), [state]);
-  if (state.status === "loading") return <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
+  if (state.status === "loading") return <LoadingCard className="h-64" />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
-        <p className="m-0 font-bold">{t("failed")}</p>
-        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-      </div>
+      <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
     );
   }
 
@@ -43,7 +42,7 @@ export function AuditEntryDetail({ id, onClose, onRestored }: { id: string; onCl
     : device?.browser && device.os ? t("device.full", { browser: device.browser, os: device.os })
     : device?.browser ?? device?.os ?? t("device.unknown");
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5" aria-label={t("changes.title")}>
+    <section className={cardClass({ className: "gap-4" })} aria-label={t("changes.title")}>
       <header className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col items-start gap-1.5">
           <AuditActionBadge action={entry.action} />

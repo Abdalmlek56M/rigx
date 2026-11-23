@@ -20,7 +20,7 @@ export function LocaleSwitch({ className = "", fullWidth = false }: { className?
   const label = t("switchLabel");
   const aria = target === "ar" ? t("arabicAria") : t("englishAria");
   const font = target === "en" ? "font-mono tracking-wide" : "font-sans";
-  const classes = fullWidth ? ROW : `${HEADER_ICON_BUTTON} gap-1.5 px-2.5 text-[13px] font-semibold`;
+  const classes = fullWidth ? ROW : `${HEADER_ICON_BUTTON} gap-1.5 px-2.5 text-sm font-bold`;
 
   return (
     <Link

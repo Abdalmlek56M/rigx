@@ -5,6 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IconButton } from "../kit/Button";
 import { DragItem, DragSort } from "../kit/DragSort";
+import { EmptyPanel } from "../kit/LoadState";
 import { dropOn, moveKey } from "../kit/reorder-rules";
 import { flattenTree, parentIdOf, siblingIds } from "./category-rules";
 import type { Category } from "./categories-api";
@@ -26,7 +27,7 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle,
   const t = useTranslations("admin.categories");
   const rows = flattenTree(nodes, collapsed);
   if (nodes.length === 0) {
-    return <p className="m-0 rounded-card border border-line bg-surface p-5 text-sm text-ink-muted">{t("emptyTree")}</p>;
+    return <EmptyPanel message={t("emptyTree")} />;
   }
 
   const drop = (active: string, over: string) => {

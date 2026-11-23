@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate, formatEgp } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { DataTable, type Column } from "../kit/DataTable";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -24,7 +25,8 @@ import {
   type Expense
 } from "./expenses-api";
 import { expenseLink, expensePeriodRange, expenseSplits, parseExpensePeriod } from "./expense-rules";
-import { EyeIcon, RefreshIcon } from "@/components/ui/icons";
+import { EyeIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 const FILTERS = { period: "month", from: "", to: "" };
@@ -56,13 +58,10 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
     return { expenses, summary, types, recurring, accounts, partners };
   }, [from, to, canViewVaults]);
   const { state, reload } = useLoad(load);
-  if (state.status === "loading") return <div aria-hidden="true" className="h-72 animate-pulse rounded-card border border-line bg-surface" />;
+  if (state.status === "loading") return <LoadingCard className="h-72" />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-        <p className="m-0 font-bold">{t("failed")}</p>
-        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-      </div>
+      <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
     );
   }
 
@@ -109,7 +108,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: expenses }} onRetry={reload} rowKey={(expense) => expense.id} empty={t("empty")} />
-        <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+        <section className={cardClass({ className: "gap-3" })}>
           <h2 className="m-0 text-[17px] font-bold">{t("splits.title")}</h2>
           {summary.byType.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("splits.empty")}</p> : (
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">

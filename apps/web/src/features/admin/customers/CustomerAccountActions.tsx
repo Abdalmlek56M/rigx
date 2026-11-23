@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { joinValues } from "@/lib/format";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { Dialog } from "../kit/Dialog";
@@ -19,10 +20,12 @@ import {
   type CustomerProfile
 } from "./customers-api";
 import { BanIcon, KeyIcon, LogoutIcon, UndoIcon, UnlinkIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 function BlacklistDialog({ profile, onClose, onSaved }: { profile: CustomerProfile; onClose: () => void; onSaved: () => void }) {
   const t = useTranslations("admin.customers.blacklist");
+  const locale = useLocale();
   const kit = useTranslations("admin.kit");
   const submit = useSubmit();
   const [reason, setReason] = useState("");
@@ -39,7 +42,7 @@ function BlacklistDialog({ profile, onClose, onSaved }: { profile: CustomerProfi
 
   return (
     <Dialog open onClose={onClose} title={t("title")}>
-      <p className="m-0 text-sm text-ink-muted">{profile.account.name} · {profile.account.phone ?? profile.account.email}</p>
+      <p className="m-0 text-sm text-ink-muted">{joinValues([profile.account.name, profile.account.phone ?? profile.account.email], locale)}</p>
       <form
         className="flex flex-col gap-3"
         onSubmit={(event) => {
@@ -93,7 +96,7 @@ export function CustomerAccountActions({ profile, blacklist, canManage, canViewB
   }
 
   return (
-    <section className="flex flex-col gap-2.5 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-2.5" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       {canManage ? (
         <>

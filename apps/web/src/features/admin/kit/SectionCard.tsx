@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
+import { cardClass } from "@/components/ui/Card";
 
-/** A calm admin section: a bordered card with an icon and a title row, then its content. */
+/** A calm admin section: the store's card (same surface and padding) with an icon and a title row, then its content. */
 export function SectionCard({ title, icon: Icon, actions, children, className }: {
   title: string;
   icon?: ComponentType<{ size?: number }>;
@@ -9,10 +10,10 @@ export function SectionCard({ title, icon: Icon, actions, children, className }:
   className?: string;
 }) {
   return (
-    <section className={`flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5 ${className ?? ""}`}>
+    <section className={cardClass({ className: `gap-3 ${className ?? ""}` })}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="m-0 flex items-center gap-2 text-[17px] font-bold">
-          {Icon ? <span className="text-ink-muted"><Icon size={18} /></span> : null}
+        <h2 className="m-0 flex min-w-0 items-center gap-2 type-section-title">
+          {Icon ? <span aria-hidden="true" className="flex text-ink-muted"><Icon size={18} /></span> : null}
           {title}
         </h2>
         {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

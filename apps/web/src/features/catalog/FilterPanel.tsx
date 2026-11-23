@@ -9,6 +9,7 @@ import type { ReactNode } from "react";
 import { BoxIcon, CheckIcon, CloseIcon, FilterIcon, GearIcon, GridIcon, TagIcon, WalletIcon } from "@/components/ui/icons";
 import { Button } from "@/components/ui/Button";
 import { FIELD_BASE } from "@/components/ui/field-class";
+import { BrandMark } from "./BrandMark";
 
 // Rows keep a 40 px touch height in the phone drawer and tighten to 32 px in the desktop sidebar.
 const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] transition-colors duration-150 hover:bg-paper motion-reduce:transition-none lg:min-h-8";
@@ -125,7 +126,8 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
                     className={`${linkRow} gap-2.5 ${selected ? "bg-paper font-bold" : ""}`}
                   >
                     <CheckBox checked={selected} />
-                    <span dir="ltr">{brand.name}</span>
+                    <span dir="ltr" className="min-w-0 truncate">{brand.name}</span>
+                    <BrandMark logoStorageKey={brand.logoStorageKey} size="sm" className="ms-auto" />
                   </Link>
                 </li>
               );

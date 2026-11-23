@@ -13,6 +13,7 @@ import { PermissionPicker } from "./PermissionPicker";
 import { roleCodeValid, sameSet } from "./user-rules.ts";
 import { createRole, fetchPermissions, setRolePermissions, type StaffRole } from "./users-api";
 import { CloseIcon, PlusIcon, RefreshIcon, SaveIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** Create a role (`role` = null) or change the permissions of an existing one; both need the step-up code. */
@@ -45,7 +46,7 @@ export function RoleEditor({ role, onSaved, onClose }: { role: StaffRole | null;
   }
 
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-4" })}>
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold [overflow-wrap:anywhere]">{role ? t("editTitle", { name: label(role) }) : t("newTitle")}</h2>
         <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>

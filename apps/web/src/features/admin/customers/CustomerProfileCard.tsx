@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { cardClass } from "@/components/ui/Card";
 import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
@@ -30,7 +31,7 @@ export function CustomerProfileCard({ profile, rates }: { profile: CustomerProfi
   const governorate = governorateName(rates.governorates, profile.governorate);
 
   return (
-    <section className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-4" })}>
       <div className="flex items-center gap-3">
         <span aria-hidden="true" className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-carbon text-lg font-bold text-on-carbon">
           {initials(account.name)}

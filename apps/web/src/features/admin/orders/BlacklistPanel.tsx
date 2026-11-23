@@ -9,6 +9,7 @@ import { useUndoDelete } from "../system/use-undo-delete";
 import { blacklistTitle, maskPhone } from "./blacklist-labels";
 import { fetchBlacklist, removeFromBlacklist, type BlacklistEntry } from "./orders-api";
 import { RefreshIcon, TrashIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** The blacklisted customers: recognised by phone, email or address; staff with approval rights can remove one. Entries are added from an order. */
@@ -21,7 +22,7 @@ export function BlacklistPanel({ reloadKey, canManage, onChanged }: { reloadKey:
   const [removing, setRemoving] = useState<BlacklistEntry | null>(null);
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <p className="m-0 text-sm text-ink-muted">{t("note")}</p>
       {state.status === "loading" ? <div role="status" className="h-16 animate-pulse rounded-control bg-line" /> : null}

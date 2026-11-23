@@ -22,8 +22,8 @@ interface PageHeaderProps {
   below?: ReactNode;
   /** An icon before the title. */
   icon?: ComponentType<{ size?: number }>;
-  /** A small line above the title (for example the invoice kind). */
-  eyebrow?: string;
+  /** A small line above the title (for example the invoice kind, or a brand's logo and name). */
+  eyebrow?: ReactNode;
   /** The title's own direction when it is a code or a Latin model name. */
   titleDir?: "ltr" | "rtl" | "auto";
   /** Wrap the header in the page container (default); turn off inside a page that already has one. */
@@ -59,7 +59,7 @@ export function PageHeader({ title, lead, breadcrumb, breadcrumbLabel, actions, 
       ) : null}
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div className="flex min-w-0 flex-col gap-2">
-          {eyebrow ? <span className="type-label font-bold text-orange-text">{eyebrow}</span> : null}
+          {eyebrow ? <div className="type-label flex items-center gap-2 font-bold text-orange-text">{eyebrow}</div> : null}
           <h1 dir={titleDir} className="m-0 flex min-w-0 items-center gap-2.5 type-page-title">
             {Icon ? <span aria-hidden="true" className="flex text-ink-muted"><Icon size={26} /></span> : null}
             <span className="min-w-0 [unicode-bidi:isolate]">{title}</span>

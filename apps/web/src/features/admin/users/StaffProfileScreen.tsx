@@ -6,6 +6,7 @@ import { useSession } from "@/features/auth/use-session";
 import { Link } from "@/i18n/navigation";
 import { useLoad } from "@/lib/hooks/use-load";
 import { NoteEditor, OrdersTable, WarrantiesTable } from "../customers/CustomerActivityTabs";
+import { LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { StaffAccountControls } from "./StaffAccountControls";
 import { StaffDetailsForm } from "./StaffDetailsForm";
@@ -16,6 +17,7 @@ import { UserRolesCard } from "./UserRolesCard";
 import { isSameAccount, roleNames, staffTab, staffTabs, type StaffTab } from "./user-rules.ts";
 import { fetchRoles, fetchStaffProfile, saveStaffNote } from "./users-api";
 import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 const tabButton = "h-10 whitespace-nowrap rounded-control px-3.5 text-[13px]";
@@ -32,10 +34,10 @@ export function StaffProfileScreen({ id }: { id: string }) {
   }, [id]);
   const { state, reload } = useLoad(load);
 
-  if (state.status === "loading") return <div role="status" aria-label={t("profile.loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
+  if (state.status === "loading") return <LoadingCard className="h-64" label={t("profile.loading")} />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
+      <div role="alert" className={cardClass({ className: "items-start gap-3" })}>
         <p className="m-0 font-bold">{t("failed")}</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
@@ -62,7 +64,7 @@ export function StaffProfileScreen({ id }: { id: string }) {
           <StaffProfileCard profile={profile} roleNames={roleNames(user, roles, builtIn)} />
           <StaffAccountControls user={user} isSelf={isSelf} onChanged={reload} />
         </div>
-        <section className="flex min-w-0 flex-col gap-3.5 rounded-card border border-line bg-surface p-5">
+        <section className={cardClass({ className: "gap-3.5" })}>
           <div role="group" aria-label={t("profile.sections")} className="flex flex-wrap gap-1 rounded-card border border-line bg-surface p-1">
             {staffTabs(isSelf).map((key) => (
               <button

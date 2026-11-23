@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, joinValues } from "@/lib/format";
 import type { MoneyAccount } from "../expenses/expenses-api";
 import { PAY_METHODS, type MoneyMoveForm } from "./partner-rules";
 
@@ -28,7 +28,7 @@ export function MoneyFields({ form, accounts, prefix, errors, onChange }: {
       {accounts ? (
         <SelectField
           label={t("account")} name={`${prefix}Account`} value={form.accountId} onChange={(accountId) => onChange({ accountId })} error={errors.moneyAccountId}
-          options={[{ value: "", label: t("defaultAccount") }, ...accounts.map((account) => ({ value: account.id, label: `${account.name} · ${formatEgp(account.balance, locale)}` }))]}
+          options={[{ value: "", label: t("defaultAccount") }, ...accounts.map((account) => ({ value: account.id, label: joinValues([account.name, formatEgp(account.balance, locale)], locale) }))]}
         />
       ) : null}
     </>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { listSeparator } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TextField } from "@/components/ui/TextField";
 import { FormSection } from "@/features/checkout/form-parts";
@@ -43,6 +44,7 @@ function Notice({ tone, icon, children, action }: { tone: "known" | "new" | "off
  */
 export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
   const t = useTranslations("admin.pos.customer");
+  const locale = useLocale();
   const error = usePosError(errors);
   const [search, setSearch] = useState<Search>({ status: "idle" });
   const [check, setCheck] = useState<PhoneCheck | null>(null);
@@ -102,7 +104,7 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
                       <b className="truncate">{customer.name}</b>
                       {customer.isBlacklisted ? <StatusBadge tone="danger" icon={BanIcon}>{t("blacklisted")}</StatusBadge> : null}
                     </span>
-                    <span className="text-xs text-ink-muted"><span dir="ltr">{customer.phone}</span> · {orders(customer)}</span>
+                    <span className="text-xs text-ink-muted"><span dir="ltr">{customer.phone}</span>{listSeparator(locale)}{orders(customer)}</span>
                   </span>
                 </span>
                 <Button size="sm" icon={CheckIcon} onClick={() => pick(customer)}>{t("pick")}</Button>
@@ -120,14 +122,14 @@ export function PosCustomer({ form, set, errors, onPick }: PosCustomerProps) {
         </Notice>
       ) : known && used === phone ? (
         <Notice tone="known" icon={<span className="text-success"><CheckIcon size={18} /></span>}>
-          <b>{t("registered")}</b> · {t("registeredHint", { orders: orders(known) })}
+          <b>{t("registered")}</b>{listSeparator(locale)}{t("registeredHint", { orders: orders(known) })}
         </Notice>
       ) : known ? (
         <Notice tone="offer" icon={<span className="text-orange"><UserIcon size={18} /></span>} action={<Button size="sm" icon={CheckIcon} onClick={() => pick(known)}>{t("use")}</Button>}>
           {t("phoneKnown", { name: known.name, orders: orders(known) })}
         </Notice>
       ) : known === null ? (
-        <Notice tone="new" icon={<PlusIcon size={18} />}><b>{t("new")}</b> · {t("newHint")}</Notice>
+        <Notice tone="new" icon={<PlusIcon size={18} />}><b>{t("new")}</b>{listSeparator(locale)}{t("newHint")}</Notice>
       ) : check?.phone === phone && check.status === "failed" ? <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p> : null}
 
       <div className="grid gap-3.5 sm:grid-cols-2">

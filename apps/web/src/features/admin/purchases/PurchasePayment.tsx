@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
+import { cardClass } from "@/components/ui/Card";
 import { formatEgp } from "@/lib/format";
 import { hasMoney, hasTradeIn, isOverpaid, PAYMENT_METHODS, purchaseTotal, remainingAmount, withMethod, type PurchaseForm } from "./purchase-rules";
 
@@ -25,7 +26,7 @@ export function PurchasePayment({ form, errors, missing, submitted, onChange }: 
   const tradeIn = Number(form.tradeInValue) || 0;
 
   return (
-    <section data-field="payment" className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section data-field="payment" className={cardClass({ className: "gap-3" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <dl className="m-0 grid grid-cols-2 gap-3 rounded-control bg-paper p-3 text-sm">
         <div className="flex flex-col gap-0.5">

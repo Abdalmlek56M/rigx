@@ -8,6 +8,7 @@ import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
 import { fetchPartners } from "../expenses/expenses-api";
 import { fetchWarrantyLabels } from "../inventory/inventory-api";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { PhotoGallery } from "../stock/PhotoGallery";
 import { usePermissions } from "../use-permissions";
@@ -20,8 +21,9 @@ import { BuildStatusBadge } from "./BuildStatusBadge";
 import { BuildSummary } from "./BuildSummary";
 import { deleteBuildPhoto, fetchBuild, reorderBuildPhotos, uploadBuildPhoto, type Build } from "./builds-api";
 import { isLocked } from "./build-rules";
-import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
-import { Button, buttonClass, buttonIconSize } from "../kit/Button";
+import { ArrowBackIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 /** `/admin/builds/[id]` (ADM-Build): the card, parts, revenue split and photos. Every write sends the build's row version and shows the build the server returned. */
 export function BuildEditor({ id }: { id: string }) {
@@ -52,7 +54,7 @@ export function BuildEditor({ id }: { id: string }) {
     return (
       <>
         <PageHeader title={t("detailTitle")} actions={back} />
-        <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />
+        <LoadingCard className="h-64" label={t("loading")} />
       </>
     );
   }
@@ -60,10 +62,7 @@ export function BuildEditor({ id }: { id: string }) {
     return (
       <>
         <PageHeader title={t("detailTitle")} actions={back} />
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       </>
     );
   }
@@ -84,7 +83,7 @@ export function BuildEditor({ id }: { id: string }) {
           </>
         }
       />
-      <section className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+      <section className={cardClass({ className: "gap-3" })}>
         <h2 dir="auto" className="m-0 text-[17px] font-bold [unicode-bidi:isolate]">{build.name}</h2>
         {isLocked(build) ? <p role="status" className="m-0 rounded-control bg-line px-3 py-2 text-sm font-bold text-ink-muted">{t("lockedNote")}</p> : null}
         <BuildActions {...action} canEdit={has("Catalog.ManageProducts")} />

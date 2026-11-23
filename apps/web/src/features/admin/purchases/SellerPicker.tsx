@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { listSeparator } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { SearchBox } from "../kit/FilterBar";
 import { useToast } from "../kit/Toast";
@@ -25,6 +26,7 @@ export function SellerPicker({ seller, readOnly, missing = false, governorates, 
   onPick: (seller: SellerSummary | null) => void;
 }) {
   const t = useTranslations("admin.purchases.seller");
+  const locale = useLocale();
   const toast = useToast();
   const { has } = usePermissions();
   const canManage = has("Purchasing.ManageSuppliers");
@@ -64,7 +66,7 @@ export function SellerPicker({ seller, readOnly, missing = false, governorates, 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-paper p-3">
           <div className="flex flex-col gap-0.5">
             <span dir="auto" className="font-bold [unicode-bidi:isolate]">{seller.name}</span>
-            <span className="text-xs text-ink-muted">{t(`kinds.${seller.kind === "Trader" || seller.kind === "Company" ? seller.kind : "Person"}`)} · <span dir="ltr" className="font-mono">{seller.phone}</span></span>
+            <span className="text-xs text-ink-muted">{t(`kinds.${seller.kind === "Trader" || seller.kind === "Company" ? seller.kind : "Person"}`)}{listSeparator(locale)}<span dir="ltr" className="font-mono">{seller.phone}</span></span>
           </div>
           {readOnly ? null : (
             <div className="flex flex-wrap gap-2">

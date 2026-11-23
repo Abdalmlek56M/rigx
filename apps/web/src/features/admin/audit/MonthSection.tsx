@@ -4,9 +4,9 @@ import { useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatMonth, formatWeekday } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
-import { ChevronDownIcon, RefreshIcon, UserIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, UserIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Button } from "../kit/Button";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { cairoDate } from "../offers/offer-rules";
 import { fetchDays, type AuditDay } from "./audit-api";
 import { actorsLine, dayWhen, type AuditValues } from "./audit-rules";
@@ -43,13 +43,10 @@ function MonthDays({ month, kind, onPickDay }: { month: string; kind: Kind; onPi
     () => fetchDays({ month, module: kind.module || undefined, entity: kind.entity || undefined, action: kind.action || undefined }),
     [month, kind.module, kind.entity, kind.action]
   ));
-  if (days.state.status === "loading") return <div aria-hidden="true" className="h-28 animate-pulse rounded-card border border-line bg-surface" />;
+  if (days.state.status === "loading") return <LoadingCard className="h-28" />;
   if (days.state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
-        <p className="m-0 font-bold">{t("failed")}</p>
-        <Button variant="primary" icon={RefreshIcon} onClick={days.reload}>{t("retry")}</Button>
-      </div>
+      <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={days.reload} />
     );
   }
   const today = cairoDate(new Date().toISOString());

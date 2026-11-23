@@ -7,9 +7,9 @@ import type { DashboardData } from "./dashboard-api";
 function Card({ label, value, note, dark = false }: { label: string; value: string; note: ReactNode; dark?: boolean }) {
   return (
     <div className={`flex min-w-0 flex-col gap-1.5 rounded-card border px-[18px] py-4 ${dark ? "border-carbon bg-carbon text-on-carbon" : "border-line bg-surface"}`}>
-      <span className={`text-[13px] ${dark ? "text-footer-text" : "text-ink-muted"}`}>{label}</span>
+      <span className={`type-label ${dark ? "text-footer-text!" : ""}`}>{label}</span>
       <span className="truncate text-2xl font-bold">{value}</span>
-      <span className={`text-xs ${dark ? "text-footer-text" : "text-ink-muted"}`}>{note}</span>
+      <span className={`type-label ${dark ? "text-footer-text!" : ""}`}>{note}</span>
     </div>
   );
 }

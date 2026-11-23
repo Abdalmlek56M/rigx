@@ -16,6 +16,7 @@ import { RequestStatusBadge, RequestTypeBadge } from "../requests/RequestBadges"
 import { saveCustomerNote, type CustomerProfile } from "./customers-api";
 import { customerTab, orderChannelKey, warrantyStateKey } from "./customer-rules";
 import { SaveIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 type Sales = CustomerProfile["sales"];
@@ -79,7 +80,7 @@ export function CustomerActivityTabs({ profile, canManage, onRetry, onChanged }:
   ];
 
   return (
-    <section className="flex min-w-0 flex-col gap-3.5 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3.5" })}>
       <div role="group" aria-label={t("detailTitle")} className="flex flex-wrap gap-1 rounded-card border border-line bg-surface p-1">
         {(["orders", "warranties", "coupons", "requests", "notes"] as const).map((key) => {
           const count = key === "orders" ? orders.length : key === "warranties" ? warranties.length : key === "coupons" ? couponUses.length : key === "requests" ? requests.length : null;

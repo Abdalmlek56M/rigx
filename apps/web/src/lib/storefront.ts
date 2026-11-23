@@ -12,7 +12,7 @@ export interface ContactLink {
 /** A menu category; `image` is the uploaded category picture (often a transparent PNG), null when there is none. */
 export type MenuCategory = { id: string; name: string; nameEn?: string | null; slug: string; image: string | null; children: MenuCategory[] };
 /** An active brand (catalog filter, product page). */
-export type Brand = { id: string; name: string; slug: string };
+export type Brand = { id: string; name: string; slug: string; logoStorageKey: string | null };
 
 export interface PaymentMethods {
   cash: boolean;
@@ -167,7 +167,7 @@ export async function loadStorefront(): Promise<StorefrontData> {
       showSoldOut: settings.controls.showSoldOut ?? true,
       categories: toMenu(categories),
       categoryTree: toTree(categories),
-      brands: brands.map((brand) => ({ id: brand.id, name: brand.name, slug: brand.slug }))
+      brands: brands.map((brand) => ({ id: brand.id, name: brand.name, slug: brand.slug, logoStorageKey: brand.logoStorageKey ?? null }))
     };
   } catch (error) {
     logOnce(error);

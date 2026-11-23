@@ -65,6 +65,11 @@ describe("design kit rules", () => {
     assert.deepEqual(violations((line) => line.includes("@dnd-kit"), (name) => name === "features/admin/kit/DragSort.tsx"), []);
   });
 
+  it("draws the admin's loading and failed panels with LoadingCard and ErrorPanel, never by hand", () => {
+    const handMade = (line: string) => line.includes("animate-pulse rounded-card border") || line.includes("role=\"alert\" className=\"flex flex-col items-start gap-3 rounded-card");
+    assert.deepEqual(violations(handMade, (name) => !name.startsWith("features/admin/")), []);
+  });
+
   it("lets every admin picture upload take a paste from the clipboard", () => {
     const uploads = FILES.filter((file) => file.name.startsWith("features/admin/") && file.lines.some((line) => line.includes("accept=\"image/")));
     const withoutPaste = uploads.filter((file) => !file.lines.some((line) => /PasteImageButton|useImagePaste/.test(line))).map((file) => file.name);

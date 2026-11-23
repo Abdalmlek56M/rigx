@@ -10,6 +10,7 @@ import { fetchPartners } from "../expenses/expenses-api";
 import { fetchShippingRates } from "../customers/customers-api";
 import { fetchStockItem, fetchWarrantyLabels } from "../inventory/inventory-api";
 import { fetchBrands } from "../brands/brands-api";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { financingPartners } from "../stock/stock-fields";
 import { usePermissions } from "../use-permissions";
@@ -17,8 +18,8 @@ import { PurchaseForm } from "./PurchaseForm";
 import { PurchaseReceivedPanel } from "./PurchaseReceivedPanel";
 import { PurchaseStatusBadge } from "./PurchaseStatusBadge";
 import { fetchPurchase, type Purchase, type PurchaseReceived } from "./purchases-api";
-import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
-import { Button, buttonClass, buttonIconSize } from "../kit/Button";
+import { ArrowBackIcon } from "@/components/ui/icons";
+import { buttonClass, buttonIconSize } from "../kit/Button";
 
 /** `/admin/purchases/new` (no id) and `/admin/purchases/[id]`: loads what the form needs and keeps the purchase as the last action returned it. */
 export function PurchaseEditor({ id, copyFromId = null }: { id: string | null; copyFromId?: string | null }) {
@@ -55,7 +56,7 @@ export function PurchaseEditor({ id, copyFromId = null }: { id: string | null; c
     return (
       <>
         {header}
-        <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />
+        <LoadingCard className="h-64" label={t("loading")} />
       </>
     );
   }
@@ -63,10 +64,7 @@ export function PurchaseEditor({ id, copyFromId = null }: { id: string | null; c
     return (
       <>
         {header}
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       </>
     );
   }

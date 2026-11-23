@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { formatEgp } from "@/lib/format";
+import { cardClass } from "@/components/ui/Card";
 import type { Build } from "./builds-api";
 
 /** ADM-Build "الحساب": what the parts cost, what they add up to at their own prices, the sale price and the profit (only when the server sent the cost). */
@@ -14,7 +15,7 @@ export function BuildSummary({ build }: { build: Build }) {
   if (build.componentCost !== null) rows.push({ key: "profit", label: t("profit"), value: build.salePrice - build.componentCost, strong: true });
 
   return (
-    <section className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-2" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <dl className="m-0 flex flex-col">
         {rows.map((row) => (

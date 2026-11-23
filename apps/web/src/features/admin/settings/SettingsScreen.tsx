@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
 import { FilterSelect } from "../kit/FilterBar";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { BackupForm } from "./BackupForm";
@@ -22,8 +23,6 @@ import { StoreInfoForm } from "./StoreInfoForm";
 import { WarrantyForm } from "./WarrantyForm";
 import { WatermarkForm } from "./WatermarkForm";
 import { WhatsAppForm } from "./WhatsAppForm";
-import { RefreshIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
 
 /** The one settings load: all sections and the governorate names the shipping groups need. */
 async function loadSettings() {
@@ -95,16 +94,13 @@ export function SettingsScreen() {
 
         <div className="min-w-0">
           {state.status === "error" ? (
-            <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-              <p className="m-0 font-bold">{t("failed")}</p>
-              <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-            </div>
+            <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
           ) : view ? (
             <section key={`${section}-${generation}`} className="min-w-0 rounded-card border border-line bg-surface p-5">
               <SectionBody section={section} view={view} rates={state.status === "ready" ? state.data.rates.governorates : []} onSaved={onSaved} onStale={onStale} />
             </section>
           ) : (
-            <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" />
+            <LoadingCard className="h-64" />
           )}
         </div>
       </div>

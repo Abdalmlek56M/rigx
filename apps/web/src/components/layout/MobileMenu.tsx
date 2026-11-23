@@ -10,7 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/localized-name";
 import type { MenuCategory } from "@/lib/storefront";
 import { LocaleSwitch } from "./LocaleSwitch";
-import { NAV_LINKS, categoryHref } from "./nav-links";
+import { HEADER_ICON_BUTTON, NAV_LINKS, categoryHref } from "./nav-links";
 import { ThemeToggle } from "./ThemeToggle";
 
 const itemClass = "flex min-h-11 items-center rounded-card px-3 text-sm hover:bg-paper";
@@ -25,15 +25,13 @@ export function MobileMenu({ categories, englishEnabled }: { categories: MenuCat
 
   return (
     <div className="xl:hidden">
-      <IconButton
-        icon={MenuIcon}
-        label={t("menu")}
-        variant="ghost"
-        size="md"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpen(true)}
-      />
+      {/* Same round 44 px control and 20 px icon as the icon pill beside it. */}
+      <button
+        type="button" aria-label={t("menu")} data-tip={t("menu")} aria-haspopup="dialog" aria-expanded={open}
+        onClick={() => setOpen(true)} className={`tip ${HEADER_ICON_BUTTON}`}
+      >
+        <MenuIcon />
+      </button>
       <ModalSheet open={open} onClose={close} label={t("menu")} edge="start" fullHeight>
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">

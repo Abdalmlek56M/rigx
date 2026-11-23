@@ -1,19 +1,22 @@
 "use client";
 
 import { latinNumber } from "@/lib/digits";
+import { listSeparator } from "@/lib/format";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formMessage } from "../form-message";
 import { FormMessage } from "../kit/PageHeader";
 import { saveAllocations } from "./builds-api";
 import { allocationDifference, allocationForm, allocationSum, allocationValid, defaultAllocation, toAllocationInputs } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { SaveIcon, UndoIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** The revenue split between the parts: a percent per part that must add up to 100 (the difference is shown), or reset to each part's standalone share. */
 export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { canEdit: boolean }) {
   const t = useTranslations("admin.builds.split");
+  const locale = useLocale();
   const { build } = action;
   const { submit, run } = useBuildAction(action);
   const [form, setForm] = useState(() => allocationForm(build.units));
@@ -29,7 +32,7 @@ export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { ca
 
   return (
     <form
-      className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5"
+      className={cardClass({ className: "gap-3" })}
       onSubmit={(event) => {
         event.preventDefault();
         void save();
@@ -51,7 +54,7 @@ export function BuildAllocations({ canEdit, ...action }: BuildActionProps & { ca
       </fieldset>
       <p role="status" className={`m-0 text-sm font-bold ${valid ? "" : "text-error-text"}`}>
         {t("sum", { sum: allocationSum(form) })}
-        {difference === 0 ? null : ` · ${t(difference > 0 ? "missing" : "over", { amount: Math.abs(difference) })}`}
+        {difference === 0 ? null : `${listSeparator(locale)}${t(difference > 0 ? "missing" : "over", { amount: Math.abs(difference) })}`}
       </p>
       <FormMessage message={formMessage(submit.errors)} />
       {canEdit ? (

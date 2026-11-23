@@ -22,7 +22,7 @@ export function SearchForm() {
         name="search"
         enterKeyHint="search"
         placeholder={t("searchPlaceholder")}
-        className="h-11 w-full rounded-full border border-transparent bg-paper pe-4 ps-11 text-[15px] text-ink transition-[border-color,background-color,box-shadow] duration-200 placeholder:text-muted hover:border-line focus:border-orange focus:bg-surface focus:shadow-[0_0_0_4px_var(--orange-soft)] focus:outline-none"
+        className="h-11 w-full rounded-full border border-line bg-paper pe-4 ps-11 text-[15px] text-ink transition-[border-color,background-color,box-shadow] duration-200 placeholder:text-muted hover:border-input-line focus:border-orange focus:bg-surface focus:shadow-[0_0_0_4px_var(--orange-soft)] focus:outline-none"
       />
     </form>
   );

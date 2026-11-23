@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useToast } from "../kit/Toast";
 import { useReveal } from "../kit/use-reveal";
@@ -13,7 +14,8 @@ import { CategorySpecsEditor } from "./CategorySpecsEditor";
 import { CategoryTree } from "./CategoryTree";
 import { effectiveSpecs, findPath, reorderChildren } from "./category-rules";
 import { fetchCategories, reorderCategories, type Category } from "./categories-api";
-import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { PlusIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** ADM-Categories: the category tree on the start side and the edit / create panel on the end side. */
@@ -69,20 +71,17 @@ export function Categories() {
         ) : null}
       />
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
           <div className="flex flex-col gap-2">
-            {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
+            {state.status === "loading" ? <LoadingCard className="h-64" /> : (
               <CategoryTree nodes={tree} selectedId={activeId} collapsed={collapsed} onSelect={(id) => { setSelectedId(id); setCreating(null); }} onToggle={toggle} onReorder={canManage ? (parentId, ids) => void reorder(parentId, ids) : undefined} />
             )}
             {canManage && tree.length > 1 ? <p className="m-0 px-1 text-xs text-ink-muted">{t("orderHint")}</p> : null}
           </div>
 
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+          <section ref={panelRef} className={cardClass({ className: "scroll-mt-20 gap-4" })}>
             {creating ? (
               <>
                 <h2 className="m-0 text-[17px] font-bold">

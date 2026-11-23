@@ -14,6 +14,7 @@ import { editBuild } from "./builds-api";
 import { cardValid, SELL_MODES, toCardForm, toEditRequest, type CardForm } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
 import { SaveIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** The server field names this form shows next to their inputs; any other field error goes to the form message. */
@@ -37,7 +38,7 @@ export function BuildCardForm({ warrantyLabels, canEdit, ...action }: BuildActio
 
   return (
     <form
-      className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5"
+      className={cardClass({ className: "gap-3" })}
       onSubmit={(event) => {
         event.preventDefault();
         void save();

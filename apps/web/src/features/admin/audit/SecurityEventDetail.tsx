@@ -6,6 +6,7 @@ import { AuditOutcomeBadge } from "./AuditOutcomeBadge";
 import type { SecurityEvent } from "./audit-api";
 import { AuditField as Row } from "./AuditField";
 import { CloseIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** One sign-in/security event: every field of the row and its safe metadata. */
@@ -15,7 +16,7 @@ export function SecurityEventDetail({ event, onClose }: { event: SecurityEvent; 
   const metadata = Object.entries(event.metadata);
 
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-4" })}>
       <header className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("security.title")}</h2>
         <Button icon={CloseIcon} onClick={onClose}>{t("close")}</Button>

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, listSeparator } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { fetchMoneyAccounts, type Partner } from "../expenses/expenses-api";
 import { usePermissions } from "../use-permissions";
@@ -14,7 +14,9 @@ import { PartnerStatement } from "./PartnerStatement";
 import { basisKey } from "./partner-rules";
 import { fetchPartner } from "./partners-api";
 import { CloseIcon, RefreshIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, IconButton } from "../kit/Button";
+import { LoadingCard } from "../kit/LoadState";
 
 /** The picked partner: balances, the agreement form, financed parts, capital, payouts and the statement. */
 export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; today: string; onClose: () => void; onChanged: () => void }) {
@@ -40,10 +42,10 @@ export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; t
     onChanged();
   };
 
-  if (state.status === "loading") return <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />;
+  if (state.status === "loading") return <LoadingCard className="h-64" label={t("loading")} />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-5">
+      <div role="alert" className={cardClass({ className: "items-start gap-3" })}>
         <p className="m-0 font-bold">{t("failed")}</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
@@ -62,11 +64,11 @@ export function PartnerDetail({ id, today, onClose, onChanged }: { id: string; t
   ];
 
   return (
-    <section className="flex min-w-0 flex-col gap-5 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-5" })}>
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-0.5">
           <h2 className="m-0 text-[17px] font-bold"><span dir="auto" className="[unicode-bidi:isolate]">{partner.name}</span></h2>
-          <span className="text-xs text-ink-muted">{t("summary", { percent: partner.defaultPercent, basis: basis(basisKey(partner.basis)) })}{partner.isActive ? "" : ` · ${t("inactive")}`}</span>
+          <span className="text-xs text-ink-muted">{t("summary", { percent: partner.defaultPercent, basis: basis(basisKey(partner.basis)) })}{partner.isActive ? "" : `${listSeparator(locale)}${t("inactive")}`}</span>
         </div>
         <IconButton icon={CloseIcon} label={t("close")} onClick={onClose} />
       </header>

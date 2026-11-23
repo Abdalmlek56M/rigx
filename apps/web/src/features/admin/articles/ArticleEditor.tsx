@@ -14,6 +14,7 @@ import { createArticle, updateArticle, type Article, type ArticleDetail, type Ar
 import { articleForm, articleValid, emptyArticleForm, toArticleInput, type ArticleForm as Form } from "./article-rules";
 import { isConflict } from "@/lib/api/conflict";
 import { SaveIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** The article editor: bilingual text and blocks on the start side, publishing and metadata on the end side. */
@@ -56,7 +57,7 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
       }}
     >
       <div className="flex min-w-0 flex-col gap-4">
-        <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+        <section className={cardClass({ className: "gap-3" })}>
           <div className="grid gap-3 sm:grid-cols-2">
             <TextField label={t("fields.titleAr")} name="titleAr" dir="rtl" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={errors.titleAr} required />
             <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={errors.titleEn} required />
@@ -68,7 +69,7 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
           </div>
         </section>
 
-        <section className="flex flex-col gap-5 rounded-card border border-line bg-surface p-5">
+        <section className={cardClass({ className: "gap-5" })}>
           <FormMessage message={errors.blocksAr ?? errors.blocksEn ?? null} />
           <ArticleBlocksEditor title={t("blocksArabic")} dir="rtl" rows={form.blocksAr} onChange={(blocksAr) => set({ blocksAr })} />
           <div className="border-t border-line pt-4">

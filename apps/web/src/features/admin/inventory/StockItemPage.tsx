@@ -3,14 +3,16 @@
 import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
-import { ArrowBackIcon, RefreshIcon } from "@/components/ui/icons";
+import { ArrowBackIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Link } from "@/i18n/navigation";
 import { formatDate } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
 import { fetchPartners } from "../expenses/expenses-api";
-import { Button, buttonClass, buttonIconSize } from "../kit/Button";
+import { buttonClass, buttonIconSize } from "../kit/Button";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { PhotoGallery } from "../stock/PhotoGallery";
 import { usePermissions } from "../use-permissions";
@@ -47,7 +49,7 @@ export function StockItemPage({ id }: { id: string }) {
     return (
       <>
         <PageHeader title={t("pageTitle")} actions={back} />
-        <div role="status" aria-label={t("loading")} className="h-64 animate-pulse rounded-card border border-line bg-surface" />
+        <LoadingCard className="h-64" label={t("loading")} />
       </>
     );
   }
@@ -55,10 +57,7 @@ export function StockItemPage({ id }: { id: string }) {
     return (
       <>
         <PageHeader title={t("pageTitle")} actions={back} />
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       </>
     );
   }
@@ -80,7 +79,7 @@ export function StockItemPage({ id }: { id: string }) {
   return (
     <>
       <PageHeader title={item.code} actions={back} />
-      <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+      <section className={cardClass({ className: "gap-4" })}>
         <div className="flex flex-wrap items-center gap-2">
           <h2 dir="auto" className="m-0 text-[17px] font-bold [unicode-bidi:isolate]">{item.modelName}</h2>
           <ConditionBadge condition={item.condition === "New" ? "New" : "Used"} />
@@ -96,12 +95,12 @@ export function StockItemPage({ id }: { id: string }) {
         </dl>
         <StockItemActions item={item} onChanged={refresh} />
       </section>
-      <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+      <section className={cardClass({ className: "gap-4" })}>
         <StockUnits item={item} partners={partners} canAssign={has("Finance.ManagePartnerAgreements")} showCosts={has("Inventory.ViewCosts")} onChanged={refresh} onStale={stale} />
       </section>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">
-          <section className="flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+          <section className={cardClass({ className: "gap-4" })}>
             <StockItemForm
               key={item.rowVersion} item={item} tree={tree} brands={brands} warrantyLabels={warrantyLabels} canEdit={canEdit}
               onSaved={setFresh}

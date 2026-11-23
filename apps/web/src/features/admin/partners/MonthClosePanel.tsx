@@ -11,6 +11,7 @@ import { useToast } from "../kit/Toast";
 import { closeMonth, type MonthClose } from "./partners-api";
 import { monthValid, previousMonth } from "./partner-rules";
 import { CheckIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** Closes a month for the partners paid from the shop's whole profit (the previous month, Cairo, to begin with): confirm first, then shows the result. */
@@ -44,7 +45,7 @@ export function MonthClosePanel({ today, onClosed }: { today: string; onClosed: 
     : [];
 
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <p className="m-0 text-sm text-ink-muted">{t("hint")}</p>
       <form

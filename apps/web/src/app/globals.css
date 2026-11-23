@@ -765,11 +765,11 @@ dialog[data-sheet="side"][data-edge="start"] {
 }
 
 .tabs-slide [data-active="true"] {
-  color: var(--on-carbon);
+  color: var(--ind-fg, var(--on-carbon));
 }
 
 .tabs-slide:not([data-indicator]) [data-active="true"] {
-  background: var(--carbon);
+  background: var(--ind-bg, var(--carbon));
 }
 
 .tab-indicator {
@@ -780,9 +780,29 @@ dialog[data-sheet="side"][data-edge="start"] {
   height: var(--ind-h, 0);
   transform: translate(var(--ind-x, 0), var(--ind-y, 0));
   border-radius: var(--ind-radius, var(--radius-control));
-  background: var(--carbon);
+  background: var(--ind-bg, var(--carbon));
   opacity: 0;
   pointer-events: none;
+}
+
+/* A soft indicator (the account's side nav): a tinted fill with an orange bar on the reading edge (the bottom edge on a phone's tab row). */
+.tabs-bar > .tab-indicator::before {
+  content: "";
+  position: absolute;
+  inset-block: 10px;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--orange);
+}
+
+@media (max-width: 767px) {
+  .tabs-bar > .tab-indicator::before {
+    inset-block: auto 0;
+    inset-inline: 12px;
+    width: auto;
+    height: 3px;
+  }
 }
 
 .tabs-slide[data-indicator] > .tab-indicator {

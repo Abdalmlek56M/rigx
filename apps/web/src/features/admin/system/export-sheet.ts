@@ -2,6 +2,8 @@
  * The PDF export (4.10b C): the server's CSV of a dataset becomes a printable Arabic table, saved as PDF from the print dialog.
  * Pure, so it is tested.
  */
+import { listSeparator } from "../../../lib/format.ts";
+
 export interface ExportSheet {
   columns: string[];
   rows: string[][];
@@ -60,7 +62,7 @@ export function displayCell(value: string, locale: string, words: { yes: string;
     const [, year, month, day, hour, minute] = instant;
     const hours = Number(hour);
     const period = hours < 12 ? (locale === "ar" ? "ص" : "AM") : locale === "ar" ? "م" : "PM";
-    return `${day}/${month}/${year} · ${hours % 12 || 12}:${minute} ${period}`;
+    return `${day}/${month}/${year}${listSeparator(locale)}${hours % 12 || 12}:${minute} ${period}`;
   }
   const date = DATE.exec(value);
   if (date) return `${date[3]}/${date[2]}/${date[1]}`;

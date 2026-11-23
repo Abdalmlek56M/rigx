@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { listSeparator } from "@/lib/format";
 import { Link } from "@/i18n/navigation";
 import { toFormErrors, type FormErrors } from "../kit/form-errors";
 import { PageHeader } from "../kit/PageHeader";
@@ -26,7 +27,7 @@ import { buttonClass, buttonIconSize, IconButton } from "../kit/Button";
 const PREVIEW_DELAY_MS = 400;
 
 /** One line for the whole form: the message of the failure, or its field messages together. */
-const describe = (errors: FormErrors): string | null => errors.general ?? (Object.values(errors.fields).join(" · ") || null);
+const describe = (errors: FormErrors, locale: string): string | null => errors.general ?? (Object.values(errors.fields).join(listSeparator(locale)) || null);
 
 interface PosProps {
   leadSources: readonly string[];
@@ -36,6 +37,7 @@ interface PosProps {
 /** ADM-POS: sell a piece or a build over the counter: cart, customer, payment, the server's live pricing, then confirm or save pending. */
 export function Pos({ leadSources, governorates }: PosProps) {
   const t = useTranslations("admin.pos");
+  const locale = useLocale();
   const kit = useTranslations("admin.kit");
   const { has } = usePermissions();
   const submit = useSubmit();
@@ -69,14 +71,14 @@ export function Pos({ leadSources, governorates }: PosProps) {
           setPreview(answer);
           setPreviewError(null);
         },
-        (error) => current && setPreviewError(describe(toFormErrors(error, failed)))
+        (error) => current && setPreviewError(describe(toFormErrors(error, failed), locale))
       );
     }, PREVIEW_DELAY_MS);
     return () => {
       current = false;
       window.clearTimeout(timer);
     };
-  }, [priced, request, failed]);
+  }, [priced, request, failed, locale]);
 
   function sell(confirm: boolean) {
     setAttempted(true);
@@ -135,7 +137,7 @@ export function Pos({ leadSources, governorates }: PosProps) {
           </div>
           <PosSummary
             lineCount={cart.length} preview={priced ? preview : null} previewError={priced ? previewError : null}
-            busy={submit.busy} saleError={describe(submit.errors)} onSell={sell}
+            busy={submit.busy} saleError={describe(submit.errors, locale)} onSell={sell}
             couponCode={form.couponCode} onCouponCode={(code) => set("couponCode", code)}
           />
         </div>

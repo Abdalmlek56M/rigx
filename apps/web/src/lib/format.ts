@@ -6,6 +6,16 @@ export function formatEgp(amount: number, locale: string): string {
   return locale === "ar" ? `${value} ج.م` : `EGP ${value}`;
 }
 
+/** What goes between two values written on one line: the Arabic comma and a space in Arabic, a comma and a space otherwise. */
+export function listSeparator(locale: string): string {
+  return locale === "ar" ? "، " : ", ";
+}
+
+/** The non-empty values of a line joined by the list separator ("a، b" / "a, b"); an empty, null or false value is left out. */
+export function joinValues(values: readonly (string | null | undefined | false)[], locale: string): string {
+  return values.filter((value): value is string => typeof value === "string" && value !== "").join(listSeparator(locale));
+}
+
 const CAIRO = "Africa/Cairo";
 const calendarLocale = (locale: string) => (locale === "ar" ? "ar-EG-u-nu-latn" : "en-GB");
 
@@ -51,14 +61,14 @@ export function formatTime(iso: string, locale: string): string {
   return clock(cairoParts(iso, locale, {}), locale);
 }
 
-/** "13/11 · 2:22 م" / "13/11 · 2:22 PM": day/month and 12-hour Cairo time. */
+/** "13/11، 2:22 م" / "13/11, 2:22 PM": day/month and 12-hour Cairo time. */
 export function formatDateTime(iso: string, locale: string): string {
   const parts = cairoParts(iso, locale, { day: "numeric", month: "numeric" });
-  return `${part(parts, "day")}/${part(parts, "month")} · ${clock(parts, locale)}`;
+  return `${part(parts, "day")}/${part(parts, "month")}${listSeparator(locale)}${clock(parts, locale)}`;
 }
 
-/** "13/11/2026 · 2:22 م": day/month/year and 12-hour Cairo time, as printed on an invoice. */
+/** "13/11/2026، 2:22 م": day/month/year and 12-hour Cairo time, as printed on an invoice. */
 export function formatDateTimeFull(iso: string, locale: string): string {
   const parts = cairoParts(iso, locale, { day: "2-digit", month: "2-digit", year: "numeric" });
-  return `${part(parts, "day")}/${part(parts, "month")}/${part(parts, "year")} · ${clock(parts, locale)}`;
+  return `${part(parts, "day")}/${part(parts, "month")}/${part(parts, "year")}${listSeparator(locale)}${clock(parts, locale)}`;
 }

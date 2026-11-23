@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatDateTime, formatEgp } from "@/lib/format";
+import { formatDateTime, formatEgp, joinValues, listSeparator } from "@/lib/format";
 import { whatsAppUrl } from "@/lib/contact";
 import { orderAddressText, orderWhatsAppNumber } from "./order-rules";
 import { governorateName } from "../customers/customer-rules";
@@ -33,12 +33,13 @@ function Field({ label, value, mono = false, wide = false, children }: {
 /** Who ordered: contact details, how they found us, the address and their notes. */
 export function OrderCustomer({ order, governorates }: { order: Order; governorates: readonly { code: string; name: string }[] }) {
   const t = useTranslations("admin.orders");
+  const locale = useLocale();
   const usages = useTranslations("checkout.extras.usages");
   const usageName = order.usage ? usageKey(order.usage) : null;
   const usage = usageName ? usages(usageName) : order.usage;
   const address = orderAddressText(order.address, (code) => governorateName(governorates, code) ?? code);
   const whatsApp = orderWhatsAppNumber(order);
-  const rating = order.satisfactionScore !== null ? `${order.satisfactionScore}/5${order.satisfactionComment ? ` · ${order.satisfactionComment}` : ""}` : null;
+  const rating = order.satisfactionScore !== null ? joinValues([`${order.satisfactionScore}/5`, order.satisfactionComment], locale) : null;
 
   return (
     <SectionCard title={t("detail.customer.title")} icon={UserIcon}>
@@ -57,7 +58,7 @@ export function OrderCustomer({ order, governorates }: { order: Order; governora
         </Field>
         <Field label={t("detail.customer.email")} value={order.customerEmail} mono />
         <Field label={t("detail.customer.leadSource")} value={order.leadSource} />
-        <Field label={t("detail.customer.usage")} value={[usage, order.usageNote].filter(Boolean).join(" · ")} />
+        <Field label={t("detail.customer.usage")} value={joinValues([usage, order.usageNote], locale)} />
         <Field label={t("detail.customer.satisfaction")} value={rating} />
         <Field label={t("detail.customer.address")} value={address} wide />
         <Field label={t("detail.customer.notes")} value={order.notes} wide />
@@ -136,7 +137,7 @@ export function OrderMoney({ order }: { order: Order }) {
             {order.payments.map((payment, index) => (
               <li key={`${payment.createdAtUtc}-${index}`} className="flex flex-wrap items-baseline justify-between gap-x-3 border-t border-line py-2 text-sm first:border-t-0">
                 <span className="flex flex-col">
-                  <span className="font-bold">{method(payment.method)} · {formatEgp(payment.amount, locale)}</span>
+                  <span className="font-bold">{method(payment.method)}{listSeparator(locale)}{formatEgp(payment.amount, locale)}</span>
                   {payment.note ? <span dir="auto" className="text-xs text-ink-muted">{payment.note}</span> : null}
                 </span>
                 <span dir="ltr" className="font-mono text-xs text-ink-muted">{formatDateTime(payment.createdAtUtc, locale)}</span>

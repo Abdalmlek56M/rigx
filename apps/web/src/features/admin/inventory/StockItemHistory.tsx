@@ -9,6 +9,7 @@ import { AuditActionBadge } from "../audit/AuditActionBadge";
 import { fetchEntries } from "../audit/audit-api";
 import { useAuditLabels } from "../audit/use-audit-labels";
 import { ArrowEndIcon, RefreshIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 /** The item's change history from the data-change log: when, who, what kind of change and which fields; each entry opens in the log. */
@@ -19,7 +20,7 @@ export function StockItemHistory({ itemId }: { itemId: string }) {
   const { state, reload } = useLoad(useCallback(() => fetchEntries({ entity: "stock_items", entityId: itemId, page: 1 }), [itemId]));
 
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <h3 className="m-0 text-[15px] font-bold">{t("title")}</h3>
       {state.status === "loading" ? <div role="status" aria-label={t("loading")} className="h-24 animate-pulse rounded-control bg-paper" /> : null}
       {state.status === "error" ? (

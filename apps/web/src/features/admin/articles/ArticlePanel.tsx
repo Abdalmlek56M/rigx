@@ -6,8 +6,7 @@ import { useLoad } from "@/lib/hooks/use-load";
 import type { Category } from "../categories/categories-api";
 import { ArticleEditor } from "./ArticleEditor";
 import { fetchArticle, fetchRevisions, type Article } from "./articles-api";
-import { RefreshIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 
 /** Loads one article and its revisions, then shows the editor. */
 export function ArticlePanel({ id, categories, onChanged }: {
@@ -21,13 +20,10 @@ export function ArticlePanel({ id, categories, onChanged }: {
     [id]
   );
   const { state, reload } = useLoad(load);
-  if (state.status === "loading") return <div aria-hidden="true" className="h-72 animate-pulse rounded-card border border-line bg-surface" />;
+  if (state.status === "loading") return <LoadingCard className="h-72" />;
   if (state.status === "error") {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-        <p className="m-0 font-bold">{t("failed")}</p>
-        <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-      </div>
+      <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
     );
   }
   const saved = (article: Article) => { reload(); onChanged(article); };

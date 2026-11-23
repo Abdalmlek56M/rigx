@@ -52,22 +52,28 @@ export function AccountShell({ children }: { children: ReactNode }) {
         actions={user ? <ConfirmButton iconOnly label={t("signOut")} icon={LogoutIcon} onConfirm={() => void leave()} /> : undefined}
       />
       <div className="grid items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
-        <nav ref={navRow} aria-label={t("navLabel")} className={cardClass({ padding: "sm", className: "tabs-slide -mx-4 flex-row gap-1 overflow-x-auto px-4 md:mx-0 md:flex-col md:overflow-visible md:px-4" })}>
-          <span aria-hidden="true" className="tab-indicator" />
-          {ACCOUNT_NAV.map((item) => {
-            const active = isActiveNav(item.href, pathname);
-            const NavIcon = NAV_ICONS[item.key];
-            return (
-              <Link
-                key={item.href} href={item.href} aria-current={active ? "page" : undefined} data-active={active} ref={active ? activeLink : undefined}
-                className={`relative flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-3 text-sm font-bold transition-colors ${active ? "" : "text-ink hover:bg-paper"}`}
-              >
-                <NavIcon size={18} />
-                {t(`nav.${item.key}`)}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Sticky on a wrapper: .tabs-slide sets its own position. */}
+        <div className="min-w-0 md:sticky md:top-24">
+          <nav
+            ref={navRow} aria-label={t("navLabel")}
+            className={cardClass({ padding: "sm", className: "tabs-slide tabs-bar -mx-4 flex-row gap-1 overflow-x-auto rounded-none border-x-0 px-4 [--ind-bg:var(--orange-soft)] [--ind-fg:var(--ink)] [scrollbar-width:none] md:mx-0 md:flex-col md:overflow-visible md:rounded-card md:border-x md:p-2" })}
+          >
+            <span aria-hidden="true" className="tab-indicator" />
+            {ACCOUNT_NAV.map((item) => {
+              const active = isActiveNav(item.href, pathname);
+              const NavIcon = NAV_ICONS[item.key];
+              return (
+                <Link
+                  key={item.href} href={item.href} aria-current={active ? "page" : undefined} data-active={active} ref={active ? activeLink : undefined}
+                  className={`relative flex min-h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-control px-3 text-sm font-bold transition-colors ${active ? "" : "text-ink-muted hover:bg-paper hover:text-ink"}`}
+                >
+                  <span aria-hidden="true" className={`flex transition-colors ${active ? "text-orange-text" : ""}`}><NavIcon size={18} /></span>
+                  {t(`nav.${item.key}`)}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
         {/* Next scrolls the first element of a new account page into view; the margin keeps it below the sticky header (129 px on a phone, 79 px from md). */}
         <div className="min-w-0 *:scroll-mt-36 md:*:scroll-mt-24">{user ? children : <SkeletonRows rows={3} />}</div>
       </div>

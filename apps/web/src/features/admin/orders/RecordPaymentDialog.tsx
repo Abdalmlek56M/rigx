@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, joinValues } from "@/lib/format";
 import type { MoneyAccount } from "../expenses/expenses-api";
 import { Dialog } from "../kit/Dialog";
 import { FormMessage } from "../kit/PageHeader";
@@ -59,7 +59,7 @@ export function RecordPaymentDialog({ order, accounts, onUpdated, onStale, onClo
           {accounts !== null ? (
             <SelectField
               label={t("account")} name="moneyAccountId" value={account} onChange={setAccount}
-              options={[{ value: "", label: t("defaultAccount") }, ...matching.map((entry) => ({ value: entry.id, label: `${entry.name} · ${formatEgp(entry.balance, locale)}` }))]}
+              options={[{ value: "", label: t("defaultAccount") }, ...matching.map((entry) => ({ value: entry.id, label: joinValues([entry.name, formatEgp(entry.balance, locale)], locale) }))]}
               error={submit.errors.fields.moneyAccountId}
             />
           ) : null}

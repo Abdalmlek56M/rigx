@@ -160,7 +160,7 @@ describe("address", () => {
   const name = (code: string) => (code === "alex" ? "الإسكندرية" : code);
 
   it("joins the parts present, in order, with the landmark after a separator", () => {
-    assert.equal(orderAddressText({ governorate: "alex", area: "العجمي", street: "شارع 9", building: "12", landmark: "بجوار المسجد" }, name), "الإسكندرية › العجمي › شارع 9 › 12 · بجوار المسجد");
+    assert.equal(orderAddressText({ governorate: "alex", area: "العجمي", street: "شارع 9", building: "12", landmark: "بجوار المسجد" }, name), "الإسكندرية › العجمي › شارع 9 › 12، بجوار المسجد");
     assert.equal(orderAddressText({ governorate: "alex", area: null, street: "شارع 9", building: null, landmark: null }, name), "الإسكندرية › شارع 9");
     assert.equal(orderAddressText(null, name), null);
   });

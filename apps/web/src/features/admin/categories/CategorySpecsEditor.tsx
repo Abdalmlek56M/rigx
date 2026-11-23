@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { listSeparator } from "@/lib/format";
 import { DataTable, type Column } from "../kit/DataTable";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
@@ -107,10 +108,11 @@ export function CategorySpecsEditor({ category, effective, canManage, onSaved, o
   onStale: () => void;
 }) {
   const t = useTranslations("admin.categories.specs");
+  const locale = useLocale();
   const submit = useSubmit();
   const [rows, setRows] = useState<SpecRow[]>(() => specRows(category.specs));
   const inherited = effective.filter((row) => row.inheritedFrom !== null);
-  const inheritedSources = [...new Set(inherited.map((row) => row.inheritedFrom?.name ?? ""))].filter(Boolean).join(" · ");
+  const inheritedSources = [...new Set(inherited.map((row) => row.inheritedFrom?.name ?? ""))].filter(Boolean).join(listSeparator(locale));
   const allValid = rows.every(specRowValid);
 
   function patch(id: string, change: Partial<SpecRow>) {

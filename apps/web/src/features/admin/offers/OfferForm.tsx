@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatDate, formatEgp } from "@/lib/format";
+import { formatDate, formatEgp, listSeparator } from "@/lib/format";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { FormMessage } from "../kit/PageHeader";
@@ -31,7 +31,7 @@ function Summary({ offer }: { offer: Offer }) {
         {offer.items.map((item) => (
           <li key={item.productId} className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-1.5 last:border-b-0">
             <span dir="auto" className="font-bold [unicode-bidi:isolate]">{item.productName}</span>
-            <span className="text-xs"><s className="text-ink-muted">{formatEgp(item.basePrice, locale)}</s> · <b>{formatEgp(item.offerPrice, locale)}</b></span>
+            <span className="text-xs"><s className="text-ink-muted">{formatEgp(item.basePrice, locale)}</s>{listSeparator(locale)}<b>{formatEgp(item.offerPrice, locale)}</b></span>
           </li>
         ))}
       </ul>

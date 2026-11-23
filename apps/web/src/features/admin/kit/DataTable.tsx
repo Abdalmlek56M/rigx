@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { Load } from "@/lib/hooks/use-load";
 import { ariaSort, nextSort, type SortState } from "./table-sort";
-import { RefreshIcon } from "@/components/ui/icons";
+import { ArrowDownIcon, ArrowUpIcon, InboxIcon, RefreshIcon } from "@/components/ui/icons";
 import { Button } from "./Button";
 
 export interface Column<T> {
@@ -34,6 +34,16 @@ interface DataTableProps<T> {
 }
 
 const SKELETON_ROWS = 5;
+
+/** The sort arrow of a header: bold for the column being sorted, a faint hint on the others (it brightens on hover or focus). */
+function SortMark({ direction }: { direction: SortState["direction"] | null }) {
+  const Arrow = direction === "asc" ? ArrowUpIcon : ArrowDownIcon;
+  return (
+    <span aria-hidden="true" className={`flex ${direction ? "text-orange-text" : "opacity-30 group-hover:opacity-100 group-focus-visible:opacity-100"}`}>
+      <Arrow size={14} />
+    </span>
+  );
+}
 
 // On a phone each row becomes a card: the column names sit above the values (`data-label`), the header row is hidden and empty cells vanish.
 const PHONE_ROW = "max-md:mb-2 max-md:grid max-md:grid-cols-2 max-md:gap-x-3 max-md:gap-y-2.5 max-md:rounded-card max-md:border max-md:border-line max-md:bg-surface max-md:p-3";
@@ -66,7 +76,12 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
   } else if (state.data.length === 0) {
     body = (
       <tr>
-        <td colSpan={columns.length} className="px-3 py-10 text-center font-bold text-ink-muted">{empty}</td>
+        <td colSpan={columns.length} className="px-3 py-10 text-center">
+          <div className="flex flex-col items-center gap-2 text-ink-muted">
+            <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-full bg-paper"><InboxIcon size={22} /></span>
+            <p className="m-0 text-sm font-bold">{empty}</p>
+          </div>
+        </td>
       </tr>
     );
   } else {
@@ -86,9 +101,9 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
             {columns.map((column) => (
               <th key={column.key} scope="col" aria-sort={column.sortKey ? ariaSort(sort, column.sortKey) : undefined} className={`whitespace-nowrap px-3 py-[var(--row-py,0.625rem)] font-bold ${cellAlign(column)}`}>
                 {column.sortKey && onSort ? (
-                  <button type="button" onClick={() => onSort(nextSort(sort, column.sortKey as string))} className="inline-flex min-h-8 items-center gap-1 font-bold hover:text-ink">
+                  <button type="button" onClick={() => onSort(nextSort(sort, column.sortKey as string))} className="group inline-flex min-h-8 items-center gap-1 font-bold hover:text-ink">
                     {column.header}
-                    <span aria-hidden="true">{sort?.key === column.sortKey ? (sort.direction === "asc" ? "▲" : "▼") : "↕"}</span>
+                    <SortMark direction={sort?.key === column.sortKey ? sort.direction : null} />
                   </button>
                 ) : column.header}
               </th>

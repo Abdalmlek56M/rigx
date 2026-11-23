@@ -132,7 +132,7 @@ export function orderAddressText(address: OrderAddressParts | null | undefined, 
   const first = [address.governorate ? governorate(address.governorate) : null, address.area, address.street, address.building]
     .filter((part): part is string => Boolean(part && part.trim()));
   if (first.length === 0) return address.landmark?.trim() || null;
-  return `${first.join(" › ")}${address.landmark?.trim() ? ` · ${address.landmark.trim()}` : ""}`;
+  return `${first.join(" › ")}${address.landmark?.trim() ? `، ${address.landmark.trim()}` : ""}`;
 }
 
 /** The order history newest first; equal timestamps keep the server's order. */

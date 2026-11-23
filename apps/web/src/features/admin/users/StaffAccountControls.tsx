@@ -7,6 +7,7 @@ import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { useToast } from "../kit/Toast";
 import { signOutStaff, updateUser, type StaffUser } from "./users-api";
 import { BanIcon, LogoutIcon, UndoIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 type Pending = "disable" | "enable" | "signOut" | null;
@@ -34,7 +35,7 @@ export function StaffAccountControls({ user, isSelf, onChanged }: { user: StaffU
     run(() => updateUser(user.id, { fullName: user.fullName, phoneNumber: user.phoneNumber ?? null, isActive }), isActive ? t("enabled") : t("disabled"));
 
   return (
-    <section className="flex flex-col gap-2.5 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-2.5" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       {isSelf ? (
         <p className="m-0 rounded-control bg-paper px-3 py-2 text-sm text-ink-muted">{t("self")}</p>

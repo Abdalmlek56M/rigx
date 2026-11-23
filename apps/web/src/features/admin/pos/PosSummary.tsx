@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useCouponProblemText } from "@/lib/coupon-problem-text";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, joinValues } from "@/lib/format";
 import { FormMessage } from "../kit/PageHeader";
 import type { PosPreview } from "./pos-api";
 import { BanIcon, CheckIcon, ClockIcon } from "@/components/ui/icons";
@@ -51,7 +51,7 @@ export function PosSummary({ lineCount, preview, previewError, busy, saleError, 
           {preview.deliveryFee > 0 ? <Row label={t("delivery")} value={egp(preview.deliveryFee)} /> : null}
           {preview.costTotal !== null ? <Row label={t("cost")} value={egp(preview.costTotal)} /> : null}
           {preview.profit !== null ? <Row label={t("profit")} value={egp(preview.profit)} tone={preview.profit < 0 ? "error" : undefined} /> : null}
-          {(preview.partnerShares ?? []).map((share) => <Row key={share.partnerId} label={`${t("partners")} · ${share.partnerName}`} value={egp(share.amount)} />)}
+          {(preview.partnerShares ?? []).map((share) => <Row key={share.partnerId} label={joinValues([t("partners"), share.partnerName], locale)} value={egp(share.amount)} />)}
           <Row label={t("total")} value={egp(preview.total)} strong />
         </dl>
       )}

@@ -5,6 +5,7 @@ import { mediaUrl } from "@/lib/media";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
+import { cardClass } from "@/components/ui/Card";
 import { flattenTree } from "../categories/category-rules";
 import type { Category } from "../categories/categories-api";
 import type { ArticleForm } from "./article-rules";
@@ -23,7 +24,7 @@ export function ArticleMetaCard({ form, set, categories, errors }: {
   }));
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
       <SelectField
         label={t("category")} name="categorySlug" value={form.categorySlug} onChange={(categorySlug) => set({ categorySlug })}

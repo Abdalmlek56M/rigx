@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { PlusIcon } from "@/components/ui/icons";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
@@ -10,6 +10,8 @@ import { Button } from "../kit/Button";
 import { DataTable, type Column } from "../kit/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StatusTone } from "@/components/ui/status-badge-rules";
+import { cardClass } from "@/components/ui/Card";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useReveal } from "../kit/use-reveal";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -91,13 +93,10 @@ export function Coupons() {
         actions={<Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); set({ id: "" }); }}>{t("new")}</Button>}
       />
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       ) : (
         <>
-          {state.status === "loading" ? <div aria-hidden="true" className="h-48 animate-pulse rounded-card border border-line bg-surface" /> : (
+          {state.status === "loading" ? <LoadingCard className="h-48" /> : (
             <>
               <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: coupons }} onRetry={reload} rowKey={(coupon) => coupon.id} empty={t("empty")} />
               {coupons.length > 0 ? (
@@ -109,7 +108,7 @@ export function Coupons() {
               ) : null}
             </>
           )}
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-3 rounded-card border border-line bg-surface p-5">
+          <section ref={panelRef} className={cardClass({ className: "scroll-mt-20 gap-3" })}>
             <h2 className="m-0 text-[17px] font-bold">{creating ? t("newTitle") : selected ? t("editTitle") : t("pick")}</h2>
             {creating ? (
               <CouponForm key="new" coupon={null} onSaved={(saved) => { setCreating(false); set({ id: saved.id }); reload(); }} onStale={reload} onCancel={() => setCreating(false)} />

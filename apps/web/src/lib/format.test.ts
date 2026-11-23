@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { formatDate, formatDateTime, formatDateTimeFull, formatMonth, formatMonthYear, formatTime, formatWeekday } from "./format.ts";
+import { formatDate, formatDateTime, formatDateTimeFull, formatMonth, formatMonthYear, formatTime, formatWeekday, joinValues, listSeparator } from "./format.ts";
 
 describe("formatMonth / formatDate", () => {
   it("names the month in the visitor's language", () => {
@@ -29,15 +29,27 @@ describe("formatMonthYear / formatWeekday", () => {
 
 describe("formatDateTime", () => {
   it("shows day/month and Cairo time", () => {
-    assert.equal(formatDateTime("2026-11-13T12:22:00Z", "en"), "13/11 · 2:22 PM");
-    assert.equal(formatDateTime("2026-11-13T12:22:00Z", "ar"), "13/11 · 2:22 م");
+    assert.equal(formatDateTime("2026-11-13T12:22:00Z", "en"), "13/11, 2:22 PM");
+    assert.equal(formatDateTime("2026-11-13T12:22:00Z", "ar"), "13/11، 2:22 م");
   });
 });
 
 describe("formatDateTimeFull", () => {
   it("shows the full date and Cairo time", () => {
-    assert.equal(formatDateTimeFull("2026-11-13T12:22:00Z", "en"), "13/11/2026 · 2:22 PM");
-    assert.equal(formatDateTimeFull("2026-11-13T12:22:00Z", "ar"), "13/11/2026 · 2:22 م");
+    assert.equal(formatDateTimeFull("2026-11-13T12:22:00Z", "en"), "13/11/2026, 2:22 PM");
+    assert.equal(formatDateTimeFull("2026-11-13T12:22:00Z", "ar"), "13/11/2026، 2:22 م");
+  });
+});
+
+describe("listSeparator / joinValues", () => {
+  it("separates values with the Arabic comma in Arabic and a comma otherwise", () => {
+    assert.equal(listSeparator("ar"), "، ");
+    assert.equal(listSeparator("en"), ", ");
+  });
+  it("joins the present values and leaves out the empty ones", () => {
+    assert.equal(joinValues(["القاهرة", "", null, undefined, false, "مدينة نصر"], "ar"), "القاهرة، مدينة نصر");
+    assert.equal(joinValues(["Cairo", "Nasr City"], "en"), "Cairo, Nasr City");
+    assert.equal(joinValues([null, false], "en"), "");
   });
 });
 

@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { POLICY_KINDS } from "@/features/policies/policy-body";
 import { formatDateTimeFull } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
+import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { FormMessage, PageHeader } from "../kit/PageHeader";
 import { toFormErrors } from "../kit/form-errors";
 import { useReveal } from "../kit/use-reveal";
@@ -14,7 +15,8 @@ import { createPolicyVersion, fetchPolicies, updatePolicy } from "./policies-api
 import { PolicyEditor } from "./PolicyEditor";
 import { PolicyHistory } from "./PolicyHistory";
 import { kindSummary } from "./policy-rules";
-import { PencilIcon, PlusIcon, RefreshIcon } from "@/components/ui/icons";
+import { PencilIcon, PlusIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button } from "../kit/Button";
 
 const FILTERS = { kind: "" };
@@ -57,13 +59,10 @@ export function PoliciesScreen() {
     <>
       <PageHeader title={t("title")} />
       {state.status === "error" ? (
-        <div role="alert" className="flex flex-col items-start gap-3 rounded-card border border-line bg-surface p-6">
-          <p className="m-0 font-bold">{t("failed")}</p>
-          <Button variant="primary" icon={RefreshIcon} onClick={reload}>{t("retry")}</Button>
-        </div>
+        <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
-          {state.status === "loading" ? <div aria-hidden="true" className="h-64 animate-pulse rounded-card border border-line bg-surface" /> : (
+          {state.status === "loading" ? <LoadingCard className="h-64" /> : (
             <ul className="m-0 flex list-none flex-col gap-2 p-0">
               {POLICY_KINDS.map((kind) => {
                 const info = kindSummary(kind.api, policies);
@@ -84,7 +83,7 @@ export function PoliciesScreen() {
               })}
             </ul>
           )}
-          <section ref={panelRef} className="scroll-mt-20 flex min-w-0 flex-col gap-4 rounded-card border border-line bg-surface p-5">
+          <section ref={panelRef} className={cardClass({ className: "scroll-mt-20 gap-4" })}>
             <h2 className="m-0 text-[17px] font-bold">{kindsText(active.slug)}</h2>
             {state.status === "loading" ? null : summary.draft ? (
               <PolicyEditor key={`${summary.draft.id}-${summary.draft.rowVersion}`} policy={summary.draft} onSaved={reload} onStale={reload} />

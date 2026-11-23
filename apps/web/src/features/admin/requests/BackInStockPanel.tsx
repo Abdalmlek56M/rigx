@@ -2,11 +2,12 @@
 
 import { useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, listSeparator } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { useSubmit } from "../kit/use-submit";
 import { fetchBackInStock, markBackInStockSent } from "./requests-api";
 import { CheckIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** Notify-me requests whose model came back in stock and were not messaged yet. */
@@ -28,7 +29,7 @@ export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <div className="flex flex-col gap-0.5">
         <h2 className="m-0 text-[17px] font-bold">{t("panelTitle")}</h2>
         <p className="m-0 text-xs text-ink-muted">{t("panelNote")}</p>
@@ -42,7 +43,7 @@ export function BackInStockPanel({ onChanged }: { onChanged: () => void }) {
               <span className="text-xs text-ink-muted">{t("requestLine", { code: item.code, name: item.name, date: formatDateTime(item.availableAtUtc, locale) })}</span>
               <span className="text-xs text-ink-muted">
                 <bdi dir="ltr">{item.phone}</bdi>
-                {" · "}
+                {listSeparator(locale)}
                 {item.condition === "New" || item.condition === "Used" ? t("wanted", { condition: tCondition(item.condition) }) : t("wantedAny")}
               </span>
             </span>

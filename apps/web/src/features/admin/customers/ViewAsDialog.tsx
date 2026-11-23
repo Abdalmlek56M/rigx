@@ -3,7 +3,7 @@
 import { useCallback, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { orderStatusKey } from "@/features/tracking/tracking-steps";
-import { formatDate, formatEgp } from "@/lib/format";
+import { formatDate, formatEgp, joinValues, listSeparator } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { Dialog } from "../kit/Dialog";import { RequestTypeBadge } from "../requests/RequestBadges";
 import { fetchCustomerViewAs } from "./customers-api";
@@ -52,7 +52,7 @@ export function ViewAsDialog({ id, onClose }: { id: string; onClose: () => void 
               <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
                 {state.data.addresses.map((address) => (
                   <li key={address.id}>
-                    <b>{address.label}</b> · {address.governorate} · {address.city} · {address.street}
+                    <b>{address.label}</b>{listSeparator(locale)}{joinValues([address.governorate, address.city, address.street], locale)}
                   </li>
                 ))}
               </ul>

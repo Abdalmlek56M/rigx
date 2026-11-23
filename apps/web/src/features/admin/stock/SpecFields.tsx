@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { joinValues } from "@/lib/format";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
 import { fetchCategorySpecs, type SpecDefinition } from "../categories/categories-api";
@@ -20,6 +21,7 @@ export function SpecFields({ categoryId, values, onChange, namePrefix, error }: 
   error?: string | null;
 }) {
   const t = useTranslations("admin.inventory.specs");
+  const locale = useLocale();
   const [loaded, setLoaded] = useState<{ categoryId: string; schema: SpecDefinition[] } | null>(null);
   // What the form opened with: its values the category does not define are listed under the fields (they are not saved).
   const [opened] = useState(values);
@@ -69,7 +71,7 @@ export function SpecFields({ categoryId, values, onChange, namePrefix, error }: 
       {dropped.length > 0 ? (
         <p role="status" className="m-0 rounded-control bg-orange-soft px-3 py-2 text-xs">
           <span className="font-bold">{t("old")}</span>{" "}
-          <span dir="auto" className="[unicode-bidi:isolate]">{dropped.map(([key, value]) => `${key}: ${value}`).join(" · ")}</span>
+          <span dir="auto" className="[unicode-bidi:isolate]">{joinValues(dropped.map(([key, value]) => `${key}: ${value}`), locale)}</span>
         </p>
       ) : null}
       {error ? <p role="alert" className="m-0 text-sm font-bold text-error-text">{error}</p> : null}

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/ui/TextField";
+import { cardClass } from "@/components/ui/Card";
 import type { PurchaseForm } from "./purchase-rules";
 
 const card = (selected: boolean) =>
@@ -19,7 +20,7 @@ export function PurchaseIntakeType({ form, error, onChange }: {
   const fullPc = form.kind === "FullPc";
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <h2 className="m-0 text-[17px] font-bold">{t("kindTitle")}</h2>
       <fieldset className="m-0 grid gap-3 border-0 p-0 sm:grid-cols-2">
         <legend className="sr-only">{t("kindTitle")}</legend>

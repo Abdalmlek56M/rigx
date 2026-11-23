@@ -10,6 +10,7 @@ import { OrderInvoiceLinks } from "../orders/OrderInvoiceLinks";
 import { OrderStatusBadge } from "../orders/OrderBadges";
 import { setOrderStatus, type Order } from "../orders/orders-api";
 import { EyeIcon, PlusIcon, TruckIcon } from "@/components/ui/icons";
+import { cardClass } from "@/components/ui/Card";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 interface PosSoldProps {
@@ -44,7 +45,7 @@ export function PosSold({ order: sold, canDeliver, onNewSale }: PosSoldProps) {
   }, t("delivered"));
 
   return (
-    <section className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5 md:p-6">
+    <section className={cardClass({ className: "gap-4" })}>
       <h2 className="m-0 text-xl font-bold">{sold.status === "New" ? t("pending") : t("confirmed")}</h2>
       <dl className="m-0 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <Figure label={t("reference")} value={order.reference} mono />

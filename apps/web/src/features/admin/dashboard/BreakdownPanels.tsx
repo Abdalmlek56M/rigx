@@ -1,7 +1,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, listSeparator } from "@/lib/format";
 import { parseUsage } from "@/lib/usage";
 import type { DashboardData } from "./dashboard-api";
 import { withShares } from "./dashboard-rules";
@@ -46,13 +46,14 @@ export function TodoPanel({ todo, newRequests }: { todo: DashboardData["todo"]; 
 
 /** Orders per answer (lead source or usage): a bar, the share and the count. */
 function ShareList({ rows }: { rows: readonly { label: string; orders: number }[] }) {
+  const locale = useLocale();
   return (
     <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
       {withShares(rows, (row) => row.orders).map((row) => (
         <li key={row.label} className="grid grid-cols-[minmax(0,130px)_1fr_auto] items-center gap-2.5 text-[13px]">
           <span className="truncate">{row.label}</span>
           <Bar width={row.width} />
-          <span dir="ltr" className="font-mono text-xs text-ink-muted">{row.percent}% · {row.orders}</span>
+          <span dir="ltr" className="font-mono text-xs text-ink-muted">{row.percent}%{listSeparator(locale)}{row.orders}</span>
         </li>
       ))}
     </ul>

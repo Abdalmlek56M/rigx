@@ -8,6 +8,7 @@ import type { ExpenseType } from "./expenses-api";
 import { PencilIcon, PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { cardClass } from "@/components/ui/Card";
 
 /** The pickable expense types; renaming one keeps old expenses as recorded. */
 export function ExpenseTypesPanel({ types, canManage, onChanged }: { types: readonly ExpenseType[]; canManage: boolean; onChanged: () => void }) {
@@ -23,7 +24,7 @@ export function ExpenseTypesPanel({ types, canManage, onChanged }: { types: read
   ];
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-3" })}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-[17px] font-bold">{t("title")}</h2>
         {canManage ? <Button icon={PlusIcon} onClick={() => setEditing("new")}>{t("add")}</Button> : null}

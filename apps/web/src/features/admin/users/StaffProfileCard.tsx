@@ -2,8 +2,9 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { cardClass } from "@/components/ui/Card";
 import { Link } from "@/i18n/navigation";
-import { formatDate, formatDateTime, formatEgp } from "@/lib/format";
+import { formatDate, formatDateTime, formatEgp, listSeparator } from "@/lib/format";
 import { initials } from "@/features/account/profile-rules";
 import { usePermissions } from "../use-permissions";
 import { isCustomerOnly } from "./user-rules.ts";
@@ -30,7 +31,7 @@ export function StaffProfileCard({ profile, roleNames }: { profile: StaffProfile
   const records = ownRecord ? [{ id: user.id, name: user.fullName, personCode: account.personCode }] : linkedCustomers;
 
   return (
-    <section className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5">
+    <section className={cardClass({ className: "gap-4" })}>
       <div className="flex items-center gap-3">
         <span aria-hidden="true" className="flex size-[52px] shrink-0 items-center justify-center rounded-full bg-carbon text-lg font-bold text-on-carbon">
           {initials(user.fullName)}
@@ -63,10 +64,10 @@ export function StaffProfileCard({ profile, roleNames }: { profile: StaffProfile
         {records.length === 0 ? <span className="text-ink-muted">{t("noCustomerRecord")}</span> : null}
         {records.map((customer) => has("Customers.View") ? (
           <Link key={customer.id} href={`/admin/customers/${customer.id}`} className="font-bold text-orange-text hover:underline">
-            {customer.name} <span dir="ltr" className="font-mono text-xs">· {customer.personCode}</span>
+            {customer.name}{listSeparator(locale)}<span dir="ltr" className="font-mono text-xs">{customer.personCode}</span>
           </Link>
         ) : (
-          <span key={customer.id} className="font-bold">{customer.name} <span dir="ltr" className="font-mono text-xs">· {customer.personCode}</span></span>
+          <span key={customer.id} className="font-bold">{customer.name}{listSeparator(locale)}<span dir="ltr" className="font-mono text-xs">{customer.personCode}</span></span>
         ))}
         {!ownRecord && records.length > 0 ? <span className="text-xs text-ink-muted">{t("linkRule")}</span> : null}
       </div>

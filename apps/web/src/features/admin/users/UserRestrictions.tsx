@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, listSeparator } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { FormMessage } from "../kit/PageHeader";
@@ -89,7 +89,7 @@ export function UserRestrictions({ userId }: { userId: string }) {
               </div>
               <p className="m-0 [overflow-wrap:anywhere]">{item.reason}</p>
               <p className="m-0 text-xs text-ink-muted">
-                {t("from")}: <span dir="ltr">{formatDateTime(item.effectiveAtUtc, locale)}</span> · {t("untilLabel")}: <span dir="ltr">{item.expiresAtUtc ? formatDateTime(item.expiresAtUtc, locale) : t("forever")}</span>
+                {t("from")}: <span dir="ltr">{formatDateTime(item.effectiveAtUtc, locale)}</span>{listSeparator(locale)}{t("untilLabel")}: <span dir="ltr">{item.expiresAtUtc ? formatDateTime(item.expiresAtUtc, locale) : t("forever")}</span>
               </p>
               {item.reinstatementReason ? <p className="m-0 text-xs text-ink-muted [overflow-wrap:anywhere]">{t("reinstatedBecause", { reason: item.reinstatementReason })}</p> : null}
             </li>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { formatEgp } from "@/lib/format";
+import { formatEgp, joinValues } from "@/lib/format";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
@@ -95,7 +95,7 @@ export function RecurringExpenseDialog({ template, types, accounts, canSeeVaults
         </div>
         {canSeeVaults ? (
           <SelectField label={t("account")} name="moneyAccountId" value={accountId} onChange={setAccountId}
-            options={[{ value: "", label: t("defaultAccount") }, ...accounts.map((account) => ({ value: account.id, label: `${account.name} · ${formatEgp(account.balance, locale)}` }))]} />
+            options={[{ value: "", label: t("defaultAccount") }, ...accounts.map((account) => ({ value: account.id, label: joinValues([account.name, formatEgp(account.balance, locale)], locale) }))]} />
         ) : null}
         <TextAreaField label={t("note")} name="note" value={note} onChange={setNote} rows={2} maxLength={1000} hint={t("noteHint")} />
         <Check label={t("active")} checked={isActive} onChange={setIsActive} />

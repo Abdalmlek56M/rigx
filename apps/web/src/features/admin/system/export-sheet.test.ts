@@ -32,10 +32,10 @@ describe("displayCell", () => {
     assert.equal(displayCell("no", "ar", words), "لا");
   });
   it("puts business times on the 12-hour clock and dates day first", () => {
-    assert.equal(displayCell("2026-11-14 09:30", "ar", words), "14/11/2026 · 9:30 ص");
-    assert.equal(displayCell("2026-11-14 00:05", "ar", words), "14/11/2026 · 12:05 ص");
-    assert.equal(displayCell("2026-11-14 12:00", "en", words), "14/11/2026 · 12:00 PM");
-    assert.equal(displayCell("2026-11-14 21:45", "en", words), "14/11/2026 · 9:45 PM");
+    assert.equal(displayCell("2026-11-14 09:30", "ar", words), "14/11/2026، 9:30 ص");
+    assert.equal(displayCell("2026-11-14 00:05", "ar", words), "14/11/2026، 12:05 ص");
+    assert.equal(displayCell("2026-11-14 12:00", "en", words), "14/11/2026, 12:00 PM");
+    assert.equal(displayCell("2026-11-14 21:45", "en", words), "14/11/2026, 9:45 PM");
     assert.equal(displayCell("2026-11-14", "ar", words), "14/11/2026");
   });
   it("leaves other text as it is", () => {
