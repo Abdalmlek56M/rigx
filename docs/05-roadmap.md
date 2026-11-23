@@ -81,6 +81,11 @@ Order matters: we restructure before adding features, so new features land in cl
 ## Phase 6 — Launch
 - Moved into Phase 4 step 8 (launch prep). Left here: external security review, payment gateway (Paymob/Fawry, owner decides when).
 
+## Post-launch (owner decision 23 Nov 2026: later, not before G)
+- [ ] **Returns screen in the admin**: build it on the existing `GET /admin/retail/returns` API and point the dashboard's "مرتجعات بانتظار فحص" row to it (today that row opens the orders list).
+- [ ] **Empty build, "written part" option**: beside "add a part from stock" and "create a stock part", add "قطعة مكتوبة (مخططة)" that opens the planned-parts form (kept as it is for now).
+- [ ] **Date field format `dd/mm/yyyy`**: the shared `DateField` stays; if the native display looks wrong on the owner's own browser, build the text field that shows `dd/mm/yyyy` itself with the picker behind a calendar button (about 80 lines, no library).
+
 ## Owner decisions still needed (asked when the step arrives)
 - Tier conditions and perk values (when tiers are enabled).
 - Domain mail (later; Gmail for now). Hosting decided: owner VPS + `rigxhardware.com`.
