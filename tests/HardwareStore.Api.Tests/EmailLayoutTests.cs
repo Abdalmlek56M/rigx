@@ -32,6 +32,50 @@ public sealed class EmailLayoutTests
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("sara@example.com")]
+    public void The_greeting_never_shows_an_email_address_or_an_empty_name(string? name)
+    {
+        Assert.Equal("مرحباً بك،", EmailLayout.Greeting(name));
+        Assert.Equal("Hello,", EmailLayout.Greeting(name, EmailLayout.EmailLanguage.English));
+    }
+
+    [Fact]
+    public void The_greeting_uses_a_real_saved_name()
+    {
+        Assert.Equal("مرحباً سارة،", EmailLayout.Greeting("سارة"));
+        Assert.Equal("Hello Sara,", EmailLayout.Greeting("Sara", EmailLayout.EmailLanguage.English));
+    }
+
+    [Fact]
+    public void The_code_email_without_a_name_greets_neutrally_and_keeps_every_block_rtl_except_the_code()
+    {
+        var content = EmailLayout.Code(
+            new EmailCodeMessage("sara@example.com", "sara@example.com", "123456", Now.AddMinutes(10), EmailCodePurpose.SignIn), Now);
+
+        Assert.Contains("مرحباً بك،", content.Html);
+        Assert.DoesNotContain("sara@example.com", content.Html);
+        Assert.Contains("<html dir=\"rtl\" lang=\"ar\">", content.Html);
+        Assert.Contains("direction:rtl;text-align:right;", content.Html);
+        Assert.Equal("rtl", EmailLayout.Direction(EmailLayout.EmailLanguage.Arabic));
+        Assert.Equal("ltr", EmailLayout.Direction(EmailLayout.EmailLanguage.English));
+        Assert.Contains("<div dir=\"ltr\" style=\"display:block;direction:ltr;text-align:center;", content.Html);
+    }
+
+    [Fact]
+    public void The_header_is_a_text_wordmark_with_an_orange_strip_and_no_images()
+    {
+        var content = EmailLayout.Code(
+            new EmailCodeMessage("to@example.com", "سارة", "123456", Now.AddMinutes(10), EmailCodePurpose.SignIn), Now);
+
+        Assert.Contains(">RIGX</td>", content.Html);
+        Assert.Contains("background:#f97316;height:4px", content.Html);
+        Assert.DoesNotContain("<img", content.Html);
+    }
+
+    [Theory]
     [InlineData(1, "صالح لمدة دقيقة واحدة")]
     [InlineData(15, "صالح لمدة 15 دقيقة")]
     public void The_code_validity_uses_the_right_arabic_count(int minutes, string expected)

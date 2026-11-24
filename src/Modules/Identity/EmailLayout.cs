@@ -15,12 +15,14 @@ public sealed record EmailContent(string Subject, string Text, string Html);
 public static class EmailLayout
 {
     private const string SiteUrl = "https://rigxhardware.com";
-    private const string Paragraph = "margin:0 0 14px;font-size:15px;line-height:1.8;color:#121317;";
-    private const string Small = "margin:0 0 10px;font-size:13px;line-height:1.7;color:#4A4D53;";
+    private const string Ar = "dir=\"rtl\" lang=\"ar\"";
+    private const string Rtl = "direction:rtl;text-align:right;";
+    private const string Paragraph = "direction:rtl;text-align:right;margin:0 0 14px;font-size:15px;line-height:1.8;color:#121317;";
+    private const string Small = "direction:rtl;text-align:right;margin:0 0 10px;font-size:13px;line-height:1.7;color:#4A4D53;";
     private const string CodeBox = "display:block;direction:ltr;text-align:center;font-family:'Courier New',monospace;font-size:32px;letter-spacing:8px;font-weight:bold;color:#121317;background:#F4F4F1;border:1px solid #E3E2DD;border-radius:8px;padding:16px 8px;margin:0 0 14px;";
     private const string Button = "display:inline-block;background:#FF6A2B;color:#FFFFFF;padding:12px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;";
     private const string RawLink = "margin:0 0 14px;font-size:12px;line-height:1.7;color:#4A4D53;word-break:break-all;";
-    private const string InfoBox = "margin:0 0 14px;padding:14px 16px;background:#F4F4F1;border:1px solid #E3E2DD;border-radius:8px;font-size:14px;line-height:1.8;color:#121317;";
+    private const string InfoBox = "direction:rtl;text-align:right;margin:0 0 14px;padding:14px 16px;background:#F4F4F1;border:1px solid #E3E2DD;border-radius:8px;font-size:14px;line-height:1.8;color:#121317;";
 
     public static EmailContent Code(EmailCodeMessage message, DateTimeOffset? now = null)
     {
@@ -35,14 +37,14 @@ public static class EmailLayout
             ? $"كود تأكيد العملية في RIGX: {code}"
             : $"كود الدخول إلى RIGX: {code}";
         var html = $"""
-            <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
-            <p style="{Paragraph}">{lead}</p>
+            <p {Ar} style="{Paragraph}">{E(Greeting(message.FullName))}</p>
+            <p {Ar} style="{Paragraph}">{lead}</p>
             <div dir="ltr" style="{CodeBox}">{E(code)}</div>
-            <p style="{Small}">{validity}</p>
-            <p style="{Small}">إذا لم تطلب هذا الكود، تجاهل هذه الرسالة.</p>
+            <p {Ar} style="{Small}">{validity}</p>
+            <p {Ar} style="{Small}">إذا لم تطلب هذا الكود، تجاهل هذه الرسالة.</p>
             """;
         var text = $"""
-            مرحبًا {message.FullName}،
+            {Greeting(message.FullName)}
 
             {label} الخاص بحسابك في RIGX هو: {code}
             {validity}
@@ -59,14 +61,14 @@ public static class EmailLayout
         var url = Url(message.SignInUrl);
         var roles = message.Roles.Count == 0 ? "فريق RIGX" : string.Join("، ", message.Roles);
         var html = $"""
-            <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
-            <p style="{Paragraph}">تمت إضافتك إلى فريق RIGX. الصلاحيات: {E(roles)}.</p>
-            <p style="{Paragraph}">سجّل الدخول إلى لوحة الإدارة من الزر التالي:</p>
+            <p {Ar} style="{Paragraph}">{E(Greeting(message.FullName))}</p>
+            <p {Ar} style="{Paragraph}">تمت إضافتك إلى فريق RIGX. الصلاحيات: {E(roles)}.</p>
+            <p {Ar} style="{Paragraph}">سجّل الدخول إلى لوحة الإدارة من الزر التالي:</p>
             {LinkBlock(url, "الدخول إلى لوحة الإدارة")}
-            <p style="{Small}">لا توجد كلمة مرور؛ يمكنك الدخول برمز يُرسل إلى بريدك الإلكتروني أو بحساب Google.</p>
+            <p {Ar} style="{Small}">لا توجد كلمة مرور؛ يمكنك الدخول برمز يُرسل إلى بريدك الإلكتروني أو بحساب Google.</p>
             """;
         var text = $"""
-            مرحبًا {message.FullName}،
+            {Greeting(message.FullName)}
 
             تمت إضافتك إلى فريق RIGX. الصلاحيات: {roles}.
             سجّل الدخول إلى لوحة الإدارة من هنا:
@@ -84,13 +86,13 @@ public static class EmailLayout
         const string subject = "تأكيد تغيير البريد الإلكتروني في RIGX";
         var url = Url(message.ConfirmUrl);
         var html = $"""
-            <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
-            <p style="{Paragraph}">لتأكيد أن هذا بريدك الإلكتروني الجديد، استخدم الزر التالي:</p>
+            <p {Ar} style="{Paragraph}">{E(Greeting(message.FullName))}</p>
+            <p {Ar} style="{Paragraph}">لتأكيد أن هذا بريدك الإلكتروني الجديد، استخدم الزر التالي:</p>
             {LinkBlock(url, "تأكيد البريد الإلكتروني")}
-            <p style="{Small}">الرابط صالح لمدة 30 دقيقة ويُستخدم مرة واحدة. إذا لم تطلب هذا التغيير، تجاهل هذه الرسالة.</p>
+            <p {Ar} style="{Small}">الرابط صالح لمدة 30 دقيقة ويُستخدم مرة واحدة. إذا لم تطلب هذا التغيير، تجاهل هذه الرسالة.</p>
             """;
         var text = $"""
-            مرحبًا {message.FullName}،
+            {Greeting(message.FullName)}
 
             لتأكيد أن هذا بريدك الإلكتروني الجديد، افتح الرابط التالي:
             {url}
@@ -107,17 +109,17 @@ public static class EmailLayout
         const string subject = "تسجيل دخول جديد إلى حسابك في RIGX";
         var time = message.SignedInAtUtc.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
         var html = $"""
-            <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
-            <p style="{Paragraph}">تم تسجيل الدخول إلى حسابك في RIGX من جهاز جديد.</p>
-            <div style="{InfoBox}">
+            <p {Ar} style="{Paragraph}">{E(Greeting(message.FullName))}</p>
+            <p {Ar} style="{Paragraph}">تم تسجيل الدخول إلى حسابك في RIGX من جهاز جديد.</p>
+            <div {Ar} style="{InfoBox}">
               <div>المتصفح: {E(message.Browser)}</div>
               <div>الجهاز: {E(message.Device)}</div>
               <div>الوقت: <span dir="ltr">{E(time)} UTC</span></div>
             </div>
-            <p style="{Paragraph}">إذا كان هذا أنت، فلا حاجة إلى أي إجراء. إذا لم يكن أنت، فافتح حسابك، وسجّل الخروج من الأجهزة غير المعروفة، وتواصل معنا.</p>
+            <p {Ar} style="{Paragraph}">إذا كان هذا أنت، فلا حاجة إلى أي إجراء. إذا لم يكن أنت، فافتح حسابك، وسجّل الخروج من الأجهزة غير المعروفة، وتواصل معنا.</p>
             """;
         var text = $"""
-            مرحبًا {message.FullName}،
+            {Greeting(message.FullName)}
 
             تم تسجيل الدخول إلى حسابك في RIGX من جهاز جديد:
             {message.Browser} على {message.Device}، في {time} UTC.
@@ -152,15 +154,15 @@ public static class EmailLayout
         var secondLinkHtml = invoiced ? LinkBlock(trackingUrl, "تتبع الطلب") : "";
         var secondLinkText = invoiced ? $"\nتتبع الطلب:\n{trackingUrl}\n" : "";
         var html = $"""
-            <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
-            <p style="{Paragraph}">{lineHtml}</p>
+            <p {Ar} style="{Paragraph}">{E(Greeting(message.FullName))}</p>
+            <p {Ar} style="{Paragraph}">{lineHtml}</p>
             {summaryHtml}
             {paymentHtml}
             {LinkBlock(url, invoiced ? "عرض الفاتورة" : "تتبع الطلب")}
             {secondLinkHtml}
             """;
         var text = $"""
-            مرحبًا {message.FullName}،
+            {Greeting(message.FullName)}
 
             {lineText}
             {summaryText}{paymentText}
@@ -175,7 +177,7 @@ public static class EmailLayout
     private static (string Text, string Html) OrderSummary(OrderEmailSummary? summary)
     {
         if (summary is null || summary.Lines.Count == 0) return ("", "");
-        const string Cell = "padding:6px 0;border-bottom:1px solid #E3E2DD;font-size:14px;line-height:1.6;";
+        const string Cell = "direction:rtl;text-align:right;padding:6px 0;border-bottom:1px solid #E3E2DD;font-size:14px;line-height:1.6;";
         var rows = new StringBuilder();
         var text = new StringBuilder("\nتفاصيل الطلب:\n");
         foreach (var line in summary.Lines)
@@ -195,7 +197,7 @@ public static class EmailLayout
         if (summary.DeliveryFee > 0) Total("رسوم التوصيل", summary.DeliveryFee);
         Total("الإجمالي", summary.Total, strong: true);
         if (summary.Remaining > 0 && summary.Remaining != summary.Total) Total("المتبقي للدفع", summary.Remaining);
-        var html = $"""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;">{rows}</table>""";
+        var html = $"""<table {Ar} role="presentation" width="100%" cellpadding="0" cellspacing="0" style="{Rtl}border-collapse:collapse;margin:0 0 16px;">{rows}</table>""";
         return (text.ToString(), html);
     }
 
@@ -204,7 +206,7 @@ public static class EmailLayout
     {
         if (string.IsNullOrWhiteSpace(instructions)) return ("", "");
         var lines = instructions.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        var html = $"""<p style="{Paragraph}"><strong>طريقة الدفع</strong><br>{string.Join("<br>", lines.Select(E))}</p>""";
+        var html = $"""<p {Ar} style="{Paragraph}"><strong>طريقة الدفع</strong><br>{string.Join("<br>", lines.Select(E))}</p>""";
         return ($"\nطريقة الدفع:\n{string.Join("\n", lines)}\n", html);
     }
 
@@ -217,12 +219,12 @@ public static class EmailLayout
         const string subject = "توفر القطعة التي طلبتها";
         var url = Url(message.ItemUrl);
         var html = $"""
-            <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
-            <p style="{Paragraph}">القطعة التي طلبتها متوفرة الآن: <strong>{E(message.ItemName)}</strong>.</p>
+            <p {Ar} style="{Paragraph}">{E(Greeting(message.FullName))}</p>
+            <p {Ar} style="{Paragraph}">القطعة التي طلبتها متوفرة الآن: <strong>{E(message.ItemName)}</strong>.</p>
             {LinkBlock(url, "عرض القطعة")}
             """;
         var text = $"""
-            مرحبًا {message.FullName}،
+            {Greeting(message.FullName)}
 
             القطعة التي طلبتها متوفرة الآن: {message.ItemName}.
             شاهدها من هنا:
@@ -258,28 +260,50 @@ public static class EmailLayout
     }
 
     private static string LinkBlock(string url, string label) =>
-        $"""<p style="margin:0 0 14px;"><a href="{E(url)}" style="{Button}">{E(label)}</a></p><p dir="ltr" style="{RawLink}">{E(url)}</p>""";
+        $"""<p {Ar} style="margin:0 0 14px;text-align:right;"><a href="{E(url)}" style="{Button}">{E(label)}</a></p><p dir="ltr" style="{RawLink}">{E(url)}</p>""";
+
+    /// <summary>The language of an email decides its direction and its greeting, in one place.</summary>
+    public enum EmailLanguage { Arabic, English }
+
+    public static string Direction(EmailLanguage language) => language == EmailLanguage.Arabic ? "rtl" : "ltr";
+
+    /// <summary>"مرحباً فلان،" — or a neutral greeting when there is no real saved name (blank, or the sign-in email address used as a stand-in).</summary>
+    public static string Greeting(string? name, EmailLanguage language = EmailLanguage.Arabic)
+    {
+        var known = !string.IsNullOrWhiteSpace(name) && !name.Contains('@');
+        var arabic = language == EmailLanguage.Arabic;
+        if (!known) return arabic ? "مرحباً بك،" : "Hello,";
+        return arabic ? $"مرحباً {Line(name)}،" : $"Hello {Line(name)},";
+    }
 
     /// <summary><paramref name="preheader"/> is the line mail apps show beside the subject; it is hidden in the message itself.</summary>
-    private static string Wrap(string subject, string body, string? preheader = null) => $"""
+    private static string Wrap(string subject, string body, string? preheader = null, EmailLanguage language = EmailLanguage.Arabic)
+    {
+        var dir = Direction(language);
+        var align = language == EmailLanguage.Arabic ? "right" : "left";
+        var lang = language == EmailLanguage.Arabic ? "ar" : "en";
+        var rtl = $"""dir="{dir}" lang="{lang}" """;
+        var direction = $"direction:{dir};text-align:{align};";
+        return $"""
         <!doctype html>
-        <html dir="rtl" lang="ar">
+        <html dir="{dir}" lang="{lang}">
         <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{E(subject)}</title>
         </head>
-        <body style="margin:0;padding:0;background:#F4F4F1;font-family:Tahoma,Arial,sans-serif;color:#121317;">
+        <body {rtl}style="margin:0;padding:0;background:#F4F4F1;font-family:Tahoma,Arial,sans-serif;color:#121317;{direction}">
         {Preheader(preheader)}
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#F4F4F1;">
+        <table {rtl}role="presentation" width="100%" cellpadding="0" cellspacing="0" style="{direction}border-collapse:collapse;background:#F4F4F1;">
         <tr><td align="center" style="padding:24px 12px;">
-        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:560px;background:#FFFFFF;border-radius:8px;overflow:hidden;">
-        <tr><td style="background:#121317;padding:18px 24px;color:#FFFFFF;font-size:22px;font-weight:bold;letter-spacing:1px;">RIGX</td></tr>
-        <tr><td style="padding:24px;">{body}</td></tr>
-        <tr><td style="background:#F4F4F1;padding:16px 24px;border-top:1px solid #E3E2DD;color:#4A4D53;font-size:12px;line-height:1.7;">
-        <p style="margin:0 0 4px;">RIGX — قطع كمبيوتر جديدة ومستعملة</p>
-        <p style="margin:0 0 4px;"><a href="{SiteUrl}" style="color:#FF6A2B;text-decoration:none;">{SiteUrl}</a></p>
-        <p style="margin:0;">هذه رسالة آلية، يرجى عدم الرد عليها.</p>
+        <table {rtl}role="presentation" width="560" cellpadding="0" cellspacing="0" style="{direction}border-collapse:collapse;width:100%;max-width:560px;background:#FFFFFF;border-radius:8px;overflow:hidden;">
+        <tr><td dir="ltr" align="left" style="background:#121317;padding:18px 24px;color:#FFFFFF;font-family:'Courier New',monospace;font-size:22px;font-weight:bold;letter-spacing:3px;text-align:left;">RIGX</td></tr>
+        <tr><td style="background:#f97316;height:4px;line-height:4px;font-size:0;padding:0;">&nbsp;</td></tr>
+        <tr><td {rtl}style="{direction}padding:24px;">{body}</td></tr>
+        <tr><td {rtl}style="{direction}background:#F4F4F1;padding:16px 24px;border-top:1px solid #E3E2DD;color:#4A4D53;font-size:12px;line-height:1.7;">
+        <p {rtl}style="{direction}margin:0 0 4px;">RIGX — قطع كمبيوتر جديدة ومستعملة</p>
+        <p {rtl}style="{direction}margin:0 0 4px;"><a href="{SiteUrl}" style="color:#FF6A2B;text-decoration:none;">{SiteUrl}</a></p>
+        <p {rtl}style="{direction}margin:0;">هذه رسالة آلية، يرجى عدم الرد عليها.</p>
         </td></tr>
         </table>
         </td></tr>
@@ -287,6 +311,7 @@ public static class EmailLayout
         </body>
         </html>
         """;
+    }
 
     /// <summary>Arabic counted noun: after "لمدة": 1 → دقيقة واحدة, 2 → دقيقتين, 3–10 → دقائق, 11+ → دقيقة.</summary>
     private static string Minutes(int count) => count switch
