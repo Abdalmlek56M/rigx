@@ -35,9 +35,10 @@ public sealed class StoreSettingsService(
             throw new StorefrontException(400, "Pickup from the store is not available.");
         var shipping = pickup
             ? new ShippingQuote(0m, null)
-            : row.Shipping.QuoteFor(governorate?.Trim().ToUpperInvariant() ?? string.Empty);
+            : row.Shipping.QuoteFor(governorate?.Trim().ToUpperInvariant() ?? string.Empty, subtotal);
         var upfront = row.Payment.UpfrontFor(subtotal, shipping.Fee, pickup);
-        return new CheckoutQuoteView(shipping.Fee, shipping.DeliveryTime, upfront.Shipping, upfront.Deposit, upfront.Total);
+        return new CheckoutQuoteView(shipping.Fee, shipping.DeliveryTime, upfront.Shipping, upfront.Deposit, upfront.Total,
+            shipping.FreeApplied, shipping.FreeShippingRemaining);
     }
 
     public async Task<ShippingRatesView> GetShippingRatesAsync(CancellationToken cancellationToken = default)

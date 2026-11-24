@@ -33,18 +33,20 @@ export interface TextFieldProps {
   lang?: string;
   /** Takes the focus when the field appears (the next line of a scanned list). */
   autoFocus?: boolean;
+  /** Extra classes on the label text (`md:sr-only` when a header row above names the column). */
+  labelClassName?: string;
 }
 
 /**
  * A labelled text input; `error` is announced and linked to the input. A number field is a text input with a number keypad, so digits typed
  * on an Arabic keyboard are accepted (as Western digits) instead of being silently ignored.
  */
-export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength, onEnter, autoFocus, lang }: TextFieldProps) {
+export function TextField({ label, labelEnd, name, value, onChange, type = "text", ltr = false, autoComplete, placeholder, required, error, dir, inputMode, max, min, step, maxLength, onEnter, autoFocus, lang, labelClassName }: TextFieldProps) {
   const errorId = `${name}-error`;
   const numeric = type === "number";
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-xs font-bold">
-      <span className="flex min-w-0 flex-wrap items-center gap-1.5">{label}{labelEnd}</span>
+      <span className={`flex min-w-0 flex-wrap items-center gap-1.5${labelClassName ? ` ${labelClassName}` : ""}`}>{label}{labelEnd}</span>
       <input
         name={name}
         type={numeric ? "text" : type}

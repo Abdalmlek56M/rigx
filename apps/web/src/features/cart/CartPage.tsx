@@ -9,11 +9,12 @@ import { CartIcon, WalletIcon } from "@/components/ui/icons";
 import { formatEgp } from "@/lib/format";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { useCart } from "./cart-context";
+import { CartShippingRow, FreeShippingHint } from "./FreeShipping";
 import { CartLineRow } from "./CartLineRow";
 import { CartWhatsAppLink } from "./CartWhatsAppLink";
 
 /** The full cart: the same lines as the drawer, with the summary, checkout and "order on WhatsApp". */
-export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) {
+export function CartPage({ whatsAppNumber, freeShippingMinimum }: { whatsAppNumber: string | null; freeShippingMinimum: number | null }) {
   const t = useTranslations("cartPage");
   const locale = useLocale();
   const mounted = useMounted();
@@ -46,15 +47,13 @@ export function CartPage({ whatsAppNumber }: { whatsAppNumber: string | null }) 
       </Card>
       <Card title={t("summary")} icon={WalletIcon} padding="md" className="gap-3 lg:sticky lg:top-24">
         <dl className="m-0 flex flex-col gap-2.5 text-sm">
-          <div className="flex justify-between gap-3">
-            <dt className="text-ink-muted">{t("shipping")}</dt>
-            <dd className="m-0">{t("shippingNote")}</dd>
-          </div>
+          <CartShippingRow label={t("shipping")} note={t("shippingNote")} minimum={freeShippingMinimum} total={subtotal} />
           <div className="flex items-baseline justify-between gap-3 border-t border-line pt-3">
             <dt className="font-bold">{t("subtotal")}</dt>
             <dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(subtotal, locale)}</dd>
           </div>
         </dl>
+        <FreeShippingHint minimum={freeShippingMinimum} total={subtotal} />
         <ButtonLink href="/checkout" variant="accent" className="w-full">{t("checkout")}</ButtonLink>
         <CartWhatsAppLink number={whatsAppNumber} />
         <ButtonLink href="/products" variant="ghost" className="w-full">{t("continue")}</ButtonLink>

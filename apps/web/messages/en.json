@@ -123,7 +123,8 @@
     "defaultAnnouncement": "Shipping to all governorates",
     "whatsAppHours": "We reply on WhatsApp {hours}",
     "pickup": "Pickup from the shop is available",
-    "whatsAppAria": "Contact us on WhatsApp"
+    "whatsAppAria": "Contact us on WhatsApp",
+    "freeShipping": "Free shipping on orders over {amount}"
   },
   "header": {
     "home": "RIGX home",
@@ -892,14 +893,15 @@
         "depositAll": "A {percent}% deposit is paid and deducted from the total.",
         "rest": "The remaining amount is paid in cash on delivery.",
         "pickup": "There is no advance payment for store pickup; the amount is paid on pickup."
-      }
+      },
+      "transferTitle": "How to pay"
     },
     "summary": {
       "title": "Your order",
       "subtotal": "Items",
       "shipping": "Shipping",
       "shippingPending": "Set after choosing the governorate",
-      "freeShipping": "No charge",
+      "freeShipping": "Free",
       "upfront": "Due upfront",
       "total": "Total",
       "terms": "I agree to the <terms>terms</terms>, the <warranty>warranty policy</warranty> and the <returns>returns policy</returns>.",
@@ -958,7 +960,8 @@
       "shipping": "Shipping",
       "total": "Total",
       "upfront": "Due upfront",
-      "couponDiscount": "Coupon discount ({code})"
+      "couponDiscount": "Coupon discount ({code})",
+      "freeShipping": "Free"
     },
     "track": {
       "title": "Track your order",
@@ -1073,7 +1076,8 @@
       "itemCount": "{count, plural, one {One item} other {# items}}",
       "reference": "Order number",
       "status": "Status",
-      "date": "Order date"
+      "date": "Order date",
+      "freeShipping": "Free"
     },
     "warranties": {
       "title": "My warranties",
@@ -1367,7 +1371,8 @@
     "details": "Invoice details",
     "no": "#",
     "condition": "Condition",
-    "thanks": "Thank you for choosing RIGX."
+    "thanks": "Thank you for choosing RIGX.",
+    "freeShipping": "Free"
   },
   "policies": {
     "title": "Policies",
@@ -1590,6 +1595,26 @@
         "change": "Change the picture",
         "clear": "Remove the picture",
         "dropHint": "You can also drag the picture here, or paste it with Ctrl+V."
+      },
+      "saveBar": {
+        "label": "Save changes",
+        "unsaved": "You have unsaved changes",
+        "reset": "Undo changes",
+        "save": "Save"
+      },
+      "unsaved": {
+        "title": "Unsaved changes",
+        "body": "If you leave now, the changes you have not saved will be lost.",
+        "leave": "Leave without saving"
+      },
+      "itemSearch": {
+        "placeholder": "Search by item name or code",
+        "hint": "Type at least {min} characters to search.",
+        "searching": "Searching…",
+        "failed": "The search failed. Try again.",
+        "empty": "No item has this name or code.",
+        "count": "{count} results",
+        "clear": "Remove the item"
       }
     },
     "dashboard": {
@@ -2367,12 +2392,10 @@
         "keyAuto": "Generated automatically",
         "itemNote": "Every spec is optional on every item: leave its field empty on an item it does not apply to and it will not appear on that item's page."
       },
-      "drag": "Drag to reorder",
-      "moveUp": "Move the category up",
-      "moveDown": "Move the category down",
+      "drag": "Drag to reorder, or press the up and down arrows",
       "reordered": "The category order was saved.",
       "reorderFailed": "The order was not saved. The list was refreshed; try again.",
-      "orderHint": "Drag a category by the dotted icon, or select it and use the two arrows, to change its place among the categories at its level."
+      "orderHint": "Drag a category by the dotted icon, or focus the icon and press the up and down arrows, to change its place among the categories on its level."
     },
     "policies": {
       "title": "Policies",
@@ -2385,7 +2408,7 @@
       "write": "Write the policy",
       "newVersion": "New version to edit",
       "draftStarted": "A new draft was started.",
-      "formatHelp": "A line starting with # is a heading, - is a bullet, and a blank line separates paragraphs.",
+      "formatHelp": "A line that starts with # is a heading, a line that starts with - is a bullet, and a blank line separates paragraphs. The heading and list buttons add these marks to the selected lines. Bold text is not supported yet.",
       "fields": {
         "titleAr": "Arabic title",
         "bodyAr": "Arabic text",
@@ -2410,7 +2433,12 @@
         "Other": "Other"
       },
       "failed": "Could not load the policies.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "toolbar": {
+        "label": "Formatting for {field}",
+        "heading": "Heading (the line starts with #)",
+        "list": "Bulleted list (the line starts with -)"
+      }
     },
     "faq": {
       "title": "FAQ",
@@ -2688,7 +2716,8 @@
         "titleEn": "Title (English)",
         "slug": "Slug",
         "summaryAr": "Summary (Arabic)",
-        "summaryEn": "Summary (English)"
+        "summaryEn": "Summary (English)",
+        "slugAuto": "(automatic, from the English title)"
       },
       "blocksArabic": "Arabic body",
       "blocksEnglish": "English body",
@@ -2758,7 +2787,8 @@
         "seoDescriptionAr": "SEO description (Arabic)",
         "seoDescriptionEn": "SEO description (English)",
         "canonical": "Canonical URL"
-      }
+      },
+      "back": "Back to articles"
     },
     "pos": {
       "title": "New sale",
@@ -4724,10 +4754,9 @@
       "retry": "Try again",
       "conflict": "Another user changed the settings. Reloading.",
       "list": {
-        "item": "No. {number}",
-        "up": "Move up",
-        "down": "Move down",
-        "remove": "Remove"
+        "remove": "Remove",
+        "drag": "Drag to reorder, or press the up and down arrows",
+        "details": "Details"
       },
       "sections": {
         "store-info": "Store data",
@@ -4810,7 +4839,8 @@
         "showOnSite": "Show on site",
         "showOnInvoice": "Show on invoice",
         "showInFloatingButton": "In the floating button",
-        "numberHint": "Mobile numbers are 8–15 digits, without + or spaces."
+        "numberHint": "Mobile numbers are 8–15 digits, without + or spaces.",
+        "value": "Number or link"
       },
       "shipping": {
         "title": "Shipping & pickup",
@@ -4829,7 +4859,12 @@
         "groupFee": "Shipping fee",
         "groupTime": "Delivery time",
         "governorates": "Governorates",
-        "governoratesHint": "A governorate belongs to one group; the ones used in another group are locked."
+        "governoratesHint": "A governorate belongs to one group; the ones used in another group are locked.",
+        "freeTitle": "Free shipping",
+        "freeEnabled": "Turn on free shipping",
+        "freeEnabledHint": "Off by default. When on, an order whose total reaches the minimum pays no shipping.",
+        "freeMinimum": "Minimum order amount",
+        "freeHint": "The minimum is checked on the order total after discounts and before shipping. Customers see it in the top bar, the cart and checkout. It does not apply to pickup from the store."
       },
       "payment": {
         "title": "Payment & deposit",
@@ -4847,7 +4882,11 @@
         "instaPayAddress": "InstaPay number or address",
         "wallet": "E-wallet",
         "walletNumber": "Wallet number",
-        "methodsHint": "At least one method must stay on."
+        "methodsHint": "At least one method must stay on.",
+        "transferTitle": "Transfer instructions",
+        "transferInstructions": "Instructions for paying by transfer or wallet (optional)",
+        "transferHint": "Shown to the customer at checkout, on the order confirmation page and in the order confirmation email when they choose InstaPay or the wallet. Plain text, no formatting.",
+        "transferOffHint": "Shown only once InstaPay or the e-wallet is turned on. Plain text, no formatting."
       },
       "controls": {
         "title": "Store controls",
@@ -4862,7 +4901,7 @@
         "guestCheckoutHint": "Off means the customer must sign in before ordering.",
         "minimumOrder": "Minimum order amount",
         "homepageTitle": "Homepage section order",
-        "homepageHint": "Move up and down to reorder, and tick what shows.",
+        "homepageHint": "Drag each section by its grip to change the order, or focus the grip and press the up and down arrows, and choose what shows.",
         "homepageLabel": "Homepage sections",
         "homepage": {
           "hero": "Hero",
@@ -4879,7 +4918,8 @@
           "maintenance": "The site closes to customers and shows them the maintenance message. Staff stay in.",
           "guest": "Customers must create an account before ordering.",
           "confirm": "Continue"
-        }
+        },
+        "pagesTitle": "What the store shows"
       },
       "whatsapp": {
         "title": "WhatsApp messages",
@@ -4967,14 +5007,21 @@
         "opacity": "Opacity %",
         "size": "Size % of the image width",
         "articles": "Article photos too",
-        "fallback": "Without a watermark logo, the store logo is used.",
+        "fallback": "If no watermark logo is uploaded, the store logo is used.",
         "oldImagesTitle": "Older photos",
         "oldImagesHint": "The original is kept without the mark, so you can apply this setting to every old photo. Save the setting first if you changed it.",
         "reapply": "Apply to older photos",
         "reapplyTitle": "Reprocess every photo?",
         "reapplyBody": "Every item, build and article photo is reprocessed with the current watermark. It runs in the background and may take a while.",
         "reapplyStarted": "Photo processing started.",
-        "reapplyFailed": "We couldn't start photo processing."
+        "reapplyFailed": "We couldn't start photo processing.",
+        "preview": {
+          "title": "Watermark preview",
+          "alt": "A sample photo with the watermark on it",
+          "hint": "A sample photo: the preview changes as you edit the place, opacity or size, and nothing is saved until you press save.",
+          "off": "The watermark is off, so it is not put on photos.",
+          "noLogo": "There is no watermark logo and no store logo. Upload a logo to see the watermark."
+        }
       },
       "backup": {
         "title": "Backup",
@@ -4989,6 +5036,10 @@
           "body": "There will be no automatic daily backup.",
           "confirm": "Turn it off"
         }
+      },
+      "invoicePreview": {
+        "title": "Invoice header preview",
+        "alt": "A small preview of the top of the invoice as the customer sees it"
       }
     },
     "stockImport": {
@@ -5318,5 +5369,9 @@
     "copied": "Image copied. Paste it into WhatsApp or any chat.",
     "saved": "We could not copy it, so the image was saved to your device.",
     "failed": "We could not make the image. Use Print or save as PDF."
+  },
+  "freeShipping": {
+    "free": "Free",
+    "hint": "Add {amount} to get free shipping"
   }
 }

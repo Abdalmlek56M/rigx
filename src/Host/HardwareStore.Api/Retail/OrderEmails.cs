@@ -1,5 +1,6 @@
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
 
 /// <summary>
 /// Public page base URLs: tracking (<c>/t/{token}</c>, <c>Sales:TrackingBaseUrl</c>), invoice (<c>/i/{token}</c>,
@@ -38,6 +39,19 @@ public static class OrderEmails
     public static Task QueueAsync(IdentityEmailOutboxWriter outbox, OrderLinks links, OrderView order, string stage,
         CancellationToken cancellationToken) => EnqueueAsync(outbox, links, order, stage, null, null, cancellationToken);
 
+    /// <summary>
+    /// "Received": the order summary, plus how to pay when the order is paid by transfer, wallet or InstaPay and the store wrote instructions
+    /// (<see cref="PaymentSettings.TransferInstructions"/>).
+    /// </summary>
+    public static Task QueueReceivedAsync(IdentityEmailOutboxWriter outbox, OrderLinks links, OrderView order, PaymentSettings payment,
+        CancellationToken cancellationToken) =>
+        EnqueueAsync(outbox, links, order, OrderEmailMessage.Received, null, null, cancellationToken,
+            PaymentInstructionsFor(order.PaymentMethod, payment));
+
+    /// <summary>The store's transfer instructions when <paramref name="method"/> is paid by transfer; otherwise nothing.</summary>
+    public static string? PaymentInstructionsFor(string method, PaymentSettings payment) =>
+        method is OrderPaymentMethod.InstaPay or OrderPaymentMethod.Wallet ? payment.TransferInstructions : null;
+
     /// <summary>Delivered: sends the invoice link (number and public URL of the invoice issued with the delivery).</summary>
     public static async Task QueueInvoiceAsync(IdentityEmailOutboxWriter outbox, OrderLinks links, OrderView order, InvoiceService invoices,
         CancellationToken cancellationToken)
@@ -49,12 +63,12 @@ public static class OrderEmails
     }
 
     private static async Task EnqueueAsync(IdentityEmailOutboxWriter outbox, OrderLinks links, OrderView order, string stage,
-        string? invoiceNumber, string? invoiceUrl, CancellationToken cancellationToken)
+        string? invoiceNumber, string? invoiceUrl, CancellationToken cancellationToken, string? paymentInstructions = null)
     {
         if (order.CustomerEmail is null) return;
         await outbox.EnqueueAsync(IdentityEmailOutboxWriter.OrderUpdateKind, order.UserAccountId,
             new OrderEmailMessage(order.CustomerEmail, order.CustomerName, order.Reference, stage, links.TrackingUrl(order.TrackingToken),
-                order.CourierName, order.WaybillNumber, invoiceNumber, invoiceUrl, SummaryOf(order)), cancellationToken);
+                order.CourierName, order.WaybillNumber, invoiceNumber, invoiceUrl, SummaryOf(order), paymentInstructions), cancellationToken);
     }
 
     /// <summary>The ordered lines and the totals the customer sees on the order (the same numbers as the tracking and invoice pages).</summary>

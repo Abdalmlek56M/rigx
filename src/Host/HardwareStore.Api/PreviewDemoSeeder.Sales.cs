@@ -37,8 +37,8 @@ internal sealed partial class PreviewDemoSeeder
             var shipping = delivery ? Rate(store.Shipping, address.GovernorateCode) : new ShippingRate(0m, null);
             var payment = methods.Contains(definition.Payment) ? definition.Payment : methods[0];
             var policy = new CheckoutPolicy(customerIdsByEmail[definition.CustomerEmail],
-                terms.VersionNumber.ToString(CultureInfo.InvariantCulture), shipping,
-                subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods,
+                terms.VersionNumber.ToString(CultureInfo.InvariantCulture), _ => shipping,
+                (subtotal, fee) => store.Payment.UpfrontFor(subtotal, fee, pickup: false).Total, methods,
                 store.Controls.MinimumOrderAmount);
             var request = new CheckoutRequest(new OrderCustomer(customer.Name, customer.Phone, false, customer.Email),
                 definition.Fulfillment,

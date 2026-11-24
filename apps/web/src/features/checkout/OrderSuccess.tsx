@@ -9,9 +9,10 @@ import { OrderWhatsAppLink, type OrderWhatsApp } from "@/features/tracking/Order
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { BoxIcon, HelpIcon, TruckIcon } from "@/components/ui/icons";
+import { BoxIcon, HelpIcon, TruckIcon, WalletIcon } from "@/components/ui/icons";
 import { readLastOrder, type PlacedOrder } from "./last-order";
-import { depositOf } from "./order-rules";
+import { depositOf, isTransfer } from "./order-rules";
+import { TransferInstructions } from "./TransferInstructions";
 
 function NextSteps({ order }: { order: PlacedOrder }) {
   const t = useTranslations("orderSuccess.steps");
@@ -64,8 +65,11 @@ function Summary({ order }: { order: PlacedOrder }) {
         {order.couponDiscount > 0 ? (
           <div className="flex justify-between text-sm"><dt className="text-ink-muted">{t("couponDiscount", { code: order.couponCode ?? "" })}</dt><dd className="m-0">− {formatEgp(order.couponDiscount, locale)}</dd></div>
         ) : null}
-        {order.deliveryFee > 0 ? (
-          <div className="flex justify-between text-sm"><dt className="text-ink-muted">{t("shipping")}</dt><dd className="m-0">{formatEgp(order.deliveryFee, locale)}</dd></div>
+        {order.fulfillmentMethod === "Delivery" ? (
+          <div className="flex justify-between text-sm">
+            <dt className="text-ink-muted">{t("shipping")}</dt>
+            <dd className={`m-0 ${order.deliveryFee > 0 ? "" : "font-bold text-success"}`}>{order.deliveryFee > 0 ? formatEgp(order.deliveryFee, locale) : t("freeShipping")}</dd>
+          </div>
         ) : null}
         <div className="flex items-baseline justify-between"><dt className="font-bold">{t("total")}</dt><dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(order.total, locale)}</dd></div>
         {order.upfrontDue > 0 ? (
@@ -92,8 +96,9 @@ function TrackCard({ order }: { order: PlacedOrder }) {
 }
 
 /** The confirmation after checkout, read from the order the checkout stored in this tab. */
-export function OrderSuccess({ whatsApp }: { whatsApp: OrderWhatsApp }) {
+export function OrderSuccess({ whatsApp, transferInstructions }: { whatsApp: OrderWhatsApp; transferInstructions: string | null }) {
   const t = useTranslations("orderSuccess");
+  const tp = useTranslations("checkout.payment");
   const mounted = useMounted();
   if (!mounted) return null;
   const order = readLastOrder();
@@ -119,6 +124,11 @@ export function OrderSuccess({ whatsApp }: { whatsApp: OrderWhatsApp }) {
         lead={t.rich("lead", { phone: () => <bdi dir="ltr" className="font-mono">{displayPhone(order.phoneNumber)}</bdi> })}
         actions={<OrderWhatsAppLink whatsApp={whatsApp} reference={order.reference} label={t("whatsApp")} />}
       />
+      {transferInstructions && isTransfer(order.paymentMethod) ? (
+        <Card title={tp("transferTitle")} icon={WalletIcon} padding="md" className="gap-2 text-sm leading-7">
+          <TransferInstructions text={transferInstructions} titled={false} />
+        </Card>
+      ) : null}
       <NextSteps order={order} />
       <Summary order={order} />
       <TrackCard order={order} />

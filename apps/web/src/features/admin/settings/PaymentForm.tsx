@@ -1,38 +1,39 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { CheckField } from "./CheckField";
+import { FieldGrid, FieldNote, SubSection } from "./FieldGrid";
 import { SectionForm, useSectionSave } from "./SectionForm";
 import { savePayment } from "./settings-api";
-import { paymentForm, paymentValue, type PaymentForm as Form } from "./payment-rules";
+import { paymentForm, paymentValue, TRANSFER_INSTRUCTIONS_MAX } from "./payment-rules";
 import type { SectionProps } from "./settings-rules";
+import { useSectionDraft } from "./use-section-draft";
 
-/** ADM-Settings — payment: the deposit rule, shipping upfront and the enabled methods with their details. */
+/** ADM-Settings — payment: the deposit rule, shipping upfront, the enabled methods with their details and the transfer instructions. */
 export function PaymentForm({ view, onSaved, onStale }: SectionProps) {
   const t = useTranslations("admin.settings.payment");
   const { submit, save } = useSectionSave(view.rowVersion, onSaved, onStale);
-  const [form, setForm] = useState<Form>(() => paymentForm(view.payment));
-  const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
+  const { form, set, dirty, reset } = useSectionDraft(paymentForm(view.payment));
+  const transfer = form.instaPayEnabled || form.walletEnabled;
 
   return (
     <SectionForm
-      title={t("title")} hint={t("hint")} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
+      title={t("title")} hint={t("hint")} dirty={dirty} onReset={reset} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
       onSubmit={() => void save((rowVersion) => savePayment(paymentValue(form), rowVersion))}
     >
       <CheckField label={t("depositRequired")} hint={t("depositRequiredHint")} checked={form.depositRequired} onChange={(depositRequired) => set({ depositRequired })} />
       {form.depositRequired ? (
-      <div className="grid gap-3 sm:grid-cols-2">
-        <TextField label={t("depositThreshold")} name="depositThreshold" type="number" min="0" max="10000000" step="0.01" ltr value={form.depositThreshold} onChange={(depositThreshold) => set({ depositThreshold })} />
-        <TextField label={t("depositPercent")} name="depositPercent" type="number" min="0" max="100" step="0.01" ltr value={form.depositPercent} onChange={(depositPercent) => set({ depositPercent })} />
-      </div>
+        <FieldGrid>
+          <TextField label={t("depositThreshold")} name="depositThreshold" type="number" min="0" max="10000000" step="0.01" ltr value={form.depositThreshold} onChange={(depositThreshold) => set({ depositThreshold })} />
+          <TextField label={t("depositPercent")} name="depositPercent" type="number" min="0" max="100" step="0.01" ltr value={form.depositPercent} onChange={(depositPercent) => set({ depositPercent })} />
+        </FieldGrid>
       ) : null}
       <CheckField label={t("shippingUpfront")} hint={t("shippingUpfrontHint")} checked={form.shippingPaidUpfront} onChange={(shippingPaidUpfront) => set({ shippingPaidUpfront })} />
-      <p className="m-0 text-xs text-ink-muted">{t("depositHint")}</p>
+      <FieldNote>{t("depositHint")}</FieldNote>
 
-      <div className="flex flex-col gap-2 border-t border-line pt-3">
-        <h3 className="m-0 text-[15px] font-bold">{t("methodsTitle")}</h3>
+      <SubSection title={t("methodsTitle")}>
         <CheckField label={t("cash")} checked={form.cashOnDeliveryEnabled} onChange={(cashOnDeliveryEnabled) => set({ cashOnDeliveryEnabled })} />
         <CheckField label={t("instaPay")} checked={form.instaPayEnabled} onChange={(instaPayEnabled) => set({ instaPayEnabled })} />
         {form.instaPayEnabled ? (
@@ -46,8 +47,17 @@ export function PaymentForm({ view, onSaved, onStale }: SectionProps) {
             <TextField label={t("walletNumber")} name="walletNumber" ltr value={form.walletNumber} onChange={(walletNumber) => set({ walletNumber })} />
           </div>
         ) : null}
-        <p className="m-0 text-xs text-ink-muted">{t("methodsHint")}</p>
-      </div>
+        <FieldNote>{t("methodsHint")}</FieldNote>
+      </SubSection>
+
+      <SubSection title={t("transferTitle")}>
+        <TextAreaField
+          label={t("transferInstructions")} name="transferInstructions" rows={4} maxLength={TRANSFER_INSTRUCTIONS_MAX}
+          value={form.transferInstructions} onChange={(transferInstructions) => set({ transferInstructions })}
+          hint={transfer ? t("transferHint") : t("transferOffHint")}
+        />
+        <FieldNote>{form.transferInstructions.length}/{TRANSFER_INSTRUCTIONS_MAX}</FieldNote>
+      </SubSection>
     </SectionForm>
   );
 }

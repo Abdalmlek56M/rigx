@@ -35,12 +35,13 @@ public sealed class OrderService(IDbContextFactory<RetailDbContext> contextFacto
         if (itemsTotal < policy.MinimumOrder) throw new RetailException(400, $"The minimum order is {policy.MinimumOrder:0.##} EGP.");
         var now = timeProvider.GetUtcNow().ToUniversalTime();
         var coupon = await CouponRedemption.RedeemAsync(db, request.CouponCode, request.Customer?.Phone, items, now, cancellationToken);
-        var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Online, items, policy.Shipping, now);
+        var shipping = policy.ShippingFor(items.Sum(item => item.LineTotal - item.DiscountAmount));
+        var order = OrderDrafting.NewOrder(request.Customer, fulfillment, address, OrderChannel.Online, items, shipping, now);
         CouponRedemption.Stamp(order, coupon);
         order.UserAccountId = policy.UserAccountId;
         order.PaymentMethod = method;
         order.PaymentRequired = fulfillment == OrderFulfillment.Delivery;
-        order.UpfrontAmount = fulfillment == OrderFulfillment.Delivery ? policy.UpfrontFor(order.Subtotal) : 0m;
+        order.UpfrontAmount = fulfillment == OrderFulfillment.Delivery ? policy.UpfrontFor(order.Subtotal, shipping.Fee) : 0m;
         order.DepositAmount = fulfillment == OrderFulfillment.Delivery ? Math.Min(policy.DepositFor?.Invoke(order.Subtotal) ?? 0m, order.UpfrontAmount) : 0m;
         order.LeadSource = OrderRules.Optional(request.LeadSource, 60, "Lead source");
         order.Usage = usage;

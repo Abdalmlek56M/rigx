@@ -1,9 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { IconButton } from "../kit/Button";
 import { DragItem, DragSort } from "../kit/DragSort";
 import { EmptyPanel } from "../kit/LoadState";
 import { dropOn, moveKey } from "../kit/reorder-rules";
@@ -12,8 +10,8 @@ import type { Category } from "./categories-api";
 
 /**
  * The tree card: expand/collapse nodes with children and select a category for the edit panel. With `onReorder` a category can be dragged
- * by its grip to another place among its own siblings (a category keeps its parent; to change that, edit it), and the selected one has the
- * two arrow buttons for the keyboard.
+ * by its grip to another place among its own siblings (a category keeps its parent; to change that, edit it); the keyboard way is the grip
+ * itself: focus it and press the up or down arrow.
  */
 export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle, onReorder }: {
   nodes: readonly Category[];
@@ -50,11 +48,9 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle,
             const hasChildren = node.children.length > 0;
             const open = hasChildren && !collapsed.has(node.id);
             const selected = node.id === selectedId;
-            const siblings = onReorder && selected ? siblingIds(nodes, parentIdOf(nodes, node.id) ?? null) : [];
-            const index = siblings.indexOf(node.id);
             return (
               <DragItem
-                key={node.id} id={node.id} handle disabled={!onReorder} label={t("drag")}
+                key={node.id} id={node.id} handle disabled={!onReorder} label={t("drag")} onStep={(direction) => step(node.id, direction)}
                 className={`flex min-h-11 items-center gap-1.5 border-b border-line bg-surface pe-2 last:border-b-0 ${selected ? "border-s-[3px] border-s-orange bg-orange/10" : ""}`}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-1.5" style={{ paddingInlineStart: depth * 22 }}>
@@ -74,12 +70,6 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle,
                     {!node.isActive || !node.isEffectivelyActive ? <StatusBadge tone="neutral">{t("hidden")}</StatusBadge> : null}
                   </button>
                 </span>
-                {siblings.length > 1 ? (
-                  <span className="flex shrink-0">
-                    <IconButton icon={ArrowUpIcon} label={t("moveUp")} size="sm" disabled={index === 0} onClick={() => step(node.id, -1)} />
-                    <IconButton icon={ArrowDownIcon} label={t("moveDown")} size="sm" disabled={index === siblings.length - 1} onClick={() => step(node.id, 1)} />
-                  </span>
-                ) : null}
               </DragItem>
             );
           })}

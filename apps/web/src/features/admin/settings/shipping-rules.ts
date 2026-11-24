@@ -15,6 +15,9 @@ export interface ShippingForm {
   pickupEnabled: boolean;
   defaultFee: string;
   defaultDeliveryTime: string;
+  /** Free shipping is off until the owner turns it on; the minimum is the order total (after discounts) from which shipping costs nothing. */
+  freeShippingEnabled: boolean;
+  freeShippingMinimum: string;
   groups: ShippingGroupForm[];
 }
 
@@ -25,6 +28,8 @@ export const shippingForm = (value: ShippingSettings): ShippingForm => ({
   pickupEnabled: value.pickupEnabled ?? true,
   defaultFee: String(value.defaultFee ?? 0),
   defaultDeliveryTime: value.defaultDeliveryTime ?? "",
+  freeShippingEnabled: value.freeShippingEnabled ?? false,
+  freeShippingMinimum: value.freeShippingMinimum ? String(value.freeShippingMinimum) : "",
   groups: (value.groups ?? []).map((group) => ({
     name: group.name ?? "",
     fee: String(group.fee ?? 0),
@@ -38,6 +43,8 @@ export const shippingValue = (form: ShippingForm): ShippingSettings => ({
   pickupEnabled: form.pickupEnabled,
   defaultFee: form.defaultFee.trim() === "" ? 0 : Number(form.defaultFee),
   defaultDeliveryTime: form.defaultDeliveryTime.trim() || null,
+  freeShippingEnabled: form.freeShippingEnabled,
+  freeShippingMinimum: form.freeShippingMinimum.trim() === "" ? 0 : Number(form.freeShippingMinimum),
   groups: form.groups.map((group) => ({
     name: group.name.trim(),
     fee: group.fee.trim() === "" ? 0 : Number(group.fee),

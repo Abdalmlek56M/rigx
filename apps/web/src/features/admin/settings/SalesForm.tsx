@@ -1,39 +1,37 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/ui/TextField";
 import { CheckField } from "./CheckField";
+import { FieldGrid, FieldNote, SubSection } from "./FieldGrid";
 import { SectionForm, useSectionSave } from "./SectionForm";
+import { useSectionDraft } from "./use-section-draft";
 import { saveSales } from "./settings-api";
-import { salesForm, salesValue, type SalesForm as Form, type SectionProps } from "./settings-rules";
+import { salesForm, salesValue, type SectionProps } from "./settings-rules";
 
 /** ADM-Settings — orders and POS: stock reservation, the POS discount limit and the public sold feed. */
 export function SalesForm({ view, onSaved, onStale }: SectionProps) {
   const t = useTranslations("admin.settings.sales");
   const { submit, save } = useSectionSave(view.rowVersion, onSaved, onStale);
-  const [form, setForm] = useState<Form>(() => salesForm(view.sales));
-  const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
+  const { form, set, dirty, reset } = useSectionDraft(salesForm(view.sales));
 
   return (
     <SectionForm
-      title={t("title")} hint={t("hint")} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
+      title={t("title")} hint={t("hint")} dirty={dirty} onReset={reset} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
       onSubmit={() => void save((rowVersion) => saveSales(salesValue(form), rowVersion))}
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <FieldGrid>
         <TextField label={t("reservationHours")} name="reservationHours" type="number" min="1" max="720" step="1" ltr required value={form.reservationHours} onChange={(reservationHours) => set({ reservationHours })} />
-        <CheckField label={t("autoRelease")} hint={t("autoReleaseHint")} checked={form.reservationAutoRelease} onChange={(reservationAutoRelease) => set({ reservationAutoRelease })} />
-      </div>
-      <p className="m-0 text-xs text-ink-muted">{t("reservationHint")}</p>
+      </FieldGrid>
+      <CheckField label={t("autoRelease")} hint={t("autoReleaseHint")} checked={form.reservationAutoRelease} onChange={(reservationAutoRelease) => set({ reservationAutoRelease })} />
+      <FieldNote>{t("reservationHint")}</FieldNote>
 
-      <div className="flex flex-col gap-3 border-t border-line pt-3">
-        <h3 className="m-0 text-[15px] font-bold">{t("posTitle")}</h3>
-        <div className="max-w-xs">
+      <SubSection title={t("posTitle")}>
+        <FieldGrid>
           <TextField label={t("posDiscount")} name="posMaxDiscountPercent" type="number" min="0" max="100" step="0.01" ltr value={form.posMaxDiscountPercent} onChange={(posMaxDiscountPercent) => set({ posMaxDiscountPercent })} />
-        </div>
-        <p className="m-0 text-xs text-ink-muted">{t("posHint")}</p>
-      </div>
-
+        </FieldGrid>
+        <FieldNote>{t("posHint")}</FieldNote>
+      </SubSection>
     </SectionForm>
   );
 }

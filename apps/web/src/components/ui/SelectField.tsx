@@ -11,14 +11,16 @@ interface SelectFieldProps<T extends string> {
   options: readonly { value: T; label: string }[];
   error?: string | null;
   disabled?: boolean;
+  /** Extra classes on the label text (`md:sr-only` when a header row above names the column). */
+  labelClassName?: string;
 }
 
 /** A labelled dropdown that matches `TextField`. */
-export function SelectField<T extends string>({ label, labelEnd, name, value, onChange, options, error, disabled }: SelectFieldProps<T>) {
+export function SelectField<T extends string>({ label, labelEnd, name, value, onChange, options, error, disabled, labelClassName }: SelectFieldProps<T>) {
   const errorId = `${name}-error`;
   return (
     <label className="flex min-w-0 flex-col gap-1.5 text-xs font-bold">
-      <span className="flex min-w-0 flex-wrap items-center gap-1.5">{label}{labelEnd}</span>
+      <span className={`flex min-w-0 flex-wrap items-center gap-1.5${labelClassName ? ` ${labelClassName}` : ""}`}>{label}{labelEnd}</span>
       <select
         name={name}
         value={value}

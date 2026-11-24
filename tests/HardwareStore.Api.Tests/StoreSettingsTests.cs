@@ -116,6 +116,30 @@ public sealed class StoreSettingsPostgreSqlTests(StoreAdminPostgreSqlFixture fix
     }
 
     [Fact]
+    public async Task The_checkout_quote_marks_free_shipping_and_says_what_is_missing()
+    {
+        var database = await fixture.CreateDatabaseAsync();
+        var service = database.CreateStoreSettingsService();
+        var actorId = await CreateActorAsync(database);
+        var initial = await service.GetAdminAsync();
+
+        var untouched = await service.QuoteCheckoutAsync("ASN", 20_000m, false);
+        Assert.Equal((false, (decimal?)null), (untouched.FreeShipping, untouched.FreeShippingRemaining));
+
+        await service.UpdateSectionAsync(
+            new ShippingSettings { DefaultFee = 120m, FreeShippingEnabled = true, FreeShippingMinimum = 5_000m }, initial.RowVersion, actorId);
+
+        var below = await service.QuoteCheckoutAsync("ASN", 4_000m, false);
+        Assert.Equal((120m, false, (decimal?)1_000m, 120m), (below.ShippingFee, below.FreeShipping, below.FreeShippingRemaining, below.UpfrontTotal));
+
+        var reached = await service.QuoteCheckoutAsync("ASN", 5_000m, false);
+        Assert.Equal((0m, true, (decimal?)null, 0m), (reached.ShippingFee, reached.FreeShipping, reached.FreeShippingRemaining, reached.UpfrontTotal));
+
+        var pickup = await service.QuoteCheckoutAsync(null, 1_000m, true);
+        Assert.Equal((0m, false, (decimal?)null), (pickup.ShippingFee, pickup.FreeShipping, pickup.FreeShippingRemaining));
+    }
+
+    [Fact]
     public async Task Checkout_quote_applies_shipping_group_default_pickup_and_deposit()
     {
         var database = await fixture.CreateDatabaseAsync();

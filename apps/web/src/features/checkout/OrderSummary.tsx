@@ -11,6 +11,7 @@ import { formatEgp } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import type { CartLine } from "@/features/cart/cart-rules";
 import { FieldAlert, useFieldError, type SectionProps } from "./form-parts";
+import { FreeShippingHint } from "@/features/cart/FreeShipping";
 import { CouponBox, type AppliedCoupon } from "./CouponBox";
 import type { Quote } from "./use-quote";
 
@@ -20,6 +21,8 @@ interface OrderSummaryProps extends Pick<SectionProps, "form" | "set" | "errors"
   quote: Quote | null;
   /** Set when the order is below the store's minimum. */
   minimum: number | null;
+  /** The total from which shipping is free; null while the store has no free shipping. */
+  freeShippingMinimum: number | null;
   busy: boolean;
   coupon: {
     applied: AppliedCoupon | null;
@@ -33,21 +36,22 @@ interface OrderSummaryProps extends Pick<SectionProps, "form" | "set" | "errors"
   problem: ReactNode;
 }
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Row({ label, value, strong, tone }: { label: string; value: string; strong?: boolean; tone?: "success" }) {
   return (
     <div className={`flex items-baseline justify-between gap-3 text-sm ${strong ? "font-bold" : ""}`}>
       <dt className={strong ? "" : "text-ink-muted"}>{label}</dt>
-      <dd className="m-0">{value}</dd>
+      <dd className={`m-0 ${tone === "success" ? "font-bold text-success" : ""}`}>{value}</dd>
     </div>
   );
 }
 
 /** The cart lines, the amounts (shipping from the quote) and the confirm button with the terms tick. */
-export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimum, busy, coupon, problem }: OrderSummaryProps) {
+export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimum, freeShippingMinimum, busy, coupon, problem }: OrderSummaryProps) {
   const t = useTranslations("checkout.summary");
   const locale = useLocale();
   const error = useFieldError(errors);
   const shipping = quote ? (quote.shippingFee > 0 ? formatEgp(quote.shippingFee, locale) : t("freeShipping")) : t("shippingPending");
+  const total = subtotal - (coupon.applied?.discount ?? 0);
 
   return (
     <Card as="aside" title={t("title")} icon={WalletIcon} padding="md" className="gap-3.5 lg:sticky lg:top-24 lg:self-start">
@@ -82,13 +86,14 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
       <dl className="m-0 flex flex-col gap-2 border-t border-line pt-3.5">
         <Row label={t("subtotal")} value={formatEgp(subtotal, locale)} />
         {coupon.applied ? <Row label={t("couponDiscount")} value={`− ${formatEgp(coupon.applied.discount, locale)}`} /> : null}
-        <Row label={t("shipping")} value={shipping} />
+        <Row label={t("shipping")} value={shipping} tone={quote?.freeShipping ? "success" : undefined} />
         {quote && quote.upfrontTotal > 0 ? <Row label={t("upfront")} value={formatEgp(quote.upfrontTotal, locale)} /> : null}
         <div className="flex items-baseline justify-between border-t border-line pt-2.5">
           <dt className="font-bold">{t("total")}</dt>
-          <dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(subtotal - (coupon.applied?.discount ?? 0) + (quote?.shippingFee ?? 0), locale)}</dd>
+          <dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(total + (quote?.shippingFee ?? 0), locale)}</dd>
         </div>
       </dl>
+      <FreeShippingHint minimum={freeShippingMinimum} total={total} remaining={quote ? (quote.freeShippingRemaining ?? null) : undefined} />
       <label className="flex items-start gap-2.5 text-xs leading-6">
         <input
           type="checkbox" name="termsAccepted" checked={form.termsAccepted} onChange={(event) => set("termsAccepted", event.target.checked)}

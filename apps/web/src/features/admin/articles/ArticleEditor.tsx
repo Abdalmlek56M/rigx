@@ -11,7 +11,7 @@ import { ArticleBlocksEditor } from "./ArticleBlocksEditor";
 import { ArticleMetaCard } from "./ArticleMetaCard";
 import { ArticlePublishCard } from "./ArticlePublishCard";
 import { createArticle, updateArticle, type Article, type ArticleDetail, type ArticleRevision } from "./articles-api";
-import { articleForm, articleValid, emptyArticleForm, toArticleInput, type ArticleForm as Form } from "./article-rules";
+import { articleForm, articleValid, emptyArticleForm, slugify, toArticleInput, type ArticleForm as Form } from "./article-rules";
 import { isConflict } from "@/lib/api/conflict";
 import { SaveIcon } from "@/components/ui/icons";
 import { cardClass } from "@/components/ui/Card";
@@ -31,6 +31,8 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
   const kit = useTranslations("admin.kit");
   const submit = useSubmit();
   const [form, setForm] = useState<Form>(() => detail ? articleForm(detail.article) : emptyArticleForm());
+  // A new article's address follows its English title until the editor types one; an article that exists keeps its address (a link may point to it).
+  const [slugByHand, setSlugByHand] = useState(detail !== null);
   const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
   const errors = submit.errors.fields;
 
@@ -60,8 +62,18 @@ export function ArticleEditor({ detail, revisions, categories, onSaved, onDelete
         <section className={cardClass({ className: "gap-3" })}>
           <div className="grid gap-3 sm:grid-cols-2">
             <TextField label={t("fields.titleAr")} name="titleAr" dir="rtl" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={errors.titleAr} required />
-            <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={errors.titleEn} required />
-            <TextField label={t("fields.slug")} name="slug" value={form.slug} onChange={(slug) => set({ slug })} ltr required error={errors.slug} />
+            <TextField
+              label={t("fields.titleEn")} name="titleEn" value={form.titleEn} ltr error={errors.titleEn} required
+              onChange={(titleEn) => set(slugByHand ? { titleEn } : { titleEn, slug: slugify(titleEn) })}
+            />
+            <TextField
+              label={t("fields.slug")} name="slug" value={form.slug} ltr required error={errors.slug}
+              labelEnd={slugByHand ? null : <span className="font-normal text-ink-muted">{t("fields.slugAuto")}</span>}
+              onChange={(slug) => {
+                setSlugByHand(slug !== "");
+                set({ slug });
+              }}
+            />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <TextAreaField label={t("fields.summaryAr")} name="summaryAr" dir="rtl" value={form.summaryAr} onChange={(summaryAr) => set({ summaryAr })} rows={3} error={errors.summaryAr} />

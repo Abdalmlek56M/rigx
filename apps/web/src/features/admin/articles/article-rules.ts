@@ -21,6 +21,25 @@ export interface ArticleForm {
   blocksEn: BlockRow[];
 }
 
+/** The recommended lengths of what a search result shows: the title and the description (counted in the SEO fields; the save never refuses them). */
+export const SEO_TITLE_LIMIT = 60;
+export const SEO_DESCRIPTION_LIMIT = 160;
+
+/**
+ * The address part made from an English title: lowercase letters and digits joined by single hyphens (the server's slug rule), accents
+ * dropped, anything else (spaces, punctuation, Arabic letters) a hyphen. An empty result means the title has nothing a slug can use.
+ */
+export function slugify(title: string): string {
+  return title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80)
+    .replace(/-+$/g, "");
+}
+
 export function emptyArticleForm(): ArticleForm {
   return {
     slug: "", titleAr: "", titleEn: "", summaryAr: "", summaryEn: "", categorySlug: "", tags: "", mainImageKey: "",

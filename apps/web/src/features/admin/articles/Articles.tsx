@@ -17,7 +17,7 @@ import { ArticlePanel } from "./ArticlePanel";
 import { ArticleStatusBadge } from "./ArticleStatusBadge";
 import { articleFilterStatus } from "./article-labels";
 import { fetchArticles, type Article } from "./articles-api";
-import { PlusIcon } from "@/components/ui/icons";
+import { ArrowBackIcon, PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
 const FILTERS = { status: "", q: "", page: "1", id: "" };
@@ -41,6 +41,7 @@ export function Articles() {
   const { state, reload } = useLoad(load);
   const data = state.status === "ready" ? state.data : { articles: { items: [], page: 1, pageSize: PAGE_SIZE, total: 0 }, categories: [] };
   const names = new Map(flattenTree(data.categories, new Set()).map(({ node }) => [node.slug, node.name]));
+  const editing = creating || Boolean(values.id);
   const panelRef = useReveal<HTMLDivElement>(creating ? "new" : values.id || null);
   const tableState: Load<readonly Article[]> = state.status === "ready" ? { status: "ready", data: state.data.articles.items } : state;
 
@@ -67,25 +68,31 @@ export function Articles() {
       <PageHeader
         title={t("title")}
         actions={
-          <Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); set({ id: "" }); }}>{t("new")}</Button>
+          editing
+            ? <Button variant="secondary" icon={ArrowBackIcon} onClick={() => { setCreating(false); set({ id: "" }); }}>{t("back")}</Button>
+            : <Button variant="primary" icon={PlusIcon} onClick={() => { setCreating(true); set({ id: "" }); }}>{t("new")}</Button>
         }
       />
-      <FilterBar>
-        <SearchBox label={t("search")} value={values.q} onChange={(q) => set({ q, id: "" })} />
-        <FilterSelect
-          label={t("columns.status")} value={values.status} onChange={(status) => set({ status, id: "" })}
-          options={[
-            { value: "", label: t("statuses.All") },
-            { value: "Draft", label: t("statuses.Draft") },
-            { value: "Published", label: t("statuses.Published") },
-            { value: "Scheduled", label: t("statuses.Scheduled") }
-          ]}
-        />
-      </FilterBar>
-      <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(article) => article.id} empty={t("empty")} />
-      {state.status === "ready" ? (
-        <Pager info={{ page: state.data.articles.page, pageSize: state.data.articles.pageSize, total: state.data.articles.total }} onPage={(next) => set({ page: String(next) })} />
-      ) : null}
+      {editing ? null : (
+        <>
+        <FilterBar>
+          <SearchBox label={t("search")} value={values.q} onChange={(q) => set({ q, id: "" })} />
+          <FilterSelect
+            label={t("columns.status")} value={values.status} onChange={(status) => set({ status, id: "" })}
+            options={[
+              { value: "", label: t("statuses.All") },
+              { value: "Draft", label: t("statuses.Draft") },
+              { value: "Published", label: t("statuses.Published") },
+              { value: "Scheduled", label: t("statuses.Scheduled") }
+            ]}
+          />
+        </FilterBar>
+        <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(article) => article.id} empty={t("empty")} />
+        {state.status === "ready" ? (
+          <Pager info={{ page: state.data.articles.page, pageSize: state.data.articles.pageSize, total: state.data.articles.total }} onPage={(next) => set({ page: String(next) })} />
+        ) : null}
+        </>
+      )}
 
       <div ref={panelRef} className="scroll-mt-20">
         {creating ? (

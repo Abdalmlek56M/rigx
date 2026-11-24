@@ -1,13 +1,13 @@
 "use client";
 
-import type { CSSProperties, ElementType, ReactNode } from "react";
+import type { CSSProperties, ElementType, KeyboardEvent, ReactNode } from "react";
 import { DndContext, MouseSensor, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { GripIcon } from "@/components/ui/icons";
 
 /**
  * Hand ordering by dragging, for the admin only (the one place `@dnd-kit/core` is used, so the library stays in the admin chunks).
- * A mouse drags after a few pixels; a finger after a short press, so a swipe still scrolls the page. The arrow buttons next to each
- * item stay the keyboard way, which is why nothing here takes the keyboard.
+ * A mouse drags after a few pixels; a finger after a short press, so a swipe still scrolls the page. The keyboard way is either the arrow
+ * buttons a screen keeps next to each item, or (with `onStep` on the item) the grip itself: focus it and press the up or down arrow.
  */
 export function DragSort({ onMove, children }: {
   /** Called when `active` is dropped on `over` (never the same id). */
@@ -24,18 +24,35 @@ export function DragSort({ onMove, children }: {
   return <DndContext sensors={sensors} onDragEnd={end}>{children}</DndContext>;
 }
 
+/** The attributes that make a grip a keyboard control: focusable, named, and the vertical arrows step the item. */
+function gripKeyboard(label: string | undefined, onStep: (direction: -1 | 1) => void) {
+  return {
+    role: "button",
+    tabIndex: 0,
+    "aria-label": label,
+    "aria-keyshortcuts": "ArrowUp ArrowDown",
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+      event.preventDefault();
+      onStep(event.key === "ArrowUp" ? -1 : 1);
+    }
+  };
+}
+
 /**
  * One item that can be dragged and dropped on. With `handle` only the grip starts a drag (a row that has its own buttons and a name
  * to click); without it the whole item does (a photo tile). The item that is over gets `data-over`, the one in hand `data-dragging`.
  */
-export function DragItem({ id, as: Tag = "li", handle = false, disabled = false, label, className = "", children }: {
+export function DragItem({ id, as: Tag = "li", handle = false, disabled = false, label, onStep, className = "", children }: {
   id: string;
   as?: ElementType;
   /** Not draggable and not a drop target (the list is filtered, or a save is running). */
   disabled?: boolean;
   handle?: boolean;
-  /** What the grip is called when hovered (the way to order by keyboard is the arrow buttons). */
+  /** What the grip is called when hovered and read out. */
   label?: string;
+  /** Makes the grip a keyboard control: up (-1) and down (1) arrow keys move the item one place. Without it the grip is for the pointer only. */
+  onStep?: (direction: -1 | 1) => void;
   className?: string;
   children: ReactNode;
 }) {
@@ -61,8 +78,8 @@ export function DragItem({ id, as: Tag = "li", handle = false, disabled = false,
     >
       {handle && !disabled ? (
         <span
-          ref={setActivatorNodeRef} title={label} aria-hidden="true" {...listeners}
-          className="flex h-8 w-6 shrink-0 cursor-grab touch-none items-center justify-center text-ink-muted"
+          ref={setActivatorNodeRef} title={label} {...listeners} {...(onStep ? gripKeyboard(label, onStep) : { "aria-hidden": true })}
+          className="flex h-8 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-control text-ink-muted focus-visible:outline-2 focus-visible:outline-orange"
         >
           <GripIcon size={16} />
         </span>

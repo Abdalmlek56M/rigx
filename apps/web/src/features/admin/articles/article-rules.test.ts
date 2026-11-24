@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Article } from "./articles-api.ts";
-import { articleForm, articleValid, emptyArticleForm, toArticleInput } from "./article-rules.ts";
+import { articleForm, articleValid, emptyArticleForm, slugify, toArticleInput } from "./article-rules.ts";
 
 const article: Article = {
   id: "a1", slug: "buying-guide", titleAr: "دليل", titleEn: "Guide", summaryAr: "ملخص", summaryEn: "Summary",
@@ -36,5 +36,24 @@ describe("article form", () => {
     assert.equal(articleValid(emptyArticleForm()), false);
     assert.equal(articleValid({ ...emptyArticleForm(), slug: "s", titleAr: "ع", titleEn: "E" }), true);
     assert.equal(articleValid({ ...emptyArticleForm(), slug: "", titleAr: "ع", titleEn: "E" }), false);
+  });
+});
+
+describe("slug from the English title", () => {
+  it("joins words with single hyphens in lowercase", () => {
+    assert.equal(slugify("How to Choose a GPU"), "how-to-choose-a-gpu");
+    assert.equal(slugify("  RTX 4060 -- Review!  "), "rtx-4060-review");
+  });
+
+  it("drops accents and whatever a slug cannot hold", () => {
+    assert.equal(slugify("Café & Crème"), "cafe-creme");
+    assert.equal(slugify("دليل الشراء"), "");
+    assert.equal(slugify("دليل Guide 2026"), "guide-2026");
+  });
+
+  it("stays short and never ends with a hyphen", () => {
+    const long = slugify("word ".repeat(40));
+    assert.ok(long.length <= 80);
+    assert.ok(!long.endsWith("-"));
   });
 });

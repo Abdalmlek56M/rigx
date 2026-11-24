@@ -108,6 +108,51 @@ public sealed class StoreSettingsRulesTests
     }
 
     [Fact]
+    public void Free_shipping_is_off_by_default_and_never_changes_a_fee()
+    {
+        var shipping = new ShippingSettings { DefaultFee = 120m }.Normalize();
+        Assert.False(shipping.FreeShippingEnabled);
+        Assert.Equal(120m, shipping.FeeFor(120m, 1_000_000m));
+        Assert.Null(shipping.FreeShippingRemaining(10m));
+        Assert.Equal(new ShippingQuote(120m, null), shipping.QuoteFor("ASN", 1_000_000m));
+    }
+
+    [Fact]
+    public void Free_shipping_waives_the_fee_from_the_minimum_and_says_what_is_missing_below_it()
+    {
+        var shipping = new ShippingSettings { DefaultFee = 120m, FreeShippingEnabled = true, FreeShippingMinimum = 5_000m }.Normalize();
+
+        Assert.Equal(new ShippingQuote(0m, null, FreeApplied: true), shipping.QuoteFor("ASN", 5_000m));
+        Assert.Equal(new ShippingQuote(120m, null, FreeApplied: false, FreeShippingRemaining: 1m), shipping.QuoteFor("ASN", 4_999m));
+        Assert.Equal(1_250.5m, shipping.FreeShippingRemaining(3_749.5m));
+        Assert.Null(shipping.FreeShippingRemaining(5_000m));
+        // A governorate that already ships for nothing has nothing to gain, so no hint and no "free" mark.
+        Assert.Equal(new ShippingQuote(0m, null), (shipping with { DefaultFee = 0m }).QuoteFor("ASN", 100m));
+    }
+
+    [Fact]
+    public void Free_shipping_needs_a_minimum_above_zero_and_a_valid_amount()
+    {
+        AssertBadRequest(() => new ShippingSettings { FreeShippingEnabled = true }.Normalize());
+        AssertBadRequest(() => new ShippingSettings { FreeShippingEnabled = true, FreeShippingMinimum = -1m }.Normalize());
+        AssertBadRequest(() => new ShippingSettings { FreeShippingMinimum = 10.005m }.Normalize());
+        var off = new ShippingSettings { FreeShippingMinimum = 500m }.Normalize();
+        Assert.Equal((false, 500m), (off.FreeShippingEnabled, off.FreeShippingMinimum));
+    }
+
+    [Fact]
+    public void Transfer_instructions_are_plain_text_trimmed_and_empty_means_none()
+    {
+        Assert.Null(new PaymentSettings().Normalize().TransferInstructions);
+        Assert.Null(Payment(p => p with { TransferInstructions = "  \n " }).Normalize().TransferInstructions);
+        Assert.Equal("حوّل إلى الرقم 010 ثم أرسل صورة التحويل.\nالاسم: RIGX",
+            Payment(p => p with { TransferInstructions = "  حوّل إلى الرقم 010 ثم أرسل صورة التحويل.\nالاسم: RIGX " }).Normalize().TransferInstructions);
+        AssertBadRequest(() => Payment(p => p with { TransferInstructions = "حوّل <b>الآن</b>" }).Normalize());
+        AssertBadRequest(() => Payment(p => p with { TransferInstructions = new string('ا', PaymentSettings.TransferInstructionsMaxLength + 1) }).Normalize());
+        Assert.NotNull(Payment(p => p with { TransferInstructions = new string('ا', PaymentSettings.TransferInstructionsMaxLength) }).Normalize().TransferInstructions);
+    }
+
+    [Fact]
     public void No_deposit_is_asked_when_the_deposit_is_not_required_but_shipping_still_is()
     {
         var payment = new PaymentSettings { DepositRequired = false };

@@ -1,25 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
+import { InvoicePreview } from "./InvoicePreview";
 import { LogoCard } from "./LogoCard";
 import { SectionForm, useSectionSave } from "./SectionForm";
+import { useSectionDraft } from "./use-section-draft";
 import { saveStoreInfo } from "./settings-api";
 import { storeInfoForm, storeInfoValue, type SectionProps } from "./settings-rules";
-import type { StoreInfoForm as Form } from "./settings-rules";
 
 /** ADM-Settings — store data: identity, pickup details, page summaries and the store logo. */
 export function StoreInfoForm({ view, onSaved, onStale }: SectionProps) {
   const t = useTranslations("admin.settings.storeInfo");
   const { submit, save } = useSectionSave(view.rowVersion, onSaved, onStale);
-  const [form, setForm] = useState<Form>(() => storeInfoForm(view.storeInfo));
-  const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
+  const { form, set, dirty, reset } = useSectionDraft(storeInfoForm(view.storeInfo));
 
   return (
     <SectionForm
-      title={t("title")} hint={t("hint")} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
+      title={t("title")} hint={t("hint")} dirty={dirty} onReset={reset} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
       onSubmit={() => void save((rowVersion) => saveStoreInfo(storeInfoValue(form), rowVersion))}
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -30,6 +29,10 @@ export function StoreInfoForm({ view, onSaved, onStale }: SectionProps) {
       </div>
 
       <LogoCard kind="store" storageKey={view.logos.storeLogoKey ?? null} onSaved={onSaved} />
+      <InvoicePreview
+        storeName={form.name} prefix={view.invoice.numberPrefix ?? "INV"} backgroundLogo={view.invoice.showBackgroundLogo ?? true}
+        warrantyQr={view.invoice.showWarrantyQr ?? true} termsLine={view.invoice.termsLine ?? ""}
+      />
 
       <div className="flex flex-col gap-3 border-t border-line pt-3">
         <h3 className="m-0 text-[15px] font-bold">{t("pickupTitle")}</h3>

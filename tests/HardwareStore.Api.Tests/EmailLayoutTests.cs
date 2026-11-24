@@ -1,6 +1,8 @@
 using System.Net.Mail;
 using HardwareStore.Modules.Identity;
 using HardwareStore.Modules.Identity.Authentication;
+using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
 using Xunit;
 
 namespace HardwareStore.Api.Tests;
@@ -91,6 +93,32 @@ public sealed class EmailLayoutTests
             Assert.Contains("المتبقي للدفع: 1,000 ج.م", content.Text);
             Assert.Contains("https://rigxhardware.com/t/token", content.Text);
         }
+    }
+
+    [Fact]
+    public void The_received_email_shows_the_transfer_instructions_as_escaped_lines_and_only_when_there_are_some()
+    {
+        var with = EmailLayout.Order(new OrderEmailMessage("to@example.com", "سارة", "RX-1001", OrderEmailMessage.Received,
+            "https://rigxhardware.com/t/token", null, null, Summary: Summary, PaymentInstructions: "حوّل إلى 010 <script>\nالاسم: RIGX"));
+        Assert.Contains("طريقة الدفع", with.Html);
+        Assert.Contains("حوّل إلى 010 &lt;script&gt;<br>الاسم: RIGX", with.Html);
+        Assert.DoesNotContain("<script>", with.Html);
+        Assert.Contains("طريقة الدفع:\nحوّل إلى 010 <script>\nالاسم: RIGX", with.Text);
+
+        var without = EmailLayout.Order(new OrderEmailMessage("to@example.com", "سارة", "RX-1001", OrderEmailMessage.Received,
+            "https://rigxhardware.com/t/token", null, null, Summary: Summary));
+        Assert.DoesNotContain("طريقة الدفع", without.Html);
+        Assert.DoesNotContain("طريقة الدفع", without.Text);
+    }
+
+    [Fact]
+    public void Transfer_instructions_go_only_with_an_order_that_is_paid_by_transfer()
+    {
+        var payment = new PaymentSettings { TransferInstructions = "حوّل إلى 010" };
+        Assert.Equal("حوّل إلى 010", OrderEmails.PaymentInstructionsFor(OrderPaymentMethod.InstaPay, payment));
+        Assert.Equal("حوّل إلى 010", OrderEmails.PaymentInstructionsFor(OrderPaymentMethod.Wallet, payment));
+        Assert.Null(OrderEmails.PaymentInstructionsFor(OrderPaymentMethod.CashOnDelivery, payment));
+        Assert.Null(OrderEmails.PaymentInstructionsFor(OrderPaymentMethod.InstaPay, new PaymentSettings()));
     }
 
     [Fact]

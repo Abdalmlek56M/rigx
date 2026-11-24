@@ -7,11 +7,12 @@ import { Card } from "@/components/ui/Card";
 import { CartIcon, CloseIcon, WalletIcon } from "@/components/ui/icons";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "./cart-context";
+import { CartShippingRow, FreeShippingHint } from "./FreeShipping";
 import { CartLineRow } from "./CartLineRow";
 import { CartWhatsAppLink } from "./CartWhatsAppLink";
 
 /** The cart drawer; `whatsAppNumber` is the store number for "order on WhatsApp" (none = no button). */
-export function CartDrawer({ whatsAppNumber }: { whatsAppNumber: string | null }) {
+export function CartDrawer({ whatsAppNumber, freeShippingMinimum }: { whatsAppNumber: string | null; freeShippingMinimum: number | null }) {
   const t = useTranslations("cart");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -45,15 +46,13 @@ export function CartDrawer({ whatsAppNumber }: { whatsAppNumber: string | null }
             <div className="border-t border-line p-5">
               <Card title={t("summary")} icon={WalletIcon} padding="sm" className="gap-3 border-0 p-0">
                 <dl className="m-0 flex flex-col gap-2.5 text-sm">
-                  <div className="flex justify-between gap-2.5">
-                    <dt className="text-ink-muted">{t("shipping")}</dt>
-                    <dd className="m-0">{t("shippingNote")}</dd>
-                  </div>
+                  <CartShippingRow label={t("shipping")} note={t("shippingNote")} minimum={freeShippingMinimum} total={subtotal} />
                   <div className="flex items-baseline justify-between gap-2.5 border-t border-line pt-2.5">
                     <dt className="font-bold">{t("total")}</dt>
                     <dd className="m-0 text-[22px] font-bold tabular-nums">{formatEgp(subtotal, locale)}</dd>
                   </div>
                 </dl>
+                <FreeShippingHint minimum={freeShippingMinimum} total={subtotal} />
                 <ButtonLink href="/checkout" variant="accent" onClick={close} className="w-full">{t("checkout")}</ButtonLink>
                 <CartWhatsAppLink number={whatsAppNumber} onClick={close} />
                 <ButtonLink href="/cart" variant="secondary" onClick={close} className="w-full">{t("viewCart")}</ButtonLink>

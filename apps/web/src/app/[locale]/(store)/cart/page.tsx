@@ -31,7 +31,7 @@ export default async function CartRoute({ params }: Props) {
     <div className="pb-16">
       <PageHeader title={t("title")} icon={CartIcon} />
       <section className="shell">
-        <CartPage whatsAppNumber={whatsAppNumber(storefront.contactLinks)} />
+        <CartPage whatsAppNumber={whatsAppNumber(storefront.contactLinks)} freeShippingMinimum={storefront.checkout.freeShippingMinimum} />
       </section>
     </div>
   );

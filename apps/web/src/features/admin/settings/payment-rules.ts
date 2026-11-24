@@ -13,7 +13,12 @@ export interface PaymentForm {
   instaPayAddress: string;
   walletEnabled: boolean;
   walletNumber: string;
+  /** Plain text for the customer who pays by transfer; empty = nothing is shown. */
+  transferInstructions: string;
 }
+
+/** The server's limit (`PaymentSettings.TransferInstructionsMaxLength`). */
+export const TRANSFER_INSTRUCTIONS_MAX = 600;
 
 export const paymentForm = (value: PaymentSettings): PaymentForm => ({
   depositRequired: value.depositRequired ?? true,
@@ -24,7 +29,8 @@ export const paymentForm = (value: PaymentSettings): PaymentForm => ({
   instaPayEnabled: value.instaPayEnabled ?? false,
   instaPayAddress: value.instaPayAddress ?? "",
   walletEnabled: value.walletEnabled ?? false,
-  walletNumber: value.walletNumber ?? ""
+  walletNumber: value.walletNumber ?? "",
+  transferInstructions: value.transferInstructions ?? ""
 });
 
 export const paymentValue = (form: PaymentForm): PaymentSettings => ({
@@ -36,5 +42,6 @@ export const paymentValue = (form: PaymentForm): PaymentSettings => ({
   instaPayEnabled: form.instaPayEnabled,
   instaPayAddress: form.instaPayAddress.trim() || null,
   walletEnabled: form.walletEnabled,
-  walletNumber: form.walletNumber.trim() || null
+  walletNumber: form.walletNumber.trim() || null,
+  transferInstructions: form.transferInstructions.trim() || null
 });

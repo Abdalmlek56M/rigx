@@ -57,7 +57,7 @@ function Totals({ order }: { order: Order }) {
       <InfoGrid columns={2} className="gap-y-3">
         <InfoField label={t("subtotal")} value={money(order.subtotal)} />
         {order.couponDiscount > 0 ? <InfoField label={t("couponDiscount", { code: order.couponCode ?? "" })} value={`− ${money(order.couponDiscount)}`} /> : null}
-        {order.fulfillmentMethod === "Delivery" ? <InfoField label={t("shipping")} value={money(order.deliveryFee)} /> : null}
+        {order.fulfillmentMethod === "Delivery" ? <InfoField label={t("shipping")} value={order.deliveryFee > 0 ? money(order.deliveryFee) : t("freeShipping")} /> : null}
         <InfoField label={t("total")} value={money(order.total)} />
         <InfoField label={t("paid")} value={money(order.paidAmount)} />
         {order.refundedAmount > 0 ? <InfoField label={t("refunded")} value={money(order.refundedAmount)} /> : null}

@@ -6,6 +6,7 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { FilterSelect } from "../kit/FilterBar";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
+import { useUnsavedGuard } from "../kit/use-unsaved-guard";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { BackupForm } from "./BackupForm";
 import { ContactLinksForm } from "./ContactLinksForm";
@@ -18,6 +19,7 @@ import { ReviewsForm } from "./ReviewsForm";
 import { SalesForm } from "./SalesForm";
 import { fetchSettings, fetchShippingRates, type GovernorateRate, type SettingsView } from "./settings-api";
 import { SETTINGS_FILTERS, SETTINGS_SECTIONS, settingsSection, type SectionProps, type SettingsSection } from "./settings-rules";
+import { DirtyReportContext } from "./SectionForm";
 import { ShippingForm } from "./ShippingForm";
 import { StoreInfoForm } from "./StoreInfoForm";
 import { WarrantyForm } from "./WarrantyForm";
@@ -63,6 +65,9 @@ export function SettingsScreen() {
   const { state, reload } = useLoad(load);
   const [saved, setSaved] = useState<SettingsView | null>(null);
   const [generation, setGeneration] = useState(0);
+  const [dirty, setDirty] = useState(false);
+  const { dialog, guard } = useUnsavedGuard(dirty);
+  const choose = (next: string) => guard(() => set({ section: next }));
   const view = saved ?? (state.status === "ready" ? state.data.view : null);
 
   const onSaved = (next: SettingsView) => setSaved(next);
@@ -75,16 +80,17 @@ export function SettingsScreen() {
 
   return (
     <>
+      {dialog}
       <PageHeader title={t("title")} />
       <div className="lg:hidden">
-        <FilterSelect label={t("sectionsLabel")} value={section} onChange={(next) => set({ section: next })} options={options} />
+        <FilterSelect label={t("sectionsLabel")} value={section} onChange={choose} options={options} />
       </div>
       <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
         <nav aria-label={t("sectionsLabel")} className="hidden flex-col gap-1 rounded-card border border-line bg-surface p-2 lg:flex">
           {SETTINGS_SECTIONS.map((key) => (
             <button
               key={key} type="button" aria-current={key === section ? "page" : undefined}
-              onClick={() => set({ section: key })}
+              onClick={() => choose(key)}
               className={`h-10 rounded-control px-3 text-start text-sm font-bold ${key === section ? "bg-carbon text-on-carbon" : "hover:bg-paper"}`}
             >
               {t(`sections.${key}`)}
@@ -96,8 +102,10 @@ export function SettingsScreen() {
           {state.status === "error" ? (
             <ErrorPanel message={t("failed")} retryLabel={t("retry")} onRetry={reload} />
           ) : view ? (
-            <section key={`${section}-${generation}`} className="min-w-0 rounded-card border border-line bg-surface p-5">
-              <SectionBody section={section} view={view} rates={state.status === "ready" ? state.data.rates.governorates : []} onSaved={onSaved} onStale={onStale} />
+            <section key={`${section}-${generation}`} className="min-w-0 rounded-card border border-line bg-surface p-5 md:p-6">
+              <DirtyReportContext.Provider value={setDirty}>
+                <SectionBody section={section} view={view} rates={state.status === "ready" ? state.data.rates.governorates : []} onSaved={onSaved} onStale={onStale} />
+              </DirtyReportContext.Provider>
             </section>
           ) : (
             <LoadingCard className="h-64" />

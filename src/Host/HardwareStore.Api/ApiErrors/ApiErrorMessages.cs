@@ -164,6 +164,7 @@ public static class ApiErrorMessages
         ["FAQ was not found in the trash."] = "السؤال الشائع غير موجود في سلة المحذوفات.",
         ["FAQ was not found."] = "السؤال الشائع غير موجود.",
         ["Fulfillment must be Delivery or Pickup."] = "يجب أن تكون طريقة التسليم Delivery أو Pickup.",
+        ["Free shipping needs a minimum order amount above zero."] = "يتطلب تفعيل الشحن المجاني تحديد حد أدنى لمبلغ الطلب أكبر من صفر.",
         ["Google sign-in is not configured."] = "لم يُضبط تسجيل الدخول عبر Google.",
         ["Google sign-in is unavailable for this account. Use an email code."] = "تسجيل الدخول عبر Google غير متاح لهذا الحساب. استخدم رمزًا يصلك عبر البريد الإلكتروني.",
         ["Inspection condition must be New, Used, Open Box, or Scrap."] = "يجب أن تكون حالة الفحص New أو Used أو Open Box أو Scrap.",

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { addItem, moveItem, removeItem, replaceItem } from "./list-editor-rules.ts";
+import { addItem, moveItem, moveItemTo, removeItem, replaceItem } from "./list-editor-rules.ts";
 
 const list = ["a", "b", "c"];
 
@@ -24,5 +24,13 @@ describe("list editor helpers", () => {
     assert.deepEqual(moveItem(list, 2, 1), ["a", "b", "c"]);
     assert.deepEqual(moveItem(list, 9, -1), ["a", "b", "c"]);
     assert.deepEqual(list, ["a", "b", "c"]);
+  });
+
+  it("drops an item on another place and leaves the order alone when a place is outside the list", () => {
+    assert.deepEqual(moveItemTo(list, 0, 2), ["b", "c", "a"]);
+    assert.deepEqual(moveItemTo(list, 2, 0), ["c", "a", "b"]);
+    assert.deepEqual(moveItemTo(list, 1, 1), ["a", "b", "c"]);
+    assert.deepEqual(moveItemTo(list, 0, 3), ["a", "b", "c"]);
+    assert.deepEqual(moveItemTo(list, -1, 1), ["a", "b", "c"]);
   });
 });

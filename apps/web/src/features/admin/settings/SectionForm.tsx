@@ -1,28 +1,39 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { isConflict } from "@/lib/api/conflict";
 import { FormMessage } from "../kit/PageHeader";
+import { StickySaveBar } from "../kit/StickySaveBar";
 import { useToast } from "../kit/Toast";
 import { useSubmit } from "../kit/use-submit";
 import type { SettingsView } from "./settings-rules";
-import { SaveIcon } from "@/components/ui/icons";
-import { Button } from "../kit/Button";
+
+/** The screen's way of knowing that the open section has unsaved edits (it guards the section list and the links with it). */
+export const DirtyReportContext = createContext<(dirty: boolean) => void>(() => undefined);
 
 interface SectionFormProps {
   title: string;
   hint: string;
   onSubmit: () => void;
+  /** Whether the fields differ from what is saved; the floating save bar shows while they do. */
+  dirty: boolean;
+  /** Puts the fields back to what is saved. */
+  onReset: () => void;
   busy: boolean;
   error: string | null;
   dialog?: ReactNode;
   children: ReactNode;
 }
 
-/** The shared frame of every settings section: title, hint, the fields, the server message and one save button. */
-export function SectionForm({ title, hint, onSubmit, busy, error, dialog, children }: SectionFormProps) {
-  const t = useTranslations("admin.settings");
+/** The shared frame of every settings section: title, hint, the fields, the server message and the floating save bar. */
+export function SectionForm({ title, hint, onSubmit, dirty, onReset, busy, error, dialog, children }: SectionFormProps) {
+  const report = useContext(DirtyReportContext);
+  useEffect(() => {
+    report(dirty);
+    return () => report(false);
+  }, [dirty, report]);
+
   return (
     <form
       className="flex min-w-0 flex-col gap-4"
@@ -32,16 +43,12 @@ export function SectionForm({ title, hint, onSubmit, busy, error, dialog, childr
       }}
     >
       <div className="flex flex-col gap-1">
-        <h2 className="m-0 text-lg font-bold">{title}</h2>
+        <h2 className="m-0 type-section-title">{title}</h2>
         <p className="m-0 text-sm text-ink-muted">{hint}</p>
       </div>
       {children}
       <FormMessage message={error} />
-      <div>
-        <Button type="submit" variant="primary" icon={SaveIcon} loading={busy}>
-          {t("save")}
-        </Button>
-      </div>
+      <StickySaveBar dirty={dirty} busy={busy} onReset={onReset} />
       {dialog}
     </form>
   );

@@ -1,6 +1,7 @@
 import "server-only";
 import { unwrap, type Schemas } from "@rigx/api-client";
 import { createServerApi } from "./api/server";
+import { freeShippingMinimum } from "@/features/cart/free-shipping";
 import type { CategoryNode } from "./categories";
 
 export interface ContactLink {
@@ -40,6 +41,10 @@ export interface CheckoutSettings {
   shippingPaidUpfront: boolean;
   instaPayAddress: string | null;
   walletNumber: string | null;
+  /** The owner's words on how to pay by transfer or wallet (plain text, may have several lines); null = nothing to show. */
+  transferInstructions: string | null;
+  /** Orders from this total (after discounts, before shipping) ship free; null while free shipping is off. */
+  freeShippingMinimum: number | null;
 }
 
 export interface StorefrontData {
@@ -77,7 +82,7 @@ const FALLBACK: StorefrontData = {
   whatsAppTemplates: { general: "", product: "", build: "", order: "", warranty: "" },
   checkout: {
     guestCheckoutEnabled: false, minimumOrderAmount: 0, leadSources: [], depositThreshold: 0, depositPercent: 0,
-    shippingPaidUpfront: false, instaPayAddress: null, walletNumber: null
+    shippingPaidUpfront: false, instaPayAddress: null, walletNumber: null, transferInstructions: null, freeShippingMinimum: null
   },
   showSoldOut: true,
   categories: [],
@@ -162,7 +167,9 @@ export async function loadStorefront(): Promise<StorefrontData> {
         depositPercent: settings.payment.depositPercent ?? 0,
         shippingPaidUpfront: settings.payment.shippingPaidUpfront ?? false,
         instaPayAddress: settings.payment.instaPayAddress?.trim() || null,
-        walletNumber: settings.payment.walletNumber?.trim() || null
+        walletNumber: settings.payment.walletNumber?.trim() || null,
+        transferInstructions: settings.payment.transferInstructions?.trim() || null,
+        freeShippingMinimum: freeShippingMinimum(settings.shipping.freeShippingEnabled, settings.shipping.freeShippingMinimum)
       },
       showSoldOut: settings.controls.showSoldOut ?? true,
       categories: toMenu(categories),

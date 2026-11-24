@@ -296,6 +296,23 @@ export const GridIcon = (p: IconProps) => (
     <rect x="14" y="14" width="7" height="7" rx="1.5" />
   </Icon>
 );
+/** Three bullets with their lines: "make these lines a list". */
+export const BulletListIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 6h11M9 12h11M9 18h11" />
+    <g {...solid}>
+      <circle cx="4.5" cy="6" r="1.5" />
+      <circle cx="4.5" cy="12" r="1.5" />
+      <circle cx="4.5" cy="18" r="1.5" />
+    </g>
+  </Icon>
+);
+/** A capital H between two bars: "make this line a heading". */
+export const HeadingIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 5v14M18 5v14M6 12h12" />
+  </Icon>
+);
 export const ListIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="3" y="4" width="18" height="4.5" rx="1.5" />

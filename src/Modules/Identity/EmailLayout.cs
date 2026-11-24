@@ -146,6 +146,7 @@ public static class EmailLayout
         };
         var (lineText, lineHtml) = OrderLine(message, reference);
         var (summaryText, summaryHtml) = OrderSummary(message.Summary);
+        var (paymentText, paymentHtml) = PaymentInstructions(message.PaymentInstructions);
         var trackingUrl = Url(message.TrackingUrl);
         // The invoice email links the invoice first and the tracking page second; every other one links tracking only.
         var secondLinkHtml = invoiced ? LinkBlock(trackingUrl, "تتبع الطلب") : "";
@@ -154,6 +155,7 @@ public static class EmailLayout
             <p style="{Paragraph}">مرحبًا {E(message.FullName)}،</p>
             <p style="{Paragraph}">{lineHtml}</p>
             {summaryHtml}
+            {paymentHtml}
             {LinkBlock(url, invoiced ? "عرض الفاتورة" : "تتبع الطلب")}
             {secondLinkHtml}
             """;
@@ -161,7 +163,7 @@ public static class EmailLayout
             مرحبًا {message.FullName}،
 
             {lineText}
-            {summaryText}
+            {summaryText}{paymentText}
             {url}
             {secondLinkText}
             RIGX
@@ -195,6 +197,15 @@ public static class EmailLayout
         if (summary.Remaining > 0 && summary.Remaining != summary.Total) Total("المتبقي للدفع", summary.Remaining);
         var html = $"""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;">{rows}</table>""";
         return (text.ToString(), html);
+    }
+
+    /// <summary>How to pay by transfer: the owner's own plain text, escaped, one paragraph per line; nothing when there is none.</summary>
+    private static (string Text, string Html) PaymentInstructions(string? instructions)
+    {
+        if (string.IsNullOrWhiteSpace(instructions)) return ("", "");
+        var lines = instructions.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var html = $"""<p style="{Paragraph}"><strong>طريقة الدفع</strong><br>{string.Join("<br>", lines.Select(E))}</p>""";
+        return ($"\nطريقة الدفع:\n{string.Join("\n", lines)}\n", html);
     }
 
     /// <summary>"1,250 ج.م" (no decimals when the amount is whole).</summary>

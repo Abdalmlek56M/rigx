@@ -19164,6 +19164,17 @@
           "upfrontTotal": {
             "type": "number",
             "format": "double"
+          },
+          "freeShipping": {
+            "type": "boolean",
+            "default": false
+          },
+          "freeShippingRemaining": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
           }
         }
       },
@@ -26096,6 +26107,12 @@
               "null",
               "string"
             ]
+          },
+          "transferInstructions": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -29337,6 +29354,13 @@
             "items": {
               "$ref": "#/components/schemas/ShippingGroup"
             }
+          },
+          "freeShippingEnabled": {
+            "type": "boolean"
+          },
+          "freeShippingMinimum": {
+            "type": "number",
+            "format": "double"
           }
         }
       },

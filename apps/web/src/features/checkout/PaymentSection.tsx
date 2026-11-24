@@ -8,6 +8,8 @@ import type { PaymentMethod } from "./checkout-request";
 import { FieldAlert, FormSection, useFieldError, type SectionProps } from "./form-parts";
 import { ChoiceRadioTile } from "@/components/ui/ChoiceTile";
 import { BankIcon, CashIcon, WalletIcon } from "@/components/ui/icons";
+import { isTransfer } from "./order-rules";
+import { TransferInstructions } from "./TransferInstructions";
 
 interface PaymentSectionProps extends SectionProps {
   payment: PaymentMethods;
@@ -64,6 +66,9 @@ export function PaymentSection({ form, set, errors, payment, settings, pickupEna
       </div>
       <FieldAlert>{error("paymentMethod")}</FieldAlert>
       <UpfrontNote settings={settings} payment={payment} pickup={pickupEnabled && form.fulfillment === "Pickup"} />
+      {settings.transferInstructions && isTransfer(form.paymentMethod) ? (
+        <NoteBox><TransferInstructions text={settings.transferInstructions} /></NoteBox>
+      ) : null}
     </FormSection>
   );
 }

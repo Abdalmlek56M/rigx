@@ -39,7 +39,10 @@ export function useCheckoutForm(settings: CheckoutSettings) {
   const [coupon, setCoupon] = useState<(AppliedCoupon & { forTotal: number }) | null>(null);
   const [couponProblem, setCouponProblem] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const quote = useQuote(form.fulfillment === "Pickup", form.governorate, subtotal);
+  // A discount worked out for an older cart total no longer holds: the old code is ignored until it is applied again.
+  const appliedCoupon = coupon && coupon.forTotal === subtotal ? coupon : null;
+  // Free shipping is judged on the total after the coupon, as the server does when it places the order.
+  const quote = useQuote(form.fulfillment === "Pickup", form.governorate, subtotal - (appliedCoupon?.discount ?? 0));
 
   useEffect(() => {
     void refresh();
@@ -78,8 +81,6 @@ export function useCheckoutForm(settings: CheckoutSettings) {
     setCoupon({ ...applied, forTotal: subtotal });
     setForm((current) => ({ ...current, couponCode: applied.code }));
   };
-  // A discount worked out for an older cart total no longer holds: the old code is ignored until it is applied again.
-  const appliedCoupon = coupon && coupon.forTotal === subtotal ? coupon : null;
   const minimum = settings.minimumOrderAmount > 0 && subtotal < settings.minimumOrderAmount ? settings.minimumOrderAmount : null;
 
   function focusFirst(fields: readonly FieldKey[]) {

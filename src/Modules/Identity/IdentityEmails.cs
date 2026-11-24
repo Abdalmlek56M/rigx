@@ -38,9 +38,11 @@ public sealed record OrderEmailSummary(IReadOnlyList<OrderEmailLine> Lines, deci
 /// <summary>
 /// Order emails (business §5): <see cref="Stage"/> is Received, Confirmed, Shipped, Invoiced or Unreachable (the store could not reach the
 /// customer); every one carries the tracking link (the invoice page link for Invoiced) and, when known, the ordered lines and totals.
+/// <see cref="PaymentInstructions"/> (plain text, Received only) says how to pay an order that is paid by transfer.
 /// </summary>
 public sealed record OrderEmailMessage(string Email, string FullName, string Reference, string Stage, string TrackingUrl,
-    string? CourierName, string? WaybillNumber, string? InvoiceNumber = null, string? InvoiceUrl = null, OrderEmailSummary? Summary = null)
+    string? CourierName, string? WaybillNumber, string? InvoiceNumber = null, string? InvoiceUrl = null, OrderEmailSummary? Summary = null,
+    string? PaymentInstructions = null)
 {
     public const string Received = "Received";
     public const string Confirmed = "Confirmed";

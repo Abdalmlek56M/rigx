@@ -8,7 +8,9 @@ import { TextField } from "@/components/ui/TextField";
 import { cardClass } from "@/components/ui/Card";
 import { flattenTree } from "../categories/category-rules";
 import type { Category } from "../categories/categories-api";
-import type { ArticleForm } from "./article-rules";
+import { CharCount } from "../kit/CharCount";
+import { textLength } from "../kit/char-count-rules";
+import { SEO_DESCRIPTION_LIMIT, SEO_TITLE_LIMIT, type ArticleForm } from "./article-rules";
 
 /** Category, tags, cover image, SEO and order — the right-hand column of the editor. */
 export function ArticleMetaCard({ form, set, categories, errors }: {
@@ -40,10 +42,22 @@ export function ArticleMetaCard({ form, set, categories, errors }: {
 
       <div className="flex flex-col gap-3 border-t border-line pt-3">
         <h3 className="m-0 text-sm font-bold">{t("seo")}</h3>
-        <TextField label={t("seoTitleAr")} name="seoTitleAr" dir="rtl" value={form.seoTitleAr} onChange={(seoTitleAr) => set({ seoTitleAr })} error={errors.seoTitleAr} />
-        <TextField label={t("seoTitleEn")} name="seoTitleEn" value={form.seoTitleEn} onChange={(seoTitleEn) => set({ seoTitleEn })} ltr error={errors.seoTitleEn} />
-        <TextAreaField label={t("seoDescriptionAr")} name="seoDescriptionAr" dir="rtl" value={form.seoDescriptionAr} onChange={(seoDescriptionAr) => set({ seoDescriptionAr })} rows={2} error={errors.seoDescriptionAr} />
-        <TextAreaField label={t("seoDescriptionEn")} name="seoDescriptionEn" dir="ltr" value={form.seoDescriptionEn} onChange={(seoDescriptionEn) => set({ seoDescriptionEn })} rows={2} error={errors.seoDescriptionEn} />
+        <TextField
+          label={t("seoTitleAr")} name="seoTitleAr" dir="rtl" value={form.seoTitleAr} onChange={(seoTitleAr) => set({ seoTitleAr })} error={errors.seoTitleAr}
+          labelEnd={<CharCount length={textLength(form.seoTitleAr)} limit={SEO_TITLE_LIMIT} />}
+        />
+        <TextField
+          label={t("seoTitleEn")} name="seoTitleEn" value={form.seoTitleEn} onChange={(seoTitleEn) => set({ seoTitleEn })} ltr error={errors.seoTitleEn}
+          labelEnd={<CharCount length={textLength(form.seoTitleEn)} limit={SEO_TITLE_LIMIT} />}
+        />
+        <TextAreaField
+          label={t("seoDescriptionAr")} name="seoDescriptionAr" dir="rtl" value={form.seoDescriptionAr} onChange={(seoDescriptionAr) => set({ seoDescriptionAr })} rows={2} error={errors.seoDescriptionAr}
+          labelEnd={<CharCount length={textLength(form.seoDescriptionAr)} limit={SEO_DESCRIPTION_LIMIT} />}
+        />
+        <TextAreaField
+          label={t("seoDescriptionEn")} name="seoDescriptionEn" dir="ltr" value={form.seoDescriptionEn} onChange={(seoDescriptionEn) => set({ seoDescriptionEn })} rows={2} error={errors.seoDescriptionEn}
+          labelEnd={<CharCount length={textLength(form.seoDescriptionEn)} limit={SEO_DESCRIPTION_LIMIT} />}
+        />
         <TextField label={t("canonical")} name="canonicalUrl" value={form.canonicalUrl} onChange={(canonicalUrl) => set({ canonicalUrl })} ltr error={errors.canonicalUrl} />
       </div>
     </section>

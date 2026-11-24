@@ -1,4 +1,5 @@
 using HardwareStore.Modules.Retail;
+using HardwareStore.Modules.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -68,11 +69,21 @@ public static class RetailSales
     public static readonly OrderAddress Cairo = new("C", "Nasr City", "Abbas St", "Bldg 4", null);
     public static readonly string[] OnlineMethods = [OrderPaymentMethod.CashOnDelivery, OrderPaymentMethod.InstaPay, OrderPaymentMethod.Wallet];
 
-    /// <summary>Delivery fee 50, upfront 20% of the subtotal, every online payment method enabled.</summary>
+    /// <summary>
+    /// Delivery fee 50, upfront 20% of the subtotal, every online payment method enabled. <paramref name="freeShippingFrom"/> turns the
+    /// free-shipping rule on for orders (after discounts) from that amount.
+    /// </summary>
     public static CheckoutPolicy Policy(Guid? userId = null, string[]? methods = null, decimal fee = 50m, string? deliveryTime = null,
-        BuildPriceRule? buildPrice = null) =>
-        new(userId, "3", new ShippingRate(fee, deliveryTime), subtotal => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m, buildPrice,
+        BuildPriceRule? buildPrice = null, decimal? freeShippingFrom = null) =>
+        new(userId, "3", ShippingFor(fee, deliveryTime, freeShippingFrom),
+            (subtotal, _) => decimal.Round(subtotal * 0.2m, 2), methods ?? OnlineMethods, 0m, buildPrice,
             subtotal => decimal.Round(subtotal * 0.2m, 2));
+
+    private static Func<decimal, ShippingRate> ShippingFor(decimal fee, string? deliveryTime, decimal? freeShippingFrom)
+    {
+        var rule = new ShippingSettings { FreeShippingEnabled = freeShippingFrom is not null, FreeShippingMinimum = freeShippingFrom ?? 0m };
+        return subtotal => new ShippingRate(rule.FeeFor(fee, subtotal), deliveryTime);
+    }
 
     public static OrderLineRequest StockLine(Guid stockItemId, int quantity = 1, decimal? salePrice = null, string? priceOption = null) =>
         new(stockItemId, null, quantity, priceOption, salePrice);

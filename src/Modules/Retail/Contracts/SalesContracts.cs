@@ -34,9 +34,13 @@ public sealed record ShippingRate(decimal Fee, string? DeliveryTime);
 /// </summary>
 public sealed record BuildPriceRule(IReadOnlySet<Guid> CpuCategoryIds, IReadOnlySet<Guid> BoardCategoryIds);
 
-/// <summary>What the store settings decide for a checkout (read in Host): shipping, upfront rule, enabled methods, terms version.</summary>
-public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, ShippingRate Shipping,
-    Func<decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder, BuildPriceRule? BuildPrice = null,
+/// <summary>
+/// What the store settings decide for a checkout (read in Host): shipping, upfront rule, enabled methods, terms version.
+/// <paramref name="ShippingFor"/> takes the order total after discounts (before shipping), so the free-shipping rule is decided from the prices
+/// the server worked out, never from anything the browser sent; <paramref name="UpfrontFor"/> takes that total and the fee that was charged.
+/// </summary>
+public sealed record CheckoutPolicy(Guid? UserAccountId, string TermsPolicyVersion, Func<decimal, ShippingRate> ShippingFor,
+    Func<decimal, decimal, decimal> UpfrontFor, IReadOnlyCollection<string> PaymentMethods, decimal MinimumOrder, BuildPriceRule? BuildPrice = null,
     Func<decimal, decimal>? DepositFor = null, PriceOptionRule? PriceOptions = null);
 
 /// <summary>Reservation defaults from the store settings, applied when an order is confirmed.</summary>

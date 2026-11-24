@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { isConflict } from "@/lib/api/conflict";
 import { PolicyBody } from "@/features/policies/PolicyBody";
@@ -10,6 +9,7 @@ import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { publishPolicy, updatePolicy, type Policy } from "./policies-api";
+import { PolicyBodyField } from "./PolicyBodyField";
 import { PolicyStatusBadge } from "./PolicyStatusBadge";
 import { policyForm, policyPublishable, policySavable, sameForm, toPolicyInput, type PolicyForm } from "./policy-rules";
 import { SaveIcon, UploadIcon } from "@/components/ui/icons";
@@ -59,9 +59,9 @@ export function PolicyEditor({ policy, onSaved, onStale }: { policy: Policy; onS
       <form className="flex flex-col gap-4" onSubmit={(event) => { event.preventDefault(); if (policySavable(form)) void save(); }}>
         <p className="m-0 rounded-control bg-canvas p-3 text-xs text-ink-muted">{t("formatHelp")}</p>
         <TextField label={t("fields.titleAr")} name="titleAr" dir="rtl" value={form.titleAr} onChange={(titleAr) => set({ titleAr })} error={submit.errors.fields.titleAr} required />
-        <TextAreaField label={t("fields.bodyAr")} name="bodyAr" dir="rtl" value={form.bodyAr} onChange={(bodyAr) => set({ bodyAr })} rows={14} maxLength={40000} error={submit.errors.fields.bodyAr} required />
+        <PolicyBodyField label={t("fields.bodyAr")} name="bodyAr" dir="rtl" value={form.bodyAr} onChange={(bodyAr) => set({ bodyAr })} error={submit.errors.fields.bodyAr} />
         <TextField label={t("fields.titleEn")} name="titleEn" value={form.titleEn} onChange={(titleEn) => set({ titleEn })} ltr error={submit.errors.fields.titleEn} required />
-        <TextAreaField label={t("fields.bodyEn")} name="bodyEn" dir="ltr" value={form.bodyEn} onChange={(bodyEn) => set({ bodyEn })} rows={14} maxLength={40000} error={submit.errors.fields.bodyEn} />
+        <PolicyBodyField label={t("fields.bodyEn")} name="bodyEn" dir="ltr" value={form.bodyEn} onChange={(bodyEn) => set({ bodyEn })} error={submit.errors.fields.bodyEn} />
         <div className="flex flex-col gap-3">
           <h3 className="m-0 text-[15px] font-bold">{t("preview")}</h3>
           <Preview title={form.titleAr} text={form.bodyAr} dir="rtl" />

@@ -1,22 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { SectionForm, useSectionSave } from "./SectionForm";
+import { useSectionDraft } from "./use-section-draft";
 import { saveWhatsApp } from "./settings-api";
-import { WHATSAPP_PLACEHOLDERS, whatsAppForm, whatsAppValue, type SectionProps, type WhatsAppForm as Form } from "./settings-rules";
+import { WHATSAPP_PLACEHOLDERS, whatsAppForm, whatsAppValue, type SectionProps } from "./settings-rules";
 
 /** ADM-Settings — the ready WhatsApp messages, one per place the storefront sends one from. */
 export function WhatsAppForm({ view, onSaved, onStale }: SectionProps) {
   const t = useTranslations("admin.settings.whatsapp");
   const { submit, save } = useSectionSave(view.rowVersion, onSaved, onStale);
-  const [form, setForm] = useState<Form>(() => whatsAppForm(view.whatsAppTemplates));
-  const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
+  const { form, set, dirty, reset } = useSectionDraft(whatsAppForm(view.whatsAppTemplates));
 
   return (
     <SectionForm
-      title={t("title")} hint={t("hint")} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
+      title={t("title")} hint={t("hint")} dirty={dirty} onReset={reset} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
       onSubmit={() => void save((rowVersion) => saveWhatsApp(whatsAppValue(form), rowVersion))}
     >
       <div className="grid gap-3 lg:grid-cols-2">

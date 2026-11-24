@@ -30,7 +30,10 @@ export default async function OrderSuccessPage({ params }: Props) {
       <div className="mx-auto w-full max-w-[760px]">
         <CheckoutSteps current={3} />
       </div>
-      <OrderSuccess whatsApp={{ number: whatsAppNumber(storefront.contactLinks), template: storefront.whatsAppTemplates.order }} />
+      <OrderSuccess
+        whatsApp={{ number: whatsAppNumber(storefront.contactLinks), template: storefront.whatsAppTemplates.order }}
+        transferInstructions={storefront.checkout.transferInstructions}
+      />
     </section>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { CopyImageButton } from "./CopyImageButton";
+import { ScaledPaper } from "./ScaledPaper";
 
 interface DocumentFrameProps {
   /** The paper's design width in pixels: it is laid out at this width and scaled down to fit a narrower screen, so it looks the same everywhere. */
@@ -20,23 +21,7 @@ interface DocumentFrameProps {
  * width, centred when there is room, and the toolbar above it offers the picture and the PDF. In print the scale is dropped (see `data-document-*` in the CSS).
  */
 export function DocumentFrame({ width, fileKind, fileLabel, leading, actions, children }: DocumentFrameProps) {
-  const frame = useRef<HTMLDivElement>(null);
   const paper = useRef<HTMLDivElement>(null);
-  const [fit, setFit] = useState({ scale: 1, offset: 0, height: 0 });
-
-  useEffect(() => {
-    const outer = frame.current;
-    const inner = paper.current;
-    if (!outer || !inner) return;
-    const measure = () => {
-      const scale = Math.min(1, outer.clientWidth / width);
-      setFit({ scale, offset: Math.max(0, (outer.clientWidth - width * scale) / 2), height: inner.offsetHeight * scale });
-    };
-    const observer = new ResizeObserver(measure);
-    observer.observe(outer);
-    observer.observe(inner);
-    return () => observer.disconnect();
-  }, [width]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,16 +30,7 @@ export function DocumentFrame({ width, fileKind, fileLabel, leading, actions, ch
         <CopyImageButton target={paper} width={width} fileKind={fileKind} fileLabel={fileLabel} />
         {actions}
       </div>
-      <div ref={frame} data-document-frame className="relative w-full" style={{ height: fit.height || undefined }}>
-        <div
-          ref={paper}
-          data-document-paper
-          className="absolute top-0 origin-top-left"
-          style={{ left: fit.offset, width, transform: `scale(${fit.scale})` }}
-        >
-          {children}
-        </div>
-      </div>
+      <ScaledPaper width={width} paperRef={paper}>{children}</ScaledPaper>
     </div>
   );
 }

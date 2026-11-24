@@ -7,6 +7,7 @@ import { TextAreaField } from "@/components/ui/TextAreaField";
 import { TextField } from "@/components/ui/TextField";
 import { parentOptions } from "../categories/category-rules";
 import type { Category } from "../categories/categories-api";
+import { ItemSearchField } from "../kit/ItemSearchField";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
 import { FaqActions } from "./FaqActions";
@@ -87,7 +88,7 @@ export function FaqForm({ faq, categories, onSaved, onDeleted, onStale, onCancel
           />
         ) : null}
         {form.scope === "Product" ? (
-          <TextField label={t("fields.itemCode")} name="itemCode" value={form.itemCode} onChange={(itemCode) => set({ itemCode: itemCode.toUpperCase() })} ltr placeholder="RX-0154" error={submit.errors.fields.itemCode} />
+          <ItemSearchField label={t("fields.itemCode")} name="itemCode" value={form.itemCode} onChange={(itemCode) => set({ itemCode })} error={submit.errors.fields.itemCode} />
         ) : null}
         {form.scope === "General" ? <Check label={t("fields.helpPageOnly")} checked={form.helpPageOnly} onChange={(helpPageOnly) => set({ helpPageOnly })} /> : null}
 

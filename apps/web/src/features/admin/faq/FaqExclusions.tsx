@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { SelectField } from "@/components/ui/SelectField";
-import { TextField } from "@/components/ui/TextField";
 import { flattenTree } from "../categories/category-rules";
 import type { Category } from "../categories/categories-api";
 import { addExcludedCategory, addExcludedCode, removeValue } from "./faq-rules";
 import { PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
+import { ItemSearchField } from "../kit/ItemSearchField";
 
 /** "Excluded in": categories and item codes this general/category FAQ never shows on. */
 export function FaqExclusions({ categories, currentCategoryId, categoryIds, itemCodes, onChange }: {
@@ -20,7 +20,6 @@ export function FaqExclusions({ categories, currentCategoryId, categoryIds, item
 }) {
   const t = useTranslations("admin.faq.exclusions");
   const [category, setCategory] = useState("");
-  const [code, setCode] = useState("");
   const categoriesFlat = flattenTree(categories, new Set()).map(({ node, depth }) => ({ value: node.id, label: `${"— ".repeat(depth)}${node.name}` }));
   const options = categoriesFlat.filter((option) => option.value !== currentCategoryId && !categoryIds.includes(option.value));
   const names = new Map(flattenTree(categories, new Set()).map(({ node }) => [node.id, node.name]));
@@ -50,14 +49,7 @@ export function FaqExclusions({ categories, currentCategoryId, categoryIds, item
           ))}
         </ul>
       ) : null}
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="min-w-56 flex-1">
-          <TextField label={t("itemCode")} name="excludedCode" value={code} onChange={(value) => setCode(value.toUpperCase())} ltr placeholder="RX-0154" />
-        </div>
-        <Button icon={PlusIcon} disabled={code.trim() === ""} onClick={() => { onChange({ excludedItemCodes: addExcludedCode(itemCodes, code) }); setCode(""); }}>
-          {t("add")}
-        </Button>
-      </div>
+      <ItemSearchField label={t("itemCode")} name="excludedCode" value="" onChange={(code) => onChange({ excludedItemCodes: addExcludedCode(itemCodes, code) })} />
       {itemCodes.length > 0 ? (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
           {itemCodes.map((value) => (

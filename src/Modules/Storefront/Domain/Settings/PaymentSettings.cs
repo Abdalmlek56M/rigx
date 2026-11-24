@@ -20,6 +20,10 @@ public sealed record PaymentSettings : IStoreSettingsSection<PaymentSettings>
     public string? InstaPayAddress { get; init; }
     public bool WalletEnabled { get; init; }
     public string? WalletNumber { get; init; }
+    /// <summary>Plain text the customer sees when paying by transfer, wallet or InstaPay (where to send, which name, what to write on it); empty = nothing is shown.</summary>
+    public string? TransferInstructions { get; init; }
+
+    public const int TransferInstructionsMaxLength = 600;
 
     public decimal DepositFor(decimal subtotal) =>
         DepositRequired && subtotal > DepositThreshold
@@ -51,7 +55,8 @@ public sealed record PaymentSettings : IStoreSettingsSection<PaymentSettings>
         {
             DepositThreshold = SettingsValues.Money(DepositThreshold, "Deposit threshold"),
             InstaPayAddress = instaPay,
-            WalletNumber = wallet
+            WalletNumber = wallet,
+            TransferInstructions = ContentText.Optional(TransferInstructions, TransferInstructionsMaxLength, "Transfer instructions")
         };
     }
 }

@@ -207,18 +207,19 @@ public static partial class RetailEndpoints
         await EnsureLeadSourceAsync(settings, request.LeadSource, ct);
         var delivery = request.FulfillmentMethod?.Trim() == OrderFulfillment.Delivery;
         if (!delivery && !store.Shipping.PickupEnabled) throw new RetailException(400, "Pickup from the store is not available.");
-        var shipping = delivery && !string.IsNullOrWhiteSpace(request.Address?.Governorate)
+        var baseRate = delivery && !string.IsNullOrWhiteSpace(request.Address?.Governorate)
             ? ShippingRateOf(store.Shipping, request.Address.Governorate)
             : new ShippingRate(0m, null);
         var methods = new List<string>();
         if (store.Payment.CashOnDeliveryEnabled) methods.Add(OrderPaymentMethod.CashOnDelivery);
         if (store.Payment.InstaPayEnabled) methods.Add(OrderPaymentMethod.InstaPay);
         if (store.Payment.WalletEnabled) methods.Add(OrderPaymentMethod.Wallet);
-        var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion, shipping,
-            subtotal => store.Payment.UpfrontFor(subtotal, shipping.Fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount,
+        var policy = new CheckoutPolicy(signedIn ? accountId : null, termsVersion,
+            subtotal => baseRate with { Fee = store.Shipping.FeeFor(baseRate.Fee, subtotal) },
+            (subtotal, fee) => store.Payment.UpfrontFor(subtotal, fee, pickup: false).Total, methods, store.Controls.MinimumOrderAmount,
             await builderCatalogs.BuildPriceRuleForAsync(request.Items, ct), store.Payment.DepositFor, await priceOptions.LoadAsync(ct));
         var placed = await orders.CreateOnlineAsync(request, policy, ct);
-        await OrderEmails.QueueAsync(outbox, links, placed.Order, OrderEmailMessage.Received, ct);
+        await OrderEmails.QueueReceivedAsync(outbox, links, placed.Order, store.Payment, ct);
         return TypedResults.Ok(placed.Customer);
     }
 

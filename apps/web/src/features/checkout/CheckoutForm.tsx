@@ -88,6 +88,7 @@ export function CheckoutForm({ settings, payment, pickupEnabled, pickupAddress, 
         </div>
         <OrderSummary
           form={form} set={set} errors={errors} lines={lines} subtotal={subtotal} quote={quote} minimum={minimum} busy={busy}
+          freeShippingMinimum={settings.freeShippingMinimum}
           coupon={{
             applied: coupon, problem: couponProblem, phone: couponPhone,
             onApplied: applyCoupon,

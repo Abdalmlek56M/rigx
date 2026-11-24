@@ -22,7 +22,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
       <Header storefront={storefront} />
       <main className="min-h-[60vh]">{children}</main>
       <Footer storefront={storefront} />
-      <CartDrawer whatsAppNumber={whatsAppNumber(storefront.contactLinks)} />
+      <CartDrawer whatsAppNumber={whatsAppNumber(storefront.contactLinks)} freeShippingMinimum={storefront.checkout.freeShippingMinimum} />
       <CartToast />
       <FloatingContact links={floatingLinks} />
       <BackToTop />

@@ -6,14 +6,15 @@ import { SelectField } from "@/components/ui/SelectField";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { CheckField } from "./CheckField";
 import { SectionForm, useSectionSave } from "./SectionForm";
+import { useSectionDraft } from "./use-section-draft";
 import { saveLanguage } from "./settings-api";
-import { languageForm, languageValue, type LanguageForm as Form, type SectionProps } from "./settings-rules";
+import { languageForm, languageValue, type SectionProps } from "./settings-rules";
 
 /** ADM-Settings — language: the default language and whether the EN switch exists. */
 export function LanguageForm({ view, onSaved, onStale }: SectionProps) {
   const t = useTranslations("admin.settings.language");
   const { submit, save } = useSectionSave(view.rowVersion, onSaved, onStale);
-  const [form, setForm] = useState<Form>(() => languageForm(view.language));
+  const { form, setForm, dirty, reset } = useSectionDraft(languageForm(view.language));
   const [confirming, setConfirming] = useState(false);
 
   function submitForm() {
@@ -23,7 +24,7 @@ export function LanguageForm({ view, onSaved, onStale }: SectionProps) {
   return (
     <>
       <SectionForm
-        title={t("title")} hint={t("hint")} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
+        title={t("title")} hint={t("hint")} dirty={dirty} onReset={reset} busy={submit.busy} error={submit.errors.general} dialog={submit.dialog}
         onSubmit={submitForm}
       >
         <div className="max-w-sm">

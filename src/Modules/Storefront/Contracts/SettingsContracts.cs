@@ -35,13 +35,18 @@ public sealed record StoreSettingsPublicView(
 /// <summary>Replaces one section; <see cref="RowVersion"/> is the settings row version the admin edited.</summary>
 public sealed record StoreSettingsSectionUpdate<T>(T Value, long RowVersion);
 
-/// <summary>Shipping fee and what must be paid before the order ships.</summary>
+/// <summary>
+/// Shipping fee and what must be paid before the order ships. <paramref name="FreeShipping"/>: the fee is zero because of the free-shipping rule;
+/// <paramref name="FreeShippingRemaining"/>: what the order still lacks to get it (null when the rule is off, reached or not needed).
+/// </summary>
 public sealed record CheckoutQuoteView(
     decimal ShippingFee,
     string? DeliveryTime,
     decimal UpfrontShipping,
     decimal Deposit,
-    decimal UpfrontTotal);
+    decimal UpfrontTotal,
+    bool FreeShipping = false,
+    decimal? FreeShippingRemaining = null);
 
 /// <summary>"الشحن لكل المحافظات": pickup availability and the fee and delivery time of every governorate.</summary>
 public sealed record ShippingRatesView(bool PickupEnabled, string? PickupAddress, IReadOnlyList<GovernorateShippingRate> Governorates);
