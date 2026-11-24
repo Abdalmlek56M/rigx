@@ -1034,6 +1034,7 @@
       "loading": "Loading…",
       "failed": "The data could not be loaded.",
       "retry": "Try again",
+      "sure": "Are you sure you want to continue?",
       "confirm": "Yes, sure",
       "cancel": "Cancel"
     },
@@ -1448,6 +1449,11 @@
         "date": "Date",
         "note": "Note (optional)",
         "save": "Make the transfer",
+        "confirm": {
+          "title": "Confirm the transfer",
+          "body": "{amount} will move from “{from}” to “{to}”. Do you want to continue?",
+          "action": "Yes, make the transfer"
+        },
         "done": "The transfer was made."
       },
       "statement": {

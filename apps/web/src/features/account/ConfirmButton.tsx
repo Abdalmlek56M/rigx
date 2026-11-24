@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, IconButton, type ButtonIcon } from "@/components/ui/Button";
+import { ModalSheet } from "@/components/ui/ModalSheet";
 
 interface ConfirmButtonProps {
   label: string;
@@ -15,46 +16,50 @@ interface ConfirmButtonProps {
   className?: string;
 }
 
-/** An action that asks "are you sure?" in place before it runs (delete, unlink, sign out of a device). */
+/** An action that asks "are you sure?" in a window in the middle of the screen before it runs (delete, unlink, sign out of a device). */
 export function ConfirmButton({ label, icon, onConfirm, busy = false, iconOnly = false, className = "" }: ConfirmButtonProps) {
   const t = useTranslations("account.state");
   const [asking, setAsking] = useState(false);
+  const close = () => setAsking(false);
 
-  if (!asking && iconOnly) {
-    return (
-      <IconButton
-        icon={icon}
-        label={label}
-        variant="secondary"
-        size="sm"
-        onClick={() => setAsking(true)}
-        className={`border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error-text ${className}`}
-      />
-    );
-  }
-  if (!asking) {
-    return (
-      <Button type="button" variant="secondary" size="sm" icon={icon} onClick={() => setAsking(true)} className={`text-error-text ${className}`}>
-        {label}
-      </Button>
-    );
-  }
   return (
-    <span role="group" aria-label={label} className={`inline-flex flex-wrap items-center gap-1 ${className}`}>
-      <Button
-        type="button"
-        variant="danger"
-        size="sm"
-        icon={icon}
-        loading={busy}
-        onClick={() => {
-          setAsking(false);
-          onConfirm();
-        }}
-      >
-        {t("confirm")}
-      </Button>
-      <Button type="button" variant="ghost" size="sm" onClick={() => setAsking(false)}>{t("cancel")}</Button>
-    </span>
+    <>
+      {iconOnly ? (
+        <IconButton
+          icon={icon}
+          label={label}
+          variant="secondary"
+          size="sm"
+          aria-haspopup="dialog"
+          onClick={() => setAsking(true)}
+          className={`border border-line text-ink-muted hover:border-error hover:bg-error/10 hover:text-error-text ${className}`}
+        />
+      ) : (
+        <Button type="button" variant="secondary" size="sm" icon={icon} aria-haspopup="dialog" onClick={() => setAsking(true)} className={`text-error-text ${className}`}>
+          {label}
+        </Button>
+      )}
+      <ModalSheet open={asking} onClose={close} label={label} edge="center">
+        <div className="flex flex-col gap-4 p-5">
+          <h2 className="type-section-title m-0">{label}</h2>
+          <p className="m-0 text-sm text-ink-muted">{t("sure")}</p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={close}>{t("cancel")}</Button>
+            <Button
+              type="button"
+              variant="danger"
+              icon={icon}
+              loading={busy}
+              onClick={() => {
+                close();
+                onConfirm();
+              }}
+            >
+              {t("confirm")}
+            </Button>
+          </div>
+        </div>
+      </ModalSheet>
+    </>
   );
 }

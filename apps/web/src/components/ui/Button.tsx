@@ -25,7 +25,7 @@ const BASE =
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "btn-off surface-strong hover:brightness-110",
-  accent: "btn-off accent-strong hover:brightness-105",
+  accent: "btn-off accent-strong buy-sweep",
   secondary: "btn-off border border-input-line bg-surface text-ink hover:border-ink-muted hover:bg-paper",
   ghost: "btn-off-quiet text-ink-muted hover:bg-line hover:text-ink",
   danger: "btn-off bg-error text-white hover:bg-error-hover"

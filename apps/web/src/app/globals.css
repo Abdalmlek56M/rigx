@@ -251,6 +251,33 @@ body {
   color: var(--on-orange);
 }
 
+/* Buying buttons: on hover a graphite fill closes over the orange from the top down (mouse devices only, never on a disabled button). */
+.buy-sweep {
+  background-image: linear-gradient(var(--carbon), var(--carbon));
+  background-repeat: no-repeat;
+  background-position: top;
+  background-size: 100% 0;
+  transition:
+    background-size 320ms var(--ease-out),
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 110ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .buy-sweep:not(:disabled, [aria-disabled="true"]):hover {
+    background-size: 100% 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buy-sweep {
+    transition: none;
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 2px;
@@ -535,6 +562,12 @@ dialog[data-sheet][open] {
 
 dialog[data-sheet][open]::backdrop {
   animation: fade-in 200ms ease-out;
+}
+
+/* The centred variant (confirmations, the catalog quick look) settles in place like the admin dialogs. */
+dialog[data-sheet="center"][open] {
+  animation: pop-in 200ms var(--ease-out);
+  --pop-y: 4px;
 }
 
 dialog[data-sheet="side"][data-edge="end"] {

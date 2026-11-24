@@ -21,7 +21,7 @@ import { loadQuickView, type QuickViewData } from "./quick-view-data";
 type Load = { status: "idle" } | { status: "loading" } | { status: "failed" } | { status: "ready"; data: QuickViewData };
 
 /**
- * The eye on a catalog card: a side sheet (a bottom sheet on a phone) with the photos, the main specs, the price and the one action,
+ * The eye on a catalog card: a window in the middle of the screen with the photos, the main specs, the price and the one action,
  * so a buyer can look closer without leaving the list. The details load on the first open; the full page is one link away.
  */
 export function QuickView({ item }: { item: Schemas["StoreItemCard"] }) {
@@ -60,8 +60,8 @@ export function QuickView({ item }: { item: Schemas["StoreItemCard"] }) {
         onClick={show}
         className="text-ink-muted shadow-soft"
       />
-      <ModalSheet open={open} onClose={() => setOpen(false)} label={t("title")} edge="end">
-        <div className="flex max-h-[88dvh] flex-col md:h-full md:max-h-none">
+      <ModalSheet open={open} onClose={() => setOpen(false)} label={t("title")} edge="center">
+        <div className="flex max-h-[88dvh] flex-col">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <b className="type-section-title">{t("title")}</b>
             <IconButton icon={CloseIcon} label={tc("close")} variant="secondary" onClick={() => setOpen(false)} />

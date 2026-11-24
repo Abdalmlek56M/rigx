@@ -9,6 +9,7 @@ import { SwapIcon } from "@/components/ui/icons";
 import { formatEgp, joinValues } from "@/lib/format";
 import { Button } from "../kit/Button";
 import { DateField } from "../kit/DateField";
+import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { Dialog } from "../kit/Dialog";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
@@ -28,6 +29,9 @@ export function TransferDialog({ accounts, today, onDone, onClose }: { accounts:
     ...accounts.filter((account) => account.id !== skip).map((account) => ({ value: account.id, label: joinValues([account.name, formatEgp(account.balance, locale)], locale) }))
   ];
 
+  const [confirming, setConfirming] = useState(false);
+  const nameOf = (id: string) => accounts.find((account) => account.id === id)?.name ?? "";
+
   async function save() {
     if (!transferValid(form)) return;
     await submit.run(async () => {
@@ -39,7 +43,15 @@ export function TransferDialog({ accounts, today, onDone, onClose }: { accounts:
 
   return (
     <Dialog open onClose={onClose} title={t("title")}>
-      <form className="flex flex-col gap-3" onSubmit={(event) => { event.preventDefault(); void save(); }}>
+      <ConfirmDialog
+        open={confirming}
+        title={t("confirm.title")}
+        body={t("confirm.body", { amount: formatEgp(Number(form.amount), locale), from: nameOf(form.from), to: nameOf(form.to) })}
+        confirmLabel={t("confirm.action")}
+        onConfirm={save}
+        onClose={() => setConfirming(false)}
+      />
+      <form className="flex flex-col gap-3" onSubmit={(event) => { event.preventDefault(); if (transferValid(form)) setConfirming(true); }}>
         <p className="m-0 text-sm text-ink-muted">{t("hint")}</p>
         <SelectField label={t("from")} name="from" value={form.from} onChange={(from) => set({ from })} options={options(form.to)} error={submit.errors.fields.fromAccountId} />
         <SelectField label={t("to")} name="to" value={form.to} onChange={(to) => set({ to })} options={options(form.from)} error={submit.errors.fields.toAccountId} />
