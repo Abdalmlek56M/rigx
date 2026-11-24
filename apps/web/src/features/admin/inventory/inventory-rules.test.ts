@@ -4,7 +4,7 @@ import type { Category } from "../categories/categories-api.ts";
 import type { Partner } from "../expenses/expenses-api.ts";
 import type { StockItem, StockUnit } from "./inventory-api.ts";
 import {
-  categoryPath, expectedProfit, groupByBuild, itemCost, itemFormValid, itemPartner, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, triState, unitPercent, unitStatusKey
+  categoryPath, countTooFewPhotos, expectedProfit, groupByBuild, itemCost, itemFormValid, itemPartner, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, MIN_PHOTOS_TO_PUBLISH, photosTooFew, triState, unitPercent, unitStatusKey
 } from "./inventory-rules.ts";
 
 const unit = (patch: Partial<StockUnit>): StockUnit => ({
@@ -133,5 +133,21 @@ describe("stock age", () => {
   });
   it("never flags an item with nothing available", () => {
     assert.equal(stockAge(90, 0), "fresh");
+  });
+});
+
+describe("items that are shown but not listed", () => {
+  const withPhotos = (count: number) => ({ photos: Array.from({ length: count }, (_, index) => ({ storageKey: `k${index}`, thumbnailStorageKey: `t${index}` })) });
+
+  it("needs three photos to be listed", () => {
+    assert.equal(MIN_PHOTOS_TO_PUBLISH, 3);
+    assert.equal(photosTooFew(withPhotos(0)), true);
+    assert.equal(photosTooFew(withPhotos(2)), true);
+    assert.equal(photosTooFew(withPhotos(3)), false);
+  });
+
+  it("counts the items with too few photos", () => {
+    assert.equal(countTooFewPhotos([withPhotos(1), withPhotos(3), withPhotos(2), withPhotos(5)]), 2);
+    assert.equal(countTooFewPhotos([]), 0);
   });
 });

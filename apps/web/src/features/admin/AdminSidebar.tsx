@@ -9,7 +9,7 @@ import type { AdminArea, AdminGroup } from "./admin-nav";
 import { AREA_ICONS } from "./admin-nav-icons";
 import { AdminUserMenu } from "./AdminUserMenu";
 import { badgeLabel, BADGE_AREAS, isBadgeArea, type BadgeCounts } from "./badges/badge-rules";
-import { isGroupOpen } from "./nav-collapse";
+import { isGroupFolded, visibleAreas } from "./nav-collapse";
 
 /** A quiet control on the dark sidebar (store link, language). */
 const SIDEBAR_CHIP =
@@ -22,7 +22,7 @@ interface AdminSidebarProps {
   active: AdminArea | null;
   /** New work per section; a section with none shows no badge. */
   badges: BadgeCounts;
-  /** Group keys the person folded; the group holding the current page stays open. */
+  /** Group keys the person folded; a folded group still shows the row of the current page. */
   collapsed: readonly string[];
   onToggleGroup: (group: string) => void;
   onNavigate?: () => void;
@@ -76,7 +76,8 @@ export function AdminSidebar({ user, groups, active, badges, collapsed, onToggle
         {groups.map((group) => {
           // A group with one area (the overview) has nothing to fold; a folded group still tells that something new is inside it.
           const foldable = group.areas.length > 1;
-          const open = !foldable || isGroupOpen(collapsed, group, active);
+          const open = !foldable || !isGroupFolded(collapsed, group);
+          const shown = foldable ? visibleAreas(collapsed, group, active) : group.areas;
           const waiting = group.areas.reduce((sum, area) => sum + (isBadgeArea(area.key) ? badges[BADGE_AREAS[area.key]] ?? 0 : 0), 0);
           const heading = t(`nav.groups.${group.key}`);
           const listId = `admin-nav-${group.key}`;
@@ -92,8 +93,8 @@ export function AdminSidebar({ user, groups, active, badges, collapsed, onToggle
                   <span aria-hidden="true" className={`flex transition-transform duration-200 ${open ? "" : "ltr:-rotate-90 rtl:rotate-90"}`}><ChevronDownIcon size={14} /></span>
                 </button>
               ) : <span className="px-3 pb-1 pt-3 text-[11px] font-bold tracking-[.5px] text-muted">{heading}</span>}
-              <div id={listId} hidden={!open} className="flex flex-col gap-0.5">
-                {group.areas.map((area) => {
+              <div id={listId} hidden={shown.length === 0} className="flex flex-col gap-0.5">
+                {shown.map((area) => {
                   const current = area === active;
                   const AreaIcon = AREA_ICONS[area.key];
                   const badge = isBadgeArea(area.key) ? badgeLabel(badges[BADGE_AREAS[area.key]]) : null;

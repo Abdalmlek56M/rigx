@@ -17,7 +17,7 @@ import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
 import { QuickEditSheet } from "./QuickEditSheet";
 import { fetchStockItems, setItemsHidden, type StockItem } from "./inventory-api";
-import { groupByBuild, pickedIds, triState, type StockRow } from "./inventory-rules";
+import { countTooFewPhotos, groupByBuild, photosTooFew, pickedIds, triState, type StockRow } from "./inventory-rules";
 import { useInventoryColumns } from "./use-inventory-columns";
 import { BanIcon, CheckIcon, EyeIcon, PlusIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
@@ -84,7 +84,7 @@ export function Inventory() {
     setTogglingId(item.id);
     try {
       await setItemsHidden([item.id], !item.isHidden);
-      toast(t(item.isHidden ? "bulk.shownDone" : "bulk.hiddenDone", { count: 1 }));
+      toast(item.isHidden && photosTooFew(item) ? t("bulk.shownNeedsPhotos") : t(item.isHidden ? "bulk.shownDone" : "bulk.hiddenDone", { count: 1 }));
       reload();
     } catch {
       toast(t("bulk.failed"), "error");
@@ -97,7 +97,8 @@ export function Inventory() {
     setBusy(true);
     try {
       await setItemsHidden(picked, hidden);
-      toast(t(hidden ? "bulk.hiddenDone" : "bulk.shownDone", { count: picked.length }));
+      const short = hidden ? 0 : countTooFewPhotos(items.filter((item) => picked.includes(item.id)));
+      toast(short > 0 ? t("bulk.shownSomeNeedPhotos", { short }) : t(hidden ? "bulk.hiddenDone" : "bulk.shownDone", { count: picked.length }));
       setSelected(new Set());
       reload();
     } catch {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { ADMIN_NAV } from "./admin-nav.ts";
-import { isGroupOpen, navCollapseKey, parseCollapsed, toggleCollapsed } from "./nav-collapse.ts";
+import { isGroupFolded, navCollapseKey, parseCollapsed, toggleCollapsed, visibleAreas } from "./nav-collapse.ts";
 
 const stock = ADMIN_NAV.find((group) => group.key === "stock")!;
 const sales = ADMIN_NAV.find((group) => group.key === "sales")!;
@@ -22,11 +22,20 @@ describe("nav collapse", () => {
     assert.deepEqual(toggleCollapsed(["stock", "money"], "stock"), ["money"]);
   });
 
-  it("opens a folded group only while the page being viewed is inside it", () => {
+  it("knows which groups are folded", () => {
+    assert.equal(isGroupFolded(["stock"], stock), true);
+    assert.equal(isGroupFolded(["stock"], sales), false);
+  });
+
+  it("shows every area of an open group, whatever page is open", () => {
+    assert.deepEqual(visibleAreas([], stock, null), stock.areas);
+    assert.deepEqual(visibleAreas(["sales"], stock, stock.areas[0]!), stock.areas);
+  });
+
+  it("folds a group even when the page being viewed is inside it, keeping only that page's row", () => {
     const inventory = stock.areas[0]!;
-    assert.equal(isGroupOpen(["stock"], stock, null), false);
-    assert.equal(isGroupOpen(["stock"], stock, sales.areas[0]!), false);
-    assert.equal(isGroupOpen(["stock"], stock, inventory), true);
-    assert.equal(isGroupOpen([], stock, null), true);
+    assert.deepEqual(visibleAreas(["stock"], stock, inventory), [inventory]);
+    assert.deepEqual(visibleAreas(["stock"], stock, null), []);
+    assert.deepEqual(visibleAreas(["stock"], stock, sales.areas[0]!), []);
   });
 });

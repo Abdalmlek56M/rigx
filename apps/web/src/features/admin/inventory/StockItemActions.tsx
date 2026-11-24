@@ -7,6 +7,7 @@ import { toFormErrors } from "../kit/form-errors";
 import { useToast } from "../kit/Toast";
 import { usePermissions } from "../use-permissions";
 import { setItemsHidden, type StockItem } from "./inventory-api";
+import { photosTooFew } from "./inventory-rules";
 import { BanIcon, CartIcon, CopyIcon, ExternalIcon, EyeIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
@@ -22,7 +23,7 @@ export function StockItemActions({ item, onChanged }: { item: StockItem; onChang
     try {
       await setItemsHidden([item.id], !item.isHidden);
       await onChanged();
-      toast(t(item.isHidden ? "shownDone" : "hiddenDone"));
+      toast(t(item.isHidden ? (photosTooFew(item) ? "shownNeedsPhotos" : "shownDone") : "hiddenDone"));
     } catch (error) {
       toast(toFormErrors(error, t("failed")).general ?? t("failed"), "error");
     } finally {

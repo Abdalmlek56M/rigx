@@ -21,7 +21,14 @@ export function toggleCollapsed(collapsed: readonly string[], group: string): st
   return collapsed.includes(group) ? collapsed.filter((entry) => entry !== group) : [...collapsed, group];
 }
 
-/** A group shows its links unless it is folded; the group that holds the page being viewed never hides it. */
-export function isGroupOpen(collapsed: readonly string[], group: AdminGroup, active: AdminArea | null): boolean {
-  return !collapsed.includes(group.key) || (active !== null && group.areas.includes(active));
+/** Whether the person folded this group (the arrow always works, even on the group that holds the current page). */
+export const isGroupFolded = (collapsed: readonly string[], group: AdminGroup): boolean => collapsed.includes(group.key);
+
+/**
+ * The links a group shows: all of them, or, when it is folded, only the current page's own row (if the page is in this group), so a folded
+ * group still says where the person is.
+ */
+export function visibleAreas(collapsed: readonly string[], group: AdminGroup, active: AdminArea | null): readonly AdminArea[] {
+  if (!isGroupFolded(collapsed, group)) return group.areas;
+  return active !== null && group.areas.includes(active) ? [active] : [];
 }

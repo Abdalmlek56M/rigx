@@ -3016,7 +3016,9 @@
         "show": "Show",
         "hiddenDone": "{count, plural, one {# item hidden} other {# items hidden}}",
         "shownDone": "{count, plural, one {# item shown} other {# items shown}}",
-        "failed": "Could not change visibility. Try again."
+        "failed": "Could not change visibility. Try again.",
+        "shownNeedsPhotos": "The item is shown, but it is not listed in the store because it has fewer than 3 photos.",
+        "shownSomeNeedPhotos": "Shown, but {short, plural, one {# item is} other {# items are}} not listed in the store because of fewer than 3 photos."
       },
       "fields": {
         "category": "Category",
@@ -3053,7 +3055,8 @@
           "viewOnStore": "View in store",
           "hiddenDone": "The item is hidden from the store.",
           "shownDone": "The item is now shown in the store.",
-          "failed": "Could not change the item's visibility. Try again."
+          "failed": "Could not change the item's visibility. Try again.",
+          "shownNeedsPhotos": "The item is shown, but it is not listed in the store because it has fewer than 3 photos."
         }
       },
       "history": {
@@ -3150,7 +3153,9 @@
         "failed": "Could not load the edit details.",
         "retry": "Try again",
         "fullPage": "Open the full item page"
-      }
+      },
+      "needsPhotos": "Shown, fewer than 3 photos",
+      "needsPhotosHint": "Not listed in the store because it has fewer than 3 photos. Add photos to list it."
     },
     "purchases": {
       "sellerPayment": {

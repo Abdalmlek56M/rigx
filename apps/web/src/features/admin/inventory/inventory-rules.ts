@@ -5,6 +5,15 @@ import type { Partner } from "../expenses/expenses-api";
 import { amountOk, amountText, optionalAmountOk, parseAmount, partnerShare } from "../stock/stock-fields.ts";
 import type { StockItem, StockItemUpdateRequest, StockUnit } from "./inventory-api";
 
+/** The store lists an item only with at least this many photos (the API's `StockItemRules.MinPhotosToPublish`). */
+export const MIN_PHOTOS_TO_PUBLISH = 3;
+
+/** An item whose photos are too few to be listed: showing it changes nothing for a visitor until photos are added. */
+export const photosTooFew = (item: Pick<StockItem, "photos">): boolean => item.photos.length < MIN_PHOTOS_TO_PUBLISH;
+
+/** How many of these items have too few photos (the "shown, but not listed" part of a bulk show). */
+export const countTooFewPhotos = (items: readonly Pick<StockItem, "photos">[]): number => items.filter(photosTooFew).length;
+
 const AVAILABLE = "Available";
 const IN_ASSEMBLY = "InAssembly";
 

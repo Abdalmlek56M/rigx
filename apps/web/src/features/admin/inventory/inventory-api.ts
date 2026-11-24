@@ -1,5 +1,6 @@
 import { multipart, type Schemas, unwrap } from "@rigx/api-client";
 import { browserApi } from "@/lib/api/browser";
+import { refreshCatalogCache } from "@/lib/api/refresh-store";
 import { required } from "@/lib/api/required";
 
 export type StockItem = Schemas["StockItemAdminView"];
@@ -23,20 +24,27 @@ export const fetchStockItems = (query: StockItemQuery) =>
 
 export const fetchStockItem = (id: string) => required(unwrap(api().GET("/api/v1/admin/retail/stock-items/{id}", path(id))));
 
+/** What a visitor sees follows the change at once: the store's cached catalog is expired after the API accepted it (a failure there never fails the change). */
+async function thenRefreshStore<T>(change: Promise<T>): Promise<T> {
+  const result = await change;
+  await refreshCatalogCache().catch(() => false);
+  return result;
+}
+
 export const updateStockItem = (id: string, body: StockItemUpdateRequest) =>
-  required(unwrap(api().PUT("/api/v1/admin/retail/stock-items/{id}", { ...path(id), body })));
+  thenRefreshStore(required(unwrap(api().PUT("/api/v1/admin/retail/stock-items/{id}", { ...path(id), body }))));
 
 export const setItemsHidden = (ids: string[], hidden: boolean) =>
-  required(unwrap(api().POST("/api/v1/admin/retail/stock-items/visibility", { body: { ids, hidden } })));
+  thenRefreshStore(required(unwrap(api().POST("/api/v1/admin/retail/stock-items/visibility", { body: { ids, hidden } }))));
 
 export const uploadStockPhoto = (id: string, file: File) => {
   const form = new FormData();
   form.set("image", file);
-  return required(unwrap(api().POST("/api/v1/admin/retail/stock-items/{id}/photos", { ...path(id), ...multipart(form) })));
+  return thenRefreshStore(required(unwrap(api().POST("/api/v1/admin/retail/stock-items/{id}/photos", { ...path(id), ...multipart(form) }))));
 };
 
 export const deleteStockPhoto = (id: string, storageKey: string) =>
-  unwrap(api().DELETE("/api/v1/admin/retail/stock-items/{id}/photos", { params: { path: { id }, query: { storageKey } } }));
+  thenRefreshStore(unwrap(api().DELETE("/api/v1/admin/retail/stock-items/{id}/photos", { params: { path: { id }, query: { storageKey } } })));
 
 /** Saves the photos in this order (every storage key once); the first is the main photo. */
 export const reorderStockPhotos = (id: string, storageKeys: string[]) =>

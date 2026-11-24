@@ -16,7 +16,7 @@ import type { Column } from "../kit/DataTable";
 import { usePermissions } from "../use-permissions";
 import { InventoryShortcuts } from "./InventoryShortcuts";
 import type { StockItem } from "./inventory-api";
-import { categoryPath, expectedProfit, itemCost, itemPartner, stockAge, stockState, type StockAge, type StockRow } from "./inventory-rules";
+import { categoryPath, expectedProfit, itemCost, itemPartner, photosTooFew, stockAge, stockState, type StockAge, type StockRow } from "./inventory-rules";
 
 interface ColumnsInput {
   tree: readonly Category[];
@@ -135,7 +135,9 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
     {
       key: "visibility",
       header: t("columns.visibility"),
-      cell: forItem((item) => <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>)
+      cell: forItem((item) => item.isHidden || !photosTooFew(item)
+        ? <span className={`whitespace-nowrap ${item.isHidden ? "text-ink-muted" : ""}`}>{item.isHidden ? t("hidden") : t("shown")}</span>
+        : <span title={t("needsPhotosHint")}><StatusBadge tone="warning">{t("needsPhotos")}</StatusBadge></span>)
     },
     {
       key: "days",

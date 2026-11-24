@@ -1,9 +1,14 @@
 import { createRigxClient, type RigxClient } from "@rigx/api-client";
+import { cacheTagsFor } from "./cache-tags";
 
 /** Seconds server-fetched storefront data (settings, menu) stays cached. */
 const REVALIDATE_SECONDS = 300;
 
-const cachedFetch: typeof fetch = (input, init) => fetch(input, { ...init, next: { revalidate: REVALIDATE_SECONDS } });
+/** Catalog responses carry a tag, so an admin change can expire them at once (`refreshCatalogCache`); the rest wait out the five minutes. */
+const cachedFetch: typeof fetch = (input, init) => {
+  const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+  return fetch(input, { ...init, next: { revalidate: REVALIDATE_SECONDS, tags: cacheTagsFor(url) } });
+};
 
 const freshFetch: typeof fetch = (input, init) => fetch(input, { ...init, cache: "no-store" });
 
