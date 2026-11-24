@@ -126,13 +126,13 @@ export default async function ProductPage({ params }: Props) {
             whatsApp={{ number: whatsAppNumber(storefront.contactLinks), template: storefront.whatsAppTemplates.product }}
             pageUrl={siteUrl(storefront.domain, productPath(item.slug))}
           />
-          <ProductInfoBoxes warrantyLabel={item.warrantyLabel} storefront={storefront} />
         </div>
       </section>
 
       {soldOut ? <SoldOutAlternatives items={soldOutAlternatives(related)} /> : null}
 
       <div className="flex shell flex-col gap-6">
+        <ProductInfoBoxes warrantyLabel={item.warrantyLabel} storefront={storefront} />
         <SpecsTable rows={specRows(item.specs, defs)} />
         {faqs.length > 0 ? (
           <Card title={t("faqs")} icon={HelpIcon} padding="md">

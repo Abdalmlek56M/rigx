@@ -62,19 +62,24 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div
-        className={`${cardClass({ padding: "none" })} photo-frame relative aspect-square w-full overflow-hidden`}
+        className={`${cardClass({ padding: "none" })} photo-stage relative aspect-square w-full overflow-hidden`}
         onTouchStart={swipeStart}
         onTouchEnd={swipeEnd}
         style={{ touchAction: "pan-y" }}
       >
         {current ? (
-          <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group block h-full w-full">
+          <>
+            {/* The same photo, scaled up and blurred behind the real one, so a wide or tall picture never leaves a bare strip (decorative, no extra request). */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
+            <img src={mediaUrl(current.storageKey)} alt="" aria-hidden="true" width={720} height={720} className="photo-stage-fill pointer-events-none absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
+          <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group relative block h-full w-full">
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
             <img src={mediaUrl(current.storageKey)} alt={alt} width={720} height={720} fetchPriority={selected === 0 ? "high" : "auto"} className="h-full w-full object-contain p-4" />
             <span aria-hidden="true" className="absolute start-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-soft transition-colors group-hover:text-orange-text">
               <ExpandIcon size={18} />
             </span>
           </button>
+          </>
         ) : (
           <div className="flex h-full items-center justify-center text-muted"><ImagePlaceholderIcon size={220} /></div>
         )}

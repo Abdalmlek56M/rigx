@@ -22,7 +22,7 @@ export function TrackingOrder({ view, token, whatsApp }: { view: Schemas["Tracki
   const showRemaining = open && view.remaining > 0;
 
   return (
-    <div className="mx-auto flex max-w-[720px] flex-col gap-4">
+    <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <PageHeader
         contained={false}
         eyebrow={view.reference}

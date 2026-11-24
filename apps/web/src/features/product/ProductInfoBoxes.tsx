@@ -9,7 +9,7 @@ const linkClass = "font-semibold text-orange-text underline hover:text-orange-te
 
 function InfoRow({ icon: Icon, label, children }: { icon: ComponentType<{ size?: number }>; label: string; children: ReactNode }) {
   return (
-    <div className="flex gap-3 py-3.5 first:pt-0 last:pb-0 [&+&]:border-t [&+&]:border-line">
+    <div className="flex gap-3 py-3.5 first:pt-0 last:pb-0 [&+&]:border-t [&+&]:border-line md:py-0 md:[&+&]:border-t-0">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper text-ink-muted">
         <Icon size={18} />
       </span>
@@ -21,7 +21,7 @@ function InfoRow({ icon: Icon, label, children }: { icon: ComponentType<{ size?:
   );
 }
 
-/** Warranty, returns, payment methods and pickup/shipping, from the item and the store settings; one row each. */
+/** Warranty, returns, payment methods and pickup/shipping, from the item and the store settings; one row each, two columns from `md` (the card spans the page width). */
 export function ProductInfoBoxes({ warrantyLabel, storefront }: { warrantyLabel: string | null; storefront: StorefrontData }) {
   const t = useTranslations("product.info");
   const { payment, pickupEnabled, pickupAddress } = storefront;
@@ -33,7 +33,7 @@ export function ProductInfoBoxes({ warrantyLabel, storefront }: { warrantyLabel:
 
   return (
     <Card title={t("title")} icon={InfoIcon} padding="md" className="gap-2">
-      <div className="flex flex-col">
+      <div className="flex flex-col md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-6">
         <InfoRow icon={ShieldIcon} label={t("warranty")}>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {warrantyLabel ? <span className="type-value">{warrantyLabel}</span> : null}

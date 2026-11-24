@@ -53,7 +53,7 @@ export function ItemCard({ item, layout = "grid" }: { item: Schemas["StoreItemCa
       >
         {item.thumbnailStorageKey ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={320} loading="lazy" className="h-full w-full object-cover" />
+          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={320} loading="lazy" className="main-photo h-full w-full object-cover" />
         ) : (
           <ImagePlaceholderIcon />
         )}

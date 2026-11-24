@@ -1077,14 +1077,32 @@ dialog[data-sheet="side"][data-edge="start"] {
   mix-blend-mode: multiply;
 }
 
+/* Product page gallery: the card surface behind a blurred copy of the photo (a dimmer one in dark, so a white studio background never glares); the real photo stays whole on top. */
+.photo-stage-fill {
+  opacity: 0.55;
+}
+
+[data-theme="dark"] .photo-stage-fill {
+  opacity: 0.22;
+}
+
 /* Card photo swap and the product photo magnifier: mouse only. The second card photo is only mounted after the first pointer-enter. */
 img.swap-photo {
   opacity: 0;
   transition: opacity 200ms ease, transform 240ms var(--ease-out);
 }
 
+/* The first photo gives way completely, so the two never show through each other. */
+img.main-photo {
+  transition: opacity 200ms ease;
+}
+
 .photo-swap-host:hover .swap-photo[data-loaded] {
   opacity: 1;
+}
+
+.photo-swap-host:has(.swap-photo[data-loaded]):hover .main-photo {
+  opacity: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {

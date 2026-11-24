@@ -20,13 +20,13 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
   return (
     <Rail title={t("title")} autoAdvance>
       {categories.map((category) => (
-        <li key={category.slug} className="flex w-[168px] shrink-0 md:w-[208px]">
+        <li key={category.slug} className="flex w-[136px] shrink-0 md:w-[168px]">
           <Link
             href={categoryHref(category.slug)}
             draggable={false}
-            className={`${cardClass({ padding: "sm", interactive: true })} group min-h-[152px] items-center justify-center gap-3 text-center text-base font-bold hover:border-orange/50 md:min-h-[168px]`}
+            className={`${cardClass({ padding: "sm", interactive: true })} group aspect-square items-center justify-center gap-2 text-center text-base font-bold hover:border-orange/50`}
           >
-            <span className="flex h-[84px] w-full items-center justify-center md:h-24">
+            <span className="flex h-[64px] w-full items-center justify-center md:h-[72px]">
               {category.image ? (
                 // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
                 <img
@@ -39,7 +39,7 @@ export function CategoryGrid({ categories }: { categories: MenuCategory[] }) {
                   className="pointer-events-none max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
                 />
               ) : (
-                <span className="flex size-[72px] items-center justify-center rounded-full bg-orange-soft text-orange-text transition-transform duration-300 ease-out group-hover:scale-105 md:size-20"><CategoryIcon slug={category.slug} size={34} /></span>
+                <span className="flex size-14 items-center justify-center rounded-full bg-orange-soft text-orange-text transition-transform duration-300 ease-out group-hover:scale-105 md:size-16"><CategoryIcon slug={category.slug} size={34} /></span>
               )}
             </span>
             <span className="line-clamp-2">{localizedName(category, locale)}</span>
