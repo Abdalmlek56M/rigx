@@ -1,6 +1,6 @@
 # Store policies text
 
-Formal-Arabic rewrite of 24 Nov 2026 (roadmap Phase G). The meaning of the business rules is the one the owner approved on 19 Nov 2026; the wording is new, and a few standard protective clauses were added (marked in the "What changed" list at the end). **The owner approves this text before it is published.**
+Formal-Arabic rewrite of 24 Nov 2026 (roadmap Phase G). The meaning of the business rules is the one the owner approved on 19 Nov 2026; the wording is new, and a few standard protective clauses were added (marked in the "What changed" list at the end). **The owner approved this text on 24 Nov 2026** and publishes it from the admin.
 The live text lives in the database. It is written and published from **لوحة التحكم ← السياسات**, and this file is only the approved source to copy from.
 Every change goes through the owner first, and this file changes in the same commit.
 
