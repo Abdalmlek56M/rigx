@@ -58,7 +58,8 @@ export default async function BuildPage({ params }: Props) {
   const structuredData = [
     productJsonLd({
       name: title, url, images: build.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: build.salePrice,
-      available: build.copies > 0, sku: build.code, organizationId: organizationId()
+      available: build.copies > 0, sku: build.code, organizationId: organizationId(),
+      returnPolicyUrl: absoluteUrl(localizedPath(locale, "/policies/returns"))
     }),
     breadcrumbJsonLd([
       { name: t("home"), url: absoluteUrl(localizedPath(locale, "/")) },

@@ -1120,13 +1120,13 @@ dialog[data-sheet="side"][data-edge="start"] {
 }
 
 /* Card photo swap and the product photo magnifier: mouse only. The second card photo is only mounted after the first pointer-enter. */
-img.swap-photo {
+.swap-photo {
   opacity: 0;
   transition: opacity 200ms ease, transform 240ms var(--ease-out);
 }
 
 /* The first photo gives way completely, so the two never show through each other. */
-img.main-photo {
+.main-photo {
   transition: opacity 200ms ease;
 }
 

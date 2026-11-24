@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { headingId, parsePolicyBody, policyApiKind, policyHeadings } from "./policy-body.ts";
+import { headingId, parsePolicyBody, policyApiKind, policyDescription, policyHeadings } from "./policy-body.ts";
 
 describe("policyApiKind", () => {
   it("maps the URL slugs to API kinds", () => {
@@ -44,5 +44,25 @@ describe("policyHeadings", () => {
   });
   it("has no headings for a plain paragraph", () => {
     assert.deepEqual(policyHeadings("نص فقط"), []);
+  });
+});
+
+describe("policyDescription", () => {
+  it("uses the opening paragraph", () => {
+    assert.equal(policyDescription("نوفّر الشحن لكل المحافظات.\n\n# المدة\n- من 3 إلى 5 أيام."), "نوفّر الشحن لكل المحافظات.");
+  });
+
+  it("falls back to the headings when there is no opening paragraph", () => {
+    assert.equal(policyDescription("# المدة\n- 14 يومًا.\n\n# الشروط\n- بحالته الأصلية."), "المدة، الشروط");
+  });
+
+  it("cuts a long opening at a word and adds an ellipsis", () => {
+    const text = policyDescription(Array.from({ length: 60 }, () => "كلمة").join(" "));
+    assert.ok(text.length <= 161);
+    assert.ok(text.endsWith("…"));
+  });
+
+  it("is empty for an empty body", () => {
+    assert.equal(policyDescription(""), "");
   });
 });

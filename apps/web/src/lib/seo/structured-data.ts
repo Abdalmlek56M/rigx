@@ -17,6 +17,22 @@ export interface ProductData {
   category?: string;
   brand?: string;
   organizationId: string;
+  /** The returns policy page; when given, the offer carries the store's return window and fees. */
+  returnPolicyUrl?: string;
+}
+
+/** Days a customer has to return a product, as the returns policy states (docs/12-policies.md); keep the two in step. */
+export const RETURN_WINDOW_DAYS = 14;
+
+function returnPolicy(url: string): JsonLd {
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "EG",
+    returnPolicyCategory: `${CONTEXT}/MerchantReturnFiniteReturnWindow`,
+    merchantReturnDays: RETURN_WINDOW_DAYS,
+    returnFees: `${CONTEXT}/ReturnFeesCustomerResponsibility`,
+    merchantReturnLink: url
+  };
 }
 
 export function productJsonLd(data: ProductData): JsonLd {
@@ -36,6 +52,7 @@ export function productJsonLd(data: ProductData): JsonLd {
       priceCurrency: "EGP",
       availability: `${CONTEXT}/${data.available ? "InStock" : "SoldOut"}`,
       ...(data.condition ? { itemCondition: `${CONTEXT}/${data.condition === "New" ? "NewCondition" : "UsedCondition"}` } : {}),
+      ...(data.returnPolicyUrl ? { hasMerchantReturnPolicy: returnPolicy(data.returnPolicyUrl) } : {}),
       seller: { "@id": data.organizationId }
     }
   };
@@ -55,9 +72,22 @@ export function breadcrumbJsonLd(crumbs: { name: string; url?: string }[]): Json
   };
 }
 
+export interface WebSiteData {
+  name: string;
+  /** The same site under its other name (the Arabic brand name). */
+  alternateName: string;
+  url: string;
+}
+
+/** The site name Google shows in results (with the Arabic name as the alternate). */
+export function websiteJsonLd(data: WebSiteData): JsonLd {
+  return { "@context": CONTEXT, "@type": "WebSite", name: data.name, alternateName: data.alternateName, url: data.url };
+}
+
 export interface OrganizationData {
   id: string;
   name: string;
+  alternateName?: string;
   url: string;
   logo: string;
   description: string;
@@ -73,6 +103,7 @@ export function organizationJsonLd(data: OrganizationData): JsonLd {
     "@type": "OnlineStore",
     "@id": data.id,
     name: data.name,
+    ...(data.alternateName ? { alternateName: data.alternateName } : {}),
     url: data.url,
     logo: data.logo,
     description: data.description,

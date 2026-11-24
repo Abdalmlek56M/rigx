@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { Analytics } from "@/components/analytics/Analytics";
 import { THEME_COOKIE, THEME_INIT_SCRIPT, parseTheme } from "@/components/layout/theme-script";
 import { localeDirection, routing } from "@/i18n/routing";
+import { BRAND_NAME } from "@/lib/seo/brand";
 import { openGraphBase } from "@/lib/seo/page-seo";
 import { siteOrigin } from "@/lib/seo/urls";
 import "../globals.css";
@@ -54,7 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const t = await getTranslations({ locale, namespace: "meta" });
   return {
     metadataBase: new URL(siteOrigin()),
-    title: { default: t("title"), template: "%s · RIGX" },
+    title: { default: t("title"), template: `%s · ${BRAND_NAME}` },
     description: t("description"),
     openGraph: openGraphBase(locale),
     twitter: { card: "summary_large_image" }

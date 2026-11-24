@@ -7,6 +7,7 @@ import { ButtonLink, IconButton } from "@/components/ui/Button";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { ModalSheet } from "@/components/ui/ModalSheet";
+import { PhotoBackdrop } from "@/components/ui/PhotoBackdrop";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ArrowEndIcon, BanIcon, CloseIcon, EyeIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
@@ -67,10 +68,13 @@ export function QuickView({ item }: { item: Schemas["StoreItemCard"] }) {
             <IconButton icon={CloseIcon} label={tc("close")} variant="secondary" onClick={() => setOpen(false)} />
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-card bg-paper text-muted">
+            <div className="photo-frame relative flex aspect-square shrink-0 items-center justify-center overflow-hidden rounded-card bg-paper text-muted">
               {mainKey ? (
-                // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                <img src={mediaUrl(mainKey)} alt={item.modelName} width={480} height={480} className="h-full w-full object-contain" />
+                <>
+                  <PhotoBackdrop storageKey={mainKey} size={480} />
+                  {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
+                  <img src={mediaUrl(mainKey)} alt={item.modelName} width={480} height={480} className="relative h-full w-full object-contain" />
+                </>
               ) : (
                 <ImagePlaceholderIcon size={48} />
               )}

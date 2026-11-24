@@ -4,6 +4,7 @@ import { useCallback, useRef, useState, type PointerEvent, type TouchEvent } fro
 import { useTranslations } from "next-intl";
 import { IconButton } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
+import { PhotoBackdrop } from "@/components/ui/PhotoBackdrop";
 import { ArrowBackIcon, ArrowEndIcon, ExpandIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { mediaUrl } from "@/lib/media";
@@ -69,9 +70,7 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
       >
         {current ? (
           <>
-            {/* The same photo, scaled up and blurred behind the real one, so a wide or tall picture never leaves a bare strip (decorative, no extra request). */}
-            {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-            <img src={mediaUrl(current.storageKey)} alt="" aria-hidden="true" width={720} height={720} className="photo-stage-fill pointer-events-none absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
+            <PhotoBackdrop storageKey={current.storageKey} size={720} />
           <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group relative block h-full w-full">
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
             <img src={mediaUrl(current.storageKey)} alt={alt} width={720} height={720} fetchPriority={selected === 0 ? "high" : "auto"} className="h-full w-full object-contain p-4" />

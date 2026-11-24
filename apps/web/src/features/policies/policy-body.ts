@@ -48,6 +48,23 @@ export function parsePolicyBody(body: string): PolicyBlock[] {
   return blocks;
 }
 
+const DESCRIPTION_LIMIT = 160;
+
+/**
+ * The search-result description of a policy page: its opening paragraph, or else the section headings, cut at a word
+ * boundary to about 160 characters. Empty when the body has neither.
+ */
+export function policyDescription(body: string): string {
+  const blocks = parsePolicyBody(body);
+  const opening = blocks.find((block) => block.type === "paragraph");
+  const headings = blocks.filter((block): block is Extract<PolicyBlock, { type: "heading" }> => block.type === "heading").map((block) => block.text);
+  const text = (opening?.type === "paragraph" ? opening.lines.join(" ") : headings.join("، ")).replace(/\s+/g, " ").trim();
+  if (text.length <= DESCRIPTION_LIMIT) return text;
+  const cut = text.slice(0, DESCRIPTION_LIMIT);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 80 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
 /** The id a heading gets in the body, by its order among the headings (stable, and safe for Arabic text). */
 export function headingId(index: number): string {
   return `section-${index + 1}`;

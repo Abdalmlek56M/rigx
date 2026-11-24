@@ -15,7 +15,8 @@ import { routing } from "@/i18n/routing";
 import { fillTemplate, findLink, Platform, SOCIAL_PLATFORMS, whatsAppNumber, whatsAppUrl } from "@/lib/contact";
 import { loadGeneralFaqs } from "@/lib/faqs";
 import { organizationId, pageSeo } from "@/lib/seo/page-seo";
-import { organizationJsonLd } from "@/lib/seo/structured-data";
+import { BRAND_NAME, BRAND_NAME_AR } from "@/lib/seo/brand";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/structured-data";
 import { absoluteUrl, localizedPath } from "@/lib/seo/urls";
 import { loadStorefront, type StorefrontData } from "@/lib/storefront";
 
@@ -33,7 +34,8 @@ function organization(storefront: StorefrontData, locale: string, description: s
   const social: readonly string[] = SOCIAL_PLATFORMS.filter((platform) => platform !== Platform.WhatsApp);
   return organizationJsonLd({
     id: organizationId(),
-    name: storefront.storeName,
+    name: BRAND_NAME,
+    alternateName: BRAND_NAME_AR,
     url: absoluteUrl(localizedPath(locale, "/")),
     logo: absoluteUrl("/icon.svg"),
     description,
@@ -54,7 +56,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
-      <JsonLd data={organization(storefront, locale, t("description"))} />
+      <JsonLd data={[organization(storefront, locale, t("description")), websiteJsonLd({ name: BRAND_NAME, alternateName: BRAND_NAME_AR, url: absoluteUrl(localizedPath(locale, "/")) })]} />
       <Hero />
       <CategoryGrid categories={storefront.categories} />
       <LatestItems />

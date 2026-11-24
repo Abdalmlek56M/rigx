@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { BookIcon, DocumentIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { loadPolicy } from "@/features/policies/load-policy";
-import { POLICY_KINDS, policyApiKind, policyHeadings } from "@/features/policies/policy-body";
+import { POLICY_KINDS, policyApiKind, policyDescription, policyHeadings } from "@/features/policies/policy-body";
 import { PolicyBody } from "@/features/policies/PolicyBody";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -29,7 +29,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const apiKind = policyApiKind(kind);
   if (!hasLocale(routing.locales, locale) || !apiKind) return {};
   const policy = await loadPolicy(apiKind);
-  return policy ? { title: localized(locale, policy.titleAr, policy.titleEn), ...(await pageSeo(locale, `/policies/${kind}`)) } : {};
+  if (!policy) return {};
+  const description = policyDescription(localized(locale, policy.bodyAr, policy.bodyEn));
+  return { title: localized(locale, policy.titleAr, policy.titleEn), ...(description ? { description } : {}), ...(await pageSeo(locale, `/policies/${kind}`)) };
 }
 
 export default async function PolicyPage({ params }: Props) {

@@ -82,7 +82,7 @@ export default async function ProductPage({ params }: Props) {
     productJsonLd({
       name: item.modelName, url, images: item.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: cardPrice(item),
       available: !soldOut, condition, sku: item.code, category: trail.at(-1) ? localizedName(trail.at(-1)!, locale) : undefined, brand: brand?.name,
-      organizationId: organizationId()
+      organizationId: organizationId(), returnPolicyUrl: absoluteUrl(localizedPath(locale, "/policies/returns"))
     }),
     breadcrumbJsonLd([
       { name: t("home"), url: absoluteUrl(localizedPath(locale, "/")) },

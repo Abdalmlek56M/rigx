@@ -6,6 +6,7 @@ import type { Schemas } from "@rigx/api-client";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { StockDot } from "@/components/ui/StockDot";
 import { cardClass } from "@/components/ui/Card";
+import { PhotoBackdrop } from "@/components/ui/PhotoBackdrop";
 import { ImagePlaceholderIcon, ShieldIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { parseCondition } from "@/lib/condition";
@@ -52,22 +53,27 @@ export function ItemCard({ item, layout = "grid" }: { item: Schemas["StoreItemCa
         className={`photo-frame photo-swap-host relative flex items-center justify-center overflow-hidden bg-surface text-muted ${list ? "min-h-28 w-28 shrink-0 self-stretch sm:w-44" : "aspect-square"} ${soldOut ? "grayscale" : ""}`}
       >
         {item.thumbnailStorageKey ? (
-          // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={320} loading="lazy" className="main-photo h-full w-full object-cover" />
+          <span className="main-photo absolute inset-0">
+            <PhotoBackdrop storageKey={item.thumbnailStorageKey} size={320} />
+            {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
+            <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={320} height={320} loading="lazy" className="relative h-full w-full object-contain" />
+          </span>
         ) : (
           <ImagePlaceholderIcon />
         )}
         {secondPhoto.requested && item.secondThumbnailStorageKey ? (
-          // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img
-            src={mediaUrl(item.secondThumbnailStorageKey)}
-            alt=""
-            width={320}
-            height={320}
-            data-loaded={secondPhoto.loaded ? "" : undefined}
-            onLoad={() => setSecondPhoto((current) => ({ ...current, loaded: true }))}
-            className="swap-photo absolute inset-0 h-full w-full object-cover"
-          />
+          <span data-loaded={secondPhoto.loaded ? "" : undefined} className="swap-photo absolute inset-0">
+            <PhotoBackdrop storageKey={item.secondThumbnailStorageKey} size={320} />
+            {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
+            <img
+              src={mediaUrl(item.secondThumbnailStorageKey)}
+              alt=""
+              width={320}
+              height={320}
+              onLoad={() => setSecondPhoto((current) => ({ ...current, loaded: true }))}
+              className="relative h-full w-full object-contain"
+            />
+          </span>
         ) : null}
         {condition ? <span className="absolute start-3 top-3"><ConditionBadge condition={condition} /></span> : null}
         <span className="absolute bottom-3 start-3"><StockDot available={!soldOut} label={soldOut ? t("soldOutBadge") : t("inStockBadge")} /></span>

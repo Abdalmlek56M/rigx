@@ -2,6 +2,7 @@ import "server-only";
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import { loadStorefront } from "@/lib/storefront";
+import { BRAND_NAME } from "./brand";
 import { absoluteUrl, languageAlternates, localizedPath, siteOrigin } from "./urls";
 
 /** The locales search engines should see: English only while it is switched on in settings. */
@@ -32,9 +33,9 @@ export function organizationId(): string {
  */
 export function openGraphBase(locale: string) {
   return {
-    siteName: "RIGX Hardware",
+    siteName: BRAND_NAME,
     locale: locale === "en" ? "en_US" : "ar_EG",
     type: "website" as const,
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "RIGX Hardware" }]
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: BRAND_NAME }]
   };
 }
