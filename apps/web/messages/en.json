@@ -572,7 +572,10 @@
       "partEmpty": "{slot}: not chosen yet",
       "partFilled": "{slot}: {model}",
       "legendOn": "Chosen",
-      "legendOff": "Not chosen"
+      "legendOff": "Not chosen",
+      "boardFacts": "What the drawing shows of the motherboard",
+      "ramSlots": "Memory slots: {used} of {total}",
+      "wifi": "Wi-Fi"
     },
     "power": {
       "label": "Estimated power",

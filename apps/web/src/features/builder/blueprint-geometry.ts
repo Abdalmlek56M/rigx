@@ -1,10 +1,10 @@
 /**
  * The vocabulary of the case drawing: a few kinds of shape, each with a role the stylesheet colours (`blueprint.css`), and the one function
- * that draws a fan. The picture is a layered SVG (a 320 × 380 drawing): the shell and its glass first, then the board, then the parts on it.
+ * that draws a fan. The picture is a 320 × 380 drawing: the case and its back wall first, then the board and the parts on it, and the glass side panel over them on a layer of its own.
  */
 
 /** What a mark is, so the stylesheet can paint it: a chassis edge, glass, a vent slot, a fan blade, a chip, a cable… */
-export type ShapeRole = "shell" | "glass" | "glare" | "shroud" | "mount" | "vent" | "ring" | "blade" | "hub" | "chip" | "cable" | "screw" | "shadow" | "trace";
+export type ShapeRole = "shell" | "glare" | "shroud" | "mount" | "vent" | "ring" | "blade" | "hub" | "chip" | "cable" | "screw" | "trace" | "antenna" | "wall" | "hole" | "led" | "fin" | "tube" | "pane" | "edge";
 
 export type Shape = { role?: ShapeRole } & (
   | { kind: "rect"; x: number; y: number; width: number; height: number; radius?: number }

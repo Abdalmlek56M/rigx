@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { BLUEPRINT_HEIGHT, BLUEPRINT_WIDTH, fanBlades, type Shape, type SlotDrawing } from "./blueprint-geometry.ts";
-import { BLUEPRINT_ORDER, FAN_MOUNTS, SLOT_DRAWINGS } from "./blueprint-shapes.ts";
+import { BLUEPRINT_ORDER, FAN_MOUNTS, GLASS, slotDrawings } from "./blueprint-shapes.ts";
+import { DEFAULT_LAYOUT, type PcLayout } from "./pc-layout.ts";
 import { MAX_QUANTITY, slotLimit } from "./slot-limits.ts";
 
 type Box = [number, number, number, number];
@@ -17,13 +18,28 @@ function bounds(shape: Shape): Box {
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 }
 
-function drawing(slot: string): SlotDrawing {
-  const found = SLOT_DRAWINGS[slot];
+const layoutWith = (changes: Partial<PcLayout>): PcLayout => ({ ...DEFAULT_LAYOUT, ...changes });
+
+function drawing(slot: string, layout: PcLayout = DEFAULT_LAYOUT): SlotDrawing {
+  const found = slotDrawings(layout)[slot];
   assert.ok(found, slot);
   return found;
 }
 
-const firstPart = (slot: string): Box => bounds(drawing(slot).pieces[0]!.parts[0]!);
+const firstPart = (slot: string, layout: PcLayout = DEFAULT_LAYOUT): Box => bounds(drawing(slot, layout).pieces[0]!.parts[0]!);
+const details = (slot: string, layout: PcLayout = DEFAULT_LAYOUT) => drawing(slot, layout).pieces.flatMap((piece) => piece.details);
+const blades = (slot: string, layout: PcLayout = DEFAULT_LAYOUT) => details(slot, layout).filter((shape) => shape.role === "blade").length;
+
+function assertInPicture(shape: Shape, name: string) {
+  const [left, top, right, bottom] = bounds(shape);
+  assert.ok(left >= 0 && top >= 0 && right <= BLUEPRINT_WIDTH && bottom <= BLUEPRINT_HEIGHT, `${name} ${JSON.stringify(shape).slice(0, 50)}`);
+}
+
+function assertDrawingInPicture(slot: string, entry: SlotDrawing, name: string) {
+  const labels = [entry.label, ...entry.pieces.map((piece) => piece.label)].filter((label) => label !== undefined);
+  for (const label of labels) assert.ok(label.x > 0 && label.x < BLUEPRINT_WIDTH && label.y > 0 && label.y < BLUEPRINT_HEIGHT, `${name} ${slot} label`);
+  for (const shape of entry.pieces.flatMap((piece) => [...piece.parts, ...piece.details])) assertInPicture(shape, `${name} ${slot}`);
+}
 
 const overlap = (a: Box, b: Box) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
 
@@ -33,15 +49,9 @@ describe("case blueprint drawings", () => {
     for (const slot of BLUEPRINT_ORDER) assert.ok(drawing(slot).pieces.length > 0, slot);
   });
 
-  it("keeps every part, detail and label inside the picture", () => {
-    for (const [slot, entry] of Object.entries(SLOT_DRAWINGS)) {
-      const labels = [entry.label, ...entry.pieces.map((piece) => piece.label)].filter((label) => label !== undefined);
-      for (const label of labels) assert.ok(label.x > 0 && label.x < BLUEPRINT_WIDTH && label.y > 0 && label.y < BLUEPRINT_HEIGHT, `${slot} label`);
-      for (const shape of entry.pieces.flatMap((piece) => [...piece.parts, ...piece.details])) {
-        const [left, top, right, bottom] = bounds(shape);
-        assert.ok(left >= 0 && top >= 0 && right <= BLUEPRINT_WIDTH && bottom <= BLUEPRINT_HEIGHT, `${slot} ${JSON.stringify(shape).slice(0, 50)}`);
-      }
-    }
+  it("keeps every part, detail and label inside the picture, the glass too", () => {
+    for (const [slot, entry] of Object.entries(slotDrawings(DEFAULT_LAYOUT))) assertDrawingInPicture(slot, entry, "default");
+    for (const shape of GLASS) assertInPicture(shape, "glass");
   });
 
   it("gives every slot a name on the drawing: one for the slot, or one on each piece (drives)", () => {
@@ -120,13 +130,89 @@ describe("case blueprint drawings", () => {
     }
   });
 
-  it("draws the card's, the cooler's and the supply's fans as blades, and a ring of them on every case fan", () => {
-    const blades = (slot: string) => drawing(slot).pieces.flatMap((piece) => piece.details).filter((shape) => shape.role === "blade").length;
-    assert.equal(blades("GPU"), 3);
-    assert.equal(blades("COOL"), 1);
+  it("draws the card's and the supply's fans as blades (an air tower has none), and a ring of them on every case fan", () => {
+    assert.equal(blades("GPU"), 2);
+    assert.equal(blades("COOL"), 0);
     assert.equal(blades("PSU"), 1);
     assert.equal(blades("FAN"), 6);
     assert.equal(drawing("CASE").pieces[0]!.details.filter((shape) => shape.role === "blade").length, 0);
-    assert.equal(drawing("RAM").pieces.flatMap((piece) => piece.details).length, 16);
+    assert.equal(details("RAM").length, 20);
+  });
+
+  it("has the glass as one pane, one edge, two reflections and four screws, and none on the case", () => {
+    assert.deepEqual(GLASS.map((shape) => shape.role).sort(), ["edge", "glare", "glare", "pane", "screw", "screw", "screw", "screw"]);
+    assert.ok(!details("CASE").some((shape) => shape.role === "pane"));
+  });
+
+  it("draws a smaller board for micro-ATX and smaller still for mini-ITX", () => {
+    const size = (board: PcLayout["board"]) => {
+      const [left, top, right, bottom] = firstPart("BOARD", layoutWith({ board }));
+      return [right - left, bottom - top];
+    };
+    assert.deepEqual([size("atx"), size("matx"), size("itx")], [[156, 184], [156, 150], [134, 124]]);
+  });
+
+  it("keeps the memory, the card and the cooler inside a smaller board", () => {
+    const inside = (box: Box, around: Box) => box[0] >= around[0] && box[1] >= around[1] && box[2] <= around[2] && box[3] <= around[3];
+    for (const [board, ramSlots] of [["matx", 4], ["itx", 2]] as const) {
+      const layout = layoutWith({ board, ramSlots });
+      const outline = firstPart("BOARD", layout);
+      for (const piece of drawing("RAM", layout).pieces) assert.ok(inside(bounds(piece.parts[0]!), outline), `${board} RAM`);
+      for (const slot of board === "itx" ? ["CPU"] : ["CPU", "COOL", "GPU"]) assert.ok(inside(firstPart(slot, layout), outline), `${board} ${slot}`);
+    }
+  });
+
+  it("draws two memory places with two slots and four with four", () => {
+    assert.deepEqual(drawing("RAM", layoutWith({ ramSlots: 2 })).pieces.map((piece) => bounds(piece.parts[0]!)[0]), [206, 226]);
+    assert.equal(drawing("RAM", layoutWith({ ramSlots: 4 })).pieces.length, 4);
+  });
+
+  it("gives the card one, two or three fans", () => {
+    for (const gpuFans of [1, 2, 3] as const) assert.equal(blades("GPU", layoutWith({ gpuFans })), gpuFans);
+  });
+
+  it("moves the case's own fans onto the case and takes their places from the fan pieces", () => {
+    for (const caseFans of [0, 2, 6]) {
+      const layout = layoutWith({ caseFans });
+      assert.equal(blades("CASE", layout), caseFans);
+      const pieces = drawing("FAN", layout).pieces;
+      assert.equal(pieces.length, 6 - caseFans);
+      pieces.forEach((piece, index) => {
+        const mount = FAN_MOUNTS[caseFans + index]!;
+        assert.deepEqual(bounds(piece.parts[0]!), [mount.cx - mount.r, mount.cy - mount.r, mount.cx + mount.r, mount.cy + mount.r]);
+      });
+    }
+  });
+
+  it("leaves the two top places to a liquid cooler and draws the radiator's fans", () => {
+    const left = (layout: PcLayout) => drawing("FAN", layout).pieces.map((piece) => bounds(piece.parts[0]!)[0] + FAN_MOUNTS.find((mount) => mount.cx - mount.r === bounds(piece.parts[0]!)[0])!.r);
+    const topXs = FAN_MOUNTS.slice(4).map((mount) => mount.cx);
+    for (const radiatorFans of [1, 2, 3] as const) {
+      const layout = layoutWith({ cooler: "liquid", radiatorFans });
+      assert.equal(blades("COOL", layout), radiatorFans);
+      assert.equal(drawing("FAN", layout).pieces.length, 4);
+      for (const x of left(layout)) assert.ok(!topXs.includes(x), `top mount at ${x}`);
+    }
+    assert.equal(drawing("FAN", layoutWith({ cooler: "liquid", caseFans: 3 })).pieces.length, 1);
+    assert.equal(drawing("FAN", layoutWith({ cooler: "liquid", caseFans: 5 })).pieces.length, 0);
+  });
+
+  it("adds the Wi-Fi antennas only when the board has Wi-Fi", () => {
+    const antennas = (wifi: boolean) => details("BOARD", layoutWith({ wifi })).filter((shape) => shape.role === "antenna").length;
+    assert.equal(antennas(false), 0);
+    assert.equal(antennas(true), 1);
+  });
+
+  it("keeps every shape of every variant inside the picture", () => {
+    const layouts = [
+      layoutWith({ board: "matx", ramSlots: 2, gpuFans: 1, wifi: true }),
+      layoutWith({ board: "itx", ramSlots: 2, gpuFans: 3, caseFans: 3, wifi: true }),
+      layoutWith({ cooler: "liquid", radiatorFans: 1, caseFans: 6 }),
+      layoutWith({ cooler: "liquid", radiatorFans: 3, gpuFans: 3, wifi: true }),
+      layoutWith({ board: "itx", cooler: "liquid", radiatorFans: 2, ramSlots: 2 })
+    ];
+    layouts.forEach((layout, index) => {
+      for (const [slot, entry] of Object.entries(slotDrawings(layout))) assertDrawingInPicture(slot, entry, `variant ${index}`);
+    });
   });
 });

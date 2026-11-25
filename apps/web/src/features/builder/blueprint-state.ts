@@ -1,5 +1,6 @@
 import type { Schemas } from "@rigx/api-client";
-import { BLUEPRINT_ORDER, SLOT_DRAWINGS } from "./blueprint-shapes.ts";
+import type { SlotDrawing } from "./blueprint-geometry.ts";
+import { BLUEPRINT_ORDER } from "./blueprint-shapes.ts";
 
 export type SlotIssue = "none" | "warning" | "conflict";
 
@@ -45,6 +46,6 @@ export function blueprintSlots(
 }
 
 /** How many of a slot's places are lit: one per piece held, never more than the drawing has places for (a processor held twice is still one). */
-export function litPieces(slot: string, count: number): number {
-  return Math.max(0, Math.min(count, SLOT_DRAWINGS[slot]?.pieces.length ?? 0));
+export function litPieces(drawing: SlotDrawing | undefined, count: number): number {
+  return Math.max(0, Math.min(count, drawing?.pieces.length ?? 0));
 }

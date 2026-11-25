@@ -572,7 +572,10 @@
       "partEmpty": "{slot}: لم تُختر بعد",
       "partFilled": "{slot}: {model}",
       "legendOn": "مختارة",
-      "legendOff": "غير مختارة"
+      "legendOff": "غير مختارة",
+      "boardFacts": "ما يظهر في المخطط من اللوحة الأم",
+      "ramSlots": "فتحات الرام: {used} من {total}",
+      "wifi": "واي فاي"
     },
     "power": {
       "label": "الاستهلاك المتوقع",

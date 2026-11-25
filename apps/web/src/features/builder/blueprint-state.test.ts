@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { slotDrawings } from "./blueprint-shapes.ts";
 import { blueprintSlots, litPieces } from "./blueprint-state.ts";
+import { DEFAULT_LAYOUT } from "./pc-layout.ts";
 
 const part = (slot: string, modelName: string, quantity = 1) => ({ slot, quantity, item: { modelName } }) as never;
 
@@ -39,12 +41,13 @@ describe("blueprintSlots", () => {
 
 describe("litPieces", () => {
   it("lights one place per piece held, never more than the drawing has", () => {
-    assert.equal(litPieces("FAN", 4), 4);
-    assert.equal(litPieces("FAN", 9), 6);
-    assert.equal(litPieces("SSD", 3), 3);
-    assert.equal(litPieces("RAM", 2), 2);
-    assert.equal(litPieces("CPU", 2), 1);
-    assert.equal(litPieces("CPU", 0), 0);
-    assert.equal(litPieces("UNKNOWN", 2), 0);
+    const drawings = slotDrawings(DEFAULT_LAYOUT);
+    assert.equal(litPieces(drawings.FAN, 4), 4);
+    assert.equal(litPieces(drawings.FAN, 9), 6);
+    assert.equal(litPieces(drawings.SSD, 3), 3);
+    assert.equal(litPieces(drawings.RAM, 2), 2);
+    assert.equal(litPieces(drawings.CPU, 2), 1);
+    assert.equal(litPieces(drawings.CPU, 0), 0);
+    assert.equal(litPieces(undefined, 2), 0);
   });
 });

@@ -15,6 +15,19 @@
   --line: #e3e2dd;
   --sand: #e3e2dd;
   --orange: #ff6a2b;
+  /* The builder's PC picture: steel colours of a real case, the same in both themes (blueprint.css). */
+  --pc-black: #050607;
+  --pc-steel-950: #0f1114;
+  --pc-steel-900: #1a1d22;
+  --pc-steel-850: #23262c;
+  --pc-steel-800: #2c3138;
+  --pc-steel-700: #3a3f47;
+  --pc-steel-600: #4a5059;
+  --pc-steel-500: #5a616b;
+  --pc-steel-400: #6b727c;
+  --pc-steel-300: #8a919c;
+  --pc-steel-200: #9aa1ab;
+  --pc-white: #f4f5f7;
   --orange-soft: #fff0e8;
   --orange-text: #b84a12;
   --orange-text-hover: #8f380c;
