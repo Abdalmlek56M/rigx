@@ -15,6 +15,8 @@ export interface CategoryNode {
   /** English display name from the API; absent until the owner fills it. */
   nameEn?: string | null;
   slug: string;
+  /** The owner-picked key from the ready icon set; absent or null when none was picked. */
+  icon?: string | null;
   specs: SpecDef[];
   children: CategoryNode[];
 }

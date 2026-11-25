@@ -948,13 +948,89 @@ dialog[data-sheet="side"][data-edge="start"] {
   background: var(--error-text);
 }
 
-/* Services: the swap icon turns half a turn, the thermometer bar cools from 85° to 62° (an illustration, labelled as one). */
-.swap-icon,
-.gauge-fill {
-  transition: transform 420ms var(--ease-out), background-color 420ms ease;
+/* Services: the swap icon turns half a turn on hover. */
+.swap-icon {
+  transition: transform 420ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .path-tile:hover .swap-icon {
+    transform: rotate(180deg);
+  }
+}
+
+/*
+ * The maintenance card runs hot: a red-orange glow breathes in its corner, the icon and the reading are red and the bar sits at
+ * 85°. On hover (or keyboard focus) it cools: the glow turns blue and the reading counts down to 62° (an illustration, labelled
+ * as one). The count is a registered integer property, so it animates without script; with reduced motion it simply changes.
+ */
+@property --heat-temp {
+  syntax: "<integer>";
+  inherits: true;
+  initial-value: 85;
+}
+
+.heat-card {
+  --heat-temp: 85;
+  --heat-colour: var(--error-text);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--error-text) 32%, var(--line));
+  transition: --heat-temp 1400ms var(--ease-out), border-color 500ms ease;
+}
+
+.heat-card::before,
+.heat-card::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -45%;
+  inset-inline-end: -35%;
+  z-index: -1;
+  width: 85%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: opacity 700ms ease;
+}
+
+.heat-card::before {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--error-text) 42%, transparent), color-mix(in srgb, var(--orange) 22%, transparent) 60%, transparent);
+  animation: heat-breathe 2.6s ease-in-out infinite alternate;
+}
+
+.heat-card::after {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--glow-blue) 28%, transparent), transparent);
+  opacity: 0;
+}
+
+@keyframes heat-breathe {
+  from {
+    transform: scale(0.92);
+  }
+
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.heat-icon,
+.heat-reading {
+  color: var(--heat-colour);
+  transition: color 600ms ease, background-color 600ms ease;
+}
+
+.heat-icon {
+  background: color-mix(in srgb, var(--heat-colour) 13%, transparent);
+}
+
+.heat-reading::before {
+  counter-reset: heat var(--heat-temp);
+  content: counter(heat) "°";
 }
 
 .gauge {
+  display: block;
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
@@ -962,26 +1038,70 @@ dialog[data-sheet="side"][data-edge="start"] {
 }
 
 .gauge-fill {
+  position: relative;
+  display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--error-text);
+  background: linear-gradient(90deg, var(--orange), var(--error-text));
   transform: scaleX(0.85);
   transform-origin: left;
+  transition: transform 1400ms var(--ease-out), opacity 600ms ease;
 }
 
 [dir="rtl"] .gauge-fill {
   transform-origin: right;
+  background: linear-gradient(270deg, var(--orange), var(--error-text));
+}
+
+.gauge-fill-cool {
+  position: absolute;
+  inset: 0;
+  background: var(--glow-blue);
+  opacity: 0;
+}
+
+.heat-card:focus-visible {
+  --heat-temp: 62;
+  --heat-colour: var(--glow-blue);
+}
+
+.heat-card:focus-visible::before {
+  opacity: 0;
+}
+
+.heat-card:focus-visible::after,
+.heat-card:focus-visible .gauge-fill-cool {
+  opacity: 1;
+}
+
+.heat-card:focus-visible .gauge-fill {
+  transform: scaleX(0.62);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .path-tile:hover .swap-icon {
-    transform: rotate(180deg);
+  .heat-card:hover {
+    --heat-temp: 62;
+    --heat-colour: var(--glow-blue);
+    border-color: color-mix(in srgb, var(--glow-blue) 45%, var(--line));
   }
 
-  .path-tile:hover .gauge-fill {
-    transform: scaleX(0.62);
-    background: var(--success);
+  .heat-card:hover::before {
+    opacity: 0;
   }
+
+  .heat-card:hover::after,
+  .heat-card:hover .gauge-fill-cool {
+    opacity: 1;
+  }
+
+  .heat-card:hover .gauge-fill {
+    transform: scaleX(0.62);
+  }
+}
+
+/* Home category cards: the picture or icon sits on a soft orange glow over the paper tone. */
+.category-stage {
+  background: radial-gradient(70% 70% at 50% 55%, var(--orange-soft), var(--paper));
 }
 
 /* A section title carries a short orange line under it that draws in as the title scrolls into view (where the browser supports it). */

@@ -11,7 +11,8 @@ export interface ContactLink {
   showInFloatingButton: boolean;
 }
 /** A menu category; `image` is the uploaded category picture (often a transparent PNG), null when there is none. */
-export type MenuCategory = { id: string; name: string; nameEn?: string | null; slug: string; image: string | null; children: MenuCategory[] };
+/** `icon` is the owner-picked key from the ready icon set, null when none was picked. */
+export type MenuCategory = { id: string; name: string; nameEn?: string | null; slug: string; image: string | null; icon: string | null; children: MenuCategory[] };
 /** An active brand (catalog filter, product page). */
 export type Brand = { id: string; name: string; slug: string; logoStorageKey: string | null };
 
@@ -101,7 +102,7 @@ function logOnce(error: unknown) {
 function toMenu(categories: Schemas["CategoryView"][]): MenuCategory[] {
   return categories
     .filter((c) => c.showInMenu && c.isEffectivelyActive)
-    .map((c) => ({ id: c.id, name: c.name, nameEn: c.nameEn ?? null, slug: c.slug, image: c.iconStorageKey ?? null, children: toMenu(c.children) }));
+    .map((c) => ({ id: c.id, name: c.name, nameEn: c.nameEn ?? null, slug: c.slug, image: c.iconStorageKey ?? null, icon: c.iconKey ?? null, children: toMenu(c.children) }));
 }
 
 function toTree(categories: Schemas["CategoryView"][]): CategoryNode[] {
@@ -113,6 +114,7 @@ function toTree(categories: Schemas["CategoryView"][]): CategoryNode[] {
       name: c.name,
       nameEn: c.nameEn ?? null,
       slug: c.slug,
+      icon: c.iconKey ?? null,
       specs: c.specs.map((s) => ({ key: s.key, name: s.name, options: s.options ?? [], unit: s.unit ?? null, isFilter: s.isFilter, type: s.type })),
       children: toTree(c.children)
     }));

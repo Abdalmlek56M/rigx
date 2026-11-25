@@ -23,24 +23,26 @@ function FeaturedItems({ stock, onPick }: { stock: CategoryStock | null | undefi
   if (stock === null || stock?.items.length === 0) return null;
 
   return (
-    <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
+    <div className="mt-auto flex flex-col gap-2.5 border-t border-line pt-4">
       <h3 className="m-0 type-label font-bold">{t("megaLatest")}</h3>
-      <ul className="m-0 grid list-none grid-cols-3 gap-2 p-0">
+      <ul className="m-0 grid list-none grid-cols-3 gap-3 p-0">
         {stock === undefined
-          ? [0, 1, 2].map((index) => <li key={index} aria-hidden="true" className="h-[132px] animate-pulse rounded-control bg-paper" />)
+          ? [0, 1, 2].map((index) => <li key={index} aria-hidden="true" className="aspect-[4/5] animate-pulse rounded-control bg-paper" />)
           : stock.items.map((item) => (
               <li key={item.code} className="flex">
-                <Link href={productPath(item.slug)} onClick={onPick} className="press group flex w-full flex-col gap-1.5 rounded-control border border-line p-2 transition-colors hover:border-orange/60">
-                  <span className="flex h-16 items-center justify-center overflow-hidden rounded-[6px] bg-paper text-muted">
+                <Link href={productPath(item.slug)} onClick={onPick} className="press group flex w-full flex-col overflow-hidden rounded-control border border-line transition-colors hover:border-orange/60">
+                  <span className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-paper text-muted">
                     {item.thumbnailStorageKey ? (
                       // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                      <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={96} height={64} loading="lazy" className="product-photo h-full w-full object-cover" />
+                      <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={200} height={150} loading="lazy" className="product-photo h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
                     ) : (
                       <ImagePlaceholderIcon />
                     )}
                   </span>
-                  <span dir="ltr" className="line-clamp-2 text-start text-xs font-bold leading-snug [unicode-bidi:isolate]">{item.modelName}</span>
-                  <span className="mt-auto text-[13px] font-bold">{formatEgp(cardPrice(item), locale)}</span>
+                  <span className="flex flex-1 flex-col gap-1.5 p-2.5">
+                    <span dir="ltr" className="line-clamp-2 text-start text-xs font-bold leading-snug [unicode-bidi:isolate]">{item.modelName}</span>
+                    <span className="mt-auto text-sm font-bold text-orange-text">{formatEgp(cardPrice(item), locale)}</span>
+                  </span>
                 </Link>
               </li>
             ))}
@@ -109,9 +111,9 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
         <span className="transition-transform duration-200 [[aria-expanded=true]>&]:rotate-180"><ChevronDownIcon size={16} /></span>
       </button>
       {open ? (
-        <div id="categories-panel" className="mega-in absolute start-0 top-full z-30 mt-2 w-[min(760px,calc(100vw-48px))] rounded-panel border border-line bg-surface text-ink shadow-lift">
-          <div className="grid grid-cols-[220px_minmax(0,1fr)] gap-4 p-3">
-            <ul className="m-0 flex max-h-[min(60vh,420px)] list-none flex-col gap-0.5 overflow-y-auto overscroll-contain border-e border-line p-0 pe-3">
+        <div id="categories-panel" className="mega-in absolute start-0 top-full z-30 mt-2 w-[min(840px,calc(100vw-48px))] rounded-panel border border-line bg-surface text-ink shadow-lift">
+          <div className="grid grid-cols-[236px_minmax(0,1fr)] gap-6 p-4">
+            <ul className="m-0 flex max-h-[min(64vh,460px)] list-none flex-col gap-1 overflow-y-auto overscroll-contain border-e border-line p-0 pe-4">
               {categories.map((category) => {
                 const current = category.slug === active.slug;
                 return (
@@ -122,10 +124,10 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                       onPointerEnter={() => setActiveSlug(category.slug)}
                       onFocus={() => setActiveSlug(category.slug)}
                       aria-current={current ? "true" : undefined}
-                      className={`group flex min-h-10 items-center gap-2.5 rounded-control px-2 text-sm font-bold transition-colors ${current ? "bg-paper text-ink" : "text-ink-muted hover:text-ink"}`}
+                      className={`group flex min-h-11 items-center gap-3 rounded-control px-2.5 text-sm font-bold transition-colors ${current ? "bg-paper text-ink" : "text-ink-muted hover:bg-paper/60 hover:text-ink"}`}
                     >
-                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>
-                        <CategoryIcon slug={category.slug} size={16} />
+                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${current ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>
+                        <CategoryIcon slug={category.slug} icon={category.icon} size={18} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">{localizedName(category, locale)}</span>
                       {category.children.length > 0 ? (
@@ -138,7 +140,7 @@ export function CategoriesMenu({ categories }: { categories: MenuCategory[] }) {
                 );
               })}
             </ul>
-            <div key={active.slug} className="mega-pane flex min-w-0 flex-col gap-3 py-1">
+            <div key={active.slug} className="mega-pane flex min-w-0 flex-col gap-4 py-1">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="m-0 type-section-title">{localizedName(active, locale)}</h2>
                 <Link href={categoryHref(active.slug)} onClick={close} className="press inline-flex min-h-9 items-center gap-1.5 rounded-full border border-input-line px-3.5 text-[13px] font-bold transition-colors hover:border-orange hover:text-orange-text">

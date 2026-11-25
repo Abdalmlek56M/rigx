@@ -700,3 +700,9 @@ export const LayersIcon = (p: IconProps) => (
     <path d="M3 13l9 5 9-5" />
   </Icon>
 );
+export const ThermometerIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z" />
+    <path d="M12 9v7" />
+  </Icon>
+);
