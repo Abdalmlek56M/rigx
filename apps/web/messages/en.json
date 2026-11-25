@@ -367,17 +367,10 @@
       "warrantyLink": "What the warranty covers",
       "returns": "Returns",
       "returnsLink": "Returns and exchanges terms",
-      "paymentTitle": "Payment methods",
-      "payment": {
-        "cash": "Cash on delivery",
-        "instaPay": "InstaPay",
-        "wallet": "E-wallet"
-      },
       "pickupTitle": "Pickup and shipping",
-      "pickupFrom": "Pickup from the store",
-      "shippingAll": "To all governorates",
+      "pickupFrom": "From the store",
       "title": "Purchase information",
-      "shippingTitle": "Shipping"
+      "shippingEverywhere": "To every governorate"
     },
     "orderWhatsApp": "Order it on WhatsApp",
     "brandLink": "All {brand} products",

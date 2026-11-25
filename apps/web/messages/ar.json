@@ -367,17 +367,10 @@
       "warrantyLink": "ما الذي يغطيه الضمان؟",
       "returns": "الاسترجاع",
       "returnsLink": "شروط الاسترجاع والاستبدال",
-      "paymentTitle": "طرق الدفع",
-      "payment": {
-        "cash": "كاش عند الاستلام",
-        "instaPay": "InstaPay",
-        "wallet": "محفظة إلكترونية"
-      },
       "pickupTitle": "الاستلام والشحن",
-      "pickupFrom": "الاستلام من المحل",
-      "shippingAll": "إلى جميع المحافظات",
+      "pickupFrom": "من المحل",
       "title": "معلومات الشراء",
-      "shippingTitle": "الشحن"
+      "shippingEverywhere": "لكل المحافظات"
     },
     "orderWhatsApp": "اطلبها على واتساب",
     "brandLink": "كل منتجات {brand}",
