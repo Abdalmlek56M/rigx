@@ -30,6 +30,22 @@ export function financingPartners(partners: readonly Partner[]): Partner[] {
   return partners.filter((partner) => partner.isActive && partner.basis === "FinancedParts");
 }
 
+export type PartnerBlock = "inactive" | "wholeShop";
+
+/**
+ * Every saved partner for a unit's partner select. Only an active partner paid from financed parts can be picked; the others stay
+ * listed with the reason, so a saved partner never seems to be missing. `keepId` (the unit's saved partner) stays pickable.
+ */
+export function partnerChoices(partners: readonly Partner[], keepId: string | null = null): { partner: Partner; blocked: PartnerBlock | null }[] {
+  const financing = new Set(financingPartners(partners).map((partner) => partner.id));
+  return partners
+    .map((partner) => ({
+      partner,
+      blocked: financing.has(partner.id) || partner.id === keepId ? null : partner.basis === "FinancedParts" ? "inactive" as const : "wholeShop" as const
+    }))
+    .sort((a, b) => Number(a.blocked !== null) - Number(b.blocked !== null));
+}
+
 /** The share a unit gives its partner: the unit's own percent, else the partner's default. */
 export function partnerShare(partner: Partner, override: number | null): number {
   return override ?? partner.defaultPercent;

@@ -376,6 +376,13 @@ body {
   }
 }
 
+/* A value written left to right (a Latin name, a code, a phone) must still sit under its column heading: a block with its own
+   direction shrinks to its text, so the table's direction places it, not the value's. */
+.data-table td :is(div, p, span, a, b, bdi)[dir] {
+  width: fit-content;
+  max-width: 100%;
+}
+
 /* Floating buttons sit above a page's sticky buy bar (product, build) instead of covering it. */
 @media (max-width: 767px) {
   body:has([data-sticky-bar="md"]) .floating-lift {
@@ -460,7 +467,9 @@ body {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tip::after {
+  /* The tip exists only while it shows: a hidden one would still widen a scrolling table or drawer. */
+  .tip:hover::after,
+  .tip:focus-visible::after {
     content: attr(data-tip);
     position: absolute;
     bottom: calc(100% + 8px);
@@ -475,18 +484,22 @@ body {
     line-height: 1.4;
     white-space: nowrap;
     pointer-events: none;
-    opacity: 0;
-    transform: translate(-50%, 3px);
-    transition:
-      opacity 140ms var(--ease-out),
-      transform 140ms var(--ease-out);
+    transform: translateX(var(--tip-x, -50%));
+    animation: tip-in 140ms var(--ease-out) 300ms both;
   }
 
-  .tip:hover::after,
-  .tip:focus-visible::after {
-    opacity: 1;
-    transform: translate(-50%, 0);
-    transition-delay: 300ms;
+  /* In a table's last column the tip grows inwards from the button's end, not past the table's edge. */
+  .data-table td:last-child .tip::after {
+    --tip-x: 0;
+    left: auto;
+    inset-inline-end: 0;
+  }
+}
+
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--tip-x, -50%), 3px);
   }
 }
 

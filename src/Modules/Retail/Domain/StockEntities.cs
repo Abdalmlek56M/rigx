@@ -38,6 +38,10 @@ public sealed class StockItem
     public bool IsHidden { get; set; }
     public string? InternalNote { get; set; }
     public Dictionary<string, string> Specs { get; set; } = [];
+    /// <summary>What the owner wrote about this item for its store page (Arabic), if anything.</summary>
+    public string? Description { get; set; }
+    /// <summary>The same description in English.</summary>
+    public string? DescriptionEn { get; set; }
     public List<StockItemPhoto> Photos { get; set; } = [];
     /// <summary>Database-generated from <see cref="Photos"/> so the storefront can filter published items in SQL.</summary>
     public int PhotoCount { get; private set; }

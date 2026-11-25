@@ -10,11 +10,11 @@ import { formatDate } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
-import { fetchPartners } from "../expenses/expenses-api";
 import { buttonClass, buttonIconSize } from "../kit/Button";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { PhotoGallery } from "../stock/PhotoGallery";
+import { usePartners } from "../stock/use-partners";
 import { usePermissions } from "../use-permissions";
 import { StockItemActions } from "./StockItemActions";
 import { StockItemForm } from "./StockItemForm";
@@ -28,18 +28,17 @@ export function StockItemPage({ id }: { id: string }) {
   const t = useTranslations("admin.inventory.detail");
   const locale = useLocale();
   const { has } = usePermissions();
-  const canSeePartners = has("Finance.ViewReports");
+  const partners = usePartners(has("Finance.ViewReports"));
   const canReadWarranties = has("System.StoreSettings");
   const load = useCallback(async () => {
-    const [item, tree, brands, partners, warrantyLabels] = await Promise.all([
+    const [item, tree, brands, warrantyLabels] = await Promise.all([
       fetchStockItem(id),
       fetchCategories().catch(() => []),
       fetchBrands().catch(() => []),
-      canSeePartners ? fetchPartners().catch(() => []) : Promise.resolve([]),
       canReadWarranties ? fetchWarrantyLabels().catch(() => null) : Promise.resolve(null)
     ]);
-    return { item, tree, brands, partners, warrantyLabels };
-  }, [id, canSeePartners, canReadWarranties]);
+    return { item, tree, brands, warrantyLabels };
+  }, [id, canReadWarranties]);
   const { state, reload } = useLoad(load);
   // The item as the last save or photo change returned it; a 409 drops it and reads the item again.
   const [fresh, setFresh] = useState<StockItem | null>(null);
@@ -62,7 +61,7 @@ export function StockItemPage({ id }: { id: string }) {
     );
   }
 
-  const { tree, brands, partners, warrantyLabels } = state.data;
+  const { tree, brands, warrantyLabels } = state.data;
   const item = fresh ?? state.data.item;
   const canEdit = has("Inventory.StockAdjust");
   const refresh = async () => setFresh(await fetchStockItem(id));

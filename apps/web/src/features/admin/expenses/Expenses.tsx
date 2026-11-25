@@ -109,7 +109,7 @@ function Body({ from, to, canViewVaults, canManage }: { from: string; to: string
         <Kpi label={t("kpi.sales")} value={formatEgp(summary.grossSales, locale)} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_380px] 2xl:items-start">
         <DataTable label={t("title")} columns={columns} state={{ status: "ready", data: expenses }} onRetry={reload} rowKey={(expense) => expense.id} empty={t("empty")} />
         <section className={cardClass({ className: "gap-3" })}>
           <h2 className="m-0 type-section-title">{t("splits.title")}</h2>

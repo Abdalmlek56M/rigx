@@ -7,7 +7,8 @@ import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
-import type { Partner } from "../expenses/expenses-api";
+import { PartnersFailed } from "../stock/PartnersFailed";
+import { loadedPartners, type PartnerSource } from "../stock/use-partners";
 import { partnerShare } from "../stock/stock-fields";
 import { AddNewPartPanel } from "./AddNewPartPanel";
 import { AddStockPartPanel } from "./AddStockPartPanel";
@@ -23,15 +24,15 @@ import { SectionCard } from "../kit/SectionCard";
 export interface BuildLookups {
   tree: readonly Category[];
   brands: readonly Brand[];
-  /** Every partner, or `null` when the staff member cannot read partners (the partner column and fields are then left out). */
-  partners: readonly Partner[] | null;
+  /** `null` when the staff member cannot read partners (the partner column and fields are then left out). */
+  partners: PartnerSource | null;
   warrantyLabels: readonly string[] | null;
 }
 
 type Panel = { kind: "edit" | "replace" | "remove"; part: BuildPart } | { kind: "stock" | "new" } | null;
 
 const CELL = "truncate px-2 py-2.5 align-middle";
-const HEAD = "whitespace-nowrap px-2 py-2.5 text-start text-[13px] font-bold text-ink-muted";
+const HEAD = "whitespace-nowrap px-2 py-2.5 text-[13px] font-bold text-ink-muted";
 
 /** The build's parts with their money, and the actions on them: edit, replace, remove, add from stock, add a new part. */
 export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & { canEdit: boolean; lookups: BuildLookups }) {
@@ -44,7 +45,7 @@ export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & {
   const hasPartner = Boolean(lookups.partners);
   const widths = ["200px", "90px", "105px", "105px", "130px", ...(hasPartner ? ["110px"] : []), "110px", ...(canEdit ? ["132px"] : [])];
 
-  const partnerOf = (part: BuildPart) => lookups.partners?.find((entry) => entry.id === part.partnerId) ?? null;
+  const partnerOf = (part: BuildPart) => loadedPartners(lookups.partners).find((entry) => entry.id === part.partnerId) ?? null;
   const actions = (part: BuildPart) => (
     <span className="flex items-center gap-1">
       <IconButton icon={PencilIcon} label={t("edit")} size="sm" onClick={() => setPanel({ kind: "edit", part })} />
@@ -89,17 +90,18 @@ export function BuildParts({ canEdit, lookups, ...action }: BuildActionProps & {
         </div>
       ) : (
         <>
+          {lookups.partners?.state.status === "error" ? <PartnersFailed onRetry={lookups.partners.reload} /> : null}
           <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full table-fixed border-collapse text-sm">
+            <table className="data-table w-full table-fixed border-collapse text-sm">
               <colgroup>{widths.map((width, index) => <col key={index} style={{ width }} />)}</colgroup>
               <thead className="bg-paper">
                 <tr>
-                  <th scope="col" className={HEAD}>{t("columns.part")}</th>
-                  <th scope="col" className={HEAD}>{t("columns.condition")}</th>
+                  <th scope="col" className={`${HEAD} text-start`}>{t("columns.part")}</th>
+                  <th scope="col" className={`${HEAD} text-start`}>{t("columns.condition")}</th>
                   <th scope="col" className={`${HEAD} text-end`}>{t("columns.cost")}</th>
                   <th scope="col" className={`${HEAD} text-end`}>{t("columns.price")}</th>
-                  <th scope="col" className={HEAD}>{t("columns.warranty")}</th>
-                  {hasPartner ? <th scope="col" className={HEAD}>{t("columns.partner")}</th> : null}
+                  <th scope="col" className={`${HEAD} text-start`}>{t("columns.warranty")}</th>
+                  {hasPartner ? <th scope="col" className={`${HEAD} text-start`}>{t("columns.partner")}</th> : null}
                   <th scope="col" className={`${HEAD} text-end`}>{t("columns.allocation")}</th>
                   {canEdit ? <th scope="col" className={`${HEAD} text-end`}>{t("columns.actions")}</th> : null}
                 </tr>

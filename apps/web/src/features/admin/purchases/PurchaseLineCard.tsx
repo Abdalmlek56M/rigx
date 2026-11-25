@@ -8,7 +8,7 @@ import { TextField } from "@/components/ui/TextField";
 import { formatEgp } from "@/lib/format";
 import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
-import type { Partner } from "../expenses/expenses-api";
+import type { PartnerSource } from "../stock/use-partners";
 import { CategorySelect } from "../stock/CategorySelect";
 import { PartnerFields } from "../stock/PartnerFields";
 import { BrandSelect } from "../stock/BrandSelect";
@@ -28,8 +28,8 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
   index: number;
   tree: readonly Category[];
   brands: readonly Brand[];
-  /** Active financing partners, or `null` when the staff member cannot read them (the partner fields are then left out). */
-  partners: readonly Partner[] | null;
+  /** `null` when the staff member cannot read partners (the partner fields are then left out). */
+  partners: PartnerSource | null;
   warrantyLabels: readonly string[] | null;
   errors: Record<string, string>;
   missingFields: readonly string[];
@@ -120,14 +120,12 @@ export function PurchaseLineCard({ line, index, tree, brands, partners, warranty
               {prices.withBoard ? <TextField label={t("withBoardExtra")} name={field("withBoardExtra")} type="number" ltr value={line.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={errorFor("withBoardExtra")} /> : null}
               {prices.alone ? <TextField label={t("aloneExtra")} name={field("aloneExtra")} type="number" ltr value={line.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={errorFor("aloneExtra")} /> : null}
               {prices.withBoard || prices.alone ? <p className="m-0 self-start text-xs font-normal text-ink-muted sm:col-span-2 xl:col-span-3">{t("priceHint")}</p> : null}
-              {partners && partners.length > 0 ? (
-                <PartnerFields
-                  partners={partners} partnerId={line.partnerId} percent={line.partnerPercent} namePrefix={`line${index}-partner`}
-                  onChange={(patch) => set({ ...(patch.partnerId !== undefined ? { partnerId: patch.partnerId } : {}), ...(patch.percent !== undefined ? { partnerPercent: patch.percent } : {}) })}
-                  errors={{ partnerId: errorFor("partnerId"), percent: errorFor("partnerPercent") }}
-                />
-              ) : null}
               <WarrantyField name={field("warrantyLabel")} value={line.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={warrantyLabels} error={errorFor("warrantyLabel")} />
+              <PartnerFields
+                source={partners} partnerId={line.partnerId} percent={line.partnerPercent} namePrefix={`line${index}-partner`}
+                onChange={(patch) => set({ ...(patch.partnerId !== undefined ? { partnerId: patch.partnerId } : {}), ...(patch.percent !== undefined ? { partnerPercent: patch.percent } : {}) })}
+                errors={{ partnerId: errorFor("partnerId"), percent: errorFor("partnerPercent") }}
+              />
             </div>
             {line.copyPhotosFromItemId ? (
               <p role="status" className="m-0 flex flex-wrap items-center gap-2 rounded-control bg-orange-soft px-3 py-2 text-sm">

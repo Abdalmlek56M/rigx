@@ -65,7 +65,7 @@ export function StockImport() {
         {result && summary ? (
           <>
             <div className="overflow-x-auto rounded-card border border-line bg-surface">
-              <table aria-label={t("table.label")} className="w-full border-collapse text-sm">
+              <table aria-label={t("table.label")} className="data-table w-full border-collapse text-sm">
                 <thead className="bg-paper text-[13px] text-ink-muted">
                   <tr>
                     {COLUMNS.map((column) => <th key={column} scope="col" className="whitespace-nowrap px-3 py-2.5 text-start font-bold">{t(`table.${column}`)}</th>)}

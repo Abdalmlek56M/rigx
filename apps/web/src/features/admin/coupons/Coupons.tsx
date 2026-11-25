@@ -7,7 +7,8 @@ import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
 import { Button } from "../kit/Button";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { StatusTone } from "@/components/ui/status-badge-rules";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
@@ -83,7 +84,10 @@ export function Coupons() {
     {
       key: "lastUsed", header: t("columns.lastUsed"),
       cell: (coupon) => <span className="whitespace-nowrap text-xs">{coupon.lastUsedAtUtc ? formatDateTime(coupon.lastUsedAtUtc, locale) : t("none")}</span>
-    }
+    },
+    actionsColumn((coupon) => (
+      <RowAction kind="edit" subject={coupon.code} current={coupon.id === activeId} onClick={() => { setCreating(false); set({ id: coupon.id }); }} />
+    ))
   ];
 
   return (

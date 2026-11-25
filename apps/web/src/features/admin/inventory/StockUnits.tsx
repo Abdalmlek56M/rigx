@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate, formatEgp } from "@/lib/format";
-import type { Partner } from "../expenses/expenses-api";
-import { DataTable, type Column } from "../kit/DataTable";
-import { financingPartners, partnerShare } from "../stock/stock-fields";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { PartnersFailed } from "../stock/PartnersFailed";
+import { partnerShare } from "../stock/stock-fields";
+import { loadedPartners, type PartnerSource } from "../stock/use-partners";
 import { UnitPartnerDialog } from "./UnitPartnerDialog";
 import { setUnitExcluded, type StockItem, type StockUnit } from "./inventory-api";
 import { leftOutOfStockValue, unitStatusKey } from "./inventory-rules";
@@ -16,10 +17,11 @@ import { useToast } from "../kit/Toast";
 
 const READY = (units: readonly StockUnit[]) => ({ status: "ready", data: units }) as const;
 
-/** The item's units: status, serial, cost (when the server sent it), partner with share, received date, and "change partner". */
+/** The item's units: status, serial and received date; the cost (when the server sent it) and the partner with their share; the unit's actions. */
 export function StockUnits({ item, partners, canAssign, canEditStockValue, showCosts, onChanged, onStale }: {
   item: StockItem;
-  partners: readonly Partner[];
+  /** `null` when the staff member cannot read partners. */
+  partners: PartnerSource | null;
   canAssign: boolean;
   /** May leave a unit out of the stock value (sees costs and may adjust stock). */
   canEditStockValue: boolean;
@@ -48,60 +50,62 @@ export function StockUnits({ item, partners, canAssign, canEditStockValue, showC
     }
   }
 
+  // Status, serial and date share one column, so the table fits a narrow screen without scrolling sideways.
   const columns: Column<StockUnit>[] = [
     {
-      key: "status",
-      header: t("columns.status"),
+      key: "unit",
+      header: t("columns.unit"),
       cell: (unit) => (
-        <span className="flex flex-wrap items-center gap-1.5">
-          <span className="whitespace-nowrap">{t(`status.${unitStatusKey(unit.status)}`)}</span>
-          {leftOutOfStockValue(item, unit) ? <StatusBadge tone="neutral">{t("excludedBadge")}</StatusBadge> : null}
-        </span>
-      )
-    },
-    { key: "serial", header: t("columns.serial"), cell: (unit) => (unit.serialNumber ? <span dir="ltr" className="font-mono text-xs">{unit.serialNumber}</span> : none) }
-  ];
-  if (showCosts) {
-    columns.push({
-      key: "cost", header: t("columns.cost"), align: "end",
-      cell: (unit) => (unit.acquisitionCost === null ? none : <span className="whitespace-nowrap font-bold">{formatEgp(unit.acquisitionCost, locale)}</span>)
-    });
-  }
-  columns.push(
-    {
-      key: "partner",
-      header: t("columns.partner"),
-      cell: (unit) => {
-        const partner = partners.find((entry) => entry.id === unit.partnerId);
-        return partner ? <span className="whitespace-nowrap">{t("partnerShare", { name: partner.name, percent: partnerShare(partner, unit.partnerPercentOverride) })}</span> : none;
-      }
-    },
-    { key: "received", header: t("columns.received"), cell: (unit) => <span className="whitespace-nowrap text-xs">{formatDate(unit.receivedAtUtc, locale)}</span> }
-  );
-  if (canAssign || canEditStockValue) {
-    columns.push({
-      key: "actions",
-      header: t("columns.actions"),
-      cell: (unit) => (
-        <span className="flex items-center gap-1">
-          {canAssign ? <IconButton icon={SwapIcon} size="sm" label={t("changePartner")} onClick={() => setEditing(unit)} /> : null}
-          {canEditStockValue ? (
-            <IconButton
-              icon={unit.excludedFromStockValue === true ? CheckIcon : BanIcon} size="sm" loading={togglingId === unit.id}
-              label={t(unit.excludedFromStockValue === true ? "countInStockValue" : "excludeFromStockValue")} onClick={() => void toggleExcluded(unit)}
-            />
+        <span className="flex min-w-0 flex-col items-start gap-1">
+          <span className="flex flex-wrap items-center gap-1.5">
+            <span className="whitespace-nowrap font-bold">{t(`status.${unitStatusKey(unit.status)}`)}</span>
+            {leftOutOfStockValue(item, unit) ? <StatusBadge tone="neutral">{t("excludedBadge")}</StatusBadge> : null}
+          </span>
+          {unit.serialNumber ? (
+            <span className="text-xs text-ink-muted">{t("columns.serial")} <bdi dir="ltr" className="break-all font-mono text-ink">{unit.serialNumber}</bdi></span>
           ) : null}
+          <span className="text-xs text-ink-muted">{t("received", { date: formatDate(unit.receivedAtUtc, locale) })}</span>
         </span>
       )
-    });
+    }
+  ];
+  // The cost (for staff who see it) with the partner under it.
+  columns.push({
+    key: "purchase",
+    header: t(showCosts ? "columns.purchase" : "columns.partner"),
+    cell: (unit) => {
+      const partner = loadedPartners(partners).find((entry) => entry.id === unit.partnerId);
+      const cost = showCosts && unit.acquisitionCost !== null ? unit.acquisitionCost : null;
+      if (cost === null && !partner) return none;
+      return (
+        <span className="flex min-w-0 flex-col items-start gap-0.5">
+          {cost === null ? null : <span className="whitespace-nowrap font-bold">{formatEgp(cost, locale)}</span>}
+          {partner ? <span className="text-xs text-ink-muted">{t("partnerShare", { name: partner.name, percent: partnerShare(partner, unit.partnerPercentOverride) })}</span> : null}
+        </span>
+      );
+    }
+  });
+  if (canAssign || canEditStockValue) {
+    columns.push(actionsColumn((unit) => (
+      <span className="flex items-center gap-1">
+        {canAssign && partners ? <IconButton icon={SwapIcon} size="sm" label={t("changePartner")} onClick={() => setEditing(unit)} /> : null}
+        {canEditStockValue ? (
+          <IconButton
+            icon={unit.excludedFromStockValue === true ? CheckIcon : BanIcon} size="sm" loading={togglingId === unit.id}
+            label={t(unit.excludedFromStockValue === true ? "countInStockValue" : "excludeFromStockValue")} onClick={() => void toggleExcluded(unit)}
+          />
+        ) : null}
+      </span>
+    )));
   }
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <h3 className="m-0 text-[15px] font-bold">{t("title", { count: item.units.length })}</h3>
+      {partners?.state.status === "error" ? <PartnersFailed onRetry={partners.reload} /> : null}
       <DataTable label={t("title", { count: item.units.length })} columns={columns} state={READY(item.units)} onRetry={onStale} rowKey={(unit) => unit.id} empty={t("empty")} />
-      {editing ? (
-        <UnitPartnerDialog key={editing.id} unit={editing} partners={financingPartners(partners)} onSaved={onChanged} onStale={onStale} onClose={() => setEditing(null)} />
+      {editing && partners ? (
+        <UnitPartnerDialog key={editing.id} unit={editing} partners={partners} onSaved={onChanged} onStale={onStale} onClose={() => setEditing(null)} />
       ) : null}
     </div>
   );

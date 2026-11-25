@@ -10,7 +10,7 @@ import { parseUsage } from "@/lib/usage";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect } from "../kit/FilterBar";
 import { NameCell } from "../kit/NameCell";
 import { PageHeader } from "../kit/PageHeader";
@@ -93,27 +93,24 @@ export function CustomerBuilds() {
       key: "date", header: t("columns.date"),
       cell: (row) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDateTime(row.decidedAtUtc ?? row.submittedAtUtc, locale)}</span>
     },
-    {
-      key: "actions", header: t("columns.actions"),
-      cell: (row) => (
-        <span className="flex flex-wrap items-center gap-1.5">
-          <a href={`/${locale}/b/${encodeURIComponent(row.build.token)}`} target="_blank" rel="noopener noreferrer" className={buttonClass({ size: "sm" })}>
-            <ExternalIcon size={buttonIconSize("sm")} />
-            {t("open")}
-          </a>
-          {canDecide
-            ? decisionsFor(parseStatus(row.status)).map((decision) => (
-                <Button
-                  key={decision} size="sm" variant={decision === "Rejected" ? "danger" : "primary"} icon={DECISION_ICON[decision]}
-                  loading={busyToken === row.build.token} onClick={() => void decide(row.build.token, decision)}
-                >
-                  {t(`decision.${decision}`)}
-                </Button>
-              ))
-            : null}
-        </span>
-      )
-    }
+    actionsColumn((row) => (
+      <span className="flex flex-wrap items-center gap-1.5 xl:flex-nowrap">
+        <a href={`/${locale}/b/${encodeURIComponent(row.build.token)}`} target="_blank" rel="noopener noreferrer" className={buttonClass({ size: "sm" })}>
+          <ExternalIcon size={buttonIconSize("sm")} />
+          {t("open")}
+        </a>
+        {canDecide
+          ? decisionsFor(parseStatus(row.status)).map((decision) => (
+              <Button
+                key={decision} size="sm" variant={decision === "Rejected" ? "danger" : "primary"} icon={DECISION_ICON[decision]}
+                loading={busyToken === row.build.token} onClick={() => void decide(row.build.token, decision)}
+              >
+                {t(`decision.${decision}`)}
+              </Button>
+            ))
+          : null}
+      </span>
+    ))
   ];
 
   return (

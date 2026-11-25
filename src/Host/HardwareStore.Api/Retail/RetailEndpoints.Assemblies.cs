@@ -12,7 +12,7 @@ public static partial class RetailEndpoints
     private static async Task<Ok<IReadOnlyList<AssemblyView>>> ListAssembliesAsync(HttpContext context, AssemblyService assemblies, CancellationToken ct)
     {
         context.Response.Headers.CacheControl = "no-store";
-        return TypedResults.Ok(await assemblies.ListAssembliesAsync(context.HasPermission(ViewCosts), ct));
+        return TypedResults.Ok(await assemblies.ListAssembliesAsync(context.HasPermission(ViewCosts), context.HasPermission("Inventory.ViewSerials"), ct));
     }
 
     private static async Task<Ok<AssemblyView>> GetAssemblyAsync(Guid id, HttpContext context, AssemblyService assemblies, CancellationToken ct)

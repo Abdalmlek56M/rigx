@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Partner } from "../expenses/expenses-api.ts";
-import { amountOk, amountText, applySuggestion, editModel, financingPartners, optionalAmountOk, parseAmount, partnerShare } from "./stock-fields.ts";
+import { amountOk, amountText, applySuggestion, editModel, financingPartners, optionalAmountOk, parseAmount, partnerChoices, partnerShare } from "./stock-fields.ts";
 
 const partner = (patch: Partial<Partner>): Partner => ({
   id: "p", name: "P", phone: null, joinDate: "2026-01-01", defaultPercent: 30, basis: "FinancedParts", lossSharingEnabled: false,
@@ -28,6 +28,16 @@ describe("stock fields", () => {
   it("keeps active partners paid by financed parts", () => {
     const list = [partner({ id: "a" }), partner({ id: "b", isActive: false }), partner({ id: "c", basis: "WholeShop" })];
     assert.deepEqual(financingPartners(list).map((entry) => entry.id), ["a"]);
+  });
+
+  it("lists every saved partner, the pickable ones first, and says why the others cannot be picked", () => {
+    const list = [partner({ id: "off", isActive: false }), partner({ id: "store", basis: "WholeShop" }), partner({ id: "ok" })];
+    assert.deepEqual(partnerChoices(list).map((choice) => [choice.partner.id, choice.blocked]), [["ok", null], ["off", "inactive"], ["store", "wholeShop"]]);
+  });
+
+  it("keeps the unit's saved partner pickable", () => {
+    const list = [partner({ id: "off", isActive: false })];
+    assert.deepEqual(partnerChoices(list, "off").map((choice) => choice.blocked), [null]);
   });
 
   it("uses the unit percent before the partner default", () => {

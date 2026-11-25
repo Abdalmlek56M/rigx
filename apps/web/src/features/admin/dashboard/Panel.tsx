@@ -19,7 +19,7 @@ export function Panel({ title, action, note, children }: { title: ReactNode; act
 export function PanelTable({ headers, children }: { headers: readonly string[]; children: ReactNode }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
+      <table className="data-table w-full border-collapse text-sm">
         <thead className="text-[13px] text-ink-muted">
           <tr>{headers.map((header, index) => <th key={index} scope="col" className="whitespace-nowrap px-2 py-2 text-start font-bold">{header}</th>)}</tr>
         </thead>

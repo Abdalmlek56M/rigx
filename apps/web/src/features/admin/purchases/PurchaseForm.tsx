@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Category } from "../categories/categories-api";
-import type { Partner } from "../expenses/expenses-api";
+import type { PartnerSource } from "../stock/use-partners";
 import { Button } from "../kit/Button";
 import { FormMessage } from "../kit/PageHeader";
 import { useSubmit } from "../kit/use-submit";
@@ -28,8 +28,8 @@ export interface PurchaseLookups {
   brands: readonly Brand[];
   /** "نسخ لقطعة جديدة": the inventory item a new purchase starts from (`?copyFrom=` on the new-purchase page). */
   copySource: StockItem | null;
-  /** Active financing partners; `null` when the staff member cannot read partners. */
-  partners: readonly Partner[] | null;
+  /** The partners a line can be financed by; `null` when the staff member cannot read partners. */
+  partners: PartnerSource | null;
   warrantyLabels: readonly string[] | null;
   governorates: readonly Governorate[];
 }

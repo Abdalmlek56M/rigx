@@ -3,7 +3,7 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>Admin and storefront views of a build. Parts are listed in a stable order (by unit id, as the stock claim does).</summary>
 internal static class AssemblyMapping
 {
-    public static AssemblyView ToView(Assembly assembly, bool includeCosts)
+    public static AssemblyView ToView(Assembly assembly, bool includeCosts, bool includeSerials = false)
     {
         var units = assembly.Units.OrderBy(link => link.UnitId).Select(link =>
         {
@@ -13,7 +13,8 @@ internal static class AssemblyMapping
                 includeCosts ? link.Unit.AcquisitionCost : null, includeCosts ? AssemblyEditing.AlonePrice(item) : null,
                 link.PartPrice, label, months, link.WarrantyLabel is not null,
                 includeCosts ? link.Unit.PartnerPercentOverride : null, includeCosts ? link.Unit.PartnerId : null, link.AllocationPercent,
-                includeCosts ? decimal.Round(assembly.SalePrice * link.AllocationPercent / 100m, 2) : null);
+                includeCosts ? decimal.Round(assembly.SalePrice * link.AllocationPercent / 100m, 2) : null,
+                includeSerials ? link.Unit.SerialNumber : null);
         }).ToList();
         return new AssemblyView(assembly.Id, assembly.Code, assembly.Name, assembly.PublicTitleAr, assembly.PublicTitleEn,
             assembly.SalePrice, assembly.Status, assembly.Usage, assembly.SellMode, assembly.WarrantyLabel, assembly.WarrantyMonths,

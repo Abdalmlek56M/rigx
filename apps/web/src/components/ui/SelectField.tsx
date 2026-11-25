@@ -8,7 +8,7 @@ interface SelectFieldProps<T extends string> {
   name: string;
   value: T;
   onChange: (value: T) => void;
-  options: readonly { value: T; label: string }[];
+  options: readonly { value: T; label: string; disabled?: boolean }[];
   error?: string | null;
   disabled?: boolean;
   /** Extra classes on the label text (`md:sr-only` when a header row above names the column). */
@@ -34,7 +34,7 @@ export function SelectField<T extends string>({ label, labelEnd, name, value, on
         className={fieldClass}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
+          <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>
         ))}
       </select>
       {error ? (

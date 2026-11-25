@@ -62,6 +62,8 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         e.Property(x => x.IsHidden).HasColumnName("is_hidden");
         e.Property(x => x.InternalNote).HasColumnName("internal_note").HasMaxLength(1000);
         Document(e.Property(x => x.Specs).HasColumnName("specs"), "'{}'::jsonb");
+        e.Property(x => x.Description).HasColumnName("description").HasMaxLength(StockItemRules.MaxDescriptionLength);
+        e.Property(x => x.DescriptionEn).HasColumnName("description_en").HasMaxLength(StockItemRules.MaxDescriptionLength);
         Document(e.Property(x => x.Photos).HasColumnName("photos"), "'[]'::jsonb");
         e.Property(x => x.PhotoCount).HasColumnName("photo_count").HasComputedColumnSql("jsonb_array_length(photos)", stored: true);
         e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone");

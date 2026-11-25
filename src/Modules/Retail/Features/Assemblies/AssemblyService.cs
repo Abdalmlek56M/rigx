@@ -10,12 +10,13 @@ namespace HardwareStore.Modules.Retail;
 /// </summary>
 public sealed class AssemblyService(IDbContextFactory<RetailDbContext> contextFactory, TimeProvider timeProvider)
 {
-    public async Task<IReadOnlyList<AssemblyView>> ListAssembliesAsync(bool includeCosts = true, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AssemblyView>> ListAssembliesAsync(bool includeCosts = true, bool includeSerials = false,
+        CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var rows = await db.Assemblies.AsNoTracking().WithUnits()
             .OrderByDescending(a => a.UpdatedAtUtc).ToListAsync(cancellationToken);
-        return rows.Select(assembly => AssemblyMapping.ToView(assembly, includeCosts)).ToList();
+        return rows.Select(assembly => AssemblyMapping.ToView(assembly, includeCosts, includeSerials)).ToList();
     }
 
     public async Task<AssemblyView> GetAsync(Guid id, bool includeCosts, CancellationToken cancellationToken = default)

@@ -17515,6 +17515,12 @@
               "number"
             ],
             "format": "double"
+          },
+          "serialNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -29966,6 +29972,18 @@
           "excludedFromStockValue": {
             "type": "boolean",
             "default": false
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "descriptionEn": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -30169,6 +30187,18 @@
           "excludedFromStockValue": {
             "type": "boolean",
             "default": false
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "descriptionEn": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -30570,6 +30600,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "descriptionEn": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

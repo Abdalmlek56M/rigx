@@ -5,7 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
 import { Pager } from "../kit/Pager";
@@ -47,7 +48,8 @@ export function Customers() {
       key: "lastOrder",
       header: t("columns.lastOrder"),
       cell: (row) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{row.lastOrderAtUtc ? formatDateTime(row.lastOrderAtUtc, locale) : t("never")}</span>
-    }
+    },
+    actionsColumn((row) => <RowAction kind="view" subject={row.customer.name} href={`/admin/customers/${row.customer.id}`} />)
   ];
 
   return (

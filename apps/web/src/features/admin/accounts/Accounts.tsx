@@ -8,7 +8,7 @@ import { useLoad } from "@/lib/hooks/use-load";
 import { formatEgp } from "@/lib/format";
 import { Button, IconButton } from "../kit/Button";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
 import { PageHeader } from "../kit/PageHeader";
 import { SectionCard } from "../kit/SectionCard";
 import { useToast } from "../kit/Toast";
@@ -54,16 +54,13 @@ export function Accounts() {
       key: "status", header: t("status"),
       cell: (account) => <StatusBadge tone={account.isActive ? "success" : "neutral"}>{t(account.isActive ? "on" : "off")}</StatusBadge>
     },
-    {
-      key: "actions", header: "",
-      cell: (account: MoneyAccount) => (
-        <span className="flex items-center justify-end gap-1">
-          <IconButton icon={DocumentIcon} size="sm" label={t("statement.open", { name: account.name })} onClick={() => setStatementOf(account)} />
-          {canManage ? <IconButton icon={PencilIcon} size="sm" label={t("edit", { name: account.name })} onClick={() => setEditing(account)} /> : null}
-          {canManage ? <IconButton icon={TrashIcon} size="sm" variant="dangerGhost" label={t("delete", { name: account.name })} onClick={() => setDeleting(account)} /> : null}
-        </span>
-      )
-    }
+    actionsColumn((account) => (
+      <span className="flex items-center gap-1">
+        <IconButton icon={DocumentIcon} size="sm" label={t("statement.open", { name: account.name })} onClick={() => setStatementOf(account)} />
+        {canManage ? <IconButton icon={PencilIcon} size="sm" label={t("edit", { name: account.name })} onClick={() => setEditing(account)} /> : null}
+        {canManage ? <IconButton icon={TrashIcon} size="sm" variant="dangerGhost" label={t("delete", { name: account.name })} onClick={() => setDeleting(account)} /> : null}
+      </span>
+    ))
   ];
 
   const accounts = state.status === "ready" ? state.data : [];

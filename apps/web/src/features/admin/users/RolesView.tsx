@@ -3,7 +3,8 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar } from "../kit/FilterBar";
 import { useReveal } from "../kit/use-reveal";
 import { RoleEditor } from "./RoleEditor";
@@ -37,7 +38,8 @@ export function RolesView({ values, set }: { values: UserValues; set: UserSet })
     },
     { key: "code", header: t("columns.code"), cell: (role) => (builtInRole(role.code) ? null : <span dir="ltr" className="font-mono text-xs">{role.code}</span>) },
     { key: "users", header: t("columns.users"), align: "end", cell: (role) => <span className="font-bold">{role.userCount}</span> },
-    { key: "permissions", header: t("columns.permissions"), align: "end", cell: (role) => <span className="font-bold">{role.permissionCodes.length}</span> }
+    { key: "permissions", header: t("columns.permissions"), align: "end", cell: (role) => <span className="font-bold">{role.permissionCodes.length}</span> },
+    actionsColumn((role) => <RowAction kind="view" subject={label(role)} current={values.role === role.id} onClick={() => set({ role: role.id })} />)
   ];
 
   return (

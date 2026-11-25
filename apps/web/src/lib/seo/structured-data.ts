@@ -16,6 +16,8 @@ export interface ProductData {
   sku?: string;
   category?: string;
   brand?: string;
+  /** The item's own description, when the owner wrote one. */
+  description?: string;
   organizationId: string;
   /** The returns policy page; when given, the offer carries the store's return window and fees. */
   returnPolicyUrl?: string;
@@ -41,6 +43,7 @@ export function productJsonLd(data: ProductData): JsonLd {
     "@type": "Product",
     name: data.name,
     url: data.url,
+    ...(data.description ? { description: data.description } : {}),
     ...(data.images.length > 0 ? { image: data.images } : {}),
     ...(data.sku ? { sku: data.sku } : {}),
     ...(data.category ? { category: data.category } : {}),

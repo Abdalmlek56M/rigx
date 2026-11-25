@@ -10,7 +10,7 @@ import type { Order, OrderUnit } from "./orders-api";
 import { BoxIcon, CartIcon, ClockIcon } from "@/components/ui/icons";
 import { SectionCard } from "../kit/SectionCard";
 
-const TABLE = "w-full min-w-[600px] border-collapse text-sm";
+const TABLE = "data-table w-full min-w-[600px] border-collapse text-sm";
 const TH = "whitespace-nowrap px-2 py-2 text-start text-[13px] font-bold text-ink-muted";
 const TD = "px-2 py-2 align-middle";
 

@@ -6,11 +6,11 @@ import { Link } from "@/i18n/navigation";
 import { useLoad } from "@/lib/hooks/use-load";
 import { fetchBrands } from "../brands/brands-api";
 import { fetchCategories } from "../categories/categories-api";
-import { fetchPartners } from "../expenses/expenses-api";
 import { fetchWarrantyLabels } from "../inventory/inventory-api";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { PhotoGallery } from "../stock/PhotoGallery";
+import { usePartners } from "../stock/use-partners";
 import { usePermissions } from "../use-permissions";
 import { BuildActions } from "./BuildActions";
 import { BuildAllocations } from "./BuildAllocations";
@@ -29,18 +29,17 @@ import { buttonClass, buttonIconSize } from "../kit/Button";
 export function BuildEditor({ id }: { id: string }) {
   const t = useTranslations("admin.builds");
   const { has } = usePermissions();
-  const canSeePartners = has("Finance.ViewReports");
+  const partners = usePartners(has("Finance.ViewReports"));
   const canReadWarranties = has("System.StoreSettings");
   const load = useCallback(async () => {
-    const [build, tree, brands, partners, warrantyLabels] = await Promise.all([
+    const [build, tree, brands, warrantyLabels] = await Promise.all([
       fetchBuild(id),
       fetchCategories().catch(() => []),
       fetchBrands().catch(() => []),
-      canSeePartners ? fetchPartners().catch(() => null) : Promise.resolve(null),
       canReadWarranties ? fetchWarrantyLabels().catch(() => null) : Promise.resolve(null)
     ]);
-    return { build, lookups: { tree, brands, partners, warrantyLabels } };
-  }, [id, canSeePartners, canReadWarranties]);
+    return { build, lookups: { tree, brands, warrantyLabels } };
+  }, [id, canReadWarranties]);
   const { state, reload } = useLoad(load);
   // The build as the last write returned it; a 409 drops it and reads the build again.
   const [changed, setChanged] = useState<Build | null>(null);
@@ -70,6 +69,7 @@ export function BuildEditor({ id }: { id: string }) {
   const build = changed ?? state.data.build;
   const canEdit = has("Catalog.ManageProducts") && !isLocked(build);
   const action = { build, onChanged: setChanged, onStale: stale };
+  const lookups = { ...state.data.lookups, partners };
   const refresh = async () => setChanged(await fetchBuild(id));
 
   return (
@@ -99,8 +99,8 @@ export function BuildEditor({ id }: { id: string }) {
           />
         </div>
       </div>
-      <BuildParts {...action} canEdit={canEdit} lookups={state.data.lookups} />
-      <BuildPlannedParts key={`planned-${build.rowVersion}`} {...action} canEdit={canEdit} lookups={state.data.lookups} />
+      <BuildParts {...action} canEdit={canEdit} lookups={lookups} />
+      <BuildPlannedParts key={`planned-${build.rowVersion}`} {...action} canEdit={canEdit} lookups={lookups} />
       <BuildAllocations key={build.rowVersion} {...action} canEdit={canEdit} />
     </>
   );

@@ -142,6 +142,9 @@ export interface StockItemForm {
   excludedFromStockValue: boolean;
   isHidden: boolean;
   internalNote: string;
+  /** The text of the item's store page, in Arabic and in English. */
+  description: string;
+  descriptionEn: string;
   specs: Record<string, string>;
 }
 
@@ -160,6 +163,8 @@ export function toItemForm(item: StockItem): StockItemForm {
     excludedFromStockValue: item.excludedFromStockValue === true,
     isHidden: item.isHidden,
     internalNote: item.internalNote ?? "",
+    description: item.description ?? "",
+    descriptionEn: item.descriptionEn ?? "",
     specs: { ...item.specs }
   };
 }
@@ -194,6 +199,8 @@ export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItem
     excludedFromStockValue: form.excludedFromStockValue,
     isHidden: form.isHidden,
     internalNote: form.internalNote.trim() || null,
+    description: form.description.trim() || null,
+    descriptionEn: form.descriptionEn.trim() || null,
     specs: form.specs,
     rowVersion: item.rowVersion
   };

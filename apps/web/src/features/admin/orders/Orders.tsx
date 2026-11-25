@@ -9,7 +9,8 @@ import { Button } from "../kit/Button";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { usePermissions } from "../use-permissions";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -56,13 +57,17 @@ export function Orders() {
     {
       key: "order",
       header: t("columns.order"),
+      // The date sits under the number, so the row's status columns and buttons fit without scrolling sideways.
       cell: (order) => (
-        <button
-          type="button" dir="ltr" aria-current={values.id === order.id ? "true" : undefined} onClick={() => set({ id: order.id })}
-          className={`min-h-8 whitespace-nowrap font-mono text-[13px] font-bold ${values.id === order.id ? "text-orange-text" : ""}`}
-        >
-          {order.reference}
-        </button>
+        <span className="flex flex-col items-start gap-0.5">
+          <button
+            type="button" dir="ltr" aria-current={values.id === order.id ? "true" : undefined} onClick={() => set({ id: order.id })}
+            className={`min-h-8 whitespace-nowrap font-mono text-[13px] font-bold ${values.id === order.id ? "text-orange-text" : ""}`}
+          >
+            {order.reference}
+          </button>
+          <span dir="ltr" className="whitespace-nowrap font-mono text-xs text-ink-muted">{formatDateTime(order.createdAtUtc, locale)}</span>
+        </span>
       )
     },
     {
@@ -71,10 +76,10 @@ export function Orders() {
       cell: (order) => (
         <span className="flex flex-col items-start gap-0.5">
           <span className="flex flex-wrap items-center gap-1.5">
-            <span>{order.customerName}</span>
+            <span className="whitespace-nowrap">{order.customerName}</span>
             {order.isBlacklisted ? <StatusBadge tone="danger">{t("blacklisted")}</StatusBadge> : null}
           </span>
-          <span className="text-xs text-ink-muted">{t(`channels.${order.channel === "Store" ? "Store" : "Online"}`)}</span>
+          <span className="whitespace-nowrap text-xs text-ink-muted">{t(`channels.${order.channel === "Store" ? "Store" : "Online"}`)}</span>
         </span>
       )
     },
@@ -85,7 +90,7 @@ export function Orders() {
         const { first, more } = orderContent(order);
         return (
           <span className="flex items-center gap-1.5">
-            <span dir="auto" className="max-w-48 truncate [unicode-bidi:isolate]">{first}</span>
+            <span dir="auto" className="max-w-40 truncate [unicode-bidi:isolate]">{first}</span>
             {more > 0 ? <span dir="ltr" className="text-xs text-ink-muted">{t("moreItems", { count: more })}</span> : null}
           </span>
         );
@@ -95,7 +100,7 @@ export function Orders() {
     { key: "status", header: t("columns.status"), cell: (order) => <OrderStatusBadge status={order.status} /> },
     { key: "payment", header: t("columns.payment"), cell: (order) => <PaymentStatusBadge status={order.paymentStatus} /> },
     { key: "reservation", header: t("columns.reservation"), cell: (order) => <ReservationCell order={order} /> },
-    { key: "date", header: t("columns.date"), cell: (order) => <span dir="ltr" className="whitespace-nowrap font-mono text-xs">{formatDateTime(order.createdAtUtc, locale)}</span> }
+    actionsColumn((order) => <RowAction kind="view" subject={order.reference} current={values.id === order.id} onClick={() => set({ id: order.id })} />)
   ];
 
   return (

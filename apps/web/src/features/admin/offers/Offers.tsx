@@ -5,7 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatDate } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { cairoToday } from "../dashboard/dashboard-rules";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -62,7 +63,10 @@ export function Offers() {
       key: "period", header: t("columns.period"),
       cell: (offer) => <span className="whitespace-nowrap text-xs">{formatDate(offer.startsAtUtc, locale)}{offer.endsAtUtc ? ` – ${formatDate(offer.endsAtUtc, locale)}` : ""}</span>
     },
-    { key: "status", header: t("columns.status"), cell: (offer) => <OfferStatusBadge status={offer.status} /> }
+    { key: "status", header: t("columns.status"), cell: (offer) => <OfferStatusBadge status={offer.status} /> },
+    actionsColumn((offer) => (
+      <RowAction kind="edit" subject={offer.titleAr} current={offer.id === activeId} onClick={() => { setCreating(false); set({ id: offer.id }); }} />
+    ))
   ];
 
   return (

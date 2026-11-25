@@ -68,7 +68,8 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var rule = await RuleAsync(cancellationToken);
         return new StoreItemDetail(item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.BrandId, item.WarrantyLabel, item.WarrantyMonths,
             item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs,
-            rule.ForItem(item.CategoryId, StockItemRules.OwnPriceOptions(item.OffersAlone, item.OffersWithBoard, item.OffersInBuild)).Names);
+            rule.ForItem(item.CategoryId, StockItemRules.OwnPriceOptions(item.OffersAlone, item.OffersWithBoard, item.OffersInBuild)).Names,
+            item.Description, item.DescriptionEn);
     }
 
     /// <summary>The per-category price switches (an item's own choice replaces them, <see cref="PriceOptionRule.ForItem"/>) (all on when no source is wired, as in unit tests).</summary>

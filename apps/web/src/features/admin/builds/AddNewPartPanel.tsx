@@ -18,7 +18,7 @@ import { BrandSelect } from "../stock/BrandSelect";
 import { CategorySelect } from "../stock/CategorySelect";
 import { SpecFields } from "../stock/SpecFields";
 import { PartnerFields } from "../stock/PartnerFields";
-import { applySuggestion, editModel, financingPartners } from "../stock/stock-fields";
+import { applySuggestion, editModel } from "../stock/stock-fields";
 import { WarrantyField } from "../stock/WarrantyField";
 import type { BuildLookups } from "./BuildParts";
 import { addNewPart } from "./builds-api";
@@ -90,14 +90,12 @@ export function AddNewPartPanel({ lookups, onClose, ...action }: BuildActionProp
         <TextField label={lines("price")} name="newPartPrice" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />
         {prices.withBoard ? <TextField label={lines("withBoardExtra")} name="newPartWithBoard" type="number" ltr value={form.withBoardExtra} onChange={(withBoardExtra) => set({ withBoardExtra })} error={error("withBoardExtra")} /> : null}
         {prices.alone ? <TextField label={lines("aloneExtra")} name="newPartAlone" type="number" ltr value={form.aloneExtra} onChange={(aloneExtra) => set({ aloneExtra })} error={error("aloneExtra")} /> : null}
-        {lookups.partners ? (
-          <PartnerFields
-            partners={financingPartners(lookups.partners)} partnerId={form.partnerId} percent={form.partnerPercent} namePrefix="newPartPartner"
-            onChange={(patch) => set({ ...(patch.partnerId !== undefined ? { partnerId: patch.partnerId } : {}), ...(patch.percent !== undefined ? { partnerPercent: patch.percent } : {}) })}
-            errors={{ partnerId: error("partnerId"), percent: error("partnerPercentOverride") }}
-          />
-        ) : null}
         <WarrantyField name="newPartWarranty" value={form.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={lookups.warrantyLabels} error={error("warrantyLabel")} />
+        <PartnerFields
+          source={lookups.partners} partnerId={form.partnerId} percent={form.partnerPercent} namePrefix="newPartPartner"
+          onChange={(patch) => set({ ...(patch.partnerId !== undefined ? { partnerId: patch.partnerId } : {}), ...(patch.percent !== undefined ? { partnerPercent: patch.percent } : {}) })}
+          errors={{ partnerId: error("partnerId"), percent: error("partnerPercentOverride") }}
+        />
       </div>
       <SpecFields categoryId={form.categoryId} values={form.specs} onChange={setSpecs} namePrefix="newPartSpec" error={error("specs")} />
       <div className="flex flex-wrap gap-x-6">

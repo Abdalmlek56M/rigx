@@ -52,6 +52,8 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         StockItemRules.ValidatePriceOptions(request.PriceOptions);
         var specs = StockItemRules.CleanSpecs(request.Specs);
         var note = StockItemRules.CleanNote(request.InternalNote);
+        var description = StockItemRules.CleanDescription(request.Description, "description");
+        var descriptionEn = StockItemRules.CleanDescription(request.DescriptionEn, "descriptionEn");
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var item = await db.StockItems.Include(row => row.Units)
             .SingleOrDefaultAsync(row => row.Id == id, cancellationToken) ?? throw ItemNotFound();
@@ -75,6 +77,8 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         item.IsHidden = request.IsHidden;
         item.InternalNote = note;
         item.Specs = specs;
+        item.Description = description;
+        item.DescriptionEn = descriptionEn;
         foreach (var unit in item.Units.Where(unit => unit.ProductId != request.ProductId))
         {
             unit.ProductId = request.ProductId;

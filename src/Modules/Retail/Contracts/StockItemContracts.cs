@@ -14,13 +14,15 @@ public sealed record StockItemAdminView(Guid Id, string Code, string Condition, 
     decimal Price, decimal? WithBoardExtra, decimal? AloneExtra, StockItemPrices Prices, string? WarrantyLabel, int? WarrantyMonths,
     bool HasBox, bool IsHidden, bool IsPublished, string? InternalNote, IReadOnlyDictionary<string, string> Specs,
     IReadOnlyList<StockItemPhoto> Photos, int AvailableCount, int DaysInStock, DateTimeOffset CreatedAtUtc, long RowVersion,
-    IReadOnlyList<StockUnitView> Units, ItemPriceOptions? PriceOptions = null, bool ExcludedFromStockValue = false);
+    IReadOnlyList<StockUnitView> Units, ItemPriceOptions? PriceOptions = null, bool ExcludedFromStockValue = false,
+    string? Description = null, string? DescriptionEn = null);
 public sealed record StockItemQuery(string? Search = null, Guid? CategoryId = null, string? Condition = null, bool? Hidden = null,
     bool? InStock = null, int Page = 1, int PageSize = 50);
 /// <summary>Warranty is resolved from the settings list by the caller before it reaches Retail.</summary>
 public sealed record StockItemUpdate(string? ModelName, Guid? CategoryId, Guid? BrandId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,
     decimal? AloneExtra, string? WarrantyLabel, int? WarrantyMonths, bool HasBox, bool IsHidden, string? InternalNote,
-    IReadOnlyDictionary<string, string>? Specs, long RowVersion, ItemPriceOptions? PriceOptions = null, bool ExcludedFromStockValue = false);
+    IReadOnlyDictionary<string, string>? Specs, long RowVersion, ItemPriceOptions? PriceOptions = null, bool ExcludedFromStockValue = false,
+    string? Description = null, string? DescriptionEn = null);
 public sealed record StockVisibilityRequest(IReadOnlyList<Guid> Ids, bool Hidden);
 
 // Storefront (public). Never cost, serial, partner, internal note, or hidden items.
@@ -30,7 +32,7 @@ public sealed record StoreItemCard(string Code, string Slug, string ModelName, s
 public sealed record StoreItemDetail(string Code, string Slug, string ModelName, string Condition, Guid? CategoryId, Guid? BrandId, string? WarrantyLabel,
     int? WarrantyMonths, bool HasBox, StockItemPrices Prices, int Available, IReadOnlyList<StockItemPhoto> Photos,
     IReadOnlyDictionary<string, string> Specs,
-    IReadOnlyList<string> PriceOptions);
+    IReadOnlyList<string> PriceOptions, string? Description = null, string? DescriptionEn = null);
 /// <summary>
 /// <paramref name="CategoryIds"/> is the chosen category plus its descendants (resolved from Catalog by the caller).
 /// <paramref name="Specs"/> are exact spec values an item must all have (spelled as stored); <paramref name="BrandId"/> is a Catalog brand.

@@ -19,6 +19,13 @@ export interface Column<T> {
   width?: string;
   /** On a phone this value takes the whole card width (long names). */
   phoneFull?: boolean;
+  /** The row's buttons: they stay in view at the end edge when a wide table scrolls sideways. */
+  pinned?: boolean;
+}
+
+/** The last column of a list: the row's buttons, under the same title everywhere. */
+export function actionsColumn<T>(cell: (row: T) => ReactNode): Column<T> {
+  return { key: "actions", header: "", cell, pinned: true, phoneFull: true };
 }
 
 interface DataTableProps<T> {
@@ -45,6 +52,9 @@ function SortMark({ direction }: { direction: SortState["direction"] | null }) {
   );
 }
 
+const PINNED_HEAD = " md:sticky md:end-0 md:bg-paper";
+const PINNED_CELL = " md:sticky md:end-0 md:bg-surface md:border-t md:border-line";
+
 // On a phone each row becomes a card: the column names sit above the values (`data-label`), the header row is hidden and empty cells vanish.
 const PHONE_ROW = "max-md:mb-2 max-md:grid max-md:grid-cols-2 max-md:gap-x-3 max-md:gap-y-2.5 max-md:rounded-card max-md:border max-md:border-line max-md:bg-surface max-md:p-3";
 const PHONE_CELL = "max-md:flex max-md:min-w-0 max-md:flex-col max-md:items-start max-md:gap-0.5 max-md:p-0 max-md:text-start max-md:empty:hidden max-md:before:text-xs max-md:before:text-ink-muted max-md:before:content-[attr(data-label)]";
@@ -54,6 +64,7 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
   const t = useTranslations("admin.kit");
   const cellAlign = (column: Column<T>) => (column.align === "end" ? "text-end" : "text-start");
   const fixed = columns.some((column) => column.width);
+  const header = (column: Column<T>) => column.header || (column.pinned ? t("rows.actions") : "");
 
   let body: ReactNode;
   if (state.status === "loading") {
@@ -87,25 +98,25 @@ export function DataTable<T>({ label, columns, state, onRetry, rowKey, empty, so
   } else {
     body = state.data.map((row) => (
       <tr key={rowKey(row)} className={`border-t border-line max-md:border-t ${PHONE_ROW}`}>
-        {columns.map((column) => <td key={column.key} data-label={column.header} className={`px-3 py-[var(--row-py,0.625rem)] align-middle ${cellAlign(column)} ${PHONE_CELL}${column.phoneFull ? " max-md:col-span-2" : ""}`}>{column.cell(row)}</td>)}
+        {columns.map((column) => <td key={column.key} data-label={header(column)} className={`px-3 py-[var(--row-py,0.625rem)] align-middle ${cellAlign(column)} ${PHONE_CELL}${column.phoneFull ? " max-md:col-span-2" : ""}${column.pinned ? PINNED_CELL : ""}`}>{column.cell(row)}</td>)}
       </tr>
     ));
   }
 
   return (
     <div className="overflow-x-auto rounded-card border border-line bg-surface max-md:overflow-visible max-md:border-0 max-md:bg-transparent">
-      <table aria-label={label} aria-busy={state.status === "loading"} className={`w-full border-collapse text-sm max-md:block ${fixed ? "table-fixed" : ""}`}>
+      <table aria-label={label} aria-busy={state.status === "loading"} className={`data-table w-full border-collapse text-sm max-md:block ${fixed ? "table-fixed" : ""}`}>
         {fixed ? <colgroup>{columns.map((column) => <col key={column.key} style={column.width ? { width: column.width } : undefined} />)}</colgroup> : null}
         <thead className="border-b border-line bg-paper text-[13px] text-ink max-md:hidden">
           <tr>
             {columns.map((column) => (
-              <th key={column.key} scope="col" aria-sort={column.sortKey ? ariaSort(sort, column.sortKey) : undefined} className={`whitespace-nowrap px-3 py-[var(--row-py,0.625rem)] font-bold ${cellAlign(column)}`}>
+              <th key={column.key} scope="col" aria-sort={column.sortKey ? ariaSort(sort, column.sortKey) : undefined} className={`whitespace-nowrap px-3 py-[var(--row-py,0.625rem)] font-bold ${cellAlign(column)}${column.pinned ? PINNED_HEAD : ""}`}>
                 {column.sortKey && onSort ? (
                   <button type="button" onClick={() => onSort(nextSort(sort, column.sortKey as string))} className="group inline-flex min-h-8 items-center gap-1 font-bold hover:text-ink">
-                    {column.header}
+                    {header(column)}
                     <SortMark direction={sort?.key === column.sortKey ? sort.direction : null} />
                   </button>
-                ) : column.header}
+                ) : header(column)}
               </th>
             ))}
           </tr>

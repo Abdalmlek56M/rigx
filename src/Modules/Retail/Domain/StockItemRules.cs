@@ -27,6 +27,7 @@ public static class StockItemRules
     public const int MaxPhotos = 12;
     public const int MaxSpecs = 40;
     public const int MaxInternalNoteLength = 1000;
+    public const int MaxDescriptionLength = 4000;
     public const int MaxQuantity = 1000;
     public const int MaxSerialLength = 128;
 
@@ -94,6 +95,17 @@ public static class StockItemRules
         if (clean?.Length > MaxInternalNoteLength) throw new RetailException(400, "The internal note is too long.");
         return clean;
     }
+
+    /// <summary>A store description: optional, trimmed, one kind of line break; <paramref name="field"/> names it in the error.</summary>
+    public static string? CleanDescription(string? text, string field)
+    {
+        var clean = string.IsNullOrWhiteSpace(text) ? null : text.ReplaceLineEndings("\n").Trim();
+        if (clean?.Length > MaxDescriptionLength)
+            throw new RetailException(400, DescriptionTooLong, new Dictionary<string, string[]> { [field] = [DescriptionTooLong] });
+        return clean;
+    }
+
+    private const string DescriptionTooLong = "The description is too long.";
 
     public static string CleanModelName(string? modelName)
     {

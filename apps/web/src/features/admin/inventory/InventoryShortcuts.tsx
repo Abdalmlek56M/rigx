@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { BanIcon, CartIcon, ExternalIcon, EyeIcon, PencilIcon } from "@/components/ui/icons";
+import { BanIcon, CartIcon, DocumentIcon, ExternalIcon, EyeIcon, PencilIcon } from "@/components/ui/icons";
 import { Link } from "@/i18n/navigation";
 import { buttonClass, buttonIconSize, IconButton } from "../kit/Button";
 import { usePermissions } from "../use-permissions";
@@ -19,7 +19,7 @@ interface ShortcutsProps {
   busy: boolean;
 }
 
-/** The quick actions of an item row: edit in a side sheet, hide or show in the store, add to the till, preview in the store. Each one follows the person's permissions. */
+/** The quick actions of an item row: open its page, edit in a side sheet, hide or show in the store, add to the till, preview in the store. Each one follows the person's permissions. */
 export function InventoryShortcuts({ item, onQuickEdit, onToggleHidden, busy }: ShortcutsProps) {
   const t = useTranslations("admin.inventory.shortcuts");
   const { has } = usePermissions();
@@ -29,6 +29,9 @@ export function InventoryShortcuts({ item, onQuickEdit, onToggleHidden, busy }: 
   const previewable = item.isPublished && !item.isHidden;
   return (
     <span className="flex items-center gap-1">
+      <Link href={`/admin/inventory/${item.id}`} aria-label={t("open")} data-tip={t("open")} className={linkClass}>
+        <DocumentIcon size={size} />
+      </Link>
       {canAdjust ? <IconButton icon={PencilIcon} size="sm" label={t("edit")} className={TOUCH} onClick={() => onQuickEdit(item)} /> : null}
       {canAdjust ? (
         <IconButton

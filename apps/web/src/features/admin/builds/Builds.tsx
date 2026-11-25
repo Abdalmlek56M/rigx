@@ -6,7 +6,8 @@ import { Link } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { parseUsage } from "@/lib/usage";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -14,7 +15,7 @@ import { usePermissions } from "../use-permissions";
 import { BuildStatusBadge } from "./BuildStatusBadge";
 import { NewBuildDialog } from "./NewBuildDialog";
 import { fetchBuilds, type Build } from "./builds-api";
-import { BUILD_STATUSES, filterBuilds } from "./build-rules";
+import { BUILD_STATUSES, filterBuilds, isLocked } from "./build-rules";
 import { PlusIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
@@ -51,7 +52,8 @@ export function Builds() {
     { key: "parts", header: t("columns.parts"), align: "end", cell: (build) => <span>{build.units.length}</span> },
     { key: "copies", header: t("columns.copies"), align: "end", cell: (build) => <span>{build.copies}</span> },
     { key: "price", header: t("columns.price"), align: "end", cell: (build) => <span className="whitespace-nowrap font-bold">{formatEgp(build.salePrice, locale)}</span> },
-    { key: "partsTotal", header: t("columns.partsTotal"), align: "end", cell: (build) => <span className="whitespace-nowrap">{formatEgp(build.partsTotal, locale)}</span> }
+    { key: "partsTotal", header: t("columns.partsTotal"), align: "end", cell: (build) => <span className="whitespace-nowrap">{formatEgp(build.partsTotal, locale)}</span> },
+    actionsColumn((build) => <RowAction kind={isLocked(build) ? "view" : "edit"} subject={build.code} href={`/admin/builds/${build.id}`} />)
   ];
 
   return (

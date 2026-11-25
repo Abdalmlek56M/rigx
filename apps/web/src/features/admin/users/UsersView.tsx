@@ -4,17 +4,18 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { Pager } from "../kit/Pager";
+import { RowAction } from "../kit/RowAction";
 import { pageNumber } from "../kit/url-filters";
 import { InviteUserDialog } from "./InviteUserDialog";
 import { useBuiltInRoleLabel } from "./use-role-label";
 import { UserStatusBadge } from "./UserStatusBadge";
 import { ACTIVE_FILTERS, activeFilter, roleNames, type UserSet, type UserValues } from "./user-rules.ts";
 import { fetchRoles, fetchUsers, type StaffUser } from "./users-api";
-import { PencilIcon, PlusIcon } from "@/components/ui/icons";
-import { Button, buttonClass, buttonIconSize } from "../kit/Button";
+import { PlusIcon } from "@/components/ui/icons";
+import { Button } from "../kit/Button";
 
 /** The staff list with search, the active filter and paging; each person opens on their own profile page. */
 export function UsersView({ values, set }: { values: UserValues; set: UserSet }) {
@@ -39,9 +40,9 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
         </Link>
       )
     },
-    { key: "email", header: t("columns.email"), width: "32%", cell: (user) => <span dir="ltr" className="break-all font-mono text-xs">{user.email}</span> },
+    { key: "email", header: t("columns.email"), width: "28%", cell: (user) => <span dir="ltr" className="break-all font-mono text-xs">{user.email}</span> },
     {
-      key: "roles", header: t("columns.roles"), width: "26%", cell: (user) => {
+      key: "roles", header: t("columns.roles"), width: "24%", cell: (user) => {
         const names = roleNames(user, roleList, builtIn);
         return names.length === 0 ? <span className="text-ink-muted">{t("noRoles")}</span> : <span className="[overflow-wrap:anywhere]">{names.join("، ")}</span>;
       }
@@ -51,16 +52,7 @@ export function UsersView({ values, set }: { values: UserValues; set: UserSet })
         <UserStatusBadge isActive={user.isActive} />
       )
     },
-    {
-      key: "edit", header: t("edit"), width: "8%", align: "end", cell: (user) => (
-        <Link
-          href={`/admin/users/${user.id}`} aria-label={t("editUser", { name: user.fullName })} data-tip={t("edit")}
-          className={`tip ${buttonClass({ variant: "ghost", size: "sm", iconOnly: true })}`}
-        >
-          <PencilIcon size={buttonIconSize("sm")} />
-        </Link>
-      )
-    }
+    { ...actionsColumn<StaffUser>((user) => <RowAction kind="edit" subject={user.fullName} href={`/admin/users/${user.id}`} />), width: "14%" }
   ];
 
   return (

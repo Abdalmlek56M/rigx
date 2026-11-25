@@ -10,6 +10,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { HelpIcon } from "@/components/ui/icons";
 import { categoryHref } from "@/components/layout/nav-links";
 import { BrandMark } from "@/features/catalog/BrandMark";
+import { metaDescription, productDescription } from "@/features/product/description";
+import { DescriptionCard } from "@/features/product/DescriptionCard";
 import { Gallery } from "@/features/product/Gallery";
 import { ProductInfoBoxes } from "@/features/product/ProductInfoBoxes";
 import { PurchasePanel } from "@/features/product/PurchasePanel";
@@ -49,10 +51,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const condition = parseCondition(item.condition);
   const title = condition ? `${item.modelName} — ${t(condition)}` : item.modelName;
   const photo = item.photos[0];
+  const text = productDescription(item, locale);
+  // Without the owner's text the page keeps the site's own description.
+  const described = text ? { description: metaDescription(text) } : {};
   return {
     title,
+    ...described,
     ...(await pageSeo(locale, productPath(item.slug))),
-    openGraph: { ...openGraphBase(locale), title, url: localizedPath(locale, productPath(item.slug)), ...(photo ? { images: [{ url: mediaUrl(photo.storageKey), alt: item.modelName }] } : {}) }
+    openGraph: { ...openGraphBase(locale), ...described, title, url: localizedPath(locale, productPath(item.slug)), ...(photo ? { images: [{ url: mediaUrl(photo.storageKey), alt: item.modelName }] } : {}) }
   };
 }
 
@@ -78,10 +84,12 @@ export default async function ProductPage({ params }: Props) {
   const brand = item.brandId ? storefront.brands.find((entry) => entry.id === item.brandId) : undefined;
   const soldOut = item.available <= 0;
   const url = absoluteUrl(localizedPath(locale, productPath(item.slug)));
+  const description = productDescription(item, locale);
   const structuredData = [
     productJsonLd({
       name: item.modelName, url, images: item.photos.map((photo) => absoluteUrl(mediaUrl(photo.storageKey))), price: cardPrice(item),
       available: !soldOut, condition, sku: item.code, category: trail.at(-1) ? localizedName(trail.at(-1)!, locale) : undefined, brand: brand?.name,
+      description: description ? metaDescription(description, 5000) : undefined,
       organizationId: organizationId(), returnPolicyUrl: absoluteUrl(localizedPath(locale, "/policies/returns"))
     }),
     breadcrumbJsonLd([
@@ -133,6 +141,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="flex shell flex-col gap-6">
         <ProductInfoBoxes warrantyLabel={item.warrantyLabel} storefront={storefront} />
+        {description ? <DescriptionCard text={description} /> : null}
         <SpecsTable rows={specRows(item.specs, defs, { yes: t("specValue.yes"), no: t("specValue.no") })} />
         {faqs.length > 0 ? (
           <Card title={t("faqs")} icon={HelpIcon} padding="md">

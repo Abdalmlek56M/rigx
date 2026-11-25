@@ -14,6 +14,7 @@ import { BrandSelect } from "../stock/BrandSelect";
 import { CategorySelect } from "../stock/CategorySelect";
 import { SpecFields } from "../stock/SpecFields";
 import { WarrantyField } from "../stock/WarrantyField";
+import { CharCount } from "../kit/CharCount";
 import { updateStockItem, type StockItem } from "./inventory-api";
 import { itemFormValid, itemModes, modesOk, toItemForm, toUpdateRequest, type StockItemForm as Form } from "./inventory-rules";
 import { SaveIcon } from "@/components/ui/icons";
@@ -21,8 +22,10 @@ import { Button } from "../kit/Button";
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 const MODES = ["alone", "withBoard", "inBuild"] as const;
+/** The API's `StockItemRules.MaxDescriptionLength`. */
+const DESCRIPTION_LENGTH = 4000;
 
-/** The item's edit form (model, category, brand, the category's specs, prices, warranty, box, visibility, internal note). Reloads only on a 409, so server field errors stay visible. */
+/** The item's edit form (model, category, brand, the category's specs, prices, warranty, box, visibility, description, internal note). Reloads only on a 409, so server field errors stay visible. */
 export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, showCosts, onSaved, onStale }: {
   item: StockItem;
   tree: readonly Category[];
@@ -69,6 +72,20 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, sho
         <CategorySelect tree={tree} value={form.categoryId} onChange={(categoryId) => set({ categoryId })} error={error("categoryId")} />
         <BrandSelect brands={brands} tree={tree} categoryId={form.categoryId} value={form.brandId} onChange={(brandId) => set({ brandId })} error={error("brandId")} />
         <SpecFields categoryId={form.categoryId} values={form.specs} onChange={setSpecs} namePrefix="spec" error={error("specs")} />
+        <fieldset className="m-0 flex min-w-0 flex-col gap-3 rounded-control border border-line bg-paper p-3">
+          <legend className="px-1 text-[13px] font-bold">{t("description.title")}</legend>
+          <p className="m-0 text-xs text-ink-muted">{t("description.hint")}</p>
+          <TextAreaField
+            label={t("description.ar")} name="description" dir="rtl" rows={5} maxLength={DESCRIPTION_LENGTH} value={form.description}
+            onChange={(description) => set({ description })} error={error("description")}
+            labelEnd={<CharCount length={form.description.length} limit={DESCRIPTION_LENGTH} />}
+          />
+          <TextAreaField
+            label={t("description.en")} name="descriptionEn" dir="ltr" rows={5} maxLength={DESCRIPTION_LENGTH} value={form.descriptionEn}
+            onChange={(descriptionEn) => set({ descriptionEn })} error={error("descriptionEn")}
+            labelEnd={<CharCount length={form.descriptionEn.length} limit={DESCRIPTION_LENGTH} />}
+          />
+        </fieldset>
         <div className="grid items-end gap-3 sm:grid-cols-3">
           <TextField label={t("price")} name="price" type="number" ltr value={form.price} onChange={(price) => set({ price })} error={error("price")} />
           {prices.withBoard ? (

@@ -43,7 +43,8 @@ public sealed record PublicUnitView(Guid? ProductId, Guid? CategoryId, string Na
 /// <summary><paramref name="StandalonePrice"/> is the stock item's price when sold alone (admin only).</summary>
 public sealed record AssemblyUnitView(Guid UnitId, Guid? CategoryId, string Name, string StockItemCode, string Condition,
     decimal? AcquisitionCost, decimal? StandalonePrice, decimal PartPrice, string? WarrantyLabel, int? WarrantyMonths,
-    bool WarrantyOverridden, decimal? PartnerPercentOverride, Guid? PartnerId, decimal AllocationPercent, decimal? AllocatedAmount);
+    bool WarrantyOverridden, decimal? PartnerPercentOverride, Guid? PartnerId, decimal AllocationPercent, decimal? AllocatedAmount,
+    string? SerialNumber = null);
 public sealed record AssemblyView(Guid Id, string Code, string Name, string? PublicTitleAr, string? PublicTitleEn, decimal SalePrice,
     string Status, string? Usage, string SellMode, string? WarrantyLabel, int? WarrantyMonths, int Copies, string? SuitableForAr,
     string? SuitableForEn, IReadOnlyList<StockItemPhoto> Photos, IReadOnlyList<AssemblyUnitView> Units, decimal? ComponentCost,

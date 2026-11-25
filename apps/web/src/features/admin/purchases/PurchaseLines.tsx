@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Brand } from "../brands/brands-api";
 import type { Category } from "../categories/categories-api";
-import type { Partner } from "../expenses/expenses-api";
+import type { PartnerSource } from "../stock/use-partners";
 import { PurchaseLineCard } from "./PurchaseLineCard";
 import { dropPhotoCopy, emptyLine, repeatedSerialLines, type LineForm, type MissingField } from "./purchase-rules";
 import { PlusIcon } from "@/components/ui/icons";
@@ -21,7 +21,7 @@ export function PurchaseLines({ lines, minLines, tree, brands, partners, warrant
   minLines: number;
   tree: readonly Category[];
   brands: readonly Brand[];
-  partners: readonly Partner[] | null;
+  partners: PartnerSource | null;
   warrantyLabels: readonly string[] | null;
   errors: Record<string, string>;
   missing: readonly MissingField[];

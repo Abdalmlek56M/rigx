@@ -6,7 +6,6 @@ import { Link } from "@/i18n/navigation";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { fetchCategories } from "../categories/categories-api";
 import { parentOptions } from "../categories/category-rules";
-import { fetchPartners } from "../expenses/expenses-api";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { DataTable } from "../kit/DataTable";
 import { PageHeader } from "../kit/PageHeader";
@@ -14,6 +13,8 @@ import { Pager } from "../kit/Pager";
 import { useToast } from "../kit/Toast";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
+import { PartnersFailed } from "../stock/PartnersFailed";
+import { loadedPartners, usePartners } from "../stock/use-partners";
 import { usePermissions } from "../use-permissions";
 import { InventoryBuilds } from "./InventoryBuilds";
 import { QuickEditSheet } from "./QuickEditSheet";
@@ -32,22 +33,16 @@ export function Inventory() {
   const { has } = usePermissions();
   const { values, set } = useUrlFilters(FILTERS);
   const page = pageNumber(values.page);
-  const canSeePartners = has("Finance.ViewReports");
+  const partnerSource = usePartners(has("Finance.ViewReports"));
+  const partners = loadedPartners(partnerSource);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [quickEdit, setQuickEdit] = useState<StockItem | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
 
-  const lookups = useLoad(useCallback(async () => {
-    const [tree, partners] = await Promise.all([
-      fetchCategories().catch(() => []),
-      canSeePartners ? fetchPartners().catch(() => []) : Promise.resolve([])
-    ]);
-    return { tree, partners };
-  }, [canSeePartners]));
-  const tree = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.tree : []), [lookups.state]);
-  const partners = useMemo(() => (lookups.state.status === "ready" ? lookups.state.data.partners : []), [lookups.state]);
+  const categories = useLoad(useCallback(() => fetchCategories().catch(() => []), []));
+  const tree = useMemo(() => (categories.state.status === "ready" ? categories.state.data : []), [categories.state]);
 
   const { state, reload } = useLoad(useCallback(() => fetchStockItems({
     search: values.q || undefined,
@@ -146,6 +141,7 @@ export function Inventory() {
           <Button icon={EyeIcon} loading={busy} disabled={picked.length === 0} onClick={() => void setHidden(false)}>{t("bulk.show")}</Button>
         </div>
       ) : null}
+      {partnerSource?.state.status === "error" ? <PartnersFailed onRetry={partnerSource.reload} /> : null}
       <DataTable label={t("title")} columns={columns} state={tableState} onRetry={reload} rowKey={(row) => row.key} empty={t("empty")} />
       {state.status === "ready" ? (
         <Pager info={{ page: state.data.page, pageSize: state.data.pageSize, total: state.data.total }} onPage={(next) => set({ page: String(next) })} />

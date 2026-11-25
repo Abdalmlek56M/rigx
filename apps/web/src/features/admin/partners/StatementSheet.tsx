@@ -33,7 +33,7 @@ export function StatementSheet({ statement }: { statement: Statement }) {
         ))}
       </dl>
       <div className="overflow-x-auto">
-        <table aria-label={t("linesLabel")} className="w-full border-collapse">
+        <table aria-label={t("linesLabel")} className="data-table w-full border-collapse">
           <thead>
             <tr className="border-b border-line text-start text-xs text-ink-muted">
               <th scope="col" className="px-2 py-2 text-start font-bold">{t("columns.date")}</th>

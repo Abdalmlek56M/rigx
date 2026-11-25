@@ -180,7 +180,7 @@ export function PosCart({ cart, below, errors, onChange }: PosCartProps) {
     <FormSection title={t("title")}>
       {cart.length === 0 ? <p className="m-0 text-sm text-ink-muted">{t("empty")}</p> : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] border-collapse text-start">
+          <table className="data-table w-full min-w-[820px] border-collapse text-start">
             <thead>
               <tr className="text-xs text-ink-muted">
                 {COLUMNS.map((column) => <th key={column} scope="col" className="px-2 py-2 text-start font-bold">{t(`columns.${column}`)}</th>)}

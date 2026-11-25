@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { useLoad } from "@/lib/hooks/use-load";
 import { flattenTree } from "../categories/category-rules";
 import { fetchCategories } from "../categories/categories-api";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect } from "../kit/FilterBar";
 import { ErrorPanel, LoadingCard } from "../kit/LoadState";
 import { PageHeader } from "../kit/PageHeader";
@@ -64,7 +65,8 @@ export function FaqScreen() {
       key: "excluded", header: t("columns.excluded"), align: "end",
       cell: (faq) => <span className="text-xs text-ink-muted">{faq.excludedCategoryIds.length + faq.excludedItemCodes.length || t("none")}</span>
     },
-    { key: "status", header: t("columns.status"), cell: (faq) => <FaqStatusBadge status={faq.status} /> }
+    { key: "status", header: t("columns.status"), cell: (faq) => <FaqStatusBadge status={faq.status} /> },
+    actionsColumn((faq) => <RowAction kind="edit" subject={faq.questionAr} current={faq.id === activeId} onClick={() => select(faq.id)} />)
   ];
 
   return (

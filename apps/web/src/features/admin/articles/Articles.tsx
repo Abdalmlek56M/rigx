@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { flattenTree } from "../categories/category-rules";
 import { fetchCategories } from "../categories/categories-api";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
 import { Pager } from "../kit/Pager";
@@ -60,7 +61,10 @@ export function Articles() {
     },
     { key: "category", header: t("columns.category"), cell: (article) => <span className="text-sm">{article.categorySlug ? names.get(article.categorySlug) ?? article.categorySlug : t("none")}</span> },
     { key: "status", header: t("columns.status"), cell: (article) => <ArticleStatusBadge status={article.status} publishedAtUtc={article.publishedAtUtc} /> },
-    { key: "views", header: t("columns.views"), align: "end", cell: (article) => <span className="text-sm">{article.viewCount}</span> }
+    { key: "views", header: t("columns.views"), align: "end", cell: (article) => <span className="text-sm">{article.viewCount}</span> },
+    actionsColumn((article) => (
+      <RowAction kind="edit" subject={article.titleAr} current={article.id === values.id} onClick={() => { setCreating(false); set({ id: article.id }); }} />
+    ))
   ];
 
   return (

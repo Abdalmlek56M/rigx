@@ -390,7 +390,8 @@
     "specValue": {
       "yes": "Yes",
       "no": "No"
-    }
+    },
+    "description": "Description"
   },
   "builds": {
     "title": "Ready-made builds",
@@ -1646,6 +1647,12 @@
         "empty": "No item has this name or code.",
         "count": "{count} results",
         "clear": "Remove the item"
+      },
+      "rows": {
+        "actions": "Actions",
+        "view": "View",
+        "edit": "Edit",
+        "viewEdit": "View and edit"
       }
     },
     "dashboard": {
@@ -1830,8 +1837,7 @@
         "total": "Total",
         "status": "Status",
         "payment": "Payment",
-        "reservation": "Reservation",
-        "date": "Date"
+        "reservation": "Reservation"
       },
       "empty": "No orders match this filter.",
       "none": "—",
@@ -2450,7 +2456,8 @@
           "cable": "Cables",
           "accessories": "Accessories"
         }
-      }
+      },
+      "edit": "Edit {name}"
     },
     "policies": {
       "title": "Policies",
@@ -3144,7 +3151,13 @@
           "none": "Choose at least one way to buy it."
         },
         "excludedFromStockValue": "Not counted in the stock value",
-        "excludedFromStockValueHint": "It stays in stock and can be sold; its cost is left out of the stock value and reports."
+        "excludedFromStockValueHint": "It stays in stock and can be sold; its cost is left out of the stock value and reports.",
+        "description": {
+          "title": "Store description",
+          "hint": "Optional. Shown on the item page and in search results; each language appears on its own pages only. Leave an empty line to start a new paragraph.",
+          "ar": "Description in Arabic",
+          "en": "Description in English"
+        }
       },
       "photos": {
         "makeMain": "Make this the main photo",
@@ -3174,12 +3187,10 @@
         "partnerShare": "{name}, {percent}%",
         "changePartner": "Change partner",
         "columns": {
-          "status": "Status",
           "serial": "Serial",
-          "cost": "Cost",
           "partner": "Partner",
-          "received": "Received",
-          "actions": "Action"
+          "unit": "Unit",
+          "purchase": "Purchase"
         },
         "status": {
           "Available": "Available",
@@ -3200,7 +3211,8 @@
         "excludeFromStockValue": "Leave out of the stock value",
         "countInStockValue": "Count in the stock value",
         "stockValueDone": "The unit's stock value setting was updated.",
-        "stockValueFailed": "The unit could not be updated."
+        "stockValueFailed": "The unit could not be updated.",
+        "received": "Received {date}"
       },
       "specs": {
         "title": "Specs",
@@ -3215,7 +3227,8 @@
         "hide": "Hide from the store",
         "show": "Show in the store",
         "sell": "Add to the point of sale",
-        "preview": "Preview in the store"
+        "preview": "Preview in the store",
+        "open": "Open the item page"
       },
       "quick": {
         "title": "Edit item",
@@ -3258,7 +3271,21 @@
         },
         "hide": "Hide section",
         "show": "Show section",
-        "retry": "Try again"
+        "retry": "Try again",
+        "serial": "Serial"
+      },
+      "partnerList": {
+        "loading": "Loading partners…",
+        "failed": "The partner list could not be loaded.",
+        "retry": "Try again",
+        "refresh": "Refresh the list",
+        "open": "Partners page",
+        "none": "No partner is saved yet. Add one on the partners page, then refresh the list.",
+        "nobody": "No partner can be linked to a part. Only an active partner paid from the parts they finance can be; change the agreement on the partners page.",
+        "blocked": {
+          "inactive": "{name} (inactive)",
+          "wholeShop": "{name} (paid from the whole store, finances no parts)"
+        }
       }
     },
     "purchases": {
@@ -4616,8 +4643,6 @@
         "Owner": "Owner",
         "Customer": "Customer"
       },
-      "edit": "Edit",
-      "editUser": "Edit {name}",
       "controls": {
         "title": "Account controls",
         "disable": "Disable account",
@@ -5247,7 +5272,8 @@
         "removeBody": "The brand will show by its name only.",
         "removed": "Logo deleted.",
         "failed": "The logo was not changed. Try another picture."
-      }
+      },
+      "edit": "Edit {name}"
     },
     "coupons": {
       "title": "Coupons",

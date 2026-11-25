@@ -5,7 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDate, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { PageHeader } from "../kit/PageHeader";
 import { NameCell } from "../kit/NameCell";
@@ -15,7 +16,7 @@ import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
 import { PurchaseStatusBadge } from "./PurchaseStatusBadge";
 import { fetchPurchases, type PurchaseListItem } from "./purchases-api";
-import { kindKey, PURCHASE_STATUSES } from "./purchase-rules";
+import { isDraft, kindKey, PURCHASE_STATUSES } from "./purchase-rules";
 import { PlusIcon } from "@/components/ui/icons";
 import { buttonClass, buttonIconSize } from "../kit/Button";
 
@@ -55,7 +56,10 @@ export function Purchases() {
       align: "end",
       cell: (purchase) => <span className={`whitespace-nowrap ${purchase.remaining > 0 ? "font-bold text-error-text" : "text-ink-muted"}`}>{formatEgp(purchase.remaining, locale)}</span>
     },
-    { key: "status", header: t("columns.status"), cell: (purchase) => <PurchaseStatusBadge status={purchase.status} /> }
+    { key: "status", header: t("columns.status"), cell: (purchase) => <PurchaseStatusBadge status={purchase.status} /> },
+    actionsColumn((purchase) => (
+      <RowAction kind={isDraft(purchase) && has("Purchasing.CreateOrder") ? "edit" : "view"} subject={purchase.code} href={`/admin/purchases/${purchase.id}`} />
+    ))
   ];
 
   return (

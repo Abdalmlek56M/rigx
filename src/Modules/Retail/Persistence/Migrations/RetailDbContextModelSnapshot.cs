@@ -1658,6 +1658,16 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("DescriptionEn")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description_en");
+
                     b.Property<bool>("ExcludedFromStockValue")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { mediaUrl } from "@/lib/media";
-import { ArrowDownIcon, ArrowUpIcon } from "@/components/ui/icons";
+import { ArrowDownIcon, ArrowUpIcon, PencilIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IconButton } from "../kit/Button";
 import { DragItem, DragSort } from "../kit/DragSort";
@@ -41,6 +41,7 @@ export function BrandList({ brands, selectedId, onSelect, onReorder }: {
                 <span dir="ltr" className="min-w-0 flex-1 truncate text-start [unicode-bidi:isolate]">{brand.name}</span>
                 {brand.isActive ? null : <StatusBadge tone="neutral">{t("off")}</StatusBadge>}
               </button>
+              <IconButton icon={PencilIcon} label={t("edit", { name: brand.name })} size="sm" onClick={() => onSelect(brand.id)} />
               {onReorder ? (
                 <span className="flex shrink-0">
                   <IconButton icon={ArrowUpIcon} label={t("moveUp")} size="sm" disabled={index === 0} onClick={() => onReorder(moveKey(ids, index, index - 1))} />

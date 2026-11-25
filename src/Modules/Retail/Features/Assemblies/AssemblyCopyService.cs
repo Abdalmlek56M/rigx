@@ -67,6 +67,8 @@ public sealed class AssemblyCopyService(IDbContextFactory<RetailDbContext> conte
         item.OffersWithBoard = sourceItem.OffersWithBoard;
         item.OffersInBuild = sourceItem.OffersInBuild;
         item.ExcludedFromStockValue = sourceItem.ExcludedFromStockValue;
+        item.Description = sourceItem.Description;
+        item.DescriptionEn = sourceItem.DescriptionEn;
         var unit = item.Units.Single();
         unit.ExcludedFromStockValue = sourceUnit.ExcludedFromStockValue;
         unit.StockItem = item;

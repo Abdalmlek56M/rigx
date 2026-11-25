@@ -6,7 +6,8 @@ import { formatEgp } from "@/lib/format";
 import { useLoad } from "@/lib/hooks/use-load";
 import { cairoToday } from "../dashboard/dashboard-rules";
 import { fetchPartners, type Partner } from "../expenses/expenses-api";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { PageHeader } from "../kit/PageHeader";
 import { useReveal } from "../kit/use-reveal";
 import { useUrlFilters } from "../kit/use-url-filters";
@@ -53,7 +54,10 @@ export function Partners() {
     { key: "capital", header: t("columns.capital"), align: "end", cell: (partner) => money(partner.capitalBalance) },
     { key: "units", header: t("columns.units"), align: "end", cell: (partner) => partner.unsoldFinancedUnits },
     { key: "due", header: t("columns.due"), align: "end", cell: (partner) => <span className={partner.due > 0 ? "font-bold" : "text-ink-muted"}>{money(partner.due)}</span> },
-    { key: "active", header: t("columns.active"), cell: (partner) => <span className={partner.isActive ? "" : "text-ink-muted"}>{partner.isActive ? t("active") : t("inactive")}</span> }
+    { key: "active", header: t("columns.active"), cell: (partner) => <span className={partner.isActive ? "" : "text-ink-muted"}>{partner.isActive ? t("active") : t("inactive")}</span> },
+    actionsColumn((partner) => (
+      <RowAction kind={canManage ? "viewEdit" : "view"} subject={partner.name} current={values.partner === partner.id} onClick={() => set({ partner: partner.id })} />
+    ))
   ];
 
   const kpis = totals

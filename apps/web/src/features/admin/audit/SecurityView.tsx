@@ -5,7 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatDateTime } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
 import { DateField } from "../kit/DateField";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { Pager } from "../kit/Pager";
 import { pageNumber } from "../kit/url-filters";
@@ -58,7 +59,13 @@ export function SecurityView({ values, set }: { values: AuditValues; set: AuditS
         </span>
       )
     },
-    { key: "subject", header: t("columns.subject"), cell: (event) => <span dir="ltr" className="font-mono text-xs text-ink-muted">{shortId(event.subjectUserAccountId) || t("none")}</span> }
+    { key: "subject", header: t("columns.subject"), cell: (event) => <span dir="ltr" className="font-mono text-xs text-ink-muted">{shortId(event.subjectUserAccountId) || t("none")}</span> },
+    actionsColumn((event) => (
+      <RowAction
+        kind="view" subject={formatDateTime(event.occurredAtUtc, locale)} current={values.entry === event.id}
+        onClick={() => set({ entry: event.id, page: values.page })}
+      />
+    ))
   ];
 
   return (

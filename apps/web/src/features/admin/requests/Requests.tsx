@@ -4,7 +4,8 @@ import { useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDateTime, formatEgp } from "@/lib/format";
 import { useLoad, type Load } from "@/lib/hooks/use-load";
-import { DataTable, type Column } from "../kit/DataTable";
+import { actionsColumn, DataTable, type Column } from "../kit/DataTable";
+import { RowAction } from "../kit/RowAction";
 import { FilterBar, FilterSelect, SearchBox } from "../kit/FilterBar";
 import { NameCell } from "../kit/NameCell";
 import { PageHeader } from "../kit/PageHeader";
@@ -63,7 +64,8 @@ export function Requests() {
       header: t("columns.offer"),
       align: "end",
       cell: (row) => <span className="whitespace-nowrap font-bold">{row.offerAmount !== null ? formatEgp(row.offerAmount, locale) : t("none")}</span>
-    }
+    },
+    actionsColumn((row) => <RowAction kind="view" subject={row.code} current={values.id === row.id} onClick={() => select(row.id)} />)
   ];
 
   return (

@@ -63,7 +63,7 @@ export function InventoryBuilds() {
           <p className="m-0 text-sm text-ink-muted">{t("empty")}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
+            <table className="data-table w-full border-collapse text-sm">
               <caption className="sr-only">{t("title")}</caption>
               <thead>
                 <tr className="border-b border-line">
@@ -119,6 +119,9 @@ export function InventoryBuilds() {
                                     </Link>
                                     <span dir="auto" className="[unicode-bidi:isolate]">{part.name}</span>
                                     <ConditionBadge condition={part.condition === "New" ? "New" : "Used"} />
+                                    {part.serialNumber ? (
+                                      <span className="text-xs text-ink-muted">{t("serial")} <bdi dir="ltr" className="font-mono">{part.serialNumber}</bdi></span>
+                                    ) : null}
                                   </li>
                                 ))}
                               </ul>

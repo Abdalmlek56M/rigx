@@ -120,4 +120,14 @@ public sealed class StockItemRulesTests
     [InlineData("cpu-3", false)]
     public void A_slug_belongs_to_its_base_or_a_numbered_copy(string slug, bool expected) =>
         Assert.Equal(expected, StockItemSlug.BelongsTo(slug, "gpu"));
+
+    [Fact]
+    public void A_store_description_is_optional_trimmed_and_limited()
+    {
+        Assert.Null(StockItemRules.CleanDescription("  ", "description"));
+        Assert.Equal("one\ntwo", StockItemRules.CleanDescription(" one\r\ntwo ", "description"));
+        var error = Assert.Throws<RetailException>(() =>
+            StockItemRules.CleanDescription(new string('x', StockItemRules.MaxDescriptionLength + 1), "descriptionEn"));
+        Assert.Equal(400, error.StatusCode);
+    }
 }

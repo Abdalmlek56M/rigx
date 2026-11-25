@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { PencilIcon } from "@/components/ui/icons";
+import { IconButton } from "../kit/Button";
 import { DragItem, DragSort } from "../kit/DragSort";
 import { EmptyPanel } from "../kit/LoadState";
 import { dropOn, moveKey } from "../kit/reorder-rules";
@@ -70,6 +72,7 @@ export function CategoryTree({ nodes, selectedId, collapsed, onSelect, onToggle,
                     {!node.isActive || !node.isEffectivelyActive ? <StatusBadge tone="neutral">{t("hidden")}</StatusBadge> : null}
                   </button>
                 </span>
+                <IconButton icon={PencilIcon} label={t("edit", { name: node.name })} size="sm" onClick={() => onSelect(node.id)} />
               </DragItem>
             );
           })}
