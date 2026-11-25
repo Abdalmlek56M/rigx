@@ -251,14 +251,21 @@ body {
   color: var(--on-orange);
 }
 
-/* Buying buttons: on hover a graphite fill closes over the orange from the top down (mouse devices only, never on a disabled button). */
+/*
+ * Buying buttons: on hover two diagonal fills of a deep flame red (white text, 4.8:1) grow from the bottom-right and the top-left corners and meet
+ * on the diagonal (mouse devices only, never on a disabled button, and not at all with reduced motion). Each fill is half the
+ * button cut corner to corner; a hair of overlap hides the seam.
+ */
 .buy-sweep {
-  background-image: linear-gradient(var(--carbon), var(--carbon));
+  --buy-fill: color-mix(in srgb, var(--orange) 40%, var(--error));
+  background-image:
+    linear-gradient(to top left, var(--buy-fill) 50.5%, transparent 50.5%),
+    linear-gradient(to bottom right, var(--buy-fill) 50.5%, transparent 50.5%);
   background-repeat: no-repeat;
-  background-position: top;
-  background-size: 100% 0;
+  background-position: right bottom, left top;
+  background-size: 0 0, 0 0;
   transition:
-    background-size 320ms var(--ease-out),
+    background-size 420ms var(--ease-out),
     background-color 150ms ease,
     border-color 150ms ease,
     color 150ms ease,
@@ -266,14 +273,17 @@ body {
     transform 110ms var(--ease-out);
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .buy-sweep:not(:disabled, [aria-disabled="true"]):hover {
-    background-size: 100% 100%;
+    background-size: 100% 100%, 100% 100%;
+    color: #fff;
+    box-shadow: 0 8px 22px -10px var(--buy-fill);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .buy-sweep {
+    background-image: none;
     transition: none;
   }
 }
@@ -1150,6 +1160,10 @@ dialog[data-sheet="side"][data-edge="start"] {
 
 [data-theme="dark"] .ambient {
   display: block;
+}
+
+.ambient-cover {
+  mask-image: radial-gradient(ellipse 130% 120% at 50% 45%, #000 62%, transparent 100%);
 }
 
 /* Dark theme only: two very faint lights drift behind the whole storefront. Pure CSS, fixed to the window (no repaint on scroll),
