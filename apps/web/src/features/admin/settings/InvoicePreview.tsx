@@ -42,7 +42,7 @@ export function InvoicePreview({ storeName, prefix, backgroundLogo, warrantyQr, 
                 <span className="flex flex-col gap-2 pt-1"><Bar width="70%" /><Bar width="50%" /></span>
                 <span className="flex flex-col gap-2 pt-1"><Bar width="60%" /><Bar width="80%" /></span>
               </InfoGrid>
-              <span className="flex flex-col gap-3"><Bar width="100%" /><Bar width="92%" /><Bar width="85%" /></span>
+              <span className="flex flex-col gap-3"><span aria-hidden="true" className="block h-8 bg-carbon" /><Bar width="100%" /><Bar width="92%" /><Bar width="85%" /></span>
               {warrantyQr ? (
                 <div className="flex items-start gap-3">
                   <span aria-hidden="true" className="size-20 shrink-0 rounded-control border-2 border-dashed border-line" />
@@ -52,9 +52,11 @@ export function InvoicePreview({ storeName, prefix, backgroundLogo, warrantyQr, 
                   </div>
                 </div>
               ) : null}
-              <footer className="flex flex-col gap-1 border-t border-line pt-3 text-xs text-ink-muted">
+              <footer className="flex flex-col gap-1 border-t-2 border-ink pt-3 text-xs text-ink-muted">
+                <b className="text-[13px] text-ink">{t("terms")}</b>
+                <span>{t("warrantyNote")}</span>
                 {termsLine.trim() ? <span>{termsLine.trim()}</span> : null}
-                <span>{t("thanks")}</span>
+                <span>{t("electronic")}</span>
               </footer>
             </div>
           </article>

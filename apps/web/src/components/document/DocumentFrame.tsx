@@ -9,7 +9,7 @@ interface DocumentFrameProps {
   width: number;
   fileKind: string;
   fileLabel: string;
-  /** A button at the start of the toolbar (a way back). */
+  /** What starts the toolbar: a way back, or the document's name. */
   leading?: ReactNode;
   /** Buttons next to "copy as image" (print / save PDF). */
   actions?: ReactNode;
@@ -25,10 +25,12 @@ export function DocumentFrame({ width, fileKind, fileLabel, leading, actions, ch
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-end gap-3 print:hidden">
-        {leading ? <div className="me-auto">{leading}</div> : null}
-        <CopyImageButton target={paper} width={width} fileKind={fileKind} fileLabel={fileLabel} />
-        {actions}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface p-3 shadow-soft print:hidden">
+        {leading ? <div className="min-w-0">{leading}</div> : null}
+        <div className="ms-auto flex flex-wrap items-center justify-end gap-2 max-sm:w-full max-sm:[&>button]:flex-1">
+          <CopyImageButton target={paper} width={width} fileKind={fileKind} fileLabel={fileLabel} />
+          {actions}
+        </div>
       </div>
       <ScaledPaper width={width} paperRef={paper}>{children}</ScaledPaper>
     </div>

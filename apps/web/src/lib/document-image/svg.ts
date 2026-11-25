@@ -32,6 +32,11 @@ export function wrapInSvg(markup: string, css: string, width: number, height: nu
     `<style>${css}</style><foreignObject x="0" y="0" width="${width}" height="${height}">${markup}</foreignObject></svg>`;
 }
 
+/** A picture is drawn at twice the document's size so small text stays sharp, but never beyond what phone browsers accept for one canvas. */
+export function pictureScale(width: number, height: number, maxPixels = 16_000_000): number {
+  return Math.min(2, Math.sqrt(maxPixels / Math.max(1, width * height)));
+}
+
 /** The file name of the saved picture: `rigx-<kind>-<label>.png` (for example `rigx-invoice-INV-2026-0012.png`); a label with no Latin letters or digits is left out. */
 export function imageFileName(kind: string, label: string): string {
   const safe = label.replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);

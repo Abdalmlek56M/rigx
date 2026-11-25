@@ -1,4 +1,4 @@
-import { firstFontFamily, fontFaceCss, fontFaceUrl, wrapInSvg, type EmbeddedFace } from "./svg";
+import { firstFontFamily, fontFaceCss, fontFaceUrl, pictureScale, wrapInSvg, type EmbeddedFace } from "./svg";
 
 export type PngDelivery = "copied" | "saved";
 
@@ -82,9 +82,10 @@ export async function renderCardToPng(card: HTMLElement, width: number, height: 
   const svg = wrapInSvg(new XMLSerializer().serializeToString(clone), css, width, height);
   const image = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d")?.drawImage(image, 0, 0, width, height);
+  const scale = pictureScale(width, height);
+  canvas.width = Math.floor(width * scale);
+  canvas.height = Math.floor(height * scale);
+  canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
   return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("The PNG could not be made."))), "image/png"));
 }
 

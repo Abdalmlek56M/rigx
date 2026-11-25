@@ -35,13 +35,13 @@ export function CopyImageButton({ target, width, height, fileKind, fileLabel }: 
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <>
       <Button type="button" variant="secondary" icon={state === "copied" ? CheckIcon : CopyIcon} loading={state === "working"} onClick={() => void copy()}>
         {t("copy")}
       </Button>
-      <span role="status" className={`text-sm ${state === "failed" ? "text-error-text" : "text-ink-muted"}`}>
+      <span role="status" className={`order-last basis-full text-end text-sm empty:sr-only ${state === "failed" ? "text-error-text" : "text-ink-muted"}`}>
         {state === "copied" || state === "saved" || state === "failed" ? t(state) : ""}
       </span>
-    </div>
+    </>
   );
 }

@@ -19,6 +19,16 @@ export function joinValues(values: readonly (string | null | undefined | false)[
 const CAIRO = "Africa/Cairo";
 const calendarLocale = (locale: string) => (locale === "ar" ? "ar-EG-u-nu-latn" : "en-GB");
 
+/** The amount alone, for a table whose column header already names the currency. */
+export function formatAmount(amount: number): string {
+  return numberFormat.format(amount);
+}
+
+/** "13/11/2026": day/month/year in Cairo time, for narrow document columns. */
+export function formatDateNumeric(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: CAIRO }).format(new Date(iso));
+}
+
 /** "نوفمبر" / "November": the month name only, in Cairo time. */
 export function formatMonth(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(calendarLocale(locale), { month: "long", timeZone: CAIRO }).format(new Date(iso));

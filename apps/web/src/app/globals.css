@@ -1418,9 +1418,10 @@ dialog[data-sheet="side"][data-edge="start"] {
     --line: #d8d3c8;
   }
 
+  /* The foot of each page (store, invoice number, page numbers) is written into the bottom margin by the invoice page (`page-footer.ts`). */
   @page invoice {
     size: A4;
-    margin: 12mm;
+    margin: 10mm 10mm 14mm;
   }
 
   @page quote {
