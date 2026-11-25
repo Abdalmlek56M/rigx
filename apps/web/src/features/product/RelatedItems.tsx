@@ -1,6 +1,7 @@
 import type { Schemas } from "@rigx/api-client";
 import { getTranslations } from "next-intl/server";
 import { ItemCard } from "@/features/catalog/ItemCard";
+import { ITEM_RAIL_ITEM_CLASS } from "@/features/catalog/item-layout";
 import { Rail } from "@/features/home/Rail";
 import { Link } from "@/i18n/navigation";
 
@@ -20,7 +21,7 @@ export async function RelatedItems({ items, moreHref }: { items: Schemas["StoreI
       }
     >
       {items.map((item) => (
-        <li key={item.code} className="flex w-[236px] shrink-0 md:w-[272px]">
+        <li key={item.code} className={ITEM_RAIL_ITEM_CLASS}>
           <ItemCard item={item} />
         </li>
       ))}

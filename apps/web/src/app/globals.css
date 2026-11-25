@@ -468,8 +468,9 @@ body {
 }
 
 /* Category strip: the cards fade out at both ends so the strip reads as "more this way". */
+/* A scrolling strip fades at its edges; a strip that knows which edges have more content beyond them sets --fade-left / --fade-right. */
 .strip-fade {
-  mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-left, 28px), #000 calc(100% - var(--fade-right, 28px)), transparent 100%);
 }
 
 /* Home rails: snap card by card; while the mouse drags, snapping and smooth scrolling step aside so the rail follows the pointer. */
@@ -1249,19 +1250,22 @@ dialog[data-sheet="side"][data-edge="start"] {
   filter: brightness(0.9);
 }
 
-/* Card photo swap and the product photo magnifier: mouse only. The second card photo is only mounted after the first pointer-enter. */
+/* Card photo swap and the product photo magnifier: mouse only. The second card photo is only mounted after the first pointer-enter;
+   it crossfades in calmly (about half a second, settling from a slight zoom) while the first leaves a beat later, so no gap shows. */
 .swap-photo {
   opacity: 0;
-  transition: opacity 200ms ease, transform 240ms var(--ease-out);
+  transform: scale(1.03);
+  transition: opacity 480ms cubic-bezier(0.4, 0, 0.2, 1), transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* The first photo gives way completely, so the two never show through each other. */
 .main-photo {
-  transition: opacity 200ms ease;
+  transition: opacity 420ms cubic-bezier(0.4, 0, 0.2, 1) 120ms;
 }
 
 .photo-swap-host:hover .swap-photo[data-loaded] {
   opacity: 1;
+  transform: scale(1);
 }
 
 .photo-swap-host:has(.swap-photo[data-loaded]):hover .main-photo {

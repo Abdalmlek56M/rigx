@@ -124,7 +124,8 @@
     "whatsAppHours": "نرد عليك على واتساب {hours}",
     "pickup": "الاستلام من المحل متاح",
     "whatsAppAria": "تواصل معنا عبر واتساب",
-    "freeShipping": "شحن مجاني للطلبات فوق {amount}"
+    "freeShipping": "شحن مجاني للطلبات فوق {amount}",
+    "whatsApp": "واتساب"
   },
   "header": {
     "home": "RIGX الرئيسية",
@@ -216,7 +217,8 @@
       "intro": "مرحبًا RIGX، أرغب في طلب:",
       "total": "الإجمالي"
     },
-    "summary": "ملخص الطلب"
+    "summary": "ملخص الطلب",
+    "onePiece": "قطعة واحدة"
   },
   "usage": {
     "Gaming": "ألعاب",

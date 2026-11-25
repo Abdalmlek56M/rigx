@@ -9,6 +9,7 @@ import { EmptyState, LoadBoundary } from "@/features/account/LoadBoundary";
 import { BuildCard } from "@/features/builds/BuildCard";
 import { CommunityBuildCard } from "@/features/community/CommunityBuildCard";
 import { ItemCard } from "@/features/catalog/ItemCard";
+import { ITEM_GRID_CLASS } from "@/features/catalog/item-layout";
 import { browserApi } from "@/lib/api/browser";
 import { required } from "@/lib/api/required";
 import { useLoad } from "@/lib/hooks/use-load";
@@ -41,7 +42,7 @@ export function FavouritesList() {
           return (
             <div className="flex flex-col gap-6">
               {items.length > 0 ? (
-                <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 xl:grid-cols-3">
+                <ul className={`m-0 grid list-none gap-3 p-0 md:gap-4 ${ITEM_GRID_CLASS}`}>
                   {items.map((item) => (
                     <li key={item.code} className="flex">
                       <ItemCard item={item} />

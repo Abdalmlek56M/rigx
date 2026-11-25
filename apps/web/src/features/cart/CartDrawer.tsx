@@ -38,7 +38,7 @@ export function CartDrawer({ whatsAppNumber, freeShippingMinimum }: { whatsAppNu
           </div>
         ) : (
           <>
-            <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-2">
+            <ul className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-5 py-2">
               {lines.map((line) => (
                 <CartLineRow key={`${line.code}:${line.priceOption}`} line={line} />
               ))}

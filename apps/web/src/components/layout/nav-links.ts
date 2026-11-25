@@ -17,8 +17,11 @@ export function categoryHref(slug: string): string {
   return `/products?category=${encodeURIComponent(slug)}`;
 }
 
-/** The header's icon cluster: one pill holding the theme, language, notifications (signed in), account and cart controls. */
-export const HEADER_ICON_CLUSTER = "flex shrink-0 items-center gap-0.5 rounded-full border border-line bg-paper p-1";
+/** The header's controls on the end side: notifications (signed in), account and cart, evenly spaced. */
+export const HEADER_ICON_CLUSTER = "flex shrink-0 items-center gap-1.5";
 
-/** One round control inside the header icon cluster (same 44 px touch target and icon size for all of them). */
-export const HEADER_ICON_BUTTON = "flex h-11 min-w-11 items-center justify-center rounded-full text-ink transition-[background-color,color,box-shadow] hover:bg-surface hover:text-orange-text hover:shadow-soft";
+/** One header control (44 px touch target, 20 px icon); a label may follow the icon on wide screens. */
+export const HEADER_ICON_BUTTON = "flex h-11 min-w-11 items-center justify-center gap-2 rounded-full text-ink transition-[background-color,color] hover:bg-paper hover:text-orange-text";
+
+/** A small control on the dark top strip (theme, language, WhatsApp). */
+export const STRIP_BUTTON = "flex h-8 min-w-8 items-center justify-center gap-1.5 rounded-full px-2 text-[13px] font-medium text-footer-text transition-colors hover:bg-white/10 hover:text-on-carbon";

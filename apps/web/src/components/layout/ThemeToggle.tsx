@@ -2,10 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { MoonIcon, SunIcon } from "@/components/ui/icons";
-import { HEADER_ICON_BUTTON } from "./nav-links";
+import { HEADER_ICON_BUTTON, STRIP_BUTTON } from "./nav-links";
 import { setTheme, useTheme } from "./use-theme";
 
-export function ThemeToggle({ className = "" }: { className?: string }) {
+/** Switches the light and dark themes; `strip` draws it small for the dark top strip. */
+export function ThemeToggle({ className = "", strip = false }: { className?: string; strip?: boolean }) {
   const t = useTranslations("header");
   const theme = useTheme();
 
@@ -14,9 +15,9 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       type="button"
       aria-label={theme === "dark" ? t("lightMode") : t("darkMode")}
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className={`${HEADER_ICON_BUTTON} ${className}`}
+      className={`${strip ? STRIP_BUTTON : HEADER_ICON_BUTTON} ${className}`}
     >
-      {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+      {theme === "dark" ? <SunIcon size={strip ? 16 : 20} /> : <MoonIcon size={strip ? 16 : 20} />}
     </button>
   );
 }

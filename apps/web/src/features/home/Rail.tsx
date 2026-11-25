@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronStartIcon } from "@/components/ui/icons";
 
@@ -152,7 +152,10 @@ export function Rail({ title, action, autoAdvance = false, arrowsOnMobile = fals
         onClickCapture={onClickCapture}
         onDragStart={(event) => event.preventDefault()}
         data-dragging={dragging || undefined}
-        className="rail strip-fade m-0 flex list-none gap-3 overflow-x-auto overscroll-x-contain p-0 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // Only an edge with more cards beyond it fades, so the first and last cards show whole; the vertical padding (taken back
+        // by the negative margin) leaves room for a card's hover lift and shadow inside the scrolling box.
+        style={{ "--fade-left": edges.left ? "28px" : "0px", "--fade-right": edges.right ? "28px" : "0px" } as CSSProperties}
+        className="rail strip-fade mx-0 -my-3 flex list-none gap-3 overflow-x-auto overscroll-x-contain px-0 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </ul>

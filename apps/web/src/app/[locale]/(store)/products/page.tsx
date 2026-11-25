@@ -7,6 +7,7 @@ import { CatalogHeader } from "@/features/catalog/CatalogHeader";
 import { CatalogToolbar } from "@/features/catalog/CatalogToolbar";
 import { FilterPanel } from "@/features/catalog/FilterPanel";
 import { ItemCard } from "@/features/catalog/ItemCard";
+import { ITEM_GRID_CLASS } from "@/features/catalog/item-layout";
 import { Pagination } from "@/features/catalog/Pagination";
 import { RequestPartBanner } from "@/features/catalog/RequestPartBanner";
 import { catalogTitle } from "@/features/catalog/catalog-title";
@@ -101,7 +102,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
               action={<ButtonLink href="/products" variant="secondary">{t("empty.clear")}</ButtonLink>}
             />
           ) : (
-            <ul className={`m-0 grid list-none gap-3 p-0 md:gap-4 2xl:gap-5 ${state.view === "list" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(230px,1fr))]"}`}>
+            <ul className={`m-0 grid list-none gap-3 p-0 md:gap-4 2xl:gap-5 ${state.view === "list" ? "grid-cols-1" : ITEM_GRID_CLASS}`}>
               {result.items.map((item) => (
                 <li key={item.code} className="flex">
                   <ItemCard item={item} layout={state.view} />

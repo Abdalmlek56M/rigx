@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Schemas } from "@rigx/api-client";
 import { ItemCard } from "@/features/catalog/ItemCard";
+import { ITEM_GRID_CLASS } from "@/features/catalog/item-layout";
 import { LatestTabs } from "./LatestTabs";
 import { newestItems } from "./newest-items";
 
@@ -8,7 +9,7 @@ const COUNT = 4;
 
 function Grid({ items }: { items: Schemas["StoreItemCard"][] }) {
   return (
-    <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:gap-[18px]">
+    <ul className={`m-0 grid list-none gap-3 p-0 md:gap-[18px] ${ITEM_GRID_CLASS}`}>
       {items.map((item) => (
         <li key={item.code} className="flex">
           <ItemCard item={item} />

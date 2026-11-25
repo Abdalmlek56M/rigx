@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { categoryHref } from "@/components/layout/nav-links";
 import { ChevronStartIcon } from "@/components/ui/icons";
 import { ItemCard } from "@/features/catalog/ItemCard";
+import { ITEM_RAIL_ITEM_CLASS } from "@/features/catalog/item-layout";
 import { Link } from "@/i18n/navigation";
 import { categoryBySlug, type CategoryNode } from "@/lib/categories";
 import { newestItems } from "./newest-items";
@@ -30,7 +31,7 @@ export async function GpuRail({ tree }: { tree: CategoryNode[] }) {
       }
     >
       {items.map((item) => (
-        <li key={item.code} className="flex w-[236px] shrink-0 md:w-[272px]">
+        <li key={item.code} className={ITEM_RAIL_ITEM_CLASS}>
           <ItemCard item={item} />
         </li>
       ))}
