@@ -1,4 +1,6 @@
 import { useTranslations } from "next-intl";
+import { BoltIcon } from "@/components/ui/icons";
+import { FactLabel } from "./FactLabel";
 import { POWER_WARNING_SHARE, powerAdvice, powerFillPercent, type PowerState } from "./builder-summary";
 
 const FILL: Record<PowerState, string> = { ok: "bg-success", near: "bg-orange", over: "bg-error", noSupply: "bg-orange", unknown: "bg-line" };
@@ -11,10 +13,10 @@ export function PowerMeter({ evaluation }: { evaluation: Parameters<typeof power
   const shown = advice.estimate === null ? "—" : advice.capacity === null ? t("estimateOnly", { estimate: advice.estimate }) : t("of", { estimate: advice.estimate, capacity: advice.capacity });
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between gap-2.5">
-        <span className="text-ink-muted">{t("label")}</span>
-        <span className={`font-bold ${TEXT[advice.state]}`}>{shown}</span>
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between gap-2.5">
+        <FactLabel icon={BoltIcon}>{t("label")}</FactLabel>
+        <span className={`whitespace-nowrap text-[13px] font-bold tabular-nums ${TEXT[advice.state]}`}>{shown}</span>
       </div>
       <div
         role="meter"
@@ -23,12 +25,12 @@ export function PowerMeter({ evaluation }: { evaluation: Parameters<typeof power
         aria-valuemax={advice.capacity ?? 0}
         aria-valuenow={advice.estimate ?? 0}
         aria-valuetext={shown}
-        className="relative h-2 rounded-full bg-paper"
+        className="relative mt-1 h-2 rounded-full bg-paper"
       >
         <div className={`power-fill h-full rounded-full ${FILL[advice.state]}`} style={{ width: `${powerFillPercent(advice)}%` }} />
         {advice.capacity !== null ? <span aria-hidden="true" className="absolute -top-0.5 h-3 w-px bg-ink-muted/60" style={{ insetInlineStart: `${POWER_WARNING_SHARE * 100}%` }} /> : null}
       </div>
-      <p role="status" className={`m-0 text-[13px] leading-6 ${TEXT[advice.state]}`}>
+      <p role="status" className={`m-0 text-xs leading-5 ${TEXT[advice.state]}`}>
         {t(advice.state, { watts: advice.recommended ?? 0 })}
       </p>
     </div>

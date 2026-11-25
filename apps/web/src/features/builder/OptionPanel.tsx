@@ -71,7 +71,7 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
         <p role="status" className="m-0 py-6 text-center text-ink-muted">{t("empty")}</p>
       ) : (
         <ul aria-busy={loading} className="m-0 flex list-none flex-col gap-2.5 p-0">
-          {groups.length === 0 ? Array.from({ length: 3 }, (_, index) => <li key={index}><Skeleton className="h-[84px] w-full rounded-card" /></li>) : null}
+          {groups.length === 0 ? Array.from({ length: 3 }, (_, index) => <li key={index}><Skeleton className="h-[136px] w-full rounded-card" /></li>) : null}
           {groups.map((group) => (
             <OptionRow
               key={group.key}

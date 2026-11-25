@@ -2,20 +2,16 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { TextField } from "@/components/ui/TextField";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
-import { useSession } from "@/features/auth/use-session";
-import { loginHref } from "@/features/auth/auth-rules";
-import { Link } from "@/i18n/navigation";
-import { CopyIcon, DocumentIcon, ShareIcon } from "@/components/ui/icons";
+import { AlertIcon, CartIcon, DocumentIcon, InfoIcon } from "@/components/ui/icons";
 import { fillTemplate, whatsAppUrl } from "@/lib/contact";
 import { formatEgp } from "@/lib/format";
 import { useCart } from "@/features/cart/cart-context";
 import { cartLinesOf, partsSummaryText, type Evaluation } from "./builder-summary";
-import { SHARE_NAME_MAX, quotePath, type PartInput } from "./builder-state";
+import { quotePath, type PartInput } from "./builder-state";
+import { ShareBox } from "./ShareBox";
 import type { ShareLink } from "./share-link";
 import type { Visibility } from "./build-visibility";
-import { VisibilityPicker } from "./VisibilityPicker";
 
 interface SummaryActionsProps {
   evaluation: Evaluation;
@@ -28,6 +24,8 @@ interface SummaryActionsProps {
   shared: ShareLink | null;
   /** Public `?parts=` URL of the build ("" when the store has no domain set). */
   fallbackLink: string;
+  /** The builder's own path with the parts, where sign-in comes back to. */
+  builderPath: string;
   onCopyLink: () => void;
   /** The optional name of the build, shown on the shared page. */
   name: string;
@@ -39,17 +37,10 @@ interface SummaryActionsProps {
   shareFailed: boolean;
 }
 
-/** The note after the link was copied: what was saved and who can open it. */
-function copiedKey(shared: ShareLink): "copiedPlain" | "copiedSaved" | "copiedPrivate" | "copiedPublic" {
-  if (!shared.saved) return "copiedPlain";
-  return shared.visibility === "Private" ? "copiedPrivate" : shared.visibility === "Public" ? "copiedPublic" : "copiedSaved";
-}
-
-/** Add everything to the cart, ask on WhatsApp, copy the link, the PDF quote, and the "this does not reserve parts" note. */
-export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, onCopyLink, name, onNameChange, visibility, onVisibilityChange, shareFailed }: SummaryActionsProps) {
+/** Add everything to the cart, ask on WhatsApp, the PDF quote, the share box, and the "this does not reserve parts" note. */
+export function SummaryActions({ evaluation, parts, checking, slotNames, whatsApp, shared, fallbackLink, builderPath, ...share }: SummaryActionsProps) {
   const t = useTranslations("builder.actions");
   const tc = useTranslations("common.condition");
-  const session = useSession();
   const locale = useLocale();
   const { add, open } = useCart();
   const hasParts = evaluation.parts.length > 0;
@@ -61,60 +52,44 @@ export function SummaryActions({ evaluation, parts, checking, slotNames, whatsAp
 
   return (
     <>
-      <Button
-        type="button"
-        variant="accent"
-        disabled={!canOrder}
-        onClick={() => {
-          for (const line of cartLinesOf(evaluation)) add(line);
-          open();
-        }}
-        className="w-full"
-      >
-        {t("addAll")}
-      </Button>
-      {hasParts && !canOrder && !checking ? <span className="text-xs leading-6 text-orange-text">{t("cannotOrder")}</span> : null}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2">
-        {whatsApp.number ? (
-          <WhatsAppButton
-            href={whatsAppUrl(whatsApp.number, message)}
-            variant="outline"
-            disabled={!hasParts}
-          >
-            {t("whatsApp")}
-          </WhatsAppButton>
-        ) : null}
-        {canOrder ? (
-          <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon}>{t("quote")}</ButtonLink>
-        ) : (
-          <Button type="button" variant="secondary" icon={DocumentIcon} disabled>{t("quote")}</Button>
-        )}
-      </div>
-      <div className="flex flex-col gap-2 border-t border-dashed border-line pt-3.5">
-        <b className="flex items-center gap-2 text-sm"><span aria-hidden="true" className="text-orange-text"><ShareIcon size={16} /></span>{t("shareTitle")}</b>
-        <TextField
-          label={t("shareName")}
-          name="share-name"
-          value={name}
-          onChange={onNameChange}
-          maxLength={SHARE_NAME_MAX}
-          placeholder={t("shareNamePlaceholder")}
-        />
-        {session.status === "signedIn" ? (
-          <VisibilityPicker value={visibility} onChange={onVisibilityChange} />
-        ) : session.status === "signedOut" ? (
-          <p className="type-label m-0">
-            <Link href={loginHref("/builder")} className="text-orange-text underline hover:text-orange-text-hover">{t("signInLink")}</Link> {t("signInNote")}
+      <div className="flex flex-col gap-2">
+        <Button
+          type="button"
+          variant="accent"
+          icon={CartIcon}
+          disabled={!canOrder}
+          onClick={() => {
+            for (const line of cartLinesOf(evaluation)) add(line);
+            open();
+          }}
+          className="w-full"
+        >
+          {t("addAll")}
+        </Button>
+        {hasParts && !canOrder && !checking ? (
+          <p className="m-0 flex gap-1.5 text-xs leading-5 text-orange-text">
+            <span aria-hidden="true" className="mt-0.5 flex shrink-0"><AlertIcon size={14} /></span>
+            {t("cannotOrder")}
           </p>
         ) : null}
-        <Button type="button" variant="secondary" icon={CopyIcon} disabled={!hasParts || checking} onClick={onCopyLink} className="w-full">
-          {t("copyLink")}
-        </Button>
-        <span role="status" className={`text-xs ${shareFailed ? "text-error-text" : "text-ink-muted"}`}>
-          {shareFailed ? t("shareFailed") : shared ? t(copiedKey(shared)) : ""}
-        </span>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2">
+          {whatsApp.number ? (
+            <WhatsAppButton href={whatsAppUrl(whatsApp.number, message)} variant="outline" disabled={!hasParts}>
+              {t("whatsApp")}
+            </WhatsAppButton>
+          ) : null}
+          {canOrder ? (
+            <ButtonLink href={quotePath(parts)} external variant="secondary" icon={DocumentIcon}>{t("quote")}</ButtonLink>
+          ) : (
+            <Button type="button" variant="secondary" icon={DocumentIcon} disabled>{t("quote")}</Button>
+          )}
+        </div>
       </div>
-      <span className="text-xs leading-6 text-ink-muted">{t("note")}</span>
+      <ShareBox canShare={hasParts && !checking} shared={shared} builderPath={builderPath} {...share} />
+      <p className="m-0 flex gap-2 text-xs leading-5 text-ink-muted">
+        <span aria-hidden="true" className="mt-0.5 flex shrink-0 text-orange-text"><InfoIcon size={14} /></span>
+        {t("note")}
+      </p>
     </>
   );
 }

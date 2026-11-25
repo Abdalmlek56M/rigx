@@ -124,6 +124,7 @@ export function BuilderApp({ start, slots, specNames, whatsApp, domain }: Builde
           whatsApp={whatsApp}
           shared={b.share}
           fallbackLink={siteUrl(domain, b.path)}
+          builderPath={b.path}
           onCopyLink={b.copyLink}
           name={b.name}
           onNameChange={b.setName}

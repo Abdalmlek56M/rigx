@@ -374,6 +374,16 @@ body {
   }
 }
 
+/* The builder's summary is a bottom bar up to the desktop layout, with its own WhatsApp button inside. */
+@media (max-width: 1023px) {
+  body:has([data-sticky-bar="lg"]) .floating-lift {
+    bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+  body:has([data-sticky-bar="lg"]) .floating-contact {
+    display: none;
+  }
+}
+
 /* Cards that lift a little under a mouse (never on touch, where hover sticks). */
 .lift {
   transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms ease;

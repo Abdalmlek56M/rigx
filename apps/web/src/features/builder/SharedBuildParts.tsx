@@ -3,6 +3,7 @@ import type { Schemas } from "@rigx/api-client";
 import { Card } from "@/components/ui/Card";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { WarrantyTag } from "@/components/ui/WarrantyTag";
 import { BanIcon, CaseIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { parseCondition } from "@/lib/condition";
 import { formatEgp } from "@/lib/format";
@@ -20,10 +21,10 @@ export function SharedBuildParts({ parts, slotNames }: { parts: Schemas["Builder
           const condition = parseCondition(part.item.condition);
           return (
             <li key={part.item.code} className="flex items-center gap-3 border-b border-line px-4 py-3.5 last:border-b-0 sm:gap-4 sm:px-5">
-              <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper text-muted">
+              <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-control border border-line bg-paper text-muted">
                 {part.item.thumbnailStorageKey ? (
                   // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                  <img src={mediaUrl(part.item.thumbnailStorageKey)} alt="" width={64} height={64} loading="lazy" className="h-full w-full object-cover" />
+                  <img src={mediaUrl(part.item.thumbnailStorageKey)} alt="" width={64} height={64} loading="lazy" className="product-photo h-full w-full object-cover" />
                 ) : (
                   <ImagePlaceholderIcon />
                 )}
@@ -31,14 +32,14 @@ export function SharedBuildParts({ parts, slotNames }: { parts: Schemas["Builder
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="type-label">{slotNames[part.slot] ?? part.slot}</span>
                 <span dir="ltr" className="text-start font-bold leading-snug [unicode-bidi:isolate]">{part.item.modelName}</span>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-muted">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 pt-0.5 text-[13px] text-ink-muted">
                   {condition ? <ConditionBadge condition={condition} /> : null}
-                  {part.item.warrantyLabel ? <span>{part.item.warrantyLabel}</span> : null}
+                  <WarrantyTag label={part.item.warrantyLabel} />
                   {part.quantity > 1 ? <span>{t("quantity", { count: part.quantity })}</span> : null}
                   {!part.isAvailable ? <StatusBadge tone="neutral" icon={BanIcon}>{t("unavailable")}</StatusBadge> : null}
                 </div>
               </div>
-              <span className="shrink-0 text-end font-bold tabular-nums">{formatEgp(part.lineTotal, locale)}</span>
+              <span className="shrink-0 self-center text-end text-[15px] font-bold tabular-nums">{formatEgp(part.lineTotal, locale)}</span>
             </li>
           );
         })}
