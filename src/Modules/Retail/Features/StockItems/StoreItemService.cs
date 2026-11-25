@@ -80,14 +80,15 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var rule = await RuleAsync(cancellationToken);
         var rows = await items.Select(item => new
         {
-            item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
+            item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.BrandId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
             item.AloneExtra, item.CreatedAtUtc, item.Photos, item.Specs, item.OffersAlone, item.OffersWithBoard, item.OffersInBuild,
             Available = item.Units.Count(unit => unit.Status == UnitStatus.Available)
         }).ToListAsync(cancellationToken);
         return rows.Select(row => new StoreItemCard(row.Code, row.Slug, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
             StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
             row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.Photos.Skip(1).FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc,
-            rule.ForItem(row.CategoryId, StockItemRules.OwnPriceOptions(row.OffersAlone, row.OffersWithBoard, row.OffersInBuild)).Names, row.Specs)).ToList();
+            rule.ForItem(row.CategoryId, StockItemRules.OwnPriceOptions(row.OffersAlone, row.OffersWithBoard, row.OffersInBuild)).Names, row.Specs,
+            row.BrandId)).ToList();
     }
 
     /// <summary>Sold-out items stay listed (marked "خلص") but always come after the available ones.</summary>

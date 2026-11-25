@@ -22,7 +22,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
       <TopBar storefront={storefront} />
       <Header storefront={storefront} />
       <main className="min-h-[60vh]">
-        <CategoryTreeProvider tree={storefront.categoryTree}>{children}</CategoryTreeProvider>
+        <CategoryTreeProvider tree={storefront.categoryTree} brandNames={Object.fromEntries(storefront.brands.map((brand) => [brand.id, brand.name]))}>{children}</CategoryTreeProvider>
       </main>
       <Footer storefront={storefront} />
       <CartDrawer whatsAppNumber={whatsAppNumber(storefront.contactLinks)} freeShippingMinimum={storefront.checkout.freeShippingMinimum} />

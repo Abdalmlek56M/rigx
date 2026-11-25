@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, type ButtonSize } from "@/components/ui/Button";
-import { MailIcon } from "@/components/ui/icons";
+import { BellIcon } from "@/components/ui/icons";
 import { NotifyMeSheet, type NotifyTarget } from "./NotifyMeSheet";
 
 interface NotifyMeButtonProps {
@@ -21,7 +21,7 @@ export function NotifyMeButton({ target, size = "md", className, label }: Notify
 
   return (
     <>
-      <Button type="button" variant="secondary" size={size} icon={MailIcon} aria-haspopup="dialog" onClick={() => setOpen(true)} className={className}>
+      <Button type="button" variant="secondary" size={size} icon={BellIcon} aria-haspopup="dialog" onClick={() => setOpen(true)} className={className}>
         {label ?? t("cta")}
       </Button>
       <NotifyMeSheet open={open} onClose={() => setOpen(false)} target={target} />

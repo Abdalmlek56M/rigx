@@ -105,7 +105,8 @@ export function GalleryViewer({ open, photos, selected, alt, zoomed, onZoom, onM
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
               <img
-                src={mediaUrl(current.storageKey)} alt={alt} className={`max-h-full max-w-full object-contain transition-transform duration-200 motion-reduce:transition-none ${zoomed ? "scale-[2]" : "scale-100"}`}
+                key={current.storageKey}
+                src={mediaUrl(current.storageKey)} alt={alt} className={`gallery-photo-in max-h-full max-w-full object-contain transition-transform duration-200 motion-reduce:transition-none ${zoomed ? "scale-[2]" : "scale-100"}`}
               />
             </button>
             {count > 1 ? (

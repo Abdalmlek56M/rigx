@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type PointerEvent, type TouchEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent, type TouchEvent } from "react";
 import { useTranslations } from "next-intl";
 import { IconButton } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
@@ -18,11 +18,14 @@ const SWIPE_MIN = 40;
 
 /**
  * The main photo in a frame that takes the photo's own shape (a wide card photo stays wide, a tall case photo stays tall), so the
- * whole photo shows with no empty edges; a row of square thumbnails, arrows and swipe, and a full-screen viewer with zoom.
+ * whole photo shows with no empty edges; a row of square thumbnails, arrows and swipe, and a full-screen viewer with zoom. A new photo
+ * fades in, drifting a little from the side it came from (`.gallery-photo-in`), and the thumbnail row keeps the chosen one in view.
  */
 export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; alt: string; favourite?: { code: string; modelName: string } }) {
   const t = useTranslations("product.gallery");
   const [selected, setSelected] = useState(0);
+  /** Which way the last move went (1 = next, -1 = previous, 0 = none yet), for the side the photo drifts in from. */
+  const [step, setStep] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const mainButton = useRef<HTMLButtonElement>(null);
@@ -31,10 +34,23 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
   const current = photos[Math.min(selected, photos.length - 1)];
   const count = photos.length;
 
-  const move = useCallback((step: number) => {
+  const move = useCallback((by: number) => {
     if (count < 2) return;
-    setSelected((index) => (index + step + count) % count);
+    setStep(Math.sign(by));
+    setSelected((index) => (index + by + count) % count);
   }, [count]);
+
+  const choose = useCallback((index: number) => {
+    setStep(Math.sign(index - selected));
+    setSelected(index);
+  }, [selected]);
+
+  // The thumbnail row follows the chosen photo (only after a move, so opening the page never scrolls it).
+  useEffect(() => {
+    if (step === 0) return;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    thumbnails.current[selected]?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: smooth ? "smooth" : "auto" });
+  }, [selected, step]);
 
   function swipeStart(event: TouchEvent) {
     touchStart.current = event.touches[0]?.clientX ?? null;
@@ -73,7 +89,14 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
         {current ? (
           <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group relative block">
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-            <img src={mediaUrl(current.storageKey)} alt={alt} fetchPriority={selected === 0 ? "high" : "auto"} className="product-photo block h-auto max-h-[min(78vh,760px)] w-auto max-w-full" />
+            <img
+              key={current.storageKey}
+              src={mediaUrl(current.storageKey)}
+              alt={alt}
+              fetchPriority={selected === 0 ? "high" : "auto"}
+              style={{ "--enter-step": step } as CSSProperties}
+              className="product-photo gallery-photo-in block h-auto max-h-[min(78vh,760px)] w-auto max-w-full"
+            />
             <span aria-hidden="true" className="absolute start-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-orange-text shadow-soft transition-colors group-hover:bg-surface">
               <ExpandIcon size={18} />
             </span>
@@ -107,8 +130,8 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
                 type="button"
                 aria-label={t("photo", { number: index + 1 })}
                 aria-pressed={index === selected}
-                onClick={() => setSelected(index)}
-                className={`block aspect-square w-16 overflow-hidden rounded-control bg-surface transition-colors duration-150 md:w-20 ${index === selected ? "border-2 border-ink" : "border border-line hover:border-ink"} motion-reduce:transition-none`}
+                onClick={() => choose(index)}
+                className={`block aspect-square w-16 overflow-hidden rounded-control bg-surface transition-[border-color,opacity] duration-200 md:w-20 ${index === selected ? "border-2 border-orange" : "border border-line opacity-80 hover:border-ink hover:opacity-100"} motion-reduce:transition-none`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
                 <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={80} height={80} loading="lazy" className="product-photo h-full w-full object-cover" />
@@ -126,7 +149,7 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
         zoomed={zoomed}
         onZoom={setZoomed}
         onMove={move}
-        onSelect={setSelected}
+        onSelect={choose}
         onClose={closeViewer}
       />
     </div>
