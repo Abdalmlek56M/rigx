@@ -116,8 +116,16 @@ describe("category form", () => {
     assert.deepEqual(toCategoryInput(form, null), {
       name: "Cards", nameEn: null, slug: "gpu", parentId: null, description: null, iconStorageKey: null, sortOrder: 4,
       isActive: true, rowVersion: null, code: "GPU", showInMenu: true, showInBuilder: false,
-      priceOptions: { alone: true, withBoard: true, inBuild: true }
+      priceOptions: { alone: true, withBoard: true, inBuild: true }, iconKey: null
     });
+  });
+
+  it("keeps the picked icon and sends none for the automatic choice", () => {
+    const existing = { ...cat("gpu"), iconKey: "monitor" };
+    const form = categoryForm(existing);
+    assert.equal(form.iconKey, "monitor");
+    assert.equal(toCategoryInput(form, existing).iconKey, "monitor");
+    assert.equal(toCategoryInput({ ...form, iconKey: "" }, existing).iconKey, null);
   });
 
   it("keeps the image and the row version when editing", () => {

@@ -43,7 +43,7 @@ export function SearchBox({ label, value, onChange, focusKey, onEnter }: SearchB
 
   return (
     <div className="relative w-full min-w-0 md:w-72">
-      <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-muted"><SearchIcon size={16} /></span>
+      <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-orange-text"><SearchIcon size={16} /></span>
       <input
         type="search" aria-label={label} placeholder={label} value={text} data-focus={focusKey}
         onChange={(event) => type(event.target.value)}

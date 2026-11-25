@@ -144,7 +144,11 @@
     "account": "My account",
     "menu": "Menu",
     "darkMode": "Dark mode",
-    "lightMode": "Light mode"
+    "lightMode": "Light mode",
+    "searchResults": "Search results",
+    "searchEmpty": "No parts match “{query}”.",
+    "searchFailed": "Search is unavailable right now. Press Enter to see the results.",
+    "searchAll": "All results for “{query}”"
   },
   "locale": {
     "switchAria": "Choose language",
@@ -2398,7 +2402,31 @@
       "drag": "Drag to reorder, or press the up and down arrows",
       "reordered": "The category order was saved.",
       "reorderFailed": "The order was not saved. The list was refreshed; try again.",
-      "orderHint": "Drag a category by the dotted icon, or focus the icon and press the up and down arrows, to change its place among the categories on its level."
+      "orderHint": "Drag a category by the dotted icon, or focus the icon and press the up and down arrows, to change its place among the categories on its level.",
+      "icon": {
+        "title": "Category icon",
+        "hint": "Shown beside the category in filters and menus. “Automatic” picks one from the category link.",
+        "auto": "Automatic",
+        "keys": {
+          "cpu": "Processor",
+          "gpu": "Graphics card",
+          "motherboard": "Motherboard",
+          "ram": "Memory",
+          "storage": "Storage",
+          "power": "Power supply",
+          "cooling": "Cooling",
+          "case": "Case",
+          "monitor": "Monitor",
+          "keyboard": "Keyboard",
+          "mouse": "Mouse",
+          "headset": "Headset",
+          "gamepad": "Controller",
+          "laptop": "Laptop",
+          "network": "Networking",
+          "cable": "Cables",
+          "accessories": "Accessories"
+        }
+      }
     },
     "policies": {
       "title": "Policies",

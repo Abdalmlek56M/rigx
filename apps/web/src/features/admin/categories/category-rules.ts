@@ -140,12 +140,14 @@ export interface CategoryForm {
   priceAlone: boolean;
   priceWithBoard: boolean;
   priceInBuild: boolean;
+  /** A key of the ready icon set, or "" to let the storefront pick one from the slug. */
+  iconKey: string;
 }
 
 export function emptyCategoryForm(parentId: string | null, sortOrder = 0): CategoryForm {
   return {
     name: "", nameEn: "", slug: "", parentId: parentId ?? "", code: "", description: "", sortOrder: String(sortOrder),
-    isActive: true, showInMenu: true, showInBuilder: false, priceAlone: true, priceWithBoard: true, priceInBuild: true
+    isActive: true, showInMenu: true, showInBuilder: false, priceAlone: true, priceWithBoard: true, priceInBuild: true, iconKey: ""
   };
 }
 
@@ -163,7 +165,8 @@ export function categoryForm(category: Category): CategoryForm {
     showInBuilder: category.showInBuilder,
     priceAlone: category.priceOptions?.alone ?? true,
     priceWithBoard: category.priceOptions?.withBoard ?? true,
-    priceInBuild: category.priceOptions?.inBuild ?? true
+    priceInBuild: category.priceOptions?.inBuild ?? true,
+    iconKey: category.iconKey ?? ""
   };
 }
 
@@ -187,7 +190,8 @@ export function toCategoryInput(form: CategoryForm, category: Category | null): 
     code: form.code.trim() === "" ? null : form.code.trim(),
     showInMenu: form.showInMenu,
     showInBuilder: form.showInBuilder,
-    priceOptions: { alone: form.priceAlone, withBoard: form.priceWithBoard, inBuild: form.priceInBuild }
+    priceOptions: { alone: form.priceAlone, withBoard: form.priceWithBoard, inBuild: form.priceInBuild },
+    iconKey: form.iconKey === "" ? null : form.iconKey
   };
 }
 

@@ -5,11 +5,13 @@ import { categoryPath, effectiveSpecs, type CategoryNode } from "@/lib/categorie
 import { localizedName } from "@/lib/localized-name";
 import type { Brand } from "@/lib/storefront";
 import { catalogHref, toSearchParams, type CatalogState } from "./catalog-query";
-import type { ReactNode } from "react";
-import { BoxIcon, CheckIcon, CloseIcon, FilterIcon, GearIcon, GridIcon, TagIcon, WalletIcon } from "@/components/ui/icons";
+import { CategoryIcon } from "@/components/ui/category-icon";
+import { BoxIcon, CheckIcon, CloseIcon, FilterIcon, GridIcon, TagIcon, WalletIcon } from "@/components/ui/icons";
+import { SpecIcon } from "@/components/ui/SpecIcon";
 import { Button } from "@/components/ui/Button";
 import { FIELD_BASE } from "@/components/ui/field-class";
 import { BrandMark } from "./BrandMark";
+import { FilterGroup } from "./FilterGroup";
 
 // Rows keep a 40 px touch height in the phone drawer and tighten to 32 px in the desktop sidebar.
 const linkRow = "flex min-h-10 items-center rounded-control px-3 text-[13px] transition-colors duration-150 hover:bg-paper motion-reduce:transition-none lg:min-h-8";
@@ -27,16 +29,6 @@ interface FilterPanelProps {
   idPrefix: string;
 }
 
-/** A filter group's title: a small orange icon and the name, so each group is recognised at a glance. */
-function Legend({ icon: Icon, children }: { icon: typeof GridIcon; children: ReactNode }) {
-  return (
-    <legend className="mb-1 flex items-center gap-2 text-sm font-bold">
-      <span aria-hidden="true" className="text-orange-text"><Icon size={16} /></span>
-      {children}
-    </legend>
-  );
-}
-
 function CategoryList({ nodes, state, openIds, locale }: { nodes: CategoryNode[]; state: CatalogState; openIds: ReadonlySet<string>; locale: string }) {
   return (
     <ul className="m-0 flex list-none flex-col p-0 text-sm">
@@ -47,9 +39,12 @@ function CategoryList({ nodes, state, openIds, locale }: { nodes: CategoryNode[]
             <Link
               href={catalogHref(state, { category: selected ? null : node.slug })}
               aria-current={selected ? "true" : undefined}
-              className={`flex min-h-10 items-center rounded-control px-2 hover:bg-paper lg:min-h-8 ${openIds.has(node.id) ? "font-bold" : ""} ${selected ? "bg-paper" : ""}`}
+              className={`flex min-h-10 items-center gap-2.5 rounded-control px-2 hover:bg-paper lg:min-h-9 ${openIds.has(node.id) ? "font-bold" : ""} ${selected ? "bg-paper" : ""}`}
             >
-              {localizedName(node, locale)}
+              <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-full ${selected ? "accent-strong" : "bg-orange-soft text-orange-text"}`}>
+                <CategoryIcon slug={node.slug} icon={node.icon} size={15} />
+              </span>
+              <span className="min-w-0 flex-1 truncate">{localizedName(node, locale)}</span>
             </Link>
             {openIds.has(node.id) && node.children.length > 0 ? (
               <div className="ms-2 border-s border-line ps-3">
@@ -88,7 +83,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
   ] as const;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <div className="flex min-h-9 flex-wrap items-center gap-x-3 gap-y-1">
         <span className="flex items-center gap-2 text-[17px] font-bold">
           <span aria-hidden="true" className="text-orange-text"><FilterIcon size={18} /></span>
@@ -106,15 +101,13 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
       </div>
 
       {tree.length > 0 ? (
-        <fieldset className={fieldset}>
-          <Legend icon={GridIcon}>{t("category")}</Legend>
+        <FilterGroup icon={<GridIcon size={16} />} title={t("category")}>
           <CategoryList nodes={tree} state={state} openIds={openIds} locale={locale} />
-        </fieldset>
+        </FilterGroup>
       ) : null}
 
       {brands.length > 0 ? (
-        <fieldset className={fieldset}>
-          <Legend icon={TagIcon}>{t("brand")}</Legend>
+        <FilterGroup icon={<TagIcon size={16} />} title={t("brand")}>
           <ul className="m-0 flex max-h-60 list-none flex-col overflow-y-auto overscroll-contain p-0">
             {brands.map((brand) => {
               const selected = state.brand === brand.slug;
@@ -133,14 +126,13 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
               );
             })}
           </ul>
-        </fieldset>
+        </FilterGroup>
       ) : null}
 
       {specs.map((spec) => {
         const rest = Object.fromEntries(Object.entries(state.specs).filter(([key]) => key !== spec.key));
         return (
-          <fieldset key={spec.key} className={fieldset}>
-            <Legend icon={GearIcon}>{spec.name}</Legend>
+          <FilterGroup key={spec.key} icon={<SpecIcon specKey={spec.key} size={16} />} title={spec.name}>
             <div className="flex flex-wrap gap-1">
               {spec.options.map((option) => {
                 const selected = state.specs[spec.key] === option;
@@ -157,16 +149,17 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
                 );
               })}
             </div>
-          </fieldset>
+          </FilterGroup>
         );
       })}
 
+      <FilterGroup icon={<WalletIcon size={16} />} title={t("price")}>
       <form action={getPathname({ href: "/products", locale })} method="get" className={fieldset}>
         {hidden.map(([name, value]) => (
           <input key={`${name}=${value}`} type="hidden" name={name} value={value} />
         ))}
         <fieldset className={fieldset}>
-          <Legend icon={WalletIcon}>{t("price")}</Legend>
+          <legend className="sr-only">{t("price")}</legend>
           <div className="flex items-center gap-2">
             <label htmlFor={`${idPrefix}-min`} className="sr-only">{t("min")}</label>
             <input id={`${idPrefix}-min`} name="min" type="number" min={0} inputMode="numeric" placeholder={t("min")} defaultValue={state.min ?? ""} className={numberInput} />
@@ -177,10 +170,10 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
           <Button type="submit" variant="secondary" size="sm" className="mt-0.5 w-full">{t("apply")}</Button>
         </fieldset>
       </form>
+      </FilterGroup>
 
       {showSoldOut ? (
-        <fieldset className={fieldset}>
-          <Legend icon={BoxIcon}>{t("availability")}</Legend>
+        <FilterGroup icon={<BoxIcon size={16} />} title={t("availability")}>
           <div className="flex gap-1 rounded-card bg-paper p-1">
             {stocks.map((stock) => {
               const selected = state.stock === stock.value;
@@ -196,7 +189,7 @@ export async function FilterPanel({ state, tree, brands, categoryId, showSoldOut
               );
             })}
           </div>
-        </fieldset>
+        </FilterGroup>
       ) : null}
     </div>
   );

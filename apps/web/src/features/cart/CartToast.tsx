@@ -3,14 +3,16 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { CheckIcon } from "@/components/ui/icons";
+import { TOAST_CARD_CLASS, TOAST_REGION_CLASS, TOAST_TONE_CLASS } from "@/components/ui/toast-class";
 import { useCart } from "./cart-context";
 
 const TOAST_MS = 4000;
 
-/** "Added to cart" confirmation shown by `add()`; the live region stays mounted so screen readers announce it. */
+/** "Added to cart" confirmation shown by `add()` at the top of the screen; the live region stays mounted so screen readers announce it. */
 export function CartToast() {
   const t = useTranslations("cart");
   const { addedModel, dismissToast, open } = useCart();
+  const tone = TOAST_TONE_CLASS.success;
 
   useEffect(() => {
     if (!addedModel) return;
@@ -19,14 +21,14 @@ export function CartToast() {
   }, [addedModel, dismissToast]);
 
   return (
-    <div role="status" className="pointer-events-none fixed end-4 top-[calc(env(safe-area-inset-top)+7.5rem)] z-50 md:end-8 md:top-[5.5rem]">
+    <div role="status" className={TOAST_REGION_CLASS}>
       {addedModel ? (
-        <div className="toast-in pointer-events-auto flex items-center gap-3 rounded-card bg-chrome px-4 py-3 text-sm text-on-carbon shadow-lift">
-          <span aria-hidden="true" className="flex h-6 w-6 items-center justify-center rounded-full bg-success text-white"><CheckIcon size={14} /></span>
-          <span>
+        <div className={`toast-in ${TOAST_CARD_CLASS} items-center ${tone.edge}`}>
+          <span aria-hidden="true" className={`flex size-8 shrink-0 items-center justify-center rounded-full ${tone.icon}`}><CheckIcon size={16} /></span>
+          <span className="min-w-0 flex-1 text-sm leading-6">
             {t("added")} <span dir="ltr" className="font-bold [unicode-bidi:isolate]">{addedModel}</span>
           </span>
-          <button type="button" onClick={open} className="min-h-11 font-bold text-orange">
+          <button type="button" onClick={open} className="min-h-11 shrink-0 rounded-control px-2 text-sm font-bold text-orange-text transition-colors hover:bg-orange-soft">
             {t("openCart")}
           </button>
         </div>

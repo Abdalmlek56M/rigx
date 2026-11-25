@@ -1,5 +1,7 @@
 /** The toast list: newest last, at most `MAX_TOASTS` on screen. Pure, so it is tested. */
-export type ToastTone = "success" | "error" | "info";
+import type { ToastTone } from "../../../components/ui/toast-class.ts";
+
+export type { ToastTone };
 
 export interface ToastItem {
   id: number;

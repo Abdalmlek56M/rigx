@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { AlertIcon, CheckIcon, CloseIcon, InfoIcon, UndoIcon } from "@/components/ui/icons";
 import { Button, IconButton } from "./Button";
+import { TOAST_CARD_CLASS, TOAST_REGION_CLASS, TOAST_TONE_CLASS } from "@/components/ui/toast-class";
 import { dropToast, pushToast, toastDuration, type ToastItem, type ToastTone } from "./toast-queue";
 
 type ShowToast = (message: string, tone?: ToastTone, detail?: string) => void;
@@ -13,10 +14,10 @@ type ShowUndoToast = (message: string, onUndo: () => void | Promise<void>) => vo
 
 const ToastContext = createContext<{ show: ShowToast; undo: ShowUndoToast } | null>(null);
 
-const TONES: Record<ToastTone, { role: "status" | "alert"; icon: typeof CheckIcon; color: string }> = {
-  success: { role: "status", icon: CheckIcon, color: "text-success" },
-  error: { role: "alert", icon: AlertIcon, color: "text-error-text" },
-  info: { role: "status", icon: InfoIcon, color: "text-orange-text" }
+const TONES: Record<ToastTone, { role: "status" | "alert"; icon: typeof CheckIcon }> = {
+  success: { role: "status", icon: CheckIcon },
+  error: { role: "alert", icon: AlertIcon },
+  info: { role: "status", icon: InfoIcon }
 };
 
 /** One toast: enters, waits five seconds (eight with an undo button; paused while hovered or focused), then leaves. */
@@ -85,10 +86,10 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);
       }}
-      className={`pointer-events-auto flex w-full items-start gap-3 rounded-card border border-line bg-surface p-4 text-ink shadow-[0_8px_28px_rgba(21,23,27,.18)] transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${entered && !leaving ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}
+      className={`${TOAST_CARD_CLASS} ${TOAST_TONE_CLASS[toast.tone].edge} transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${entered && !leaving ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}`}
     >
-      <span className={`mt-0.5 ${tone.color}`}><Icon size={20} /></span>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <span aria-hidden="true" className={`flex size-8 shrink-0 items-center justify-center rounded-full ${TOAST_TONE_CLASS[toast.tone].icon}`}><Icon size={16} /></span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1">
         <p className="m-0 text-sm font-bold">{toast.message}</p>
         {toast.detail ? <p className="m-0 text-xs text-ink-muted">{toast.detail}</p> : null}
         {toast.action ? (
@@ -103,7 +104,7 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
           </Button>
         ) : null}
         <span aria-hidden="true" className="mt-2 h-0.5 overflow-hidden rounded-full bg-line">
-          <span ref={bar} className="block h-full origin-left bg-current rtl:origin-right motion-reduce:hidden" />
+          <span ref={bar} className="block h-full origin-left bg-ink-muted/50 rtl:origin-right motion-reduce:hidden" />
         </span>
       </div>
       <IconButton icon={CloseIcon} label={t("toasts.close")} size="sm" className="-me-1 -mt-1" onClick={() => setLeaving(true)} />
@@ -129,14 +130,14 @@ function ToastRegion({ toasts, onClose }: { toasts: readonly ToastItem[]; onClos
   return (
     <section
       ref={region} popover="manual" aria-label={t("toasts.region")}
-      className="pointer-events-none fixed inset-auto bottom-4 start-4 z-50 m-0 flex w-[min(380px,calc(100vw-2rem))] flex-col gap-2 overflow-visible border-0 bg-transparent p-0"
+      className={`${TOAST_REGION_CLASS} overflow-visible border-0 bg-transparent p-0`}
     >
       {toasts.map((toast) => <ToastCard key={toast.id} toast={toast} onClose={() => onClose(toast.id)} />)}
     </section>
   );
 }
 
-/** Success, error and info toasts after an admin action; at most three, bottom-start, five seconds each (eight with an undo button). */
+/** Success, error and info toasts after an admin action; at most three, at the top centre, five seconds each (eight with an undo button). */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const t = useTranslations("admin.kit");
   const [toasts, setToasts] = useState<ToastItem[]>([]);

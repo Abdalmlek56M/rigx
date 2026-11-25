@@ -15,6 +15,7 @@ import { slotLimit, takesSeveralParts } from "./slot-limits";
 import { useOptions } from "./use-options";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { conditionIcon } from "@/components/ui/condition-icon";
+import { SearchIcon } from "@/components/ui/icons";
 
 const SEARCH_DELAY_MS = 300;
 
@@ -52,14 +53,18 @@ export function OptionPanel({ slot, slotName, partsKey, selectedCodes, filledSlo
         ))}
       </div>
       <span className="rounded-control bg-success/10 px-3 py-2 text-xs text-success">{takesSeveralParts(slot) ? t("hintSeveral", { max: slotLimit(slot).units }) : t("hint")}</span>
-      <input
-        type="search"
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        aria-label={t("search")}
-        placeholder={t("search")}
-        className={fieldClass}
-      />
+      <div className="relative">
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 start-3.5 flex items-center text-orange-text"><SearchIcon size={18} /></span>
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          aria-label={t("search")}
+          placeholder={t("search")}
+          autoComplete="off"
+          className={`${fieldClass} ps-11`}
+        />
+      </div>
       {failed ? (
         <p role="alert" className="m-0 text-sm text-error-text">{t("failed")}</p>
       ) : groups.length === 0 && !loading ? (

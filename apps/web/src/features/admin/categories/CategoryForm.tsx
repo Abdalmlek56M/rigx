@@ -21,6 +21,7 @@ import {
 import { createCategory, updateCategory, type Category } from "./categories-api";
 import { SaveIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
+import { CategoryIconPicker } from "./CategoryIconPicker";
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
@@ -103,6 +104,7 @@ export function CategoryForm({ tree, category, parentId, canManage, onSaved, onS
         />
         <TextField label={t("fields.code")} name="code" value={form.code} onChange={(code) => set({ code: code.toUpperCase() })} ltr error={submit.errors.fields.code} />
       </div>
+      <CategoryIconPicker value={form.iconKey} slug={form.slug} onChange={(iconKey) => set({ iconKey })} />
       <TextAreaField label={t("fields.description")} name="description" value={form.description} onChange={(description) => set({ description })} rows={3} error={submit.errors.fields.description} />
       <div className="flex flex-wrap gap-x-5">
         <Check label={t("fields.active")} checked={form.isActive} onChange={(isActive) => set({ isActive })} />
