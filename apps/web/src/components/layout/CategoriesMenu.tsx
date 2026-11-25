@@ -34,7 +34,7 @@ function FeaturedItems({ stock, onPick }: { stock: CategoryStock | null | undefi
                   <span className="flex h-16 items-center justify-center overflow-hidden rounded-[6px] bg-paper text-muted">
                     {item.thumbnailStorageKey ? (
                       // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                      <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={96} height={64} loading="lazy" className="h-full w-full object-contain p-1" />
+                      <img src={mediaUrl(item.thumbnailStorageKey)} alt="" width={96} height={64} loading="lazy" className="product-photo h-full w-full object-cover" />
                     ) : (
                       <ImagePlaceholderIcon />
                     )}

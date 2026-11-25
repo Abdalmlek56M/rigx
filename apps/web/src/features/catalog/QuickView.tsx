@@ -7,7 +7,6 @@ import { ButtonLink, IconButton } from "@/components/ui/Button";
 import { ConditionBadge } from "@/components/ui/ConditionBadge";
 import { InfoField, InfoGrid } from "@/components/ui/InfoGrid";
 import { ModalSheet } from "@/components/ui/ModalSheet";
-import { PhotoBackdrop } from "@/components/ui/PhotoBackdrop";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ArrowEndIcon, BanIcon, CloseIcon, EyeIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
@@ -67,18 +66,15 @@ export function QuickView({ item }: { item: Schemas["StoreItemCard"] }) {
             <b className="type-section-title">{t("title")}</b>
             <IconButton icon={CloseIcon} label={tc("close")} variant="secondary" onClick={() => setOpen(false)} />
           </div>
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-            <div className="photo-frame relative flex aspect-square shrink-0 items-center justify-center overflow-hidden rounded-card bg-paper text-muted">
-              {mainKey ? (
-                <>
-                  <PhotoBackdrop storageKey={mainKey} size={480} />
-                  {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-                  <img src={mediaUrl(mainKey)} alt={item.modelName} width={480} height={480} className="relative h-full w-full object-contain" />
-                </>
-              ) : (
-                <ImagePlaceholderIcon size={48} />
-              )}
-            </div>
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-4">
+            {mainKey ? (
+              <div className="mx-auto w-fit max-w-full shrink-0 overflow-hidden rounded-card border border-line">
+                {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
+                <img src={mediaUrl(mainKey)} alt={item.modelName} className="product-photo block h-auto max-h-[46dvh] w-auto max-w-full" />
+              </div>
+            ) : (
+              <div className="flex aspect-square shrink-0 items-center justify-center rounded-card bg-paper text-muted"><ImagePlaceholderIcon size={48} /></div>
+            )}
             {photos.length > 1 ? (
               <ul className="m-0 flex list-none gap-2 overflow-x-auto p-0 [scrollbar-width:none]">
                 {photos.map((photo, index) => (
@@ -91,7 +87,7 @@ export function QuickView({ item }: { item: Schemas["StoreItemCard"] }) {
                       className={`size-14 shrink-0 overflow-hidden rounded-control border bg-paper ${index === selected ? "border-orange" : "border-line"}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-                      <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="h-full w-full object-cover" />
+                      <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="product-photo h-full w-full object-cover" />
                     </button>
                   </li>
                 ))}

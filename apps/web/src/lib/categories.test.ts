@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { categoryBySlug, categoryPath, effectiveSpecs, type CategoryNode, type SpecDef } from "./categories.ts";
 
-const spec = (key: string, name = key): SpecDef => ({ key, name, options: [], unit: null, isFilter: false });
+const spec = (key: string, name = key): SpecDef => ({ key, name, options: [], unit: null, isFilter: false, type: "Text" });
 const node = (id: string, parentId: string | null, specs: SpecDef[], children: CategoryNode[] = []): CategoryNode => ({
   id, parentId, name: id, slug: id.toLowerCase(), specs, children
 });

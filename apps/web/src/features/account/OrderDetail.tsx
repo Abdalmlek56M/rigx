@@ -29,7 +29,7 @@ function Items({ order }: { order: Order }) {
             <span className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper">
               {item.thumbnailStorageKey ? (
                 // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                <img src={mediaUrl(item.thumbnailStorageKey)} alt="" className="h-full w-full object-contain p-1" />
+                <img src={mediaUrl(item.thumbnailStorageKey)} alt="" className="product-photo h-full w-full object-cover" />
               ) : null}
             </span>
             <span className="flex min-w-0 flex-1 flex-col">

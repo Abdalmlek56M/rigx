@@ -634,3 +634,69 @@ export const KeyboardIcon = (p: IconProps) => (
     <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
   </Icon>
 );
+export const GaugeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4.5 18a9 9 0 1 1 15 0" />
+    <path d="M12 13l4-4" />
+    <circle cx="12" cy="13" r="1.2" />
+  </Icon>
+);
+export const RulerIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="8" width="20" height="8" rx="1.5" />
+    <path d="M6 8v3M10 8v4M14 8v3M18 8v4" />
+  </Icon>
+);
+export const BoltIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
+  </Icon>
+);
+export const PlugIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0z" />
+    <path d="M12 17v4" />
+  </Icon>
+);
+export const SparkleIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />
+    <path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z" />
+  </Icon>
+);
+export const WifiIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0" />
+    <path d="M12 19.5h.01" />
+  </Icon>
+);
+export const SnowflakeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7" />
+    <path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5" />
+  </Icon>
+);
+export const MouseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="6" y="3" width="12" height="18" rx="6" />
+    <path d="M12 7v4" />
+  </Icon>
+);
+export const LaptopIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="4" y="5" width="16" height="11" rx="1.5" />
+    <path d="M2 19h20" />
+  </Icon>
+);
+export const CableIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 3v4M11 3v4M5 7h8v3a4 4 0 0 1-8 0z" />
+    <path d="M9 14v2a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4V8" />
+  </Icon>
+);
+export const LayersIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3l9 5-9 5-9-5z" />
+    <path d="M3 13l9 5 9-5" />
+  </Icon>
+);

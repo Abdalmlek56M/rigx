@@ -386,6 +386,10 @@
     "alternatives": {
       "title": "Available now instead",
       "lead": "Items from the same category that are in stock."
+    },
+    "specValue": {
+      "yes": "Yes",
+      "no": "No"
     }
   },
   "builds": {

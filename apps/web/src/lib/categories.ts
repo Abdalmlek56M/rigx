@@ -4,6 +4,8 @@ export interface SpecDef {
   options: string[];
   unit: string | null;
   isFilter: boolean;
+  /** "Choice", "Number", "YesNo" or "Text" (the Catalog's spec types). */
+  type: string;
 }
 
 export interface CategoryNode {

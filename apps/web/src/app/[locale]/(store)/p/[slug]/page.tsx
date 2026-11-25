@@ -133,7 +133,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="flex shell flex-col gap-6">
         <ProductInfoBoxes warrantyLabel={item.warrantyLabel} storefront={storefront} />
-        <SpecsTable rows={specRows(item.specs, defs)} />
+        <SpecsTable rows={specRows(item.specs, defs, { yes: t("specValue.yes"), no: t("specValue.no") })} />
         {faqs.length > 0 ? (
           <Card title={t("faqs")} icon={HelpIcon} padding="md">
             <FaqList entries={faqs} plain />

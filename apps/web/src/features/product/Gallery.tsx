@@ -4,7 +4,6 @@ import { useCallback, useRef, useState, type PointerEvent, type TouchEvent } fro
 import { useTranslations } from "next-intl";
 import { IconButton } from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
-import { PhotoBackdrop } from "@/components/ui/PhotoBackdrop";
 import { ArrowBackIcon, ArrowEndIcon, ExpandIcon, ImagePlaceholderIcon } from "@/components/ui/icons";
 import { FavouriteButton } from "@/features/favourites/FavouriteButton";
 import { mediaUrl } from "@/lib/media";
@@ -17,7 +16,10 @@ export interface Photo {
 
 const SWIPE_MIN = 40;
 
-/** Main photo in a square frame, a row of square thumbnails, arrows and swipe, and a full-screen viewer with zoom. */
+/**
+ * The main photo in a frame that takes the photo's own shape (a wide card photo stays wide, a tall case photo stays tall), so the
+ * whole photo shows with no empty edges; a row of square thumbnails, arrows and swipe, and a full-screen viewer with zoom.
+ */
 export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; alt: string; favourite?: { code: string; modelName: string } }) {
   const t = useTranslations("product.gallery");
   const [selected, setSelected] = useState(0);
@@ -63,22 +65,19 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div
-        className={`${cardClass({ padding: "none" })} photo-stage relative aspect-square w-full overflow-hidden`}
+        className={`${cardClass({ padding: "none" })} relative mx-auto w-fit max-w-full overflow-hidden ${current ? "" : "aspect-square w-full"}`}
         onTouchStart={swipeStart}
         onTouchEnd={swipeEnd}
         style={{ touchAction: "pan-y" }}
       >
         {current ? (
-          <>
-            <PhotoBackdrop storageKey={current.storageKey} size={720} />
-          <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group relative block h-full w-full">
+          <button ref={mainButton} type="button" onClick={() => { setZoomed(false); setViewerOpen(true); }} aria-label={t("open")} onPointerMove={aim} className="zoom-photo group relative block">
             {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-            <img src={mediaUrl(current.storageKey)} alt={alt} width={720} height={720} fetchPriority={selected === 0 ? "high" : "auto"} className="h-full w-full object-contain p-4" />
-            <span aria-hidden="true" className="absolute start-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink shadow-soft transition-colors group-hover:text-orange-text">
+            <img src={mediaUrl(current.storageKey)} alt={alt} fetchPriority={selected === 0 ? "high" : "auto"} className="product-photo block h-auto max-h-[min(78vh,760px)] w-auto max-w-full" />
+            <span aria-hidden="true" className="absolute start-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-orange-text shadow-soft transition-colors group-hover:bg-surface">
               <ExpandIcon size={18} />
             </span>
           </button>
-          </>
         ) : (
           <div className="flex h-full items-center justify-center text-muted"><ImagePlaceholderIcon size={220} /></div>
         )}
@@ -112,7 +111,7 @@ export function Gallery({ photos, alt, favourite }: { photos: readonly Photo[]; 
                 className={`block aspect-square w-16 overflow-hidden rounded-control bg-surface transition-colors duration-150 md:w-20 ${index === selected ? "border-2 border-ink" : "border border-line hover:border-ink"} motion-reduce:transition-none`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-                <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={80} height={80} loading="lazy" className="h-full w-full object-contain p-1" />
+                <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={80} height={80} loading="lazy" className="product-photo h-full w-full object-cover" />
               </button>
             </li>
           ))}

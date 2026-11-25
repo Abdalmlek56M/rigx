@@ -35,7 +35,7 @@ describe("describeIssue", () => {
 describe("specNameMap", () => {
   const node = (specs: [string, string][], children: CategoryNode[] = []): CategoryNode => ({
     id: "1", parentId: null, name: "n", slug: "n", children,
-    specs: specs.map(([key, name]) => ({ key, name, options: [], unit: null, isFilter: false }))
+    specs: specs.map(([key, name]) => ({ key, name, options: [], unit: null, isFilter: false, type: "Text" }))
   });
   it("collects specs through the tree and keeps the first definition", () => {
     const tree = [node([["socket", "السوكت"]], [node([["socket", "Other"], ["vram", "الذاكرة"]])]), node([["vram", "Later"]])];

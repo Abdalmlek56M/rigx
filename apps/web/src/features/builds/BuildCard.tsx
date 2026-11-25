@@ -39,7 +39,7 @@ export function BuildCard({ build }: { build: Schemas["AssemblyPublicView"] }) {
       <Link href={href} aria-label={title} className="relative flex aspect-square items-center justify-center overflow-hidden bg-surface text-muted">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-          <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={420} height={420} loading="lazy" className="h-full w-full object-contain p-5" />
+          <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" width={420} height={420} loading="lazy" className="product-photo h-full w-full object-cover" />
         ) : (
           <ImagePlaceholderIcon size={96} />
         )}

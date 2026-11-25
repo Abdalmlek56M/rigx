@@ -45,7 +45,7 @@ export function OptionRow({ group, slotNames, specNames, onPick }: OptionRowProp
           <div className="flex aspect-square h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper text-muted">
             {group.thumbnailStorageKey ? (
               // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-              <img src={mediaUrl(group.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="h-full w-full object-contain p-1" />
+              <img src={mediaUrl(group.thumbnailStorageKey)} alt="" width={56} height={56} loading="lazy" className="product-photo h-full w-full object-cover" />
             ) : (
               <ImagePlaceholderIcon size={32} />
             )}

@@ -1101,7 +1101,7 @@ dialog[data-sheet="side"][data-edge="start"] {
   }
 }
 
-/* Dark theme: product photos sit on a soft warm-grey backdrop and multiply into it, so a white studio background stops glaring. */
+/* Dark theme: a brand logo sits on a soft warm-grey backdrop and multiplies into it, so a dark logo stays visible. */
 [data-theme="dark"] .photo-frame {
   background: var(--photo-backdrop);
 }
@@ -1110,13 +1110,9 @@ dialog[data-sheet="side"][data-edge="start"] {
   mix-blend-mode: multiply;
 }
 
-/* Product page gallery: the card surface behind a blurred copy of the photo (a dimmer one in dark, so a white studio background never glares); the real photo stays whole on top. */
-.photo-stage-fill {
-  opacity: 0.55;
-}
-
-[data-theme="dark"] .photo-stage-fill {
-  opacity: 0.22;
+/* Dark theme: product photos (cards fill their frame, the gallery follows the photo's ratio) are dimmed a little, so a white studio background never glares. */
+[data-theme="dark"] .product-photo {
+  filter: brightness(0.9);
 }
 
 /* Card photo swap and the product photo magnifier: mouse only. The second card photo is only mounted after the first pointer-enter. */

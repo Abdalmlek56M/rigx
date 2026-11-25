@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { CartDrawer } from "@/features/cart/CartDrawer";
 import { CartProvider } from "@/features/cart/cart-context";
 import { CartToast } from "@/features/cart/CartToast";
+import { CategoryTreeProvider } from "@/features/catalog/category-tree-context";
 import { whatsAppNumber } from "@/lib/contact";
 import { loadStorefront } from "@/lib/storefront";
 import { BackToTop } from "./BackToTop";
@@ -20,7 +21,9 @@ export async function SiteShell({ children }: { children: ReactNode }) {
       <div aria-hidden="true" className="page-glow" />
       <TopBar storefront={storefront} />
       <Header storefront={storefront} />
-      <main className="min-h-[60vh]">{children}</main>
+      <main className="min-h-[60vh]">
+        <CategoryTreeProvider tree={storefront.categoryTree}>{children}</CategoryTreeProvider>
+      </main>
       <Footer storefront={storefront} />
       <CartDrawer whatsAppNumber={whatsAppNumber(storefront.contactLinks)} freeShippingMinimum={storefront.checkout.freeShippingMinimum} />
       <CartToast />

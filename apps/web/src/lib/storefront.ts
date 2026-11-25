@@ -113,7 +113,7 @@ function toTree(categories: Schemas["CategoryView"][]): CategoryNode[] {
       name: c.name,
       nameEn: c.nameEn ?? null,
       slug: c.slug,
-      specs: c.specs.map((s) => ({ key: s.key, name: s.name, options: s.options ?? [], unit: s.unit ?? null, isFilter: s.isFilter })),
+      specs: c.specs.map((s) => ({ key: s.key, name: s.name, options: s.options ?? [], unit: s.unit ?? null, isFilter: s.isFilter, type: s.type })),
       children: toTree(c.children)
     }));
 }

@@ -61,7 +61,7 @@ export function OrderSummary({ form, set, errors, lines, subtotal, quote, minimu
             <span className="flex aspect-square h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-control bg-paper">
               {line.thumbnailStorageKey ? (
                 // eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite
-                <img src={mediaUrl(line.thumbnailStorageKey)} alt="" className="h-full w-full object-contain p-1" />
+                <img src={mediaUrl(line.thumbnailStorageKey)} alt="" className="product-photo h-full w-full object-cover" />
               ) : null}
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">

@@ -135,7 +135,7 @@ export function GalleryViewer({ open, photos, selected, alt, zoomed, onZoom, onM
                     className={`block aspect-square w-14 overflow-hidden rounded-control bg-white/5 ${index === selected ? "border-2 border-white" : "border border-white/25"}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- media is served by the API through the same-origin rewrite */}
-                    <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" className="h-full w-full object-contain p-1" />
+                    <img src={mediaUrl(photo.thumbnailStorageKey)} alt="" className="product-photo h-full w-full object-cover" />
                   </button>
                 </li>
               ))}
