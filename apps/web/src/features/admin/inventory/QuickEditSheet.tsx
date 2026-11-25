@@ -45,7 +45,7 @@ function Editor({ item, tree, onClose, onChanged }: QuickEditProps & { item: Sto
       {state.status === "ready" ? (
         <section className="rounded-card border border-line bg-surface p-4">
           <StockItemForm
-            item={item} tree={tree} brands={state.data.brands} warrantyLabels={state.data.warrantyLabels} canEdit
+            item={item} tree={tree} brands={state.data.brands} warrantyLabels={state.data.warrantyLabels} canEdit showCosts={has("Inventory.ViewCosts")}
             onSaved={() => {
               onChanged();
               onClose();

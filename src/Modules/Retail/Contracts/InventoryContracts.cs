@@ -13,6 +13,8 @@ public sealed record ReceiptSource(string? SourceName, string? SourceType, strin
 public sealed record ReceiveRequest(Guid PurchaseId, string? Notes, ReceiptSource Source, IReadOnlyList<ReceiptLine> Lines);
 public sealed record UnitView(Guid Id, Guid StockItemId, string StockItemCode, Guid? ProductId, string Name, string Condition,
     string? InspectionCondition, string? SerialNumber, string? SourceName, string? SourceType, string? PurchaseKind, DateOnly? PurchaseDate,
-    decimal? AcquisitionCost, decimal? PartnerPercentOverride, Guid? PartnerId, string Status, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion);
+    decimal? AcquisitionCost, decimal? PartnerPercentOverride, Guid? PartnerId, string Status, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion, bool ExcludedFromStockValue = false);
+/// <summary>Sets whether one unit is left out of the stock value.</summary>
+public sealed record UnitStockValueRequest(bool Excluded);
 /// <summary>Items created by one receipt, in line order (one entry per created item).</summary>
 public sealed record ReceiptResult(Guid ReceiptId, IReadOnlyList<StockItemAdminView> Items);

@@ -16033,6 +16033,121 @@
           }
         ]
       }
+    },
+    "/api/v1/admin/retail/units/{id}/stock-value": {
+      "put": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060Inventory.StockAdjust\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitStockValueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnitView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/retail/assemblies/{id}/copies": {
+      "post": {
+        "tags": [
+          "admin/retail"
+        ],
+        "description": "Permission: \u0060Catalog.ManageProducts\u0060.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssemblyCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssemblyView"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error (ProblemDetails).",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -29847,6 +29962,10 @@
                 "$ref": "#/components/schemas/ItemPriceOptions"
               }
             ]
+          },
+          "excludedFromStockValue": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -30046,6 +30165,10 @@
                 "$ref": "#/components/schemas/ItemPriceOptions"
               }
             ]
+          },
+          "excludedFromStockValue": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -30125,6 +30248,10 @@
                 "$ref": "#/components/schemas/StockBuildRef"
               }
             ]
+          },
+          "excludedFromStockValue": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -31332,6 +31459,10 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          },
+          "excludedFromStockValue": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -32019,6 +32150,29 @@
           },
           "backInStock": {
             "type": "string"
+          }
+        }
+      },
+      "UnitStockValueRequest": {
+        "required": [
+          "excluded"
+        ],
+        "type": "object",
+        "properties": {
+          "excluded": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AssemblyCopyRequest": {
+        "required": [
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       }

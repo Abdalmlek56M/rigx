@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import type { Build, BuildPart } from "./builds-api.ts";
 import {
   allocationDifference, allocationForm, allocationSum, allocationValid, canDisassemble, canPublish, canUnpublish, cardValid, copiesCount, defaultAllocation,
-  buildOption, emptyNewPart, otherBuilds, filterBuilds, isLocked, newPartOwed, newPartValid, pickBuild, sellModeKey, statusKey, toAllocationInputs, toCardForm, toEditRequest, toNewPartBody,
+  buildOption, copyCount, inStockBuilds, emptyNewPart, otherBuilds, filterBuilds, isLocked, newPartOwed, newPartValid, pickBuild, sellModeKey, statusKey, toAllocationInputs, toCardForm, toEditRequest, toNewPartBody,
   toPartBody, toPartForm, emptyPlannedRow, pickPlannedModel, plannedRows, plannedRowsValid, plannedTotal, toPlannedInputs, typePlannedName
 } from "./build-rules.ts";
 
@@ -40,6 +40,17 @@ describe("build status and list", () => {
     assert.deepEqual(filterBuilds(list, "", "gaming").map((entry) => entry.id), ["b1"]);
     assert.deepEqual(filterBuilds(list, "", " bld-02 ").map((entry) => entry.id), ["b2"]);
     assert.equal(filterBuilds(list, "Sold", "gaming").length, 0);
+  });
+
+  it("keeps only the builds still in stock", () => {
+    const list = [build(), build({ id: "b2", status: "Published" }), build({ id: "b3", status: "Sold" }), build({ id: "b4", status: "Disassembled" })];
+    assert.deepEqual(inStockBuilds(list).map((entry) => entry.id), ["b1", "b2"]);
+  });
+
+  it("accepts one to nine identical builds", () => {
+    assert.equal(copyCount("3"), 3);
+    assert.equal(copyCount(" 9 "), 9);
+    for (const bad of ["", "0", "10", "-1", "2.5", "abc"]) assert.equal(copyCount(bad), null, bad);
   });
 
   it("picks this build out of the list a remove or replace returned", () => {

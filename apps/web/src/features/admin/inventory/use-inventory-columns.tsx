@@ -87,6 +87,7 @@ export function useInventoryColumns({ tree, partners, selected, onToggle, onTogg
       ) : (
         <Link href={`/admin/inventory/${row.item.id}`} dir="auto" className={`block max-w-56 truncate font-bold hover:text-orange-text hover:underline [unicode-bidi:isolate] ${row.underBuild ? "ms-5" : ""}`}>
           {row.item.modelName}
+          {row.item.excludedFromStockValue === true ? <span className="ms-2 align-middle"><StatusBadge tone="neutral">{t("excludedBadge")}</StatusBadge></span> : null}
         </Link>
       )
     },

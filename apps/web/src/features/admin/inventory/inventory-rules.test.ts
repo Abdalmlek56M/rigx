@@ -4,19 +4,19 @@ import type { Category } from "../categories/categories-api.ts";
 import type { Partner } from "../expenses/expenses-api.ts";
 import type { StockItem, StockUnit } from "./inventory-api.ts";
 import {
-  categoryPath, countTooFewPhotos, expectedProfit, groupByBuild, itemCost, itemFormValid, itemModes, itemPartner, modesOk, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, MIN_PHOTOS_TO_PUBLISH, photosTooFew, triState, unitPercent, unitStatusKey
+  categoryPath, countTooFewPhotos, expectedProfit, groupByBuild, itemCost, itemFormValid, itemModes, itemPartner, leftOutOfStockValue, modesOk, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, MIN_PHOTOS_TO_PUBLISH, photosTooFew, triState, unitPercent, unitStatusKey
 } from "./inventory-rules.ts";
 
 const unit = (patch: Partial<StockUnit>): StockUnit => ({
   id: "u", status: "Available", condition: "Used", serialNumber: null, acquisitionCost: 1000, partnerPercentOverride: null, partnerId: null,
-  assemblyId: null, receivedAtUtc: "2026-11-01T00:00:00Z", rowVersion: 1, build: null, ...patch
+  assemblyId: null, receivedAtUtc: "2026-11-01T00:00:00Z", rowVersion: 1, build: null, excludedFromStockValue: false, ...patch
 });
 
 const item = (units: StockUnit[], patch: Partial<StockItem> = {}): StockItem => ({
   id: "i", code: "RX-1", condition: "Used", categoryId: "c2", brandId: "b1", productId: "p1", modelName: "RX 6600", price: 2000, withBoardExtra: null, aloneExtra: 150,
   prices: { inBuild: 2000, withBoard: 2000, alone: 2150 }, warrantyLabel: null, warrantyMonths: null, hasBox: false, isHidden: false, isPublished: true,
   internalNote: null, specs: { vram: "8" }, photos: [], availableCount: units.filter((entry) => entry.status === "Available").length, daysInStock: 3,
-  createdAtUtc: "2026-11-01T00:00:00Z", rowVersion: 7, units, ...patch
+  createdAtUtc: "2026-11-01T00:00:00Z", rowVersion: 7, excludedFromStockValue: false, units, ...patch
 });
 
 const partner = (patch: Partial<Partner> = {}): Partner => ({
@@ -72,6 +72,23 @@ describe("inventory filters", () => {
     const tree = [{ id: "c1", name: "كروت", children: [{ id: "c2", name: "AMD", children: [] }] }] as unknown as Category[];
     assert.equal(categoryPath(tree, "c2"), "كروت › AMD");
     assert.equal(categoryPath(tree, null), "");
+  });
+});
+
+describe("stock value exclusion", () => {
+  it("is off by default and saved with the form", () => {
+    const stock = item([unit({})]);
+    assert.equal(toItemForm(stock).excludedFromStockValue, false);
+    assert.equal(toUpdateRequest(toItemForm(stock), stock).excludedFromStockValue, false);
+    const left = item([unit({})], { excludedFromStockValue: true });
+    assert.equal(toItemForm(left).excludedFromStockValue, true);
+    assert.equal(toUpdateRequest({ ...toItemForm(left), excludedFromStockValue: false }, left).excludedFromStockValue, false);
+  });
+
+  it("leaves a unit out when its own flag or its item's flag is set", () => {
+    assert.equal(leftOutOfStockValue(item([]), unit({})), false);
+    assert.equal(leftOutOfStockValue(item([]), unit({ excludedFromStockValue: true })), true);
+    assert.equal(leftOutOfStockValue(item([], { excludedFromStockValue: true }), unit({})), true);
   });
 });
 

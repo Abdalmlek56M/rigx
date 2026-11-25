@@ -15,6 +15,7 @@ import { useToast } from "../kit/Toast";
 import { pageNumber } from "../kit/url-filters";
 import { useUrlFilters } from "../kit/use-url-filters";
 import { usePermissions } from "../use-permissions";
+import { InventoryBuilds } from "./InventoryBuilds";
 import { QuickEditSheet } from "./QuickEditSheet";
 import { fetchStockItems, setItemsHidden, type StockItem } from "./inventory-api";
 import { countTooFewPhotos, groupByBuild, photosTooFew, pickedIds, triState, type StockRow } from "./inventory-rules";
@@ -126,6 +127,7 @@ export function Inventory() {
           </>
         }
       />
+      {has("Catalog.ManageProducts") ? <InventoryBuilds /> : null}
       <FilterBar>
         <SearchBox label={t("search")} value={values.q} onChange={(q) => set({ q })} />
         <FilterSelect label={t("filters.category")} value={values.category} onChange={(category) => set({ category })} options={[{ value: "", label: t("filters.allCategories") }, ...categoryOptions]} />

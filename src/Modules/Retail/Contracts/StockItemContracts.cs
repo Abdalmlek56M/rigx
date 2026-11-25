@@ -4,7 +4,8 @@ namespace HardwareStore.Modules.Retail;
 /// <summary>The build a unit sits in: enough to group the stock list under it and link to its page.</summary>
 public sealed record StockBuildRef(string Code, string Name, string Status);
 public sealed record StockUnitView(Guid Id, string Status, string Condition, string? SerialNumber, decimal? AcquisitionCost,
-    decimal? PartnerPercentOverride, Guid? PartnerId, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion, StockBuildRef? Build = null);
+    decimal? PartnerPercentOverride, Guid? PartnerId, Guid? AssemblyId, DateTimeOffset ReceivedAtUtc, long RowVersion, StockBuildRef? Build = null,
+    bool ExcludedFromStockValue = false);
 /// <summary>The new photo order: every storage key of the item, first = the main photo.</summary>
 public sealed record PhotoOrderRequest(IReadOnlyList<string>? StorageKeys);
 /// <summary>The ways one item is sold online when the owner chose them for it (at least one on); null on an item means "as its category".</summary>
@@ -13,13 +14,13 @@ public sealed record StockItemAdminView(Guid Id, string Code, string Condition, 
     decimal Price, decimal? WithBoardExtra, decimal? AloneExtra, StockItemPrices Prices, string? WarrantyLabel, int? WarrantyMonths,
     bool HasBox, bool IsHidden, bool IsPublished, string? InternalNote, IReadOnlyDictionary<string, string> Specs,
     IReadOnlyList<StockItemPhoto> Photos, int AvailableCount, int DaysInStock, DateTimeOffset CreatedAtUtc, long RowVersion,
-    IReadOnlyList<StockUnitView> Units, ItemPriceOptions? PriceOptions = null);
+    IReadOnlyList<StockUnitView> Units, ItemPriceOptions? PriceOptions = null, bool ExcludedFromStockValue = false);
 public sealed record StockItemQuery(string? Search = null, Guid? CategoryId = null, string? Condition = null, bool? Hidden = null,
     bool? InStock = null, int Page = 1, int PageSize = 50);
 /// <summary>Warranty is resolved from the settings list by the caller before it reaches Retail.</summary>
 public sealed record StockItemUpdate(string? ModelName, Guid? CategoryId, Guid? BrandId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,
     decimal? AloneExtra, string? WarrantyLabel, int? WarrantyMonths, bool HasBox, bool IsHidden, string? InternalNote,
-    IReadOnlyDictionary<string, string>? Specs, long RowVersion, ItemPriceOptions? PriceOptions = null);
+    IReadOnlyDictionary<string, string>? Specs, long RowVersion, ItemPriceOptions? PriceOptions = null, bool ExcludedFromStockValue = false);
 public sealed record StockVisibilityRequest(IReadOnlyList<Guid> Ids, bool Hidden);
 
 // Storefront (public). Never cost, serial, partner, internal note, or hidden items.

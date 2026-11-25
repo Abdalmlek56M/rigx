@@ -13,7 +13,8 @@ internal static class DashboardShopState
 
     public static async Task<DashboardSnapshot> SnapshotAsync(RetailDbContext db, CancellationToken cancellationToken)
     {
-        var stock = await db.Units.AsNoTracking().Where(unit => InStock.Contains(unit.Status)).SumAsync(unit => unit.AcquisitionCost, cancellationToken);
+        var stock = await db.Units.AsNoTracking().Where(unit => InStock.Contains(unit.Status))
+            .Where(StockValueRules.Counted).SumAsync(unit => unit.AcquisitionCost, cancellationToken);
         var dues = await db.PartnerEarnings.AsNoTracking().Where(item => item.Status == EarningStatus.Outstanding && item.Amount > 0)
             .SumAsync(item => item.Amount - item.PaidAmount - item.OffsetAmount, cancellationToken);
         var accounts = await db.MoneyAccounts.AsNoTracking().Where(item => item.IsActive)
@@ -42,7 +43,7 @@ internal static class DashboardShopState
         var threshold = now.AddDays(-AgingDays);
         var aged = db.Units.AsNoTracking().Where(unit => InStock.Contains(unit.Status) && unit.ReceivedAtUtc < threshold);
         var count = await aged.CountAsync(cancellationToken);
-        var total = await aged.SumAsync(unit => unit.AcquisitionCost, cancellationToken);
+        var total = await aged.Where(StockValueRules.Counted).SumAsync(unit => unit.AcquisitionCost, cancellationToken);
         var oldest = await aged.OrderBy(unit => unit.ReceivedAtUtc).Take(AgingListSize)
             .Select(unit => new { unit.Id, unit.StockItem.Code, unit.Name, unit.Condition, unit.AcquisitionCost, unit.ReceivedAtUtc })
             .ToListAsync(cancellationToken);

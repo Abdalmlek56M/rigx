@@ -23,12 +23,14 @@ const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
 const MODES = ["alone", "withBoard", "inBuild"] as const;
 
 /** The item's edit form (model, category, brand, the category's specs, prices, warranty, box, visibility, internal note). Reloads only on a 409, so server field errors stay visible. */
-export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onSaved, onStale }: {
+export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, showCosts, onSaved, onStale }: {
   item: StockItem;
   tree: readonly Category[];
   brands: readonly Brand[];
   warrantyLabels: readonly string[] | null;
   canEdit: boolean;
+  /** Staff who see costs may leave the item out of the stock value. */
+  showCosts: boolean;
   onSaved: (item: StockItem) => void;
   onStale: () => void;
 }) {
@@ -110,6 +112,15 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
           <input type="checkbox" checked={form.hasBox} onChange={(event) => set({ hasBox: event.target.checked })} className="h-5 w-5" />
           {t("hasBox")}
         </label>
+        {showCosts ? (
+          <div className="flex flex-col gap-0.5">
+            <label className={checkbox}>
+              <input type="checkbox" checked={form.excludedFromStockValue} onChange={(event) => set({ excludedFromStockValue: event.target.checked })} className="h-5 w-5" />
+              {t("excludedFromStockValue")}
+            </label>
+            <p className="m-0 ps-7 text-xs text-ink-muted">{t("excludedFromStockValueHint")}</p>
+          </div>
+        ) : null}
         <label className={checkbox}>
           <input type="checkbox" checked={form.isHidden} onChange={(event) => set({ isHidden: event.target.checked })} className="h-5 w-5" />
           {t("isHidden")}

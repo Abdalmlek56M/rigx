@@ -224,6 +224,18 @@ export const toAllocationInputs = (form: Readonly<Record<string, string>>): Buil
 /** The builds a part can move to or be taken from: every build except this one and the ones that are history. */
 export const otherBuilds = (builds: readonly Build[], currentId: string): Build[] => builds.filter((build) => build.id !== currentId && !isLocked(build));
 
+/** The builds still in stock: draft or published, so not sold and not taken apart. */
+export const inStockBuilds = (builds: readonly Build[]): Build[] => builds.filter((build) => !isLocked(build));
+
+/** The most identical builds one request adds (the API's `AssemblyRules.MaxCopiesAtOnce`). */
+export const MAX_COPIES_AT_ONCE = 9;
+
+/** The number typed for "identical builds": a whole number from 1 to the limit, else `null`. */
+export function copyCount(text: string): number | null {
+  const count = Number(text.trim());
+  return text.trim() !== "" && Number.isInteger(count) && count >= 1 && count <= MAX_COPIES_AT_ONCE ? count : null;
+}
+
 /** A build as a dropdown option: "BLD-07 — اسم التجميعة". */
 export const buildOption = (build: Pick<Build, "id" | "code" | "name">) => ({ value: build.id, label: `${build.code} — ${build.name}` });
 

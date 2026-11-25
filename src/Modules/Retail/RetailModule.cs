@@ -39,6 +39,8 @@ public static class RetailRegistration
         services.AddScoped<InvoiceService>();
         services.AddScoped<QuoteService>();
         services.AddScoped<UnitPartnerService>();
+        services.AddScoped<UnitStockValueService>();
+        services.AddScoped<AssemblyCopyService>();
         services.AddScoped<PartnerService>();
         services.AddScoped<PartnerCapitalService>();
         services.AddScoped<PartnerLedgerService>();

@@ -71,4 +71,7 @@ public static partial class RetailEndpoints
 
     private static async Task<Ok<UnitView>> AssignUnitPartnerAsync(Guid id, UnitPartnerRequest request, UnitPartnerService units, CancellationToken ct) =>
         TypedResults.Ok(await units.AssignAsync(id, request, ct));
+
+    private static async Task<Ok<UnitView>> SetUnitStockValueAsync(Guid id, UnitStockValueRequest request, UnitStockValueService units, CancellationToken ct) =>
+        TypedResults.Ok(await units.SetExcludedAsync(id, request, ct));
 }

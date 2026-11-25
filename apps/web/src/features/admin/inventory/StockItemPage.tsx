@@ -96,13 +96,13 @@ export function StockItemPage({ id }: { id: string }) {
         <StockItemActions item={item} onChanged={refresh} />
       </section>
       <section className={cardClass({ className: "gap-4" })}>
-        <StockUnits item={item} partners={partners} canAssign={has("Finance.ManagePartnerAgreements")} showCosts={has("Inventory.ViewCosts")} onChanged={refresh} onStale={stale} />
+        <StockUnits item={item} partners={partners} canAssign={has("Finance.ManagePartnerAgreements")} canEditStockValue={canEdit && has("Inventory.ViewCosts")} showCosts={has("Inventory.ViewCosts")} onChanged={refresh} onStale={stale} />
       </section>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-5">
           <section className={cardClass({ className: "gap-4" })}>
             <StockItemForm
-              key={item.rowVersion} item={item} tree={tree} brands={brands} warrantyLabels={warrantyLabels} canEdit={canEdit}
+              key={item.rowVersion} item={item} tree={tree} brands={brands} warrantyLabels={warrantyLabels} canEdit={canEdit} showCosts={has("Inventory.ViewCosts")}
               onSaved={setFresh}
               onStale={stale}
             />

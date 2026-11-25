@@ -63,8 +63,9 @@ public sealed class RetailExportService(IDbContextFactory<RetailDbContext> conte
         ];
         if (includeCosts)
         {
-            var cost = available.Sum(unit => unit.AcquisitionCost);
-            cells.AddRange([ExportCell.Number(cost), ExportCell.Number(item.Price * available.Count - cost)]);
+            var counted = available.Where(unit => StockValueRules.Counts(unit, item)).ToList();
+            var cost = counted.Sum(unit => unit.AcquisitionCost);
+            cells.AddRange([ExportCell.Number(cost), ExportCell.Number(item.Price * counted.Count - cost)]);
         }
         return cells;
     }

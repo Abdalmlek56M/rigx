@@ -31,6 +31,7 @@ public static partial class RetailEndpoints
         admin.MapGet("/assemblies", ListAssembliesAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapGet("/assemblies/{id:guid}", GetAssemblyAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies", CreateAssemblyAsync).RequirePermission("Catalog.ManageProducts");
+        admin.MapPost("/assemblies/{id:guid}/copies", CopyAssemblyAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPut("/assemblies/{id:guid}", UpdateAssemblyAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPut("/assemblies/{id:guid}/allocations", SetAllocationsAsync).RequirePermission("Catalog.ManageProducts");
         admin.MapPost("/assemblies/{id:guid}/publish", PublishAssemblyAsync).RequirePermission("Catalog.ManageProducts");
@@ -106,6 +107,7 @@ public static partial class RetailEndpoints
         admin.MapPost("/partners/{id:guid}/capital", AddPartnerCapitalAsync).RequirePermission("Finance.ManagePartnerAgreements");
         admin.MapPost("/partners/month-close", CloseMonthAsync).RequirePermission("Finance.ManagePartnerAgreements");
         admin.MapPut("/units/{id:guid}/partner", AssignUnitPartnerAsync).RequirePermission("Finance.ManagePartnerAgreements");
+        admin.MapPut("/units/{id:guid}/stock-value", SetUnitStockValueAsync).RequirePermission("Inventory.StockAdjust");
         admin.MapPost("/partners/{id:guid}/payouts", PayoutPartnerAsync).RequirePermission("Finance.PostPartnerSettlements");
 
         endpoints.MapGet("/api/v1/store/items", ListStoreItemsAsync).AllowAnonymous();

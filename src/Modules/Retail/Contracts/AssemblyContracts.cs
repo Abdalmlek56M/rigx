@@ -5,6 +5,8 @@ public sealed record AssemblyCreateRequest(string? Name, IReadOnlyList<Guid>? Un
 public sealed record AssemblyUpdateRequest(string? Name, string? PublicTitleAr, string? PublicTitleEn, decimal SalePrice, long RowVersion,
     string? Usage = null, string? SellMode = null, string? WarrantyLabel = null, int? WarrantyMonths = null, int Copies = 1,
     string? SuitableForAr = null, string? SuitableForEn = null);
+/// <summary>Adds <paramref name="Count"/> identical builds (each with its own new parts) made from an existing build.</summary>
+public sealed record AssemblyCopyRequest(int Count);
 public sealed record AssemblyAllocationRequest(long RowVersion, IReadOnlyList<AssemblyAllocationInput>? Allocations);
 public sealed record AssemblyAllocationInput(Guid UnitId, decimal Percent);
 /// <summary>Per-part edits: price inside the build, warranty override (null label = use the build's), financing partner and partner % override.</summary>

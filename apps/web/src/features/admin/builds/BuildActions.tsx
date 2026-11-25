@@ -6,10 +6,11 @@ import { Link } from "@/i18n/navigation";
 import { formMessage } from "../form-message";
 import { ConfirmDialog } from "../kit/ConfirmDialog";
 import { FormMessage } from "../kit/PageHeader";
+import { BuildCopiesDialog } from "./BuildCopiesDialog";
 import { transitionBuild, type BuildTransition } from "./builds-api";
 import { canDisassemble, canPublish, canUnpublish } from "./build-rules";
 import { useBuildAction, type BuildActionProps } from "./use-build-action";
-import { EyeIcon, UndoIcon, UnlinkIcon, UploadIcon } from "@/components/ui/icons";
+import { ClipboardIcon, EyeIcon, UndoIcon, UnlinkIcon, UploadIcon } from "@/components/ui/icons";
 import { Button, buttonClass, buttonIconSize } from "../kit/Button";
 
 /** Publish / unpublish / disassemble (disassemble confirms: every part goes back to stock), and "preview in store" for a published build. */
@@ -18,6 +19,7 @@ export function BuildActions({ canEdit, ...action }: BuildActionProps & { canEdi
   const { build } = action;
   const { submit, run } = useBuildAction(action);
   const [confirming, setConfirming] = useState(false);
+  const [copying, setCopying] = useState(false);
   const go = (transition: BuildTransition) => run(() => transitionBuild(build.id, transition, build.rowVersion), t(`${transition}Done`));
 
   return (
@@ -28,6 +30,7 @@ export function BuildActions({ canEdit, ...action }: BuildActionProps & { canEdi
         ) : null}
         {canEdit && canPublish(build) ? <Button variant="primary" icon={UploadIcon} loading={submit.busy} onClick={() => void go("publish")}>{t("publish")}</Button> : null}
         {canEdit && canUnpublish(build) ? <Button icon={UndoIcon} loading={submit.busy} onClick={() => void go("unpublish")}>{t("unpublish")}</Button> : null}
+        {canEdit ? <Button icon={ClipboardIcon} onClick={() => setCopying(true)}>{t("copies")}</Button> : null}
         {canEdit && canDisassemble(build) ? <Button variant="danger" icon={UnlinkIcon} disabled={submit.busy} onClick={() => setConfirming(true)}>{t("disassemble")}</Button> : null}
       </div>
       <FormMessage message={formMessage(submit.errors)} />
@@ -36,6 +39,7 @@ export function BuildActions({ canEdit, ...action }: BuildActionProps & { canEdi
         onClose={() => setConfirming(false)}
         onConfirm={() => go("disassemble")}
       />
+      {copying ? <BuildCopiesDialog build={build} onClose={() => setCopying(false)} /> : null}
       {submit.dialog}
     </div>
   );

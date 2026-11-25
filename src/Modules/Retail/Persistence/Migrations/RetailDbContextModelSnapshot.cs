@@ -408,6 +408,12 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<bool>("ExcludedFromStockValue")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("excluded_from_stock_value");
+
                     b.Property<string>("InspectionCondition")
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
@@ -1651,6 +1657,12 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("ExcludedFromStockValue")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("excluded_from_stock_value");
 
                     b.Property<bool>("HasBox")
                         .HasColumnType("boolean")

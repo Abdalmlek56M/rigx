@@ -33,6 +33,8 @@ public sealed class StockItem
     public string? WarrantyLabel { get; set; }
     public int? WarrantyMonths { get; set; }
     public bool HasBox { get; set; }
+    /// <summary>The owner left this item's cost out of the stock value (it stays in stock and sellable); see <see cref="StockValueRules"/>.</summary>
+    public bool ExcludedFromStockValue { get; set; }
     public bool IsHidden { get; set; }
     public string? InternalNote { get; set; }
     public Dictionary<string, string> Specs { get; set; } = [];

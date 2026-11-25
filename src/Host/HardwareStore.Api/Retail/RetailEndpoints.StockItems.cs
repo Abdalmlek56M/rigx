@@ -36,7 +36,7 @@ public static partial class RetailEndpoints
         var (label, months) = WarrantyChoice.Resolve(await WarrantyChoice.LoadOptionsAsync(settings, ct), request.WarrantyLabel);
         var update = new StockItemUpdate(request.ModelName, request.CategoryId, request.BrandId, request.ProductId, request.Price,
             request.WithBoardExtra, request.AloneExtra, label, months, request.HasBox, request.IsHidden, request.InternalNote,
-            await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct), request.RowVersion, request.PriceOptions);
+            await categorySpecs.CheckValuesAsync(request.CategoryId, request.Specs ?? [], ct), request.RowVersion, request.PriceOptions, request.ExcludedFromStockValue);
         return TypedResults.Ok(await items.UpdateAsync(id, update, context.HasPermission("Inventory.ViewCosts"),
             context.HasPermission("Inventory.ViewSerials"), ct));
     }
@@ -111,5 +111,6 @@ public static partial class RetailEndpoints
 
 public sealed record StockItemUpdateRequest(string? ModelName, Guid? CategoryId, Guid? BrandId, Guid? ProductId, decimal Price, decimal? WithBoardExtra,
     decimal? AloneExtra, string? WarrantyLabel, bool HasBox, bool IsHidden, string? InternalNote,
-    Dictionary<string, string>? Specs, long RowVersion, ItemPriceOptions? PriceOptions = null);
+    Dictionary<string, string>? Specs, long RowVersion, ItemPriceOptions? PriceOptions = null,
+    bool ExcludedFromStockValue = false);
 public sealed record StockVisibilityResult(int Updated);

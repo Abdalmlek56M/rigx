@@ -7,29 +7,58 @@ import type { Partner } from "../expenses/expenses-api";
 import { DataTable, type Column } from "../kit/DataTable";
 import { financingPartners, partnerShare } from "../stock/stock-fields";
 import { UnitPartnerDialog } from "./UnitPartnerDialog";
-import type { StockItem, StockUnit } from "./inventory-api";
-import { unitStatusKey } from "./inventory-rules";
-import { SwapIcon } from "@/components/ui/icons";
+import { setUnitExcluded, type StockItem, type StockUnit } from "./inventory-api";
+import { leftOutOfStockValue, unitStatusKey } from "./inventory-rules";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { BanIcon, CheckIcon, SwapIcon } from "@/components/ui/icons";
 import { IconButton } from "../kit/Button";
+import { useToast } from "../kit/Toast";
 
 const READY = (units: readonly StockUnit[]) => ({ status: "ready", data: units }) as const;
 
 /** The item's units: status, serial, cost (when the server sent it), partner with share, received date, and "change partner". */
-export function StockUnits({ item, partners, canAssign, showCosts, onChanged, onStale }: {
+export function StockUnits({ item, partners, canAssign, canEditStockValue, showCosts, onChanged, onStale }: {
   item: StockItem;
   partners: readonly Partner[];
   canAssign: boolean;
+  /** May leave a unit out of the stock value (sees costs and may adjust stock). */
+  canEditStockValue: boolean;
   showCosts: boolean;
   onChanged: () => Promise<void>;
   onStale: () => void;
 }) {
   const t = useTranslations("admin.inventory.units");
   const locale = useLocale();
+  const toast = useToast();
   const [editing, setEditing] = useState<StockUnit | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const none = <span className="text-ink-muted">{t("none")}</span>;
 
+  /** Leaves the unit out of the stock value or counts it again; the unit stays in stock and sellable. */
+  async function toggleExcluded(unit: StockUnit) {
+    setTogglingId(unit.id);
+    try {
+      await setUnitExcluded(unit.id, unit.excludedFromStockValue !== true);
+      await onChanged();
+      toast(t("stockValueDone"));
+    } catch {
+      toast(t("stockValueFailed"), "error");
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
   const columns: Column<StockUnit>[] = [
-    { key: "status", header: t("columns.status"), cell: (unit) => <span className="whitespace-nowrap">{t(`status.${unitStatusKey(unit.status)}`)}</span> },
+    {
+      key: "status",
+      header: t("columns.status"),
+      cell: (unit) => (
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span className="whitespace-nowrap">{t(`status.${unitStatusKey(unit.status)}`)}</span>
+          {leftOutOfStockValue(item, unit) ? <StatusBadge tone="neutral">{t("excludedBadge")}</StatusBadge> : null}
+        </span>
+      )
+    },
     { key: "serial", header: t("columns.serial"), cell: (unit) => (unit.serialNumber ? <span dir="ltr" className="font-mono text-xs">{unit.serialNumber}</span> : none) }
   ];
   if (showCosts) {
@@ -49,11 +78,21 @@ export function StockUnits({ item, partners, canAssign, showCosts, onChanged, on
     },
     { key: "received", header: t("columns.received"), cell: (unit) => <span className="whitespace-nowrap text-xs">{formatDate(unit.receivedAtUtc, locale)}</span> }
   );
-  if (canAssign) {
+  if (canAssign || canEditStockValue) {
     columns.push({
       key: "actions",
       header: t("columns.actions"),
-      cell: (unit) => <IconButton icon={SwapIcon} size="sm" label={t("changePartner")} onClick={() => setEditing(unit)} />
+      cell: (unit) => (
+        <span className="flex items-center gap-1">
+          {canAssign ? <IconButton icon={SwapIcon} size="sm" label={t("changePartner")} onClick={() => setEditing(unit)} /> : null}
+          {canEditStockValue ? (
+            <IconButton
+              icon={unit.excludedFromStockValue === true ? CheckIcon : BanIcon} size="sm" loading={togglingId === unit.id}
+              label={t(unit.excludedFromStockValue === true ? "countInStockValue" : "excludeFromStockValue")} onClick={() => void toggleExcluded(unit)}
+            />
+          ) : null}
+        </span>
+      )
     });
   }
 

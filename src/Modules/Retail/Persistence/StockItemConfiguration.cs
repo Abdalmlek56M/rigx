@@ -58,6 +58,7 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(64);
         e.Property(x => x.WarrantyMonths).HasColumnName("warranty_months");
         e.Property(x => x.HasBox).HasColumnName("has_box");
+        e.Property(x => x.ExcludedFromStockValue).HasColumnName("excluded_from_stock_value").HasDefaultValue(false);
         e.Property(x => x.IsHidden).HasColumnName("is_hidden");
         e.Property(x => x.InternalNote).HasColumnName("internal_note").HasMaxLength(1000);
         Document(e.Property(x => x.Specs).HasColumnName("specs"), "'{}'::jsonb");

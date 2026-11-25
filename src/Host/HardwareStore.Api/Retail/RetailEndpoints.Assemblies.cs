@@ -37,6 +37,10 @@ public static partial class RetailEndpoints
     private static async Task<Ok<AssemblyView>> CreateAssemblyAsync(AssemblyCreateRequest request, HttpContext context, AssemblyService assemblies, CancellationToken ct) =>
         TypedResults.Ok(await assemblies.CreateAssemblyAsync(request, context.HasPermission(ViewCosts), ct));
 
+    private static async Task<Ok<IReadOnlyList<AssemblyView>>> CopyAssemblyAsync(Guid id, AssemblyCopyRequest request, HttpContext context,
+        AssemblyCopyService copies, CancellationToken ct) =>
+        TypedResults.Ok(await copies.CopyAsync(id, request, context.HasPermission(ViewCosts), ct));
+
     /// <summary>The build warranty is chosen from the store settings list (Storefront), so the label is resolved here.</summary>
     private static async Task<Ok<AssemblyView>> UpdateAssemblyAsync(Guid id, AssemblyEditRequest request, HttpContext context,
         AssemblyService assemblies, StoreSettingsService settings, CancellationToken ct)

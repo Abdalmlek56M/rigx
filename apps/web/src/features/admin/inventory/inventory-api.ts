@@ -54,6 +54,10 @@ export const reorderStockPhotos = (id: string, storageKeys: string[]) =>
 export const setUnitPartner = (unitId: string, partnerId: string | null, percent: number | null, rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/units/{id}/partner", { ...path(unitId), body: { partnerId, percent, rowVersion } })));
 
+/** Leaves one unit out of the stock value, or counts it again. */
+export const setUnitExcluded = (unitId: string, excluded: boolean) =>
+  required(unwrap(api().PUT("/api/v1/admin/retail/units/{id}/stock-value", { ...path(unitId), body: { excluded } })));
+
 /** The warranty labels from the store settings (needs `System.StoreSettings`). */
 export const fetchWarrantyLabels = async () =>
   (await required(unwrap(api().GET("/api/v1/admin/storefront/settings")))).warrantyOptions.options?.flatMap((option) => (option.label ? [option.label] : [])) ?? [];

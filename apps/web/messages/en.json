@@ -3142,7 +3142,9 @@
           "withBoard": "With a RIGX motherboard",
           "inBuild": "With a full build",
           "none": "Choose at least one way to buy it."
-        }
+        },
+        "excludedFromStockValue": "Not counted in the stock value",
+        "excludedFromStockValueHint": "It stays in stock and can be sold; its cost is left out of the stock value and reports."
       },
       "photos": {
         "makeMain": "Make this the main photo",
@@ -3193,7 +3195,12 @@
           "saved": "Unit partner changed",
           "cancel": "Cancel",
           "save": "Save"
-        }
+        },
+        "excludedBadge": "Outside the stock value",
+        "excludeFromStockValue": "Leave out of the stock value",
+        "countInStockValue": "Count in the stock value",
+        "stockValueDone": "The unit's stock value setting was updated.",
+        "stockValueFailed": "The unit could not be updated."
       },
       "specs": {
         "title": "Specs",
@@ -3219,7 +3226,40 @@
         "fullPage": "Open the full item page"
       },
       "needsPhotos": "Shown, fewer than 3 photos",
-      "needsPhotosHint": "Not listed in the store because it has fewer than 3 photos. Add photos to list it."
+      "needsPhotosHint": "Not listed in the store because it has fewer than 3 photos. Add photos to list it.",
+      "excludedBadge": "Outside the stock value",
+      "builds": {
+        "title": "Builds in stock",
+        "hint": "Each build is one row; press the arrow to see its parts.",
+        "expand": "Show the parts of {name}",
+        "collapse": "Hide the parts of {name}",
+        "empty": "There are no builds in stock.",
+        "noParts": "This build has no parts.",
+        "edit": "Edit",
+        "disassemble": "Disassemble",
+        "disassembleTitle": "Disassemble this build?",
+        "disassembleBody": "Every part goes back to stock as available, and the build can no longer be edited.",
+        "disassembleDone": "The build was disassembled and its parts are back in stock.",
+        "failed": "The build could not be disassembled.",
+        "columns": {
+          "code": "Code",
+          "name": "Name",
+          "parts": "Parts",
+          "status": "Status",
+          "price": "Sale price",
+          "cost": "Cost",
+          "actions": "Action",
+          "expand": "Show parts"
+        },
+        "partColumns": {
+          "code": "Part code",
+          "name": "Model",
+          "condition": "Condition"
+        },
+        "hide": "Hide section",
+        "show": "Show section",
+        "retry": "Try again"
+      }
     },
     "purchases": {
       "sellerPayment": {
@@ -3483,7 +3523,8 @@
         "unpublishDone": "The build is no longer in the store",
         "disassembleDone": "The build was disassembled and its parts are back in stock",
         "disassembleTitle": "Disassemble this build?",
-        "disassembleBody": "Every part goes back to stock as available, and the build can no longer be edited."
+        "disassembleBody": "Every part goes back to stock as available, and the build can no longer be edited.",
+        "copies": "Identical builds"
       },
       "card": {
         "title": "Build details",
@@ -3628,6 +3669,15 @@
         "linked": "Linked to {code}",
         "total": "Prices total",
         "empty": "No typed parts."
+      },
+      "copies": {
+        "title": "Identical builds",
+        "question": "How many identical builds do you want to add?",
+        "hint": "Each build is created with its own new parts, with the same models, costs and partners. Add the serial numbers to each part afterwards.",
+        "count": "Number",
+        "submit": "Add",
+        "cancel": "Cancel",
+        "done": "{count, plural, one {# identical build was added.} other {# identical builds were added.}}"
       }
     },
     "partners": {

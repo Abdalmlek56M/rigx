@@ -38,6 +38,7 @@ public static class AssemblyRules
 {
     public const int MaxParts = 50;
     public const int MaxCopies = 99;
+    public const int MaxCopiesAtOnce = 9;
     public const int MaxSuitableForLength = 500;
 
     /// <summary>Sold and disassembled builds are history and cannot change.</summary>
@@ -55,6 +56,12 @@ public static class AssemblyRules
     public static void ValidateCopies(int copies)
     {
         if (copies is < 1 or > MaxCopies) throw new RetailException(400, $"Copies must be between 1 and {MaxCopies}.");
+    }
+
+    /// <summary>"Identical builds at once": between 1 and <see cref="MaxCopiesAtOnce"/>.</summary>
+    public static void EnsureCopyCount(int count)
+    {
+        if (count is < 1 or > MaxCopiesAtOnce) throw new RetailException(400, $"Add between 1 and {MaxCopiesAtOnce} identical builds at a time.");
     }
 
     public static string? CleanSuitableFor(string? text)

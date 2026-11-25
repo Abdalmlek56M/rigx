@@ -138,6 +138,8 @@ export interface StockItemForm {
   modes: OfferedPrices;
   warrantyLabel: string;
   hasBox: boolean;
+  /** The item's cost is left out of the stock value (it stays in stock and sellable). */
+  excludedFromStockValue: boolean;
   isHidden: boolean;
   internalNote: string;
   specs: Record<string, string>;
@@ -155,6 +157,7 @@ export function toItemForm(item: StockItem): StockItemForm {
     modes: item.priceOptions ? { ...item.priceOptions } : { alone: true, withBoard: true, inBuild: true },
     warrantyLabel: item.warrantyLabel ?? "",
     hasBox: item.hasBox,
+    excludedFromStockValue: item.excludedFromStockValue === true,
     isHidden: item.isHidden,
     internalNote: item.internalNote ?? "",
     specs: { ...item.specs }
@@ -188,12 +191,17 @@ export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItem
     priceOptions: form.ownModes ? { ...form.modes } : null,
     warrantyLabel: form.warrantyLabel.trim() || null,
     hasBox: form.hasBox,
+    excludedFromStockValue: form.excludedFromStockValue,
     isHidden: form.isHidden,
     internalNote: form.internalNote.trim() || null,
     specs: form.specs,
     rowVersion: item.rowVersion
   };
 }
+
+/** Whether the unit's cost is left out of the stock value: its own flag, or its item's. */
+export const leftOutOfStockValue = (item: Pick<StockItem, "excludedFromStockValue">, unit: Pick<StockUnit, "excludedFromStockValue">): boolean =>
+  item.excludedFromStockValue === true || unit.excludedFromStockValue === true;
 
 /** The percent typed in the unit's partner dialog: empty = the partner's default (`null`); no partner = no percent. */
 export function unitPercent(partnerId: string, percentText: string): number | null {

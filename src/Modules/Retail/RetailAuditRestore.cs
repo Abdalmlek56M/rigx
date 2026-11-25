@@ -10,7 +10,7 @@ internal static class RetailAuditRestore
         .AddAuditRestoreTarget<RetailDbContext, StockItem>(
             nameof(StockItem.ModelName), nameof(StockItem.ModelKey), nameof(StockItem.Price), nameof(StockItem.WithBoardExtra),
             nameof(StockItem.AloneExtra), nameof(StockItem.OffersAlone), nameof(StockItem.OffersWithBoard), nameof(StockItem.OffersInBuild),
-            nameof(StockItem.WarrantyLabel), nameof(StockItem.WarrantyMonths), nameof(StockItem.HasBox),
+            nameof(StockItem.WarrantyLabel), nameof(StockItem.WarrantyMonths), nameof(StockItem.HasBox), nameof(StockItem.ExcludedFromStockValue),
             nameof(StockItem.IsHidden), nameof(StockItem.InternalNote), nameof(StockItem.Specs))
         .AddAuditRestoreTarget<RetailDbContext, Assembly>(
             nameof(Assembly.Name), nameof(Assembly.PublicTitleAr), nameof(Assembly.PublicTitleEn), nameof(Assembly.SalePrice), nameof(Assembly.Usage),

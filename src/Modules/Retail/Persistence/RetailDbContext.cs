@@ -76,6 +76,7 @@ public sealed class RetailDbContext(DbContextOptions<RetailDbContext> options) :
             e.Property(x => x.AcquisitionCost).HasColumnName("acquisition_cost").HasPrecision(18, 2);
             e.Property(x => x.PartnerPercentOverride).HasColumnName("partner_percent_override").HasPrecision(5, 2);
             e.Property(x => x.PartnerId).HasColumnName("partner_id");
+            e.Property(x => x.ExcludedFromStockValue).HasColumnName("excluded_from_stock_value").HasDefaultValue(false);
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(24).IsRequired();
             e.Property(x => x.AssemblyId).HasColumnName("assembly_id");
             e.Property(x => x.ReceiptId).HasColumnName("receipt_id");

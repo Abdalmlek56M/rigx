@@ -70,6 +70,10 @@ export const deleteBuildPhoto = (id: string, storageKey: string) =>
 export const reorderBuildPhotos = (id: string, storageKeys: string[]) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}/photos/order", { ...path(id), body: { storageKeys } })));
 
+/** Adds identical builds made from this one; each has its own new parts (same models, costs and partners). Returns the new builds. */
+export const copyBuild = (id: string, count: number) =>
+  required(unwrap(api().POST("/api/v1/admin/retail/assemblies/{id}/copies", { ...path(id), body: { count } })));
+
 /** Saves the build's whole list of typed parts (parts that are not in stock; nothing is reserved for them). */
 export const savePlannedParts = (id: string, parts: PlannedPartInput[], rowVersion: number) =>
   required(unwrap(api().PUT("/api/v1/admin/retail/assemblies/{id}/planned-parts", { ...path(id), body: { parts, rowVersion } })));

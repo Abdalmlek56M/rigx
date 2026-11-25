@@ -66,5 +66,5 @@ public sealed class InventoryUnitService(IDbContextFactory<RetailDbContext> cont
         includeSerials ? unit.SerialNumber : null, includeCosts ? unit.SourceName : null, includeCosts ? unit.SourceType : null,
         includeCosts ? unit.PurchaseKind : null, includeCosts ? unit.PurchaseDate : null,
         includeCosts ? unit.AcquisitionCost : null, includeCosts ? unit.PartnerPercentOverride : null, includeCosts ? unit.PartnerId : null,
-        unit.Status, unit.AssemblyId, unit.ReceivedAtUtc, unit.RowVersion);
+        unit.Status, unit.AssemblyId, unit.ReceivedAtUtc, unit.RowVersion, unit.ExcludedFromStockValue);
 }

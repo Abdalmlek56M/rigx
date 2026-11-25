@@ -71,6 +71,7 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         item.WarrantyLabel = string.IsNullOrWhiteSpace(request.WarrantyLabel) ? null : request.WarrantyLabel.Trim();
         item.WarrantyMonths = item.WarrantyLabel is null ? null : request.WarrantyMonths;
         item.HasBox = request.HasBox;
+        item.ExcludedFromStockValue = request.ExcludedFromStockValue;
         item.IsHidden = request.IsHidden;
         item.InternalNote = note;
         item.Specs = specs;
