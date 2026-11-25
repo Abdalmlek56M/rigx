@@ -1,4 +1,4 @@
-using HardwareStore.Modules.Catalog;
+﻿using HardwareStore.Modules.Catalog;
 using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
 using Testcontainers.PostgreSql;
@@ -265,7 +265,11 @@ public sealed class CatalogPostgreSqlTests(CatalogPostgreSqlFixture fixture)
         var named = await taxonomy.SaveCategoryAsync(child.Id,
             new CategoryInput("Child", $"child-{suffix}", parent.Id, null, null, 1, true, child.RowVersion, NameEn: " Child EN "));
         Assert.Equal("Child EN", named.NameEn);
-        child = named;
+        var iconed = await taxonomy.SaveCategoryAsync(child.Id,
+            new CategoryInput("Child", $"child-{suffix}", parent.Id, null, null, 1, true, named.RowVersion, NameEn: "Child EN", IconKey: "RAM"));
+        Assert.Equal("ram", iconed.IconKey);
+        Assert.Equal("ram", (await taxonomy.GetCategoryTreeAsync()).SelectMany(root => root.Children).Single(item => item.Id == child.Id).IconKey);
+        child = iconed;
 
         var cycle = await Assert.ThrowsAsync<CatalogValidationException>(() => taxonomy.SaveCategoryAsync(parent.Id,
             new CategoryInput("Parent", parent.Slug, child.Id, null, null, 0, true, parent.RowVersion)));

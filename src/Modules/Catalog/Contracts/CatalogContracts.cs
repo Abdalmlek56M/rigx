@@ -13,7 +13,8 @@ public sealed record CategoryInput(
     bool ShowInMenu = true,
     bool ShowInBuilder = false,
     string? NameEn = null,
-    CategoryPriceOptions? PriceOptions = null);
+    CategoryPriceOptions? PriceOptions = null,
+    string? IconKey = null);
 
 /// <summary>Replaces a category's own spec definitions; children inherit them.</summary>
 public sealed record CategorySpecsInput(IReadOnlyList<SpecDefinition>? Specs, int? RowVersion);
@@ -73,7 +74,8 @@ public sealed record CategoryView(
     IReadOnlyList<SpecDefinition> Specs,
     IReadOnlyList<CategoryView> Children,
     string? NameEn = null,
-    CategoryPriceOptions? PriceOptions = null);
+    CategoryPriceOptions? PriceOptions = null,
+    string? IconKey = null);
 
 public sealed record BrandView(
     Guid Id,

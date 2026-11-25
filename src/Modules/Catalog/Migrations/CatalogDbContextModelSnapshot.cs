@@ -134,6 +134,11 @@ namespace HardwareStore.Modules.Catalog.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
+                    b.Property<string>("IconKey")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("icon_key");
+
                     b.Property<string>("IconStorageKey")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")

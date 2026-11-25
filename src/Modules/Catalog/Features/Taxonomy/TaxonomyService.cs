@@ -22,7 +22,7 @@ public sealed class TaxonomyService(
                 category.Description, category.IconStorageKey, category.SortOrder,
                 category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
                 category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn,
-                new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild)))
+                new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild), category.IconKey))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             allCategories.Select(category => new CatalogCategoryNode(
@@ -84,7 +84,7 @@ public sealed class TaxonomyService(
                 category.Description, category.IconStorageKey, category.SortOrder,
                 category.IsActive, false, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
                 category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn,
-                new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild)))
+                new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild), category.IconKey))
             .ToListAsync(cancellationToken);
         var effectiveIds = CatalogCategoryPolicy.GetEffectivelyActiveIds(
             categories.Select(category => new CatalogCategoryNode(
@@ -114,6 +114,7 @@ public sealed class TaxonomyService(
         var slug = CatalogValidation.Slug(input.Slug);
         var description = CatalogValidation.Optional(input.Description, "description", 2000);
         var iconKey = CatalogValidation.Optional(input.IconStorageKey, "iconStorageKey", 512);
+        var icon = CategoryIcons.Normalize(input.IconKey);
         var code = CategorySpecSchema.NormalizeCategoryCode(input.Code);
         if (input.SortOrder < 0)
             throw new CatalogValidationException("sortOrder", "Sort order must not be negative.");
@@ -151,6 +152,7 @@ public sealed class TaxonomyService(
         category.ParentId = input.ParentId;
         category.Description = description;
         category.IconStorageKey = iconKey;
+        category.IconKey = icon;
         category.SortOrder = input.SortOrder;
         category.IsActive = input.IsActive;
         category.Code = code;

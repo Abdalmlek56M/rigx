@@ -8,7 +8,7 @@ internal static class CatalogViews
         category.Description, category.IconStorageKey, category.SortOrder,
         category.IsActive, isEffectivelyActive, category.RowVersion, category.Code, category.ShowInMenu, category.ShowInBuilder,
         category.SpecDefinitions, Array.Empty<CategoryView>(), category.NameEn,
-        new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild));
+        new CategoryPriceOptions(category.PriceAlone, category.PriceWithBoard, category.PriceInBuild), category.IconKey);
 
     public static BrandView ToView(this CatalogBrand brand) => new(
         brand.Id, brand.Name, brand.Slug, brand.Description,

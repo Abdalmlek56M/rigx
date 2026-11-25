@@ -29,6 +29,8 @@ public sealed class CatalogCategory
     public required string Slug { get; set; }
     public string? Description { get; set; }
     public string? IconStorageKey { get; set; }
+    /// <summary>One of <see cref="CategoryIcons.Keys"/>, or null to let the storefront guess an icon from the slug.</summary>
+    public string? IconKey { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
     public string? Code { get; set; }
@@ -161,6 +163,7 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
             entity.HasIndex(category => category.Slug).IsUnique().HasDatabaseName("ux_categories_slug");
             entity.Property(category => category.Description).HasColumnName("description").HasMaxLength(2000);
             entity.Property(category => category.IconStorageKey).HasColumnName("icon_storage_key").HasMaxLength(512);
+            entity.Property(category => category.IconKey).HasColumnName("icon_key").HasMaxLength(32);
             entity.Property(category => category.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
             entity.Property(category => category.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             entity.Property(category => category.Code).HasColumnName("code").HasMaxLength(16);

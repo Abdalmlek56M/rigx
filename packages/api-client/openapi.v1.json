@@ -18954,6 +18954,12 @@
                 "$ref": "#/components/schemas/CategoryPriceOptions"
               }
             ]
+          },
+          "iconKey": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -19129,6 +19135,12 @@
               {
                 "$ref": "#/components/schemas/CategoryPriceOptions"
               }
+            ]
+          },
+          "iconKey": {
+            "type": [
+              "null",
+              "string"
             ]
           }
         }
@@ -30233,7 +30245,8 @@
           "thumbnailStorageKey",
           "secondThumbnailStorageKey",
           "listedAtUtc",
-          "priceOptions"
+          "priceOptions",
+          "specs"
         ],
         "type": "object",
         "properties": {
@@ -30288,6 +30301,12 @@
           "priceOptions": {
             "type": "array",
             "items": {
+              "type": "string"
+            }
+          },
+          "specs": {
+            "type": "object",
+            "additionalProperties": {
               "type": "string"
             }
           }
