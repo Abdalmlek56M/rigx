@@ -28,6 +28,12 @@ public sealed class PriceOptionRule(IReadOnlyDictionary<Guid, PriceOptionSet> re
 
     public PriceOptionSet ForCategory(Guid? categoryId) =>
         categoryId is Guid id && restricted.TryGetValue(id, out var set) ? set : PriceOptionSet.All;
+
+    /// <summary>
+    /// What one item offers: the owner's choice for the item when he made one (it replaces the category's switches, so an item may offer a way
+    /// its category does not), else its category's (<see cref="StockItemRules.OwnPriceOptions"/>).
+    /// </summary>
+    public PriceOptionSet ForItem(Guid? categoryId, PriceOptionSet? own) => own ?? ForCategory(categoryId);
 }
 
 /// <summary>Where Retail reads the per-category price switches; Host implements it from Catalog (architecture decision 11).</summary>

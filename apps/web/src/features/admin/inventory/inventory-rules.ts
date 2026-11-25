@@ -1,6 +1,6 @@
 /** Rules for the inventory screen: list figures, status, filters and the edit form. Pure, so it is tested. Messages live under `admin.inventory`. */
 import type { Category } from "../categories/categories-api";
-import { findPath } from "../categories/category-rules.ts";
+import { findPath, type OfferedPrices } from "../categories/category-rules.ts";
 import type { Partner } from "../expenses/expenses-api";
 import { amountOk, amountText, optionalAmountOk, parseAmount, partnerShare } from "../stock/stock-fields.ts";
 import type { StockItem, StockItemUpdateRequest, StockUnit } from "./inventory-api";
@@ -132,6 +132,10 @@ export interface StockItemForm {
   price: string;
   withBoardExtra: string;
   aloneExtra: string;
+  /** The owner chose how this item is sold online; off = it follows its category. */
+  ownModes: boolean;
+  /** The item's own ways to sell it (used only when `ownModes`). */
+  modes: OfferedPrices;
   warrantyLabel: string;
   hasBox: boolean;
   isHidden: boolean;
@@ -147,6 +151,8 @@ export function toItemForm(item: StockItem): StockItemForm {
     price: amountText(item.price),
     withBoardExtra: amountText(item.withBoardExtra),
     aloneExtra: amountText(item.aloneExtra),
+    ownModes: item.priceOptions != null,
+    modes: item.priceOptions ? { ...item.priceOptions } : { alone: true, withBoard: true, inBuild: true },
     warrantyLabel: item.warrantyLabel ?? "",
     hasBox: item.hasBox,
     isHidden: item.isHidden,
@@ -155,9 +161,18 @@ export function toItemForm(item: StockItem): StockItemForm {
   };
 }
 
-/** The form can be sent: a model name, a price and extras that are not negative (the server still decides). */
+/** How the item is sold online: its own choice when the owner made one, else its category's (`offeredPrices`). */
+export function itemModes(form: Pick<StockItemForm, "ownModes" | "modes">, categoryModes: OfferedPrices): OfferedPrices {
+  return form.ownModes ? form.modes : categoryModes;
+}
+
+/** An own choice keeps at least one way to sell the item (the API's `StockItemRules.ValidatePriceOptions`). */
+export const modesOk = (form: Pick<StockItemForm, "ownModes" | "modes">): boolean =>
+  !form.ownModes || form.modes.alone || form.modes.withBoard || form.modes.inBuild;
+
+/** The form can be sent: a model name, a price and extras that are not negative, and a way to sell it (the server still decides). */
 export function itemFormValid(form: StockItemForm): boolean {
-  return form.modelName.trim() !== "" && amountOk(form.price) && optionalAmountOk(form.withBoardExtra) && optionalAmountOk(form.aloneExtra);
+  return form.modelName.trim() !== "" && amountOk(form.price) && optionalAmountOk(form.withBoardExtra) && optionalAmountOk(form.aloneExtra) && modesOk(form);
 }
 
 /** The update request: the form's fields, the item's own `productId` kept as read, and its `rowVersion`. */
@@ -170,6 +185,7 @@ export function toUpdateRequest(form: StockItemForm, item: StockItem): StockItem
     price: parseAmount(form.price) ?? 0,
     withBoardExtra: parseAmount(form.withBoardExtra),
     aloneExtra: parseAmount(form.aloneExtra),
+    priceOptions: form.ownModes ? { ...form.modes } : null,
     warrantyLabel: form.warrantyLabel.trim() || null,
     hasBox: form.hasBox,
     isHidden: form.isHidden,

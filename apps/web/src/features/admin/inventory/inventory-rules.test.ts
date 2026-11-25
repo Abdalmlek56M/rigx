@@ -4,7 +4,7 @@ import type { Category } from "../categories/categories-api.ts";
 import type { Partner } from "../expenses/expenses-api.ts";
 import type { StockItem, StockUnit } from "./inventory-api.ts";
 import {
-  categoryPath, countTooFewPhotos, expectedProfit, groupByBuild, itemCost, itemFormValid, itemPartner, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, MIN_PHOTOS_TO_PUBLISH, photosTooFew, triState, unitPercent, unitStatusKey
+  categoryPath, countTooFewPhotos, expectedProfit, groupByBuild, itemCost, itemFormValid, itemModes, itemPartner, modesOk, pickedIds, STOCK_AGE_DAYS, stockAge, stockState, toItemForm, toUpdateRequest, MIN_PHOTOS_TO_PUBLISH, photosTooFew, triState, unitPercent, unitStatusKey
 } from "./inventory-rules.ts";
 
 const unit = (patch: Partial<StockUnit>): StockUnit => ({
@@ -95,6 +95,27 @@ describe("inventory edit form", () => {
     assert.equal(itemFormValid({ ...form, modelName: " " }), false);
     assert.equal(itemFormValid({ ...form, price: "" }), false);
     assert.equal(itemFormValid({ ...form, withBoardExtra: "-5" }), false);
+  });
+
+  it("follows the category until the owner sets the item's own ways to sell it, and sends that choice", () => {
+    const category = { alone: false, withBoard: true, inBuild: true };
+    const follows = toItemForm(item([]));
+    assert.equal(follows.ownModes, false);
+    assert.deepEqual(itemModes(follows, category), category);
+    assert.equal(toUpdateRequest(follows, item([])).priceOptions, null);
+
+    const stock = item([], { priceOptions: { alone: true, withBoard: false, inBuild: false } });
+    const own = toItemForm(stock);
+    assert.equal(own.ownModes, true);
+    assert.deepEqual(itemModes(own, category), { alone: true, withBoard: false, inBuild: false });
+    assert.deepEqual(toUpdateRequest(own, stock).priceOptions, { alone: true, withBoard: false, inBuild: false });
+  });
+
+  it("refuses an own choice with no way to sell the item", () => {
+    const form = { ...toItemForm(item([])), ownModes: true, modes: { alone: false, withBoard: false, inBuild: false } };
+    assert.equal(modesOk(form), false);
+    assert.equal(itemFormValid(form), false);
+    assert.equal(modesOk({ ...form, ownModes: false }), true);
   });
 
   it("sends no percent without a partner", () => {

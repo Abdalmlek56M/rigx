@@ -524,6 +524,7 @@ public static class ApiErrorMessages
         ["Slug must use lowercase letters, numbers, and single hyphens."] = "يجب أن يتكون الرابط المختصر من أحرف إنجليزية صغيرة وأرقام وشرطات مفردة.",
         ["Sort must be newest, oldest, price-asc, price-desc, name-asc, or name-desc."] = "يجب أن يكون الترتيب newest أو oldest أو price-asc أو price-desc أو name-asc أو name-desc.",
         ["At least one sale price must stay on for a category."] = "يجب أن يبقى سعر بيع واحد على الأقل مفعّلًا للفئة.",
+        ["Choose at least one way to sell the item."] = "اختر طريقة بيع واحدة على الأقل لهذه القطعة.",
         ["This price option is not offered for the item."] = "خيار السعر هذا غير متاح لهذا المنتج.",
         ["Sort order must not be negative."] = "يجب ألا يكون ترتيب العرض سالبًا.",
         ["Specification filter text is too long."] = "نص مرشّح المواصفات طويل جدًا.",

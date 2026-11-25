@@ -31,6 +31,9 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         {
             t.HasCheckConstraint("ck_stock_items_condition", "condition IN ('New','Used')");
             t.HasCheckConstraint("ck_stock_items_price", "price >= 0");
+            t.HasCheckConstraint("ck_stock_items_price_options",
+                "(offers_alone IS NULL AND offers_with_board IS NULL AND offers_in_build IS NULL) OR " +
+                "(offers_alone IS NOT NULL AND offers_with_board IS NOT NULL AND offers_in_build IS NOT NULL AND (offers_alone OR offers_with_board OR offers_in_build))");
         });
         e.HasKey(x => x.Id);
         e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
@@ -49,6 +52,9 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         e.Property(x => x.Price).HasColumnName("price").HasPrecision(18, 2);
         e.Property(x => x.WithBoardExtra).HasColumnName("with_board_extra").HasPrecision(18, 2);
         e.Property(x => x.AloneExtra).HasColumnName("alone_extra").HasPrecision(18, 2);
+        e.Property(x => x.OffersAlone).HasColumnName("offers_alone");
+        e.Property(x => x.OffersWithBoard).HasColumnName("offers_with_board");
+        e.Property(x => x.OffersInBuild).HasColumnName("offers_in_build");
         e.Property(x => x.WarrantyLabel).HasColumnName("warranty_label").HasMaxLength(64);
         e.Property(x => x.WarrantyMonths).HasColumnName("warranty_months");
         e.Property(x => x.HasBox).HasColumnName("has_box");

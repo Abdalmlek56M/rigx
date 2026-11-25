@@ -3124,7 +3124,16 @@
         "isHidden": "Hidden from the store",
         "internalNote": "Internal note",
         "internalNoteHint": "Never shown to customers.",
-        "save": "Save"
+        "save": "Save",
+        "modes": {
+          "title": "Ways to buy it online",
+          "hint": "What customers see under \"How will you buy it?\" on the item page. If you don't set them here, the item follows its category.",
+          "own": "Set the ways to buy this item",
+          "alone": "On its own",
+          "withBoard": "With a RIGX motherboard",
+          "inBuild": "With a full build",
+          "none": "Choose at least one way to buy it."
+        }
       },
       "photos": {
         "makeMain": "Make this the main photo",

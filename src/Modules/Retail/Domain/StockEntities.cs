@@ -23,6 +23,13 @@ public sealed class StockItem
     public decimal Price { get; set; }
     public decimal? WithBoardExtra { get; set; }
     public decimal? AloneExtra { get; set; }
+    /// <summary>
+    /// The ways the owner sells this item online (alone, with a board, inside a build), when he chose them for the item itself; the three
+    /// are set together or all null, and null follows the item's category (<see cref="StockItemRules.OwnPriceOptions"/>).
+    /// </summary>
+    public bool? OffersAlone { get; set; }
+    public bool? OffersWithBoard { get; set; }
+    public bool? OffersInBuild { get; set; }
     public string? WarrantyLabel { get; set; }
     public int? WarrantyMonths { get; set; }
     public bool HasBox { get; set; }

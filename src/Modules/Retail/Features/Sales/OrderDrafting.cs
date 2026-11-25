@@ -68,8 +68,9 @@ internal static class OrderDrafting
             ?? throw new RetailException(409, "An item in the order is no longer available.");
         if (row.Available < line.Quantity) throw new RetailException(409, $"Only {row.Available} of {row.Item.Code} are available.");
         var prices = StockItemRules.Prices(row.Item.Price, row.Item.WithBoardExtra, row.Item.AloneExtra);
-        // Online, the category decides which prices exist; with none named the customer gets its first one. The store (POS) is free.
-        var offered = store ? PriceOptionSet.All : (priceOptions ?? PriceOptionRule.Open).ForCategory(row.Item.CategoryId);
+        // Online, the item (or else its category) decides which prices exist; with none named the customer gets its first one. The store (POS) is free.
+        var offered = store ? PriceOptionSet.All : (priceOptions ?? PriceOptionRule.Open).ForItem(row.Item.CategoryId,
+            StockItemRules.OwnPriceOptions(row.Item.OffersAlone, row.Item.OffersWithBoard, row.Item.OffersInBuild));
         var option = string.IsNullOrWhiteSpace(line.PriceOption) ? offered.Default : line.PriceOption.Trim();
         var shown = option switch
         {

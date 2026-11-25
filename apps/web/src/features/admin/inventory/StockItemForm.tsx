@@ -15,11 +15,12 @@ import { CategorySelect } from "../stock/CategorySelect";
 import { SpecFields } from "../stock/SpecFields";
 import { WarrantyField } from "../stock/WarrantyField";
 import { updateStockItem, type StockItem } from "./inventory-api";
-import { itemFormValid, toItemForm, toUpdateRequest, type StockItemForm as Form } from "./inventory-rules";
+import { itemFormValid, itemModes, modesOk, toItemForm, toUpdateRequest, type StockItemForm as Form } from "./inventory-rules";
 import { SaveIcon } from "@/components/ui/icons";
 import { Button } from "../kit/Button";
 
 const checkbox = "flex min-h-11 items-center gap-2 text-sm font-bold";
+const MODES = ["alone", "withBoard", "inBuild"] as const;
 
 /** The item's edit form (model, category, brand, the category's specs, prices, warranty, box, visibility, internal note). Reloads only on a 409, so server field errors stay visible. */
 export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onSaved, onStale }: {
@@ -36,7 +37,8 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
   const [form, setForm] = useState<Form>(() => toItemForm(item));
   const set = (patch: Partial<Form>) => setForm((current) => ({ ...current, ...patch }));
   const error = (field: string) => submit.errors.fields[field];
-  const prices = offeredPrices(tree, form.categoryId || null);
+  const categoryModes = offeredPrices(tree, form.categoryId || null);
+  const prices = itemModes(form, categoryModes);
   const setSpecs = useCallback((specs: Form["specs"]) => setForm((current) => ({ ...current, specs })), []);
 
   async function save() {
@@ -75,6 +77,34 @@ export function StockItemForm({ item, tree, brands, warrantyLabels, canEdit, onS
           ) : null}
         </div>
         {prices.withBoard || prices.alone ? <p className="m-0 text-xs text-ink-muted">{t("priceHint")}</p> : null}
+        <fieldset className="m-0 flex min-w-0 flex-col gap-1 rounded-control border border-line bg-paper p-3">
+          <legend className="px-1 text-[13px] font-bold">{t("modes.title")}</legend>
+          <p className="m-0 text-xs text-ink-muted">{t("modes.hint")}</p>
+          <label className={checkbox}>
+            <input
+              type="checkbox"
+              checked={form.ownModes}
+              onChange={(event) => set(event.target.checked ? { ownModes: true, modes: { ...categoryModes } } : { ownModes: false })}
+              className="h-5 w-5"
+            />
+            {t("modes.own")}
+          </label>
+          <div className="flex flex-wrap gap-x-5 ps-7">
+            {MODES.map((mode) => (
+              <label key={mode} className={`${checkbox} font-medium ${form.ownModes ? "" : "text-ink-muted"}`}>
+                <input
+                  type="checkbox"
+                  checked={prices[mode]}
+                  disabled={!form.ownModes}
+                  onChange={(event) => set({ modes: { ...form.modes, [mode]: event.target.checked } })}
+                  className="h-5 w-5"
+                />
+                {t(`modes.${mode}`)}
+              </label>
+            ))}
+          </div>
+          <FormMessage message={!modesOk(form) ? t("modes.none") : (error("priceOptions") ?? null)} />
+        </fieldset>
         <WarrantyField value={form.warrantyLabel} onChange={(warrantyLabel) => set({ warrantyLabel })} options={warrantyLabels} error={error("warrantyLabel")} />
         <label className={checkbox}>
           <input type="checkbox" checked={form.hasBox} onChange={(event) => set({ hasBox: event.target.checked })} className="h-5 w-5" />

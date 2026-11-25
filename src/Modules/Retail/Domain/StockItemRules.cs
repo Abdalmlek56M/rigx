@@ -66,6 +66,22 @@ public static class StockItemRules
             throw new RetailException(400, "Prices and price extras cannot be negative.");
     }
 
+    /// <summary>
+    /// The sale prices the owner chose for the item itself (the three switches together), or null when he did not: the item then follows its
+    /// category (<see cref="PriceOptionRule.ForItem"/>).
+    /// </summary>
+    public static PriceOptionSet? OwnPriceOptions(bool? alone, bool? withBoard, bool? inBuild) =>
+        alone is bool a && withBoard is bool b && inBuild is bool c ? new PriceOptionSet(a, b, c) : null;
+
+    /// <summary>An item's own choice must keep at least one way to sell it; null (follow the category) is always allowed.</summary>
+    public static void ValidatePriceOptions(ItemPriceOptions? options)
+    {
+        if (options is { Alone: false, WithBoard: false, InBuild: false })
+            throw new RetailException(400, NoPriceOption, new Dictionary<string, string[]> { ["priceOptions"] = [NoPriceOption] });
+    }
+
+    private const string NoPriceOption = "Choose at least one way to sell the item.";
+
     public static void ValidateWarranty(string? label, int? months)
     {
         if (label?.Length > 64) throw new RetailException(400, "The warranty label is too long.");

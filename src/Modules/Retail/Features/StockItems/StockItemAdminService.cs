@@ -49,6 +49,7 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         var modelName = StockItemRules.CleanModelName(request.ModelName);
         StockItemRules.ValidatePrices(request.Price, request.WithBoardExtra, request.AloneExtra);
         StockItemRules.ValidateWarranty(request.WarrantyLabel, request.WarrantyMonths);
+        StockItemRules.ValidatePriceOptions(request.PriceOptions);
         var specs = StockItemRules.CleanSpecs(request.Specs);
         var note = StockItemRules.CleanNote(request.InternalNote);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -64,6 +65,9 @@ public sealed class StockItemAdminService(IDbContextFactory<RetailDbContext> con
         item.Price = request.Price;
         item.WithBoardExtra = request.WithBoardExtra;
         item.AloneExtra = request.AloneExtra;
+        item.OffersAlone = request.PriceOptions?.Alone;
+        item.OffersWithBoard = request.PriceOptions?.WithBoard;
+        item.OffersInBuild = request.PriceOptions?.InBuild;
         item.WarrantyLabel = string.IsNullOrWhiteSpace(request.WarrantyLabel) ? null : request.WarrantyLabel.Trim();
         item.WarrantyMonths = item.WarrantyLabel is null ? null : request.WarrantyMonths;
         item.HasBox = request.HasBox;

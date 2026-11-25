@@ -68,10 +68,10 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var rule = await RuleAsync(cancellationToken);
         return new StoreItemDetail(item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.BrandId, item.WarrantyLabel, item.WarrantyMonths,
             item.HasBox, StockItemRules.Prices(item.Price, item.WithBoardExtra, item.AloneExtra), row.Available, item.Photos, item.Specs,
-            rule.ForCategory(item.CategoryId).Names);
+            rule.ForItem(item.CategoryId, StockItemRules.OwnPriceOptions(item.OffersAlone, item.OffersWithBoard, item.OffersInBuild)).Names);
     }
 
-    /// <summary>The per-category price switches (all on when no source is wired, as in unit tests).</summary>
+    /// <summary>The per-category price switches (an item's own choice replaces them, <see cref="PriceOptionRule.ForItem"/>) (all on when no source is wired, as in unit tests).</summary>
     private async Task<PriceOptionRule> RuleAsync(CancellationToken cancellationToken) =>
         priceOptions is null ? PriceOptionRule.Open : await priceOptions.LoadAsync(cancellationToken);
 
@@ -81,12 +81,13 @@ public sealed class StoreItemService(IDbContextFactory<RetailDbContext> contextF
         var rows = await items.Select(item => new
         {
             item.Code, item.Slug, item.ModelName, item.Condition, item.CategoryId, item.WarrantyLabel, item.Price, item.WithBoardExtra,
-            item.AloneExtra, item.CreatedAtUtc, item.Photos, item.Specs,
+            item.AloneExtra, item.CreatedAtUtc, item.Photos, item.Specs, item.OffersAlone, item.OffersWithBoard, item.OffersInBuild,
             Available = item.Units.Count(unit => unit.Status == UnitStatus.Available)
         }).ToListAsync(cancellationToken);
         return rows.Select(row => new StoreItemCard(row.Code, row.Slug, row.ModelName, row.Condition, row.CategoryId, row.WarrantyLabel,
             StockItemRules.Prices(row.Price, row.WithBoardExtra, row.AloneExtra), row.Available,
-            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.Photos.Skip(1).FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc, rule.ForCategory(row.CategoryId).Names, row.Specs)).ToList();
+            row.Photos.FirstOrDefault()?.ThumbnailStorageKey, row.Photos.Skip(1).FirstOrDefault()?.ThumbnailStorageKey, row.CreatedAtUtc,
+            rule.ForItem(row.CategoryId, StockItemRules.OwnPriceOptions(row.OffersAlone, row.OffersWithBoard, row.OffersInBuild)).Names, row.Specs)).ToList();
     }
 
     /// <summary>Sold-out items stay listed (marked "خلص") but always come after the available ones.</summary>

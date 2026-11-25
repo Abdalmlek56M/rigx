@@ -16,7 +16,8 @@ internal static class StockItemMapping
             .Select(unit => new StockUnitView(unit.Id, unit.Status, unit.Condition, includeSerials ? unit.SerialNumber : null,
                 includeCosts ? unit.AcquisitionCost : null, includeCosts ? unit.PartnerPercentOverride : null, includeCosts ? unit.PartnerId : null,
                 unit.AssemblyId, unit.ReceivedAtUtc, unit.RowVersion,
-                unit.AssemblyId is Guid assemblyId && builds is not null && builds.TryGetValue(assemblyId, out var build) ? build : null)).ToList());
+                unit.AssemblyId is Guid assemblyId && builds is not null && builds.TryGetValue(assemblyId, out var build) ? build : null)).ToList(),
+        StockItemRules.OwnPriceOptions(item.OffersAlone, item.OffersWithBoard, item.OffersInBuild) is { } own ? new ItemPriceOptions(own.Alone, own.WithBoard, own.InBuild) : null);
 
     /// <summary>The builds the units of these items sit in, by build id (one query).</summary>
     public static async Task<Dictionary<Guid, StockBuildRef>> BuildsOfAsync(RetailDbContext db, IEnumerable<StockItem> items, CancellationToken cancellationToken)

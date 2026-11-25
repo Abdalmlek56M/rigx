@@ -1677,6 +1677,18 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                         .HasColumnType("character varying(160)")
                         .HasColumnName("model_name");
 
+                    b.Property<bool?>("OffersAlone")
+                        .HasColumnType("boolean")
+                        .HasColumnName("offers_alone");
+
+                    b.Property<bool?>("OffersInBuild")
+                        .HasColumnType("boolean")
+                        .HasColumnName("offers_in_build");
+
+                    b.Property<bool?>("OffersWithBoard")
+                        .HasColumnType("boolean")
+                        .HasColumnName("offers_with_board");
+
                     b.Property<int>("PhotoCount")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("integer")
@@ -1761,6 +1773,8 @@ namespace HardwareStore.Modules.Retail.Persistence.Migrations
                             t.HasCheckConstraint("ck_stock_items_condition", "condition IN ('New','Used')");
 
                             t.HasCheckConstraint("ck_stock_items_price", "price >= 0");
+
+                            t.HasCheckConstraint("ck_stock_items_price_options", "(offers_alone IS NULL AND offers_with_board IS NULL AND offers_in_build IS NULL) OR (offers_alone IS NOT NULL AND offers_with_board IS NOT NULL AND offers_in_build IS NOT NULL AND (offers_alone OR offers_with_board OR offers_in_build))");
                         });
                 });
 

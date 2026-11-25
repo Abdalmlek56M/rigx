@@ -23333,6 +23333,25 @@
           }
         }
       },
+      "ItemPriceOptions": {
+        "required": [
+          "alone",
+          "withBoard",
+          "inBuild"
+        ],
+        "type": "object",
+        "properties": {
+          "alone": {
+            "type": "boolean"
+          },
+          "withBoard": {
+            "type": "boolean"
+          },
+          "inBuild": {
+            "type": "boolean"
+          }
+        }
+      },
       "JsonNode": {},
       "LanguageSettings": {
         "type": "object",
@@ -29818,6 +29837,16 @@
             "items": {
               "$ref": "#/components/schemas/StockUnitView"
             }
+          },
+          "priceOptions": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemPriceOptions"
+              }
+            ]
           }
         }
       },
@@ -30007,6 +30036,16 @@
           "rowVersion": {
             "type": "integer",
             "format": "int64"
+          },
+          "priceOptions": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemPriceOptions"
+              }
+            ]
           }
         }
       },
